@@ -425,7 +425,7 @@ the same minor series, and ideally not within the same major series.
 
 |private |Intended for internal use only. Only tested according to
 internal usage. May not be safe for end user applications to use
-directly.Could change significantly or be removed in a future release
+directly. Could change significantly or be removed in a future release
 without notice.
 
 |unsupported |If you see this value in a module.xml in a WildFly

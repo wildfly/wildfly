@@ -17,7 +17,7 @@ the Artemis user guide (See "Component Reference").
 [[required-extension-messaging]]
 == Required Extension
 
-The configuration options discussed in this section assume that the the
+The configuration options discussed in this section assume that the
 `org.wildfly.extension.messaging-activemq` extension is present in your
 configuration. This extension is not included in the standard
 `standalone.xml` and `standalone-ha.xml` configurations included in the
@@ -54,7 +54,7 @@ on the type of connectors that is used.
 
 There is also a `pooled-connection-factory` which is special in that it
 is essentially a configuration facade for _both_ the inbound and
-outbound connectors of the the Artemis Jakarta Connectors Resource Adapter. An MDB can
+outbound connectors of the Artemis Jakarta Connectors Resource Adapter. An MDB can
 be configured to use a `pooled-connection-factory` (e.g. using
 `@ResourceAdapter`). In this context, the MDB leverages the _inbound
 connector_ of the Artemis Jakarta Connectors RA. Other kinds of clients can look up the
@@ -198,7 +198,7 @@ its `entries` element (separated by whitespace).
 Each entry refers to a JNDI name of the queue or topic. Keep in mind
 that any `jms-queue` or `jms-topic` which needs to be accessed by a
 remote client needs to have an entry in the "java:jboss/exported"
-namespace. As with connection factories, if a `jms-queue` or or
+namespace. As with connection factories, if a `jms-queue` or
 `jms-topic` has an entry bound in the "java:jboss/exported" namespace a
 remote client would look it up using the text _after_
 `"java:jboss/exported`". For example, the following `jms-queue`
@@ -617,7 +617,7 @@ CLI:
 === Statistics of a Jakarta Messaging Bridge
 
 Currently two statistics are available on a Jakarta Messaging bridge: the number of processed messages and the number of aborted/rolled back messages.
-Those are available with the following command :
+Those are available with the following command:
 
 [source, ruby]
 ----

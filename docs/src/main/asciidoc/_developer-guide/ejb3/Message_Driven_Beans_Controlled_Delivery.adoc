@@ -159,7 +159,7 @@ active attribute, which defaults to true:
 { "outcome" => "success", "result" => true }
 ----
 
-To make the the delivery-group inactive, just write the active attribute
+To make the delivery-group inactive, just write the active attribute
 with a false value:
 
 [source,options="nowrap"]

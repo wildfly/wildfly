@@ -39,10 +39,10 @@ realized and to limit the number of incompatible changes between releases.
 The zip or tar.gz file for standard WildFly is available at https://wildfly.org/downloads[https://wildfly.org/downloads].
 
 For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for standard WildFly. The
-Galleon feature-pack location for the feature-pack is ``wildfly@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-galleon-pack``.
+Galleon feature-pack location for the feature-pack is ``wildfly@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildfly:wildfly-galleon-pack``.
 
 The `wildfly` feature-pack depends on and adds "expansion" functionality beyond that provided by a separate standard WildFly `wildfly-ee` feature-pack. The
-Galleon feature-pack location for that feature-pack is ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildlfly:wildfly-ee-galleon-pack``. Standard WildFly users who do not need the `wildfly` feature-pack's "expansion" functionality (e.g. MicroProfile) can directly use `wildfly-ee` instead.
+Galleon feature-pack location for that feature-pack is ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildfly:wildfly-ee-galleon-pack``. Standard WildFly users who do not need the `wildfly` feature-pack's "expansion" functionality (e.g. MicroProfile) can directly use `wildfly-ee` instead.
 
 === BOMs
 
@@ -106,7 +106,7 @@ The zip or tar.gz file for WildFly EE 10 is available at link:https://wildfly.or
 right next to the standard WildFly release files for the same version.
 
 For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for WildFly EE 10. The
-Galleon feature-pack location for the feature-pack is ``wildfly-ee-10@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-ee-10-feature-pack``.
+Galleon feature-pack location for the feature-pack is ``wildfly-ee-10@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildfly:wildfly-ee-10-feature-pack``.
 This feature-pack is the WildFly EE 10 analogue to main WildFly's ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildfly:wildfly-ee-galleon-pack``.
 
 [IMPORTANT]
@@ -195,7 +195,7 @@ The zip or tar.gz file for WildFly Preview is available at link:https://wildfly.
 right next to the standard WildFly release files for the same version.
 
 For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for WildFly Preview. The
-Galleon feature-pack location for the feature-pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-preview-feature-pack``.
+Galleon feature-pack location for the feature-pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildfly:wildfly-preview-feature-pack``.
 This feature-pack is the WildFly Preview analogue to standard WildFly's ``wildfly@maven(org.jboss.universe:community-universe)`` (Maven coordinate ``org.wildfly:wildfly-galleon-pack``).
 
 === BOMs

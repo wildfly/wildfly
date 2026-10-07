@@ -130,7 +130,7 @@ is the case of your application you will see an exception like this:
 org.jboss.weld.exceptions.IllegalStateException: WELD-001332: BeanManager method getBeans() is not available during application initialization
 ....
 
-Fortunatelly, there is a non-portable mode available in WildFly which
+Fortunately, there is a non-portable mode available in WildFly which
 skips some of the API usage checks and therefore allows the legacy
 extensions to work as before.
 

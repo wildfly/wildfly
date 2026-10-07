@@ -28,7 +28,7 @@ Thus *you need to create a user* with the add-user.sh script.
 [[interacting-with-the-model]]
 == Interacting with the model
 
-Since we must be authenticated , the client will have to support HTTP
+Since we must be authenticated, the client will have to support HTTP
 Digest authentication.
 
 For example this can be activated in _curl_ using the _--digest_ option.
@@ -54,23 +54,23 @@ the *Accept* header should be *"application/dmr-encoded"*.
 While you can do everything with *POST*, some operations can be called
 through a 'classical' *GET* request.
 
-These are the supported operations for a GET :
+These are the supported operations for a GET:
 
-* attribute : for a read-attribute operation
-* resource : for a read-resource operation
-* resource-description : for a read-resource-description operation
-* snapshots : for the list-snapshots operation
-* operation-description : for a read-operation-description operation
-* operation-names : for ad read-operation-names operation
+* attribute: for a read-attribute operation
+* resource: for a read-resource operation
+* resource-description: for a read-resource-description operation
+* snapshots: for the list-snapshots operation
+* operation-description: for a read-operation-description operation
+* operation-names: for a read-operation-names operation
 
-The URL format is the following one : _http://server:9990/management/_
+The URL format is the following one: _http://server:9990/management/_
 _<path_to_resource>?operation=<operation_name>&operation_parameter=<value>..._
 
 _path_to_resource_ is the path to the wanted resource replacing all '='
-with '/' : thus for example subsystem=undertow/server=default-server
+with '/': thus for example subsystem=undertow/server=default-server
 becomes subsystem/undertow/server/default-server.
 
-So to read the server-state :
+So to read the server-state:
 
 ....
 http://localhost:9990/management?operation=attribute&name=server-state&json.pretty=1
