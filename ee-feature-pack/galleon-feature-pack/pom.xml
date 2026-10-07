@@ -36,6 +36,7 @@
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+        <galleon.unpacked.resources.directory>${project.build.directory}/unpacked-dependency-galleon-resources</galleon.unpacked.resources.directory>
     </properties>
 
     <build>
@@ -101,6 +102,27 @@
                             <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>unpack-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly.security.vault</groupId>
+                                    <artifactId>wildfly-vault-galleon-shared</artifactId>
+                                    <version>${version.org.wildfly.security.vault}</version>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <!-- The feature-pack build seems to ignore such things anyway, but to be
+                                 robust exclude artifact metadata content -->
+                            <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
+                            <outputDirectory>${galleon.unpacked.resources.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -119,6 +141,23 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-unpacked-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.unpacked.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -245,11 +284,12 @@
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${galleon.unpacked.resources.directory}/license/wildfly-vault-feature-pack-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/wildfly-ee-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-standard-legacy-ee-bom|wildfly-standard-preview-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-standard-legacy-ee-bom|wildfly-standard-preview-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z|wildfly-vault-galleon-shared</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -410,6 +450,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.security.vault</groupId>
+            <artifactId>wildfly-vault-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -473,6 +520,7 @@
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-local</exclude>
+                                                <exclude>org.wildfly.security.vault:wildfly-vault-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

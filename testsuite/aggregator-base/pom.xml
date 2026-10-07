@@ -64,6 +64,7 @@
                 <module>../integration/clustering</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
+                <module>../integration/hashicorp-vault</module>
                 <module>../integration/vdx</module>
                 <module>../integration/iiop</module>
                 <module>../integration/xts</module>
@@ -107,6 +108,7 @@
                 <module>../integration/hornetq-client</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
+                <module>../integration/hashicorp-vault</module>
             </modules>
         </profile>
 
@@ -179,6 +181,7 @@
                 <module>../integration/clustering</module>
                 <module>../integration/ws</module>
                 <module>../integration/elytron-oidc-client</module>
+                <module>../integration/hashicorp-vault</module>
                 <module>../layers</module>
             </modules>
         </profile>
@@ -217,6 +220,7 @@
                 <module>../integration/hornetq-client</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
+                <module>../integration/hashicorp-vault</module>
             </modules>
         </profile>
 
@@ -275,6 +279,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.hashicorp-vault -->
+        <profile>
+            <id>ts.integ.group.hashicorp-vault</id>
+            <activation><property><name>ts.hashicorp-vault</name></property></activation>
+            <modules>
+                <module>../integration/hashicorp-vault</module>
+            </modules>
+        </profile>
+
         <!-- Test against bootable jar -->
         <profile>
             <id>base.bootablejar.profile</id>
@@ -289,6 +302,7 @@
                 <module>../integration/clustering</module>
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
+                <module>../integration/hashicorp-vault</module>
             </modules>
         </profile>
 
