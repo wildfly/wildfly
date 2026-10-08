@@ -93,7 +93,7 @@
                                                 <include>wildfly-*.zip.asc</include>
                                             </includes>
                                         </resource>
-                                        <resource>
+                                        <!--<resource>
                                             <directory>../legacy/ee-feature-pack/dist/target</directory>
                                             <includes>
                                                 <include>wildfly-*.tar.gz</include>
@@ -101,7 +101,7 @@
                                                 <include>wildfly-*.zip</include>
                                                 <include>wildfly-*.zip.asc</include>
                                             </includes>
-                                        </resource>
+                                        </resource>-->
                                     </resources>
                                 </configuration>
                             </execution>
