@@ -49,7 +49,6 @@ public enum HostServiceConfigurator implements ResourceServiceConfigurator {
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
         final PathAddress serverAddress = address.getParent();
-        final PathAddress subsystemAddress = serverAddress.getParent();
 
         final String hostName = address.getLastElement().getValue();
         final String serverName = serverAddress.getLastElement().getValue();
@@ -107,8 +106,9 @@ public enum HostServiceConfigurator implements ResourceServiceConfigurator {
             });
         }
 
-        // Install services specific to the default server
-        if (context.getCapabilityServiceSupport().hasCapability(Host.DEFAULT_SERVER_SERVICE_DESCRIPTOR, hostName)) {
+        // Install services specific to hosts of the default server
+        // In the absence of an easy means of determining whether this resource registered a particular capability, just use the same predicate used during registration
+        if (HostDefinition.HOST_OF_DEFAULT_SERVER.test(context, context.readResource(PathAddress.EMPTY_ADDRESS))) {
             installers.add(CapabilityServiceInstaller.BlockingBuilder.of(HostDefinition.DEFAULT_SERVER_HOST_CAPABILITY, ServiceDependency.on(Host.SERVICE_DESCRIPTOR, serverName, hostName)).build());
 
             final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] { WebHost.CAPABILITY };

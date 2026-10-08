@@ -78,6 +78,20 @@ class HostDefinition extends SimpleResourceDefinition {
 
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START);
 
+    static final BiPredicate<OperationContext, Resource> HOST_OF_DEFAULT_SERVER = new BiPredicate<OperationContext, Resource>() {
+        @Override
+        public boolean test(OperationContext context, Resource resource) {
+            PathAddress hostAddress = context.getCurrentAddress();
+            PathAddress serverAddress = hostAddress.getParent();
+            try {
+                String defaultServer = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, context.readResourceFromRoot(serverAddress.getParent(), false).getModel()).asStringOrNull();
+                return serverAddress.getLastElement().getValue().equals(defaultServer);
+            } catch (OperationFailedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    };
+
     private final ResourceDescriptor descriptor;
 
     HostDefinition() {
@@ -85,19 +99,7 @@ class HostDefinition extends SimpleResourceDefinition {
                 .addAttributes(ATTRIBUTES)
                 .addCapability(HOST_CAPABILITY)
                 // Register these capabilities for the default server only
-                .addCapabilities(List.of(DEFAULT_SERVER_HOST_CAPABILITY, WebHost.CAPABILITY), new BiPredicate<OperationContext, Resource>() {
-                    @Override
-                    public boolean test(OperationContext context, Resource resource) {
-                        PathAddress hostAddress = context.getCurrentAddress();
-                        PathAddress serverAddress = hostAddress.getParent();
-                        try {
-                            String defaultServer = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, context.readResourceFromRoot(serverAddress.getParent(), false).getModel()).asStringOrNull();
-                            return serverAddress.getLastElement().getValue().equals(defaultServer);
-                        } catch (OperationFailedException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                })
+                .addCapabilities(List.of(DEFAULT_SERVER_HOST_CAPABILITY, WebHost.CAPABILITY), HOST_OF_DEFAULT_SERVER)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(HostServiceConfigurator.INSTANCE))
                 .addResourceCapabilityReference(ResourceCapabilityReference.builder(HOST_CAPABILITY, Server.SERVICE_DESCRIPTOR).withRequirementNameResolver(UnaryCapabilityNameResolver.PARENT).build())
                 .build());
