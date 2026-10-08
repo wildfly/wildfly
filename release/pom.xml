@@ -49,12 +49,12 @@
                     <type>pom</type>
                     <scope>provided</scope>
                 </dependency>
-                <dependency>
+                <!--<dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>${legacy.full.dist.artifactId}</artifactId>
                     <type>pom</type>
                     <scope>provided</scope>
-                </dependency>
+                </dependency>-->
             </dependencies>
             <build>
                 <plugins>
