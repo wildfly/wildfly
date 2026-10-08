@@ -320,9 +320,8 @@ public class WildcardReadsTestCase {
         assertNotNull(resp.toString(), secondaryResult);
 
         // Now limit the result to secondary hosts
-        String dcCheck = version.getMajor() <= 7 ? "master" : "primary";
         op = Util.createEmptyOperation(QUERY, PathAddress.pathAddress(HOST_WILD));
-        op.get(WHERE, dcCheck).set(false);
+        op.get(WHERE, "primary").set(false);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());
         assertEquals(resp.toString(), secondaryResult, resp.get(0).get(RESULT));
@@ -344,13 +343,12 @@ public class WildcardReadsTestCase {
         assertTrue(result.toString(), result.hasDefined("host-state"));
         assertEquals(result.toString(), "secondary", result.get(NAME).asString());
 
-        String dcCheck = version.getMajor() <= 7 ? "master" : "primary";
         // Now cause the filter to exclude the secondary
-        op.get(WHERE, dcCheck).set(true);
+        op.get(WHERE, "primary").set(true);
         executeForResult(op, ModelType.UNDEFINED);
 
         // Correct the filter, slim down the input
-        op.get(WHERE, dcCheck).set(false);
+        op.get(WHERE, "primary").set(false);
         op.get(SELECT).add(NAME);
         result = executeForResult(op, ModelType.OBJECT);
 

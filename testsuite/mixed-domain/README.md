@@ -19,7 +19,6 @@ mvn clean install -DskipTests && \
 cd testsuite/mixed-domain && \
 mvn clean install \
 -Djboss.test.mixed.domain.dir=/path/to/dir/with/old-releases/ \
--Djava8.home=/usr/lib/jvm/java-1.8.0 \
 -Djava17.home=/usr/lib/jvm/java-17
 ```
 
@@ -29,5 +28,4 @@ mvn clean install -DskipTests && \
 cd testsuite/mixed-domain && \
 mvn clean install \
 -Djboss.test.mixed.domain.dir=/home/yborgess/dev/servers/mixed-domain \
--Djava8.home=/home/yborgess/.sdkman/candidates/java/8.0.462-tem \
 -Djava17.home=/home/yborgess/.sdkman/candidates/java/17.0.12-tem
