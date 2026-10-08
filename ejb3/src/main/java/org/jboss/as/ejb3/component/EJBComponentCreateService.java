@@ -80,6 +80,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
+    private final InjectedValue<AccessLogHolder> accessLogHolder = new InjectedValue<>();
     private final InjectedValue<SecurityDomain> securityDomain = new InjectedValue<>();
     private final InjectedValue<Function> identityOutflowFunction = new InjectedValue<>();
     private final InjectedValue<EJBSuspendHandlerService> ejbSuspendHandler = new InjectedValue<>();
@@ -342,6 +343,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public AtomicBoolean getExceptionLoggingEnabled() {
         return exceptionLoggingEnabled.getValue();
+    }
+
+    InjectedValue<AccessLogHolder> getAccessLogHolderInjector() {
+        return accessLogHolder;
+    }
+
+    public AccessLogHolder getAccessLogHolder() {
+        return accessLogHolder.getValue();
     }
 
     Injector<SecurityDomain> getSecurityDomainInjector() {

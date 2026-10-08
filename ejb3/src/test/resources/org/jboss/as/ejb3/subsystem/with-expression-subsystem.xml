@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:ejb3:11.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:12.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="${sysprop:slsb-strict-max-pool}"/>
@@ -110,6 +110,17 @@
     <statistics enabled="${ejb.enable-statistics:true}" />
     <log-system-exceptions value="${ejb.log-system-exceptions:false}" />
     <allow-ejb-name-regex value="${sysprop:false}"/>
+    <access-log destination="${sysprop:file}"
+               path="${sysprop:ejb-access.log}"
+               relative-to="${sysprop:jboss.server.log.dir}"
+               rotate-suffix="${sysprop:.yyyy-MM-dd}"
+               include-local="${sysprop:true}"
+               include-node-name="${sysprop:false}"
+               queue-length="${ejb.access.queue:2048}">
+        <metadata>
+            <property name="env" value="${sysprop:prod}"/>
+        </metadata>
+    </access-log>
     <server-interceptors>
         <interceptor module="foo" class="org.foo.ServerInterceptor"/>
     </server-interceptors>

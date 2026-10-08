@@ -162,6 +162,9 @@ public class InterceptorOrder {
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int POLICY_CONTEXT = 0x260;
         public static final int SECURITY_ROLES = 0x270;
+        /** EJB access-log interceptor: after identity is established, before authorization,
+         *  so that denied invocations are still recorded. */
+        public static final int ACCESS_LOG_INTERCEPTOR = 0x280;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         public static final int RUN_AS_PRINCIPAL = 0x310;
         public static final int EXTRA_PRINCIPAL_ROLES = 0x320;

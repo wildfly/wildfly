@@ -441,6 +441,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
 
         subsystemRegistration.registerSubModel(new IdentityResourceDefinition(this.outflowSecurityDomains));
+
+        subsystemRegistration.registerSubModel(new AccessLogResourceDefinition());
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

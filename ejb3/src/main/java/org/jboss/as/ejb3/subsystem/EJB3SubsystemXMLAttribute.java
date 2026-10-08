@@ -17,6 +17,7 @@ public enum EJB3SubsystemXMLAttribute {
     ALIAS("alias"),
     @Deprecated ALIASES("aliases"),
     ALLOW_EXECUTION("allow-execution"),
+    ATTRIBUTES(EJB3SubsystemModel.ATTRIBUTES),
 
     @Deprecated BEAN_CACHE("bean-cache"),
     BEAN_MANAGEMENT("bean-management"),
@@ -37,6 +38,7 @@ public enum EJB3SubsystemXMLAttribute {
     DEFAULT_PERSISTENT_TIMER_MANAGEMENT(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT),
     DEFAULT_TRANSIENT_TIMER_MANAGEMENT(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT),
     DATABASE("database"),
+    DESTINATION(EJB3SubsystemModel.DESTINATION),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
 
     ENABLED("enabled"),
@@ -49,10 +51,14 @@ public enum EJB3SubsystemXMLAttribute {
     @Deprecated IDLE_TIMEOUT_UNIT("idle-timeout-unit"),
     INSTANCE_ACQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_ACQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
+    INCLUDE_LOCAL(EJB3SubsystemModel.INCLUDE_LOCAL),
+    INCLUDE_NODE_NAME(EJB3SubsystemModel.INCLUDE_NODE_NAME),
 
     KEEPALIVE_TIME("keepalive-time"),
 
     LOCAL_RECEIVER_PASS_BY_VALUE("local-receiver-pass-by-value"),
+
+    QUEUE_LENGTH(EJB3SubsystemModel.QUEUE_LENGTH),
 
     MAX_POOL_SIZE("max-pool-size"),
     MAX_SIZE("max-size"),
@@ -74,6 +80,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     RELATIVE_TO("relative-to"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
+    ROTATE_SUFFIX(EJB3SubsystemModel.ROTATE_SUFFIX),
 
     @Deprecated SESSIONS_PATH("sessions-path"),
     STATIC_URLS("static-urls"),
@@ -81,6 +88,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     THREAD_POOL_NAME("thread-pool-name"),
     TYPE("type"),
+    WORKER(EJB3SubsystemModel.WORKER),
 
     USE_QUALIFIED_NAME("use-qualified-name"),
 

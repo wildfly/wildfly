@@ -117,6 +117,10 @@
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.transaction.client"/>
+        <!-- Access-log: event logger and XNIO worker (E3) -->
+        <module name="org.wildfly.event.logger"/>
+        <module name="org.wildfly.extension.io"/>
+        <module name="org.jboss.xnio"/>
 
     </dependencies>
 </module>
