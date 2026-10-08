@@ -37,20 +37,13 @@ jobs:
           ref: ${{ steps.prepare.outputs.base }}
           path: base
 
+      # Run the caching against the base version only, so set up Java before cloning the PR version
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: 17
-
-      # Run the caching against the base version only
-      - name: Cache local Maven repository
-        uses: actions/cache@v6
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          cache: 'maven'
 
       - name: Clone PR version
         uses: actions/checkout@v7
