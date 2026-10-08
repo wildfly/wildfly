@@ -61,4 +61,4 @@ jobs:
           java-version: ${{ inputs.jdk-version }}
           cache: 'maven'
       - name: Build and test with Maven
-        run: mvn -U -B -ntp clean install ${{ inputs.args }}
+        run: ./mvnw -U -B -ntp clean install ${{ inputs.args }}

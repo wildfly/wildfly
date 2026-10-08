@@ -136,7 +136,7 @@ jobs:
       - name: Build base
         working-directory: base
         run: |
-          mvn -B -ntp install -DskipTests -pl ${{ env.validBaseModules }},${{ env.validAddlBaseModules }} -am
+          ./mvnw -B -ntp install -DskipTests -pl ${{ env.validBaseModules }},${{ env.validAddlBaseModules }} -am
 
       - name: Grab base dependencies
         id: base-versions
@@ -147,7 +147,7 @@ jobs:
           for module in $(echo "${{ env.validBaseModules }}" | sed "s/,/ /g")
           do
             baseVersionFile="_base-versions-$i.txt"
-            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
+            ./mvnw -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               baseVersionFiles="${baseVersionFiles},${baseVersionFile}"
@@ -163,7 +163,7 @@ jobs:
         run: |
           echo "validPRModules="$validPRModules
           echo "env.validPRModules="${{ env.validPRModules }}
-          mvn -B -ntp install -DskipTests -pl ${{ env.validPRModules }},${{ env.validAddlPRModules }} -am
+          ./mvnw -B -ntp install -DskipTests -pl ${{ env.validPRModules }},${{ env.validAddlPRModules }} -am
 
       - name: Grab PR Dependencies
         working-directory: pr
@@ -174,7 +174,7 @@ jobs:
           for module in $(echo "${{ env.validPRModules }}" | sed "s/,/ /g")
           do
             newVersionFile="_new-versions-$i.txt"
-            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
+            ./mvnw -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               newVersionFiles="${newVersionFiles},${newVersionFile}"
