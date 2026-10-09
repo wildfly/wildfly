@@ -52,16 +52,12 @@
                 The "status-socket-binding" attribute is used to reference the correct socket binding to use for the
                 transaction status manager.
                 The "recovery-listener" attribute sets if recovery system should listen on a network socket or not.
-                The "graceful-shutdown-timeout" attribute sets the timeout in seconds for graceful shutdown of
-                the transactions subsystem. -1 means skip graceful shutdown, 0 means wait forever, and a positive
-                value means wait up to that many seconds for in-flight transactions to drain and recovery to suspend.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="socket-binding" type="xs:string" />
         <xs:attribute name="status-socket-binding" type="xs:string" />
         <xs:attribute name="recovery-listener" type="xs:boolean" default="false"/>
-        <xs:attribute name="graceful-shutdown-timeout" type="xs:int" default="-1"/>
     </xs:complexType>
 
     <xs:complexType name="core-environment">

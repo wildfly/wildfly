@@ -212,7 +212,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.validateAndSet(operation, model);
     }
 
     private void validateStoreConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -410,7 +410,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
-        final int gracefulShutdownTimeout = TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT.resolveModelAttribute(context, model).asInt();
+        final int gracefulShutdownTimeout = TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.resolveModelAttribute(context, model).asInt();
 
         final CapabilityServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget.addService();
         final Consumer<RecoveryManagerService> consumer = recoveryManagerServiceServiceBuilder.provides(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);

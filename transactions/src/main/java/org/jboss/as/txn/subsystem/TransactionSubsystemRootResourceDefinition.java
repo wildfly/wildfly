@@ -108,11 +108,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition GRACEFUL_SHUTDOWN_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(-1))
+    public static final SimpleAttributeDefinition TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN = new SimpleAttributeDefinitionBuilder(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, ModelType.INT, true)
+            .setDefaultValue(new ModelNode().set(0))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1))
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
-            .setXmlName(Attribute.GRACEFUL_SHUTDOWN_TIMEOUT.getLocalName())
             .setAllowExpression(true).build();
 
     //core environment
@@ -310,7 +310,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     // all attributes
     static final AttributeDefinition[] add_attributes = new AttributeDefinition[] {
-            BINDING, STATUS_BINDING, RECOVERY_LISTENER, GRACEFUL_SHUTDOWN_TIMEOUT, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
@@ -344,7 +344,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(ENABLE_STATISTICS);
         attributesWithoutMutuals.remove(HORNETQ_STORE_ENABLE_ASYNC_IO);
 
-        attributesWithoutMutuals.remove(GRACEFUL_SHUTDOWN_TIMEOUT);
+        attributesWithoutMutuals.remove(TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN);
 
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
         for(final AttributeDefinition def : attributesWithoutMutuals) {
@@ -360,7 +360,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new DefaultTimeoutHandler(DEFAULT_TIMEOUT));
         resourceRegistration.registerReadWriteAttribute(MAXIMUM_TIMEOUT, null, new MaximumTimeoutHandler(MAXIMUM_TIMEOUT));
 
-        resourceRegistration.registerReadWriteAttribute(GRACEFUL_SHUTDOWN_TIMEOUT, null, new GracefulShutdownTimeoutHandler(this.registry, GRACEFUL_SHUTDOWN_TIMEOUT));
+        resourceRegistration.registerReadWriteAttribute(TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, null, new GracefulShutdownTimeoutHandler(this.registry, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN));
 
         // Register jdbc-store-datasource attribute
         resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
