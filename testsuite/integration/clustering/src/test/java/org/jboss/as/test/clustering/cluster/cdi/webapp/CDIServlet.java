@@ -13,7 +13,8 @@ import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 
 /**
- * Note that the servlet is mapped to /simple using web.xml servlet-mapping overriding @WebServlet of the SimpleServlet.
+ * Note that web.xml overrides the servlet class of the @WebServlet-annotated SimpleServlet with this servlet,
+ * so that only a single servlet is mapped to /simple.
  *
  * @author Tomas Remes
  * @author Radoslav Husar
