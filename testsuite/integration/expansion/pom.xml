@@ -38,6 +38,9 @@
 
         <wildfly.test.kafka.version>${version.org.apache.kafka.test-image}</wildfly.test.kafka.version>
 
+        <!-- Tests run on JUnit Jupiter, so skip @TestcontainersRequired tests with an opentest4j abort when no container engine is available -->
+        <ts.docker.required.exception>org.opentest4j.TestAbortedException</ts.docker.required.exception>
+
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
