@@ -45,7 +45,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_7_0.xsd";
+        return "schema/wildfly-txn_7_1.xsd";
     }
 
     @Override
@@ -117,7 +117,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParserWildFly40() throws Exception {
+    public void testParserWildFly41() throws Exception {
+        standardSubsystemTest("full-7.0.0.xml");
+    }
+
+    @Test
+    public void testParserWildFly42_71Schema() throws Exception {
         standardSubsystemTest("full.xml");
     }
 
@@ -147,10 +152,10 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             .setSubsystemXml(subsystemXml).build();
         Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
 
-        ModelNode operation = createReadAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT);
+        ModelNode operation = createReadAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN);
         ModelNode result = kernelServices.executeOperation(operation);
         Assert.assertEquals("success", result.get("outcome").asString());
-        Assert.assertEquals(-1L, result.get(ModelDescriptionConstants.RESULT).asLong());
+        Assert.assertEquals(0L, result.get(ModelDescriptionConstants.RESULT).asLong());
     }
 
     @Test
@@ -160,23 +165,23 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             .setSubsystemXml(subsystemXml).build();
         Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
 
-        // -1 (skip graceful shutdown) — valid
-        ModelNode operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(-1));
+        // 0 (skip graceful shutdown) — valid (default)
+        ModelNode operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(0));
         ModelNode result = kernelServices.executeOperation(operation);
         Assert.assertEquals("success", result.get("outcome").asString());
 
-        // 0 (wait forever) — valid
-        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(0));
+        // -1 (wait indefinitely) — valid
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(-1));
         result = kernelServices.executeOperation(operation);
         Assert.assertEquals("success", result.get("outcome").asString());
 
         // 300 (positive timeout) — valid
-        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(300));
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(300));
         result = kernelServices.executeOperation(operation);
         Assert.assertEquals("success", result.get("outcome").asString());
 
         // -2 (below minimum) — invalid, must be rejected
-        operation = createWriteAttributeOperation(CommonAttributes.GRACEFUL_SHUTDOWN_TIMEOUT, new ModelNode(-2));
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(-2));
         result = kernelServices.executeOperation(operation);
         Assert.assertNotEquals("write-attribute(-2) should have been rejected",
                 "success", result.get("outcome").asString());
@@ -198,7 +203,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             new FailedOperationTransformationConfig().addFailedAttribute(
                 PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH),
                 new FailedOperationTransformationConfig.NewAttributesConfig(
-                    TransactionSubsystemRootResourceDefinition.GRACEFUL_SHUTDOWN_TIMEOUT)));
+                    TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)));
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {

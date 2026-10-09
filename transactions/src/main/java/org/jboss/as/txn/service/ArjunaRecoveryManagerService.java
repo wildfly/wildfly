@@ -169,7 +169,7 @@ public class ArjunaRecoveryManagerService implements Service {
 
         final int timeout = this.gracefulShutdownTimeout;
 
-        if (timeout == -1) {
+        if (timeout == 0) {
             doStop();
             return;
         }
@@ -191,6 +191,7 @@ public class ArjunaRecoveryManagerService implements Service {
         if (timeout > 0) {
             gracefulStop = gracefulStop.orTimeout(timeout, TimeUnit.SECONDS);
         }
+        // timeout == -1: no orTimeout() applied → waits indefinitely
 
         gracefulStop.whenCompleteAsync((result, exception) -> {
             if (exception != null) {

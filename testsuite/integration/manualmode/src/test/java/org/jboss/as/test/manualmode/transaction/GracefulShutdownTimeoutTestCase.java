@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
 public class GracefulShutdownTimeoutTestCase {
 
     private static final String CONTAINER = "default-full-jbossas-byteman";
-    private static final String ATTR_NAME = "graceful-shutdown-timeout";
+    private static final String ATTR_NAME = "transactions-recovery-graceful-shutdown";
 
     private static final ModelNode SUBSYSTEM_ADDRESS =
             Operations.createAddress("subsystem", "transactions");
@@ -128,7 +128,7 @@ public class GracefulShutdownTimeoutTestCase {
             }
             safeUndeploy(EJB_DEPLOYMENT);
             safeUndeploy(PREDESTROY_DEPLOYMENT);
-            writeAttribute(ATTR_NAME, new ModelNode(-1));
+            writeAttribute(ATTR_NAME, new ModelNode(0));
         } finally {
             if (managementClient != null) {
                 managementClient.close();
@@ -140,13 +140,13 @@ public class GracefulShutdownTimeoutTestCase {
     }
 
     /**
-     * Verifies that the {@code graceful-shutdown-timeout} attribute defaults to {@code -1}
+     * Verifies that the {@code graceful-shutdown-timeout} attribute defaults to {@code 0}
      * (skip graceful shutdown entirely) when read from a live server.
      */
     @Test
     public void testReadDefaultValue() throws Exception {
         ModelNode result = readAttribute(ATTR_NAME);
-        assertEquals(-1, result.asInt());
+        assertEquals(0, result.asInt());
     }
 
     /**
@@ -181,7 +181,7 @@ public class GracefulShutdownTimeoutTestCase {
     }
 
     /**
-     * Verifies that undefining the attribute restores the default value of {@code -1}.
+     * Verifies that undefining the attribute restores the default value of {@code 0}.
      */
     @Test
     public void testUndefineResetsToDefault() throws Exception {
@@ -192,39 +192,39 @@ public class GracefulShutdownTimeoutTestCase {
         ModelNode result = executeOperation(undefineOp);
         assertTrue("undefine-attribute failed: " + result, isSuccessfulOutcome(result));
 
-        assertEquals(-1, readAttribute(ATTR_NAME).asInt());
+        assertEquals(0, readAttribute(ATTR_NAME).asInt());
     }
 
     /**
-     * Verifies that {@code graceful-shutdown-timeout=-1} skips graceful shutdown entirely.
+     * Verifies that {@code graceful-shutdown-timeout=0} skips graceful shutdown entirely.
      * A Byteman rule delays {@code TransactionReaper.waitForAllTxnsToTerminate()} by 10s,
-     * but with {@code -1} the method should never be called. A flag file created by the
+     * but with {@code 0} the method should never be called. A flag file created by the
      * Byteman rule is used to detect invocation.
      */
     @Test
-    public void testShutdownWithTimeoutMinusOne() throws Exception {
-        writeAttribute(ATTR_NAME, new ModelNode(-1));
-        deployDrainRule();
-
-        container.stop(CONTAINER);
-
-        assertFalse("waitForAllTxnsToTerminate should not be called with timeout=-1",
-                Files.exists(DRAIN_FLAG));
-    }
-
-    /**
-     * Verifies that {@code graceful-shutdown-timeout=0} (wait indefinitely) causes the
-     * shutdown to invoke {@code TransactionReaper.waitForAllTxnsToTerminate()}.
-     * A Byteman rule creates a flag file when the method is entered.
-     */
-    @Test
-    public void testShutdownWithTimeoutZero() throws Exception {
+    public void testShutdownWithTimeoutZeroSkips() throws Exception {
         writeAttribute(ATTR_NAME, new ModelNode(0));
         deployDrainRule();
 
         container.stop(CONTAINER);
 
-        assertTrue("waitForAllTxnsToTerminate should have been called with timeout=0",
+        assertFalse("waitForAllTxnsToTerminate should not be called with timeout=0",
+                Files.exists(DRAIN_FLAG));
+    }
+
+    /**
+     * Verifies that {@code graceful-shutdown-timeout=-1} (wait indefinitely) causes the
+     * shutdown to invoke {@code TransactionReaper.waitForAllTxnsToTerminate()}.
+     * A Byteman rule creates a flag file when the method is entered.
+     */
+    @Test
+    public void testShutdownWithTimeoutMinusOneWaitsIndefinitely() throws Exception {
+        writeAttribute(ATTR_NAME, new ModelNode(-1));
+        deployDrainRule();
+
+        container.stop(CONTAINER);
+
+        assertTrue("waitForAllTxnsToTerminate should have been called with timeout=-1",
                 Files.exists(DRAIN_FLAG));
     }
 
@@ -251,14 +251,14 @@ public class GracefulShutdownTimeoutTestCase {
     /**
      * Verifies the full graceful shutdown sequence with a real in-doubt transaction.
      * A Byteman rule delays {@code TwoPhaseCoordinator.end()} by 8s to simulate a slow
-     * commit, while {@code graceful-shutdown-timeout=0} makes the server wait indefinitely.
+     * commit, while {@code graceful-shutdown-timeout=-1} makes the server wait indefinitely.
      * Asserts that the shutdown log messages appear in the correct order:
      * WFLYTX0048 (waiting for drain) -> WFLYTX0049 (drain complete) ->
      * WFLYTX0046 (recovery suspension started) -> WFLYTX0047 (recovery suspension complete).
      */
     @Test
     public void testGracefulShutdownWaitsForTransactionAndSuspends() throws Exception {
-        writeAttribute(ATTR_NAME, new ModelNode(0));
+        writeAttribute(ATTR_NAME, new ModelNode(-1));
         deployTxnEndRule();
         deployer.deploy(EJB_DEPLOYMENT);
 
