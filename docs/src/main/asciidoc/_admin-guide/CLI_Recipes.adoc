@@ -224,7 +224,7 @@ Please note that the operation "read-config-as-xml" that used to return the XML 
 {
     "outcome" => "success",
     "result" => {
-        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/domain_xml_history/snapshot/20110908-165222603domain.xml"}},
+        "domain-results" => {"step-1" => {"name" => "$JBOSS_HOME/domain/configuration/domain_xml_history/snapshot/20110908-165222603domain.xml"}},
         "server-operations" => undefined
     }
 }
@@ -242,7 +242,7 @@ Assume you have a host that is called "primary"
 {
     "outcome" => "success",
     "result" => {
-        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/host_xml_history/snapshot/20110908-165640215host.xml"}},
+        "domain-results" => {"step-1" => {"name" => "$JBOSS_HOME/domain/configuration/host_xml_history/snapshot/20110908-165640215host.xml"}},
         "server-operations" => undefined
     }
 }
