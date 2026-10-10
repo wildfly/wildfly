@@ -6,11 +6,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:transactions:7.0"
-           xmlns="urn:jboss:domain:transactions:7.0"
+           targetNamespace="urn:jboss:domain:transactions:7.1"
+           xmlns="urn:jboss:domain:transactions:7.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="7.0">
+           version="7.1">
 
     <!-- The transaction subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
@@ -52,12 +52,17 @@
                 The "status-socket-binding" attribute is used to reference the correct socket binding to use for the
                 transaction status manager.
                 The "recovery-listener" attribute sets if recovery system should listen on a network socket or not.
+                The "transactions-recovery-graceful-shutdown" attribute sets the timeout in seconds for graceful
+                shutdown of the transactions subsystem. 0 (default) means skip graceful shutdown, -1 means wait
+                indefinitely, and a positive value means wait up to that many seconds for in-doubt transactions
+                to drain and recovery to suspend.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="socket-binding" type="xs:string" />
         <xs:attribute name="status-socket-binding" type="xs:string" />
         <xs:attribute name="recovery-listener" type="xs:boolean" default="false"/>
+        <xs:attribute name="transactions-recovery-graceful-shutdown" type="xs:int" default="0"/>
     </xs:complexType>
 
     <xs:complexType name="core-environment">

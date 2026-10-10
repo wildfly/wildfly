@@ -18,16 +18,12 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 /**
- * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 7.0 of Transaction subsystem xml.
+ * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 7.1 of Transaction subsystem xml.
  */
-class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
+class TransactionSubsystem71Parser extends TransactionSubsystem70Parser {
 
-    TransactionSubsystem70Parser() {
-        super(Namespace.TRANSACTIONS_7_0);
-    }
-
-    TransactionSubsystem70Parser(Namespace namespace) {
-        super(namespace);
+    TransactionSubsystem71Parser() {
+        super(Namespace.TRANSACTIONS_7_1);
     }
 
     @Override
@@ -51,10 +47,7 @@ class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
                     TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.parseAndSetParameter(value, operation, reader);
                     break;
                 case TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN:
-                    // Map old enum to new int attribute: "ignore" → 0 (skip, default), "wait" → -1 (indefinite)
-                    if ("wait".equals(value)) {
-                        TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.parseAndSetParameter("-1", operation, reader);
-                    }
+                    TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -64,6 +57,7 @@ class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+        // Handle elements
         requireNoContent(reader);
     }
 }
