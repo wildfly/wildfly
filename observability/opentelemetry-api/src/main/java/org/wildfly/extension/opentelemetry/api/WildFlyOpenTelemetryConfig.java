@@ -33,11 +33,9 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
     public static final String OTEL_TRACES_SAMPLER_ARG = "otel.traces.sampler.arg";
 
     private final Map<String, String> properties;
-    private final boolean mpTelemetryInstalled;
 
-    WildFlyOpenTelemetryConfig(Map<String, String> properties, boolean mpTelemetryInstalled) {
+    WildFlyOpenTelemetryConfig(Map<String, String> properties) {
         this.properties = Collections.unmodifiableMap(properties);
-        this.mpTelemetryInstalled = mpTelemetryInstalled;
     }
 
     @Override
@@ -45,13 +43,8 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         return properties;
     }
 
-    public boolean isMpTelemetryInstalled() {
-        return mpTelemetryInstalled;
-    }
-
     public static class Builder {
         final Map<String, String> properties = new HashMap<>();
-        private boolean mpTelemetryInstalled;
 
         public Builder() {
             addValue(OTEL_EXPORTER_OTLP_PROTOCOL, "grpc");
@@ -135,13 +128,8 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
             return this;
         }
 
-        public Builder setMicroProfileTelemetryInstalled(boolean microProfileTelemetryInstalled) {
-            this.mpTelemetryInstalled = microProfileTelemetryInstalled;
-            return this;
-        }
-
         public WildFlyOpenTelemetryConfig build() {
-            return new WildFlyOpenTelemetryConfig(properties, mpTelemetryInstalled);
+            return new WildFlyOpenTelemetryConfig(properties);
         }
 
         /**

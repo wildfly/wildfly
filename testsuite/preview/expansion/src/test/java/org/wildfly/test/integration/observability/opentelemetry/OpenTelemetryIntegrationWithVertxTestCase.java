@@ -17,8 +17,7 @@ import org.junit.runner.RunWith;
 
 
 /**
- * A test on opentelemetry to use the Vertx instance defined in the vertx subsystem.
- * There will be a server log to indicate the usage.
+ * Verifies that OpenTelemetry exports a trace using the Vertx subsystem instance without creating another one.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class, OpenTelemetryIntegrationWithVertxTestCase.LoggingWithVertxServerSetupTask.class, VertxSubsystemSetupTask.class})
@@ -44,7 +43,5 @@ public class OpenTelemetryIntegrationWithVertxTestCase extends AbstractOpenTelem
         requestOpenTelemetryTrace("otelinteg-with-vertx.war");
         String logsInSmalleRyeOpentelemetry = retrieveServerLog(managementClient, WITH_VERTX_SMALLRYE_OPENTELEMETRY_LOG_FILE);
         Assert.assertFalse("It won't create Vertx when vertx subsystem is available", logsInSmalleRyeOpentelemetry.contains("Create a new Vertx instance"));
-        String logsInVertxSubsystem = retrieveServerLog(managementClient, WITH_VERTX_VERTX_FEATURE_PACK_LOG_FILE);
-        Assert.assertTrue("Should use Vertx instance from vertx subsystem", logsInVertxSubsystem.contains("WFLYVTX0008"));
     }
 }

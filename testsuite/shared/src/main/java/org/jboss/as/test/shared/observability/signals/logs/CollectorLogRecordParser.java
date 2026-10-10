@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class to parse a list of strings from the Collector log file and return a list of OpenTelemetryLogRecord instances.
+ * Parses OpenTelemetry Collector text output into log records, preserving each resource block's attributes.
  */
 public class CollectorLogRecordParser {
     // Pattern for parsing key-value fields (e.g., "Field: Value")
@@ -27,6 +27,12 @@ public class CollectorLogRecordParser {
     // Formatter to parse the specific date format: 2025-11-26 22:23:39.754885 +0000 UTC
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS Z");
 
+    /**
+     * Parses collector output and associates each log record with its enclosing resource attributes.
+     *
+     * @param lines the collector output lines
+     * @return the parsed log records in input order
+     */
     public List<OpenTelemetryLogRecord> retrieveLogRecords(String[] lines) {
         // Strip unneeded metadata from the start of each line
         List<String> cleaned = Arrays.stream(lines).map(line ->
@@ -34,33 +40,53 @@ public class CollectorLogRecordParser {
                                 .replaceAll("\\d{4}-\\d{2}-\\d{2}T.*Z\t", "")
                                 .trim())
                 .toList();
-        var iterator = cleaned.iterator();
-        var logRecords = new ArrayList<OpenTelemetryLogRecord>();
+        List<OpenTelemetryLogRecord> logRecords = new ArrayList<>();
+        Map<String, String> resourceAttributes = new HashMap<>();
+        List<String> logLines = null;
+        boolean inResourceAttributes = false;
 
-        var logLines = new ArrayList<String>();
-        while (iterator.hasNext()) {
-            var line = iterator.next();
-            // Iterate through log entries until a LogRecord is found, and then start processing the text
-            if (line.startsWith("LogRecord")) {
-                var end = false;
-                logLines.add(line);
-                while (!end && iterator.hasNext()) {
-                    line = iterator.next();
-                    // A new LogRecord is starting, so process what we have and start building a new record
-                    if (line.startsWith("LogRecord")) {
-                        logRecords.add(buildLogRecord(logLines));
-                        logLines.clear();
-                        logLines.add(line);
-                    } else if (line.startsWith("{\"resource\":")) {
-                        // LogRecord publishing is terminated by a JSON object, so we need to process what we've collected
-                        logRecords.add(buildLogRecord(logLines));
-                        logLines.clear();
-                        end = true;
-                    } else {
-                        logLines.add(line);
-                    }
+        for (String line : cleaned) {
+            if (line.startsWith("ResourceLogs")) {
+                if (logLines != null) {
+                    logRecords.add(buildLogRecord(logLines, resourceAttributes));
+                    logLines = null;
                 }
+                resourceAttributes = new HashMap<>();
+                inResourceAttributes = false;
+                continue;
             }
+
+            if (line.startsWith("Resource attributes:")) {
+                inResourceAttributes = true;
+                continue;
+            }
+
+            if (inResourceAttributes) {
+                if (line.startsWith("->")) {
+                    parseAttribute(line, resourceAttributes);
+                    continue;
+                }
+                inResourceAttributes = false;
+            }
+
+            if (line.startsWith("LogRecord")) {
+                if (logLines != null) {
+                    logRecords.add(buildLogRecord(logLines, resourceAttributes));
+                }
+                logLines = new ArrayList<>();
+                logLines.add(line);
+            } else if (line.startsWith("{\"resource\":")) {
+                if (logLines != null) {
+                    logRecords.add(buildLogRecord(logLines, resourceAttributes));
+                    logLines = null;
+                }
+            } else if (logLines != null) {
+                logLines.add(line);
+            }
+        }
+
+        if (logLines != null) {
+            logRecords.add(buildLogRecord(logLines, resourceAttributes));
         }
 
         return logRecords;
@@ -70,9 +96,10 @@ public class CollectorLogRecordParser {
      * Parses the List<String> log entry into an OpenTelemetryLogRecord instance.
      *
      * @param logLines The list of strings containing the log record data.
+     * @param resourceAttributes the attributes from the enclosing resource block
      * @return A fully populated OpenTelemetryLogRecord.
      */
-    private OpenTelemetryLogRecord buildLogRecord(List<String> logLines) {
+    private OpenTelemetryLogRecord buildLogRecord(List<String> logLines, Map<String, String> resourceAttributes) {
         Map<String, String> parsedFields = new HashMap<>();
         Map<String, String> attributes = new HashMap<>();
 
@@ -93,10 +120,7 @@ public class CollectorLogRecordParser {
             if (inAttributesSection) {
                 // 2. Parse attributes until a new top-level field is detected
                 if (trimmedLine.startsWith("->")) {
-                    Matcher attributeMatcher = ATTRIBUTE_PATTERN.matcher(trimmedLine);
-                    if (attributeMatcher.matches()) {
-                        attributes.put(attributeMatcher.group(1).trim(), attributeMatcher.group(2).trim());
-                    }
+                    parseAttribute(trimmedLine, attributes);
                 } else {
                     // This line is no longer an attribute, check if it's a new top-level field
                     inAttributesSection = false;
@@ -132,11 +156,25 @@ public class CollectorLogRecordParser {
                 parsedFields.getOrDefault("SeverityText", ""),
                 parsedFields.getOrDefault("Body", "Str()")
                         .replaceAll("^Str\\(|\\)$", ""), // Removes "Str(" and ")"
+                resourceAttributes,
                 attributes,
                 Integer.parseInt(parsedFields.getOrDefault("Flags", "0")), // Flags is simple int
                 parsedFields.getOrDefault("Trace ID", ""),
                 parsedFields.getOrDefault("Span ID", "")
         );
+    }
+
+    /**
+     * Adds a collector-formatted string attribute to the target map when the line is valid.
+     *
+     * @param line the collector attribute line
+     * @param attributes the target attribute map
+     */
+    private void parseAttribute(String line, Map<String, String> attributes) {
+        Matcher attributeMatcher = ATTRIBUTE_PATTERN.matcher(line);
+        if (attributeMatcher.matches()) {
+            attributes.put(attributeMatcher.group(1).trim(), attributeMatcher.group(2).trim());
+        }
     }
 
     /**
