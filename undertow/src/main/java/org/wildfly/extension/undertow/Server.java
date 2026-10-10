@@ -33,6 +33,7 @@ import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import io.undertow.util.Headers;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
@@ -40,8 +41,17 @@ import org.wildfly.service.descriptor.UnaryServiceDescriptor;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Server implements Service<Server> {
-    // TODO Extract interface from this class and relocate to an SPI module
-    public static final UnaryServiceDescriptor<Server> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server", Server.class);
+    // TODO Extract interface from this class and relocate it to an SPI module
+
+    /**
+     * Describes the service providing the default server.
+     */
+    static final NullaryServiceDescriptor<Server> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server", Server.class);
+
+    /**
+     * Describes the service providing a server, identified by server name.
+     */
+    public static final UnaryServiceDescriptor<Server> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server", DEFAULT_SERVICE_DESCRIPTOR);
 
     private final Consumer<Server> serverConsumer;
     private final Supplier<ServletContainerService> servletContainer;

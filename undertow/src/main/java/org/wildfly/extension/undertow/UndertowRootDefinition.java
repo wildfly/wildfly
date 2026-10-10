@@ -27,6 +27,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -47,6 +48,8 @@ class UndertowRootDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME);
     static final RuntimeCapability<Void> UNDERTOW_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_UNDERTOW, false, UndertowService.class)
                         .build();
+    static final RuntimeCapability<Void> DEFAULT_SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.DEFAULT_SERVICE_DESCRIPTOR).build();
+    static final RuntimeCapability<Void> DEFAULT_HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR).build();
 
     static final RuntimeCapability<Void> HTTP_INVOKER_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER, false, PathHandler.class)
@@ -113,7 +116,7 @@ class UndertowRootDefinition extends SimpleResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver())
                 .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains, registry))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY)
+                .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY, DEFAULT_SERVER_CAPABILITY, DEFAULT_HOST_CAPABILITY, CommonWebServer.CAPABILITY)
         );
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.registry = registry;
