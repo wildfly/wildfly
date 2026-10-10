@@ -9,7 +9,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.test.integration.microprofile.health.MicroProfileHealthUtils.testHttpEndPoint;
 
 public class MicroProfileHealthDisabledDefaultProceduresMultiWarHTTPEndpointTestCase extends

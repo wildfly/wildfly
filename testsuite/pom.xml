@@ -103,6 +103,9 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        <!-- Exception thrown by @TestcontainersRequired tests when no container engine is available (see ts.disable-container-tests-on-windows.profile).
+             Modules running on JUnit Jupiter override this with org.opentest4j.TestAbortedException. -->
+        <ts.docker.required.exception>org.junit.AssumptionViolatedException</ts.docker.required.exception>
 
         <!-- Galleon feature-pack to use in testsuite provisioning executions that provides content
              that *could* be obtained solely from the wildfly-ee-galleon-pack.
@@ -1277,7 +1280,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <org.arquillian.testcontainers.docker.required.exception>org.junit.AssumptionViolatedException</org.arquillian.testcontainers.docker.required.exception>
+                                <org.arquillian.testcontainers.docker.required.exception>${ts.docker.required.exception}</org.arquillian.testcontainers.docker.required.exception>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

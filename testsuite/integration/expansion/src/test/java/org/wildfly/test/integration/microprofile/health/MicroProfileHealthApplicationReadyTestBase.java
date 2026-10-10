@@ -14,8 +14,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -24,12 +23,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({MicroProfileHealthApplicationReadySetupTask.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public abstract class MicroProfileHealthApplicationReadyTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
@@ -56,7 +59,7 @@ public abstract class MicroProfileHealthApplicationReadyTestBase {
     private Deployer deployer;
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testApplicationReadinessBeforeDeployment() throws Exception {
         checkGlobalOutcome(managementClient, "check-ready", false, null);
 
@@ -65,9 +68,8 @@ public abstract class MicroProfileHealthApplicationReadyTestBase {
     }
 
     @Test
-    @InSequence(2)
-    @OperateOnDeployment("MicroProfileHealthApplicationReadyTestBase")
-    public void testApplicationReadinessAfterDeployment(@ArquillianResource URL url) throws Exception {
+    @Order(2)
+    public void testApplicationReadinessAfterDeployment(@ArquillianResource @OperateOnDeployment("MicroProfileHealthApplicationReadyTestBase") URL url) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
 
             checkGlobalOutcome(managementClient, "check-ready", true, "myReadyProbe");
@@ -75,7 +77,7 @@ public abstract class MicroProfileHealthApplicationReadyTestBase {
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testHealthCheckAfterUndeployment() throws Exception {
 
         deployer.undeploy("MicroProfileHealthApplicationReadyTestBase");

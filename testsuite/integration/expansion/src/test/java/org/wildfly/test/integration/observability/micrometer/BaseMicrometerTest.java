@@ -29,7 +29,7 @@ import org.apache.http.util.EntityUtils;
 import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -38,14 +38,14 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.dmr.ModelNode;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Common scaffolding for the client-side Micrometer tests: a deployment URL, a management client, the OpenTelemetry
  * collector container, and the helpers used to drive traffic and scrape the Prometheus endpoint. Subclasses supply their
  * own {@code @ServerSetup} since the required setup tasks differ per test.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @TestcontainersRequired
 @RunAsClient
 public abstract class BaseMicrometerTest {

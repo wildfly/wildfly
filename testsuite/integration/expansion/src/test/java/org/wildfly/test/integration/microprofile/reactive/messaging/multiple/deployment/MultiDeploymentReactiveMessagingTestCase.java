@@ -5,7 +5,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.multiple.deployment;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,7 +29,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -41,11 +41,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
@@ -57,7 +57,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.multiple.dep
  * Within an EAR file the channel names need to be unique. e.g. We can't use the same channel names for the
  * contained Kafka and AMQP subdeployments
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({RunKafkaSetupTask.class, RunArtemisAmqpSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
@@ -73,12 +73,12 @@ public class MultiDeploymentReactiveMessagingTestCase extends AbstractCliTestBas
     @ArquillianResource
     URL url;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         initCLI();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         closeCLI();
     }
@@ -204,15 +204,15 @@ public class MultiDeploymentReactiveMessagingTestCase extends AbstractCliTestBas
             }
 
             for (int i = 0; i < expected.length; i++) {
-                Assert.assertTrue(lines.get(i).contains(expected[i]));
+                Assertions.assertTrue(lines.get(i).contains(expected[i]));
             }
             ok = true;
             break;
         }
         if (ok) {
-            Assert.assertEquals(expected.length, lines.size());
+            Assertions.assertEquals(expected.length, lines.size());
         } else {
-            Assert.fail("Timeout reading " + url);
+            Assertions.fail("Timeout reading " + url);
         }
     }
 

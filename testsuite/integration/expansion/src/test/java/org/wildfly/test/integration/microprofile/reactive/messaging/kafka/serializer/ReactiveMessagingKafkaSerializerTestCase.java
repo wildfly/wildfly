@@ -18,23 +18,23 @@ import jakarta.inject.Inject;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 @TestcontainersRequired
 public class ReactiveMessagingKafkaSerializerTestCase {
@@ -62,10 +62,10 @@ public class ReactiveMessagingKafkaSerializerTestCase {
     @Test
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
+        Assertions.assertTrue(wait, "Timed out");
 
         List<Person> list = bean.getReceived();
-        Assert.assertEquals(3, list.size());
+        Assertions.assertEquals(3, list.size());
         // Kafka messages only have order per partition, so do some massaging of the data
         Map<Integer, List<Person>> map = new HashMap<>();
         for (int i = 0; i < list.size(); i++) {
@@ -80,9 +80,9 @@ public class ReactiveMessagingKafkaSerializerTestCase {
         Person roger = assertPersonNextOnAPartition(map, "Roger");
 
 
-        Assert.assertEquals(101, kabir.getAge());
-        Assert.assertEquals(18, bob.getAge());
-        Assert.assertEquals(21, roger.getAge());
+        Assertions.assertEquals(101, kabir.getAge());
+        Assertions.assertEquals(18, bob.getAge());
+        Assertions.assertEquals(21, roger.getAge());
     }
 
     private Person assertPersonNextOnAPartition(Map<Integer, List<Person>> map, String name) {
@@ -100,7 +100,7 @@ public class ReactiveMessagingKafkaSerializerTestCase {
             }
         }
         map.remove(remove);
-        Assert.assertNotNull("Could not find " + name, found);
+        Assertions.assertNotNull(found, "Could not find " + name);
         return found;
     }
 

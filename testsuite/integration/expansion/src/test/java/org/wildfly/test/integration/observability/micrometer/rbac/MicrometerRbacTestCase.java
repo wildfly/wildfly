@@ -20,8 +20,8 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.BaseMicrometerTest;
 import org.wildfly.test.integration.observability.micrometer.MicrometerResource;
@@ -61,8 +61,8 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
     public void testPullMicrometerUnauthenticatedRejected() throws Exception {
         setAuthenticationEnabled(true);
 
-        Assert.assertEquals("Unauthenticated scrape of the secured Prometheus endpoint should be rejected",
-                401, fetchPrometheusStatus(null, null));
+        Assertions.assertEquals(401,
+                fetchPrometheusStatus(null, null), "Unauthenticated scrape of the secured Prometheus endpoint should be rejected");
     }
 
     /**
@@ -84,8 +84,8 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
                 .map(metric -> Double.parseDouble(metric.getValue()))
                 .orElse(0.0);
 
-        Assert.assertEquals("The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
-                "' must not be visible to a user without the Monitor role, but was " + value, 0.0, value, 0.0);
+        Assertions.assertEquals(0.0, value, 0.0, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
+                "' must not be visible to a user without the Monitor role, but was " + value);
     }
 
     /**
@@ -114,8 +114,8 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
                     .orElseThrow(() -> new AssertionError("The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
                             "' was not pushed to the collector under RBAC"));
             double value = Double.parseDouble(undertowMetric.getValue());
-            Assert.assertTrue("The Undertow model metric '" + UNDERTOW_MODEL_METRIC + "' must increase after RBAC is " +
-                    "enabled (baseline " + baseline + "), but the collector still shows " + value, value > baseline);
+            Assertions.assertTrue(value > baseline, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC + "' must increase after RBAC is " +
+                    "enabled (baseline " + baseline + "), but the collector still shows " + value);
         });
     }
 
@@ -148,9 +148,9 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
 
         double value = Double.parseDouble(undertowMetric.getValue());
 
-        Assert.assertTrue("The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
+        Assertions.assertTrue(value > 0, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
                 "' should be non-zero (authentication " + (authenticationEnabled ? "enabled" : "disabled") +
-                "), but was " + value, value > 0);
+                "), but was " + value);
     }
 
     /**
