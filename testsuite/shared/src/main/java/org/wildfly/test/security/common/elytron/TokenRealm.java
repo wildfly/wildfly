@@ -28,6 +28,7 @@ public class TokenRealm implements SecurityRealm {
     private final Jwt jwt;
     private final Oauth2Introspection oauth2Introspection;
     private final String principalClaim;
+    private final String principalTransformer;
 
     TokenRealm(final String name, final Jwt jwt, final Oauth2Introspection oauth2Introspection, final String principalClaim) {
         this.address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("token-realm", name));
@@ -35,6 +36,16 @@ public class TokenRealm implements SecurityRealm {
         this.jwt = jwt;
         this.oauth2Introspection = oauth2Introspection;
         this.principalClaim = principalClaim;
+        this.principalTransformer = null;
+    }
+
+    TokenRealm(final String name, final Jwt jwt, final Oauth2Introspection oauth2Introspection, final String principalClaim, final String principalTransformer) {
+        this.address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("token-realm", name));
+        this.name = name;
+        this.jwt = jwt;
+        this.oauth2Introspection = oauth2Introspection;
+        this.principalClaim = principalClaim;
+        this.principalTransformer = principalTransformer;
     }
 
     @Override
@@ -47,6 +58,9 @@ public class TokenRealm implements SecurityRealm {
         addOperation.get("token-realm");
         if (principalClaim != null) {
             addOperation.get("principal-claim").set(principalClaim);
+        }
+        if (principalTransformer != null) {
+            addOperation.get("principal-transformer").set(principalTransformer);
         }
         if (jwt != null) {
             ModelNode jwtProperties = new ModelNode();
@@ -135,6 +149,7 @@ public class TokenRealm implements SecurityRealm {
         private Jwt jwt;
         private Oauth2Introspection oauth2Introspection;
         private String principalClaim;
+        private String principalTransformer;
 
         public Builder(String name) {
             this.name = name;
@@ -158,8 +173,15 @@ public class TokenRealm implements SecurityRealm {
             return this;
         }
 
+        public Builder withPrincipalTransformer(final String principalTransformer) {
+            this.principalTransformer = principalTransformer;
+
+            return this;
+        }
+
+
         public TokenRealm build() {
-            return new TokenRealm(name, jwt, oauth2Introspection, principalClaim);
+            return new TokenRealm(name, jwt, oauth2Introspection, principalClaim, principalTransformer);
         }
     }
 
