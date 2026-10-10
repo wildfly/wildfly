@@ -15,12 +15,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -39,6 +46,7 @@ public abstract class ScriptTestCase {
 
     private final String scriptBaseName;
     private final boolean testCommonConfOnly;
+    private final boolean enhancedSecurityManager;
     private ExecutorService service;
 
 
@@ -49,6 +57,8 @@ public abstract class ScriptTestCase {
     ScriptTestCase(final String scriptBaseName, final boolean testCommonConfOnly) {
         this.scriptBaseName = scriptBaseName;
         this.testCommonConfOnly = testCommonConfOnly;
+        final int version = Runtime.version().feature();
+        enhancedSecurityManager = version >= 17 && version < 24;
     }
 
     @BeforeClass
@@ -120,6 +130,11 @@ public abstract class ScriptTestCase {
         }
     }
 
+    @SuppressWarnings("UnusedReturnValue")
+    <T> Future<T> execute(final Callable<T> callable) {
+        return service.submit(callable);
+    }
+
     void validateProcess(final ScriptProcess script) throws InterruptedException {
         if (script.waitFor(ServerHelper.TIMEOUT, TimeUnit.SECONDS)) {
             // The script has exited, validate the exit code is valid
@@ -130,6 +145,14 @@ public abstract class ScriptTestCase {
         } else {
             Assert.fail(script.getErrorMessage("The script process did not exit within " + ServerHelper.TIMEOUT + " seconds."));
         }
+    }
+
+    boolean supportsEnhancedSecurityManager() {
+        return enhancedSecurityManager;
+    }
+
+    static ModelNode executeOperation(final ModelControllerClient client, final ModelNode op) throws IOException {
+        return executeOperation(client, OperationBuilder.create(op).build());
     }
 
     /**
@@ -200,5 +223,13 @@ public abstract class ScriptTestCase {
             script.close();
             Files.delete(confFile);
         }
+    }
+
+    private static ModelNode executeOperation(final ModelControllerClient client, final Operation op) throws IOException {
+        final ModelNode result = client.execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail(String.format("Failed to execute op: %s%nFailure Description: %s", op, Operations.getFailureDescription(result)));
+        }
+        return Operations.readResult(result);
     }
 }
