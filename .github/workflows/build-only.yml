@@ -33,4 +33,4 @@ jobs:
           if [ -d "$LOCAL_REPO" ]; then find "$LOCAL_REPO" -name "*SNAPSHOT*" | xargs -I {} rm -rfv "{}"; fi
         shell: bash
       - name: Build with Maven Java 17 -Dquickly
-        run: mvn -U -B -Dquickly
+        run: ./mvnw -U -B -Dquickly

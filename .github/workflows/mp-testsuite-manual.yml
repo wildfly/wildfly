@@ -72,10 +72,10 @@ jobs:
           ref: ${{ inputs.mp-ts-ref }}
           path: 'mp-ts'
       - name: Build WildFly with Maven
-        run: mvn -U -B -ntp clean install -DskipTests
+        run: ./mvnw -U -B -ntp clean install -DskipTests
       - name: Set the value for the ENV VAR that stores the WildFly version
         run: |
-          echo "MAVEN_ARGS_WILDFLY_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f pom.xml)" >> "$GITHUB_ENV"
+          echo "MAVEN_ARGS_WILDFLY_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout -f pom.xml)" >> "$GITHUB_ENV"
       - name: Set the value for the ENV VAR that stores the WildFly snapshot distribution version property
         run: |
           echo "MAVEN_ARGS_WILDFLY_DIST_VERSION=-Dversion.org.jboss.wildfly.dist=${{ env.MAVEN_ARGS_WILDFLY_VERSION }}" >> "$GITHUB_ENV"
@@ -85,4 +85,4 @@ jobs:
       - name: Run the MicroProfile test suite with Maven
         run: |
           cd mp-ts
-          mvn clean verify --batch-mode -fae  ${{ env.MAVEN_ARGS_WILDFLY_DIST_LOCATION }} ${{ env.MAVEN_ARGS_WILDFLY_DIST_VERSION }}
+          ../mvnw clean verify --batch-mode -fae  ${{ env.MAVEN_ARGS_WILDFLY_DIST_LOCATION }} ${{ env.MAVEN_ARGS_WILDFLY_DIST_VERSION }}

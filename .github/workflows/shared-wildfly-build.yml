@@ -85,9 +85,9 @@ jobs:
       - name: Show Git commit logs
         run: git log -n ${{ inputs.git-log-number }}
       - name: Build WildFly
-        run: mvn -B clean install -DskipTests -Dcheckstyle.skip=true -Denforcer.skip=true
+        run: ./mvnw -B clean install -DskipTests -Dcheckstyle.skip=true -Denforcer.skip=true
       - id: version
-        run: echo "wildfly-version=$(mvn -B help:evaluate -Dexpression=project.version -DforceStdout -q)" >> $GITHUB_OUTPUT
+        run: echo "wildfly-version=$(./mvnw -B help:evaluate -Dexpression=project.version -DforceStdout -q)" >> $GITHUB_OUTPUT
       - name: Archive the repository
         run:  |
           cd ~
