@@ -63,15 +63,24 @@ testsuite/
   domain/
   galleon/
   integration/
-    smoke/
     basic/
     clustering/
+    elytron/
+    elytron-oidc-client/
+    expansion/
+    hornetq-client/
     iiop/
-    multinode/
-    xts/
     manualmode/
+    manualmode-expansion/
+    microprofile-tck/
+    multinode/
+    rbac/
+    rts/
+    smoke/
+    vdx/
     web/
     ws/
+    xts/
   layers/
   layers-expansion/
   mixed-domain/
@@ -84,31 +93,30 @@ testsuite/
 
 To define groups of tests to be run, these properties are available:
 
-* `-DallTests` - Runs all subgroups.
-* `-DallInteg` - Runs all integration tests. Same as
-`cd testsuite/integration; mvn clean install -DallTests`
-* `-Dts.integ` - Basic integration + clustering tests.
-* `-Dts.clustering` - Clustering tests.
-* `-Dts.iiop` - IIOP tests.
-* `-Dts.multinode` - Tests with many nodes.
-* `-Dts.manualmode` - Tests with manual mode Arquillian containers.
-* `-Dts.domain` - Domain mode tests.
-* `-Dts.bootable` - Bootable jar tests.
-* `-Dts.layers` - Slimmed server / galleon layers tests.
-* `-Dts.microprofile` - MicroProfile tests.
-* `-Dts.standalone.microprofile` - Standalone MicroProfile tests.
-* `-Dts.preview` - Preview server tests.
-* `-Dts.bootable.preview` - Preview bootable jar tests.
+* `-DallTests` – Runs all subgroups.
+* `-Dts.integration` – Runs all integration tests, i.e. all child modules of `testsuite/integration`.
+* `-Dts.basic` – Basic integration tests.
+* `-Dts.clustering` – Clustering tests.
+* `-Dts.iiop` – IIOP tests.
+* `-Dts.multinode` – Tests with many nodes.
+* `-Dts.manualmode` – Tests with manual mode Arquillian containers.
+* `-Dts.domain` – Domain mode tests.
+* `-Dts.bootable` – Bootable jar tests.
+* `-Dts.layers` – Slimmed server / galleon layers tests.
+* `-Dts.microprofile` – MicroProfile tests.
+* `-Dts.standalone.microprofile` – Standalone MicroProfile tests.
+* `-Dts.preview` – Preview server tests.
+* `-Dts.bootable.preview` – Preview bootable jar tests.
 
 [[examples]]
 == Examples
 
-* `./integration-tests.sh install` -- Runs smoke tests.
-* `./integration-tests.sh clean install` -- Cleans the target directory, then runs smoke tests.
-* `./integration-tests.sh install -Dts.smoke` -- Same as above.
-* `./integration-tests.sh install -DallTests` -- Runs all testsuite tests.
-* `./build.sh clean test` -- Run the default module and its tests.
-* `./build.sh clean test -Ddomain-tests -Dintegration.module -Dbasic.integration.tests` -- Run a selected set of modules and tests.
+* `./integration-tests.sh install` – Runs smoke tests.
+* `./integration-tests.sh clean install` – Cleans the target directory, then runs smoke tests.
+* `./integration-tests.sh install -Dts.smoke` – Same as above.
+* `./integration-tests.sh install -DallTests` – Runs all testsuite tests.
+* `./integration-tests.sh install -Ddomain-tests` – Runs domain tests (translated by the script to `-Ddomain.module -Dts.noSmoke`).
+* `./build.sh clean install -Dts.basic -Dts.domain` – Builds WildFly and runs the smoke, basic integration and domain tests.
 
 *Pure maven* - if you prefer not to use scripts, you may achieve the
 same result with:
@@ -122,13 +130,12 @@ It's possible to run only a single module (provided the ancestor modules were al
 
 * `mvn ... -pl testsuite/integration/clustering`
 
-The `-pl ...` parameter stands for "project list" and causes Maven to
-run the specified module _only_.
+The `-pl ...` parameter stands for "project list" and causes Maven to run the specified module _only_.
 
 [[output-to-console]]
 === Output to console
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 -DtestLogToFile
 ----
@@ -136,13 +143,10 @@ run the specified module _only_.
 [[other-options]]
 === Other options
 
-`-DnoWebProfile` - Run all tests with the _full_ profile (
-`standalone-full.xml`). By default, most tests are run under _web_
-profile ( `standalone.xml`).
+`-DnoWebProfile` – Run all tests with the _full_ profile (`standalone-full.xml`). By default, most tests are run under _web_ profile (`standalone.xml`).
 
-`-Dts.skipTests` - Skip testsuite's tests. Defaults to the value of
-`-DskipTests`, which defaults to `false`. To build AS, skip unit tests
-and run testsuite, use `-DskipTests -Dts.skipTests=false`.
+`-Dts.skipTests` – Skip testsuite's tests. Defaults to the value of `-DskipTests`, which defaults to `false`.
+To build AS, skip unit tests and run testsuite, use `-DskipTests -Dts.skipTests=false`.
 
 [[timeouts]]
 === Timeouts
@@ -161,14 +165,13 @@ timeout ratio, you need to specify timeout manually for Surefire.
 [[in-test-timeout-ratios]]
 ==== In-test timeout ratios
 
-Ratio in prercent - 100 = default, 200 = two times longer timeouts for
-given category.
+Ratio in percent - 100 = default, 200 = two times longer timeouts for given category.
 
-Currently we have five different ratios. Later, it could be replaced
+Currently, we have five different ratios. Later, it could be replaced
 with just one generic, one for database and one for deployment
 operations.
 
-[source,java,options="nowrap"]
+[source,options="nowrap"]
 ----
 -Dtimeout.ratio.fsio=100
 -Dtimeout.ratio.netio=100
@@ -182,13 +185,9 @@ operations.
 
 Single test is run using *-Dtest=...* . Examples:
 
-* `./integration-tests.sh install` `+-Dtest='*Clustered*'+` `-Dintegration.module` `-Dts.clustering`
-* `./integration-tests.sh clean install -Dtest=org` `/` `jboss` `/` `as`
-`/` `test` `/` `integration` `/` `ejb/async/*TestCase.java`
-`-Dintegration.module` `-Dts.basic`
-* `cd testsuite; mvn install` `+-Dtest='*Clustered*'+`
-`-Dts.basic`
-`# No need for -Dintegration.module - integration module is active by default.`
+* `+./integration-tests.sh install -Dtest='*Clustered*' -Dts.clustering+`
+* `+./integration-tests.sh clean install -Dtest=org/jboss/as/test/integration/ejb/async/*TestCase.java -Dts.basic+`
+* `+cd testsuite; mvn install -Dtest='*Clustered*' -Dts.basic+`
 
 The same shortcuts listed in "Test groups" may be used to activate the
 module and group profile.
@@ -200,14 +199,14 @@ classes matching the wildcard will be run.
 *Which Surefire execution is used?*
 
 Due to Surefire's design flaw, tests run multiple times if there are
-multiple surefire executions. +
+multiple surefire executions.
 To prevent this, if `-Dtest=`... is specified, non-default executions
-are disabled, and standalone-full is used for all tests. +
+are disabled, and standalone-full is used for all tests.
 If you need it other way, you can overcome that need:
 
-* `basic-integration-web.surefire with standalone.xml - Configure standalone.xml to be used as server config.`
-* `basic-integration-non-web.surefire - For tests included here, technically nothing changes.`
-* `basic-integration-2nd.surefire - Simply run the second test in another invocation of Maven.`
+* `basic-integration-web.surefire with standalone.xml` – Configure standalone.xml to be used as server config.
+* `basic-integration-non-web.surefire` – For tests included here, technically nothing changes.
+* `basic-integration-2nd.surefire` – Simply run the second test in another invocation of Maven.
 
 [[running-against-existing-as-copy-not-the-one-from-buildtargetjboss-as-]]
 === Running against existing AS copy (not the one from
@@ -219,9 +218,9 @@ AS into submodules to run the tests against.
 For example, you might want to run the testsuite against AS located in
 `/opt/wildfly-8` :
 
-[source,java,options="nowrap"]
+[source,shell,options="nowrap"]
 ----
-./integration-tests.sh -DallTests -Djboss.dist=/opt/wildfly-8
+./integration-tests.sh -DallTests -Djboss.dist=/opt/wildfly
 ----
 
 The difference between jboss.dist and jboss.home:
@@ -330,7 +329,7 @@ you may need to increase the timeout depending on your swiftness with connecting
 [[running-tests-with-ipv6]]
 === Running tests with IPv6
 
-`-Dipv6` - Runs AS with
+`-Dipv6` – Runs AS with
 `-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true`
 
 and the following defaults, overridable by respective parameter:
@@ -340,15 +339,9 @@ and the following defaults, overridable by respective parameter:
 |Parameter |IPv4 default |IPv6 default |
 
 |-Dnode0 |127.0.0.1 |::1 |Single-node tests.
-
-|-Dnode1 |127.0.0.1 |::1 |Two-node tests (e.g. cluster) use this for the
-2nd node.
-
-|-Dmcast |230.0.0.4 |ff01::1 |ff01::1 is IPv6 Node-Local scope mcast
-addr.
-
-|-Dmcast.modcluster |224.0.1.105 |ff01::3 |mod_cluster multicast
-address.
+|-Dnode1 |127.0.0.1 |::1 |Two-node tests (e.g. cluster) use this for the 2nd node.
+|-Dmcast |230.0.0.4 |ff01::1 |ff01::1 is IPv6 Node-Local scope mcast addr.
+|-Dmcast.modcluster |224.0.1.105 |ff01::3 |mod_cluster multicast address.
 |=======================================================================
 
 Values are set in AS configuration XML, replaced in resources (like
@@ -366,7 +359,8 @@ be run separately afterward. Use one of these:
 [source,options="nowrap"]
 ----
 ./integration-tests.sh site
-cd testsuite; mvn site
+cd testsuite
+mvn site
 mvn -pl testsuite site
 ----
 
@@ -463,8 +457,8 @@ Provisioning server installations is achieved in two different ways, depending o
 
 === maven-resources-plugin based provisioning
 
-In the root `testsuite/pom.xml` file there is a maven-resources-plugin execution `ts.copy-wildfly` that in the `process-test-resources` phase copies most of the content of a WildFly build to the current project's
-`testsuite/wildfly` directory. The `modules` directory content is not copied, so, when using such an installation, the server's `module.path` must be configured to include the `modules` dir of the original WildFly build.
+In the root `testsuite/pom.xml` file there is a maven-resources-plugin execution `ts.copy-wildfly` that in the `generate-test-resources` phase copies most of the content of a WildFly build to the current module's
+`target/wildfly` directory. The `modules` directory content is not copied, so, when using such an installation, the server's `module.path` must be configured to include the `modules` dir of the original WildFly build.
 
 The original WildFly build is found in either the `build`, `ee-build`, `legacy/ee-feature-pack/build`, `legacy/ee-feature-pack/ee-build` or `preview/build` module, or in an externally provided location, depending on the
 configuration of the maven build.
@@ -507,7 +501,7 @@ This allows substitution of properties specified on the command line, such as:
 
 [source,shell]
 ----
-mvn clean test -Dintegration.module -Dclustering.integration.tests -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
+./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
 ----
 
 [[Changing_the_container_images_used_in_integration_tests]]
@@ -525,16 +519,17 @@ In integration tests, we use the following images:
 It is possible to override the default images and versions by using:
 
 * System properties, e.g. `-Dtestsuite.kafka-native.image=apache/kafka-native:3.9.0`
-* Environment variables, e.g. `AS_TS_KAFKA_NATIVE_IMAGE=apache/kafka-native:3.9.0`
+* Environment variables, named after the system property with `.` replaced by `_` and converted to upper case, e.g. `TESTSUITE_KAFKA-NATIVE_IMAGE=apache/kafka-native:3.9.0`.
+Since most shells do not allow `-` in variable names, such variables need to be set using `env`, e.g. `env 'TESTSUITE_KAFKA-NATIVE_IMAGE=apache/kafka-native:3.9.0' mvn ...`
 * Properties file specified via `testsuite.config.properties` system property or `TESTSUITE_CONFIG_PROPERTIES` environment variable, e.g. `-Dtestsuite.config.properties=/path/to/testsuite-config.properties` or
 `TESTSUITE_CONFIG_PROPERTIES=/path/to/testsuite-config.properties`; the properties file format has to be the same as for system properties, e.g.:
 
 [source,properties]
 ----
-testsuite.opentelemetry-collector.image=otel/opentelemetry-collector:0.115.1
+testsuite.opentelemetry-collector.image=otel/opentelemetry-collector:0.138.0
 testsuite.elasticsearch.image=docker.elastic.co/elasticsearch/elasticsearch:8.15.4
 testsuite.mailserver.image=apache/james:demo-3.8.2
 testsuite.kafka-native.image=apache/kafka-native:3.8.0
 testsuite.activemq-artemis-broker.image=quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0
-testsuite.keycloak.image=quay.io/keycloak/keycloak:24.0.2
+testsuite.keycloak.image=quay.io/keycloak/keycloak:24.0.5
 ----
