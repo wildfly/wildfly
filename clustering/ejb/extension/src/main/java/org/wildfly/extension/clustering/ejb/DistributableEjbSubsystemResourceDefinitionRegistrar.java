@@ -49,7 +49,7 @@ public class DistributableEjbSubsystemResourceDefinitionRegistrar implements Sub
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
                 .addCapability(CAPABILITY)
                 .addAttributes(List.of(DEFAULT_BEAN_MANAGEMENT_PROVIDER))
-                .requireSingletonChildResource(ClientMappingsRegistryProviderResourceRegistration.LOCAL)
+                .requireSingletonChildResource(EjbClientServicesProviderResourceRegistration.LOCAL)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .build();
         ManagementResourceRegistration registration = parent.registerSubsystemModel(ResourceDefinition.builder(REGISTRATION, RESOLVER).build());
@@ -59,8 +59,8 @@ public class DistributableEjbSubsystemResourceDefinitionRegistrar implements Sub
         new InfinispanBeanManagementResourceDefinitionRegistrar().register(registration, context);
 
         // register the child resources for client-mappings-registry-provider
-        new LocalClientMappingsRegistryProviderResourceDefinitionRegistrar().register(registration, context);
-        new InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar().register(registration, context);
+        new LocalEjbClientServicesProviderResourceDefinitionRegistrar().register(registration, context);
+        new InfinispanEjbClientServicesProviderResourceDefinitionRegistrar().register(registration, context);
 
         new InfinispanTimerManagementResourceDefinitionRegistrar().register(registration, context);
 

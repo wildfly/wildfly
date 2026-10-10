@@ -27,7 +27,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
@@ -36,6 +35,7 @@ import org.jboss.ejb.client.AttachmentKey;
 import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
 import org.jboss.ejb.client.EJBReceiverSessionCreationContext;
@@ -392,8 +392,8 @@ public class LocalEjbReceiver extends EJBReceiver {
         final String moduleName = locator.getModuleName();
         final String distinctName = locator.getDistinctName();
         final String beanName = locator.getBeanName();
-        final DeploymentModuleIdentifier moduleIdentifier = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final ModuleDeployment module = deploymentRepository.getModules().get(moduleIdentifier);
+        final EJBModuleIdentifier moduleId = new EJBModuleIdentifier(appName, moduleName, distinctName);
+        final ModuleDeployment module = deploymentRepository.getModules().get(moduleId);
         if (module == null) {
             throw EjbLogger.ROOT_LOGGER.unknownDeployment(locator);
         }

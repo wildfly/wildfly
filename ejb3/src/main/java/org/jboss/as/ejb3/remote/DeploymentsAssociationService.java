@@ -37,6 +37,7 @@ public final class DeploymentsAssociationService implements Service {
     private final DelegatingAssociationImpl delegator;
     private final Supplier<DeploymentRepository> deploymentRepositorySupplier;
     private final Supplier<Executor> executorSupplier;
+    private final Supplier<ModuleAvailabilityRegistrar> registrarSupplier;
     private final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>>> registriesSupplier;
 
     private volatile DeploymentsAssociationImpl value;
@@ -44,10 +45,12 @@ public final class DeploymentsAssociationService implements Service {
     public DeploymentsAssociationService(final DelegatingAssociationImpl delegator,
                                          final Supplier<DeploymentRepository> deploymentRepositorySupplier,
                                          final Supplier<Executor> executorSupplier,
-                              final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>>> registriesSupplier) {
+                                         final Supplier<ModuleAvailabilityRegistrar> registrarSupplier,
+                                         final List<Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>>> registriesSupplier) {
         this.delegator = delegator;
         this.deploymentRepositorySupplier = deploymentRepositorySupplier;
         this.executorSupplier = executorSupplier;
+        this.registrarSupplier = registrarSupplier;
         this.registriesSupplier = registriesSupplier;
     }
 
@@ -61,7 +64,7 @@ public final class DeploymentsAssociationService implements Service {
         for (Map.Entry<Supplier<ProtocolSocketBinding>, Supplier<Registry<GroupMember, String, List<ClientMapping>>>> entry : this.registriesSupplier) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().get(), entry.getValue().get()));
         }
-        value = new DeploymentsAssociationImpl(deploymentRepositorySupplier.get(), executorSupplier.get(),  clientMappingsRegistries);
+        value = new DeploymentsAssociationImpl(deploymentRepositorySupplier.get(), executorSupplier.get(),  registrarSupplier.get(), clientMappingsRegistries);
 
         // swap the current association implementation for this one
         delegator.accept(value);

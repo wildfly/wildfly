@@ -5,11 +5,9 @@
 
 package org.jboss.as.ejb3.local;
 
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
-import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrar;
+import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarListener;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientContext;
@@ -30,6 +28,7 @@ import org.wildfly.discovery.spi.DiscoveryRequest;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -43,22 +42,22 @@ public class LocalEJBDiscoveryProviderService implements Service {
 
     private Consumer<DiscoveryProvider> discoveryProviderConsumer;
     private final Supplier<ServerEnvironment> serverEnvironmentSupplier;
-    private final Supplier<DeploymentRepository> deploymentRepositorySupplier;
+    private final Supplier<ModuleAvailabilityRegistrar> moduleAvailabilityRegistrarSupplier;
     private final List<Supplier<Registry>> clientMappingsRegistriesSupplier;
 
     private final Object serviceLock = new Object();
     private final MutableDiscoveryProvider mutableDiscoveryProvider = new MutableDiscoveryProvider();
-    private volatile DeploymentRepositoryListener deploymentRepositoryListener;
+    private volatile ModuleAvailabilityRegistrarListener moduleAvailabilityRegistrarListener;
     private final Set<EJBModuleIdentifier> ourModules = new HashSet<>();
     private volatile ServiceURL cachedServiceURL;
 
     public LocalEJBDiscoveryProviderService(final Consumer<DiscoveryProvider> discoveryProviderConsumer,
                                             final Supplier<ServerEnvironment> serverEnvironmentSupplier,
-                                            final Supplier<DeploymentRepository> deploymentRepositorySuplier,
+                                            final Supplier<ModuleAvailabilityRegistrar> moduleAvailabilityRegistrarSupplier,
                                             final List<Supplier<Registry>> clientMappingsRegistriesSupplier) {
         this.discoveryProviderConsumer = discoveryProviderConsumer;
         this.serverEnvironmentSupplier = serverEnvironmentSupplier;
-        this.deploymentRepositorySupplier = deploymentRepositorySuplier;
+        this.moduleAvailabilityRegistrarSupplier = moduleAvailabilityRegistrarSupplier;
         this.clientMappingsRegistriesSupplier = clientMappingsRegistriesSupplier;
     }
 
@@ -67,17 +66,22 @@ public class LocalEJBDiscoveryProviderService implements Service {
         String ourNodeName = serverEnvironmentSupplier.get().getNodeName();
 
         // define a listener to listen for deployments on this node
-        deploymentRepositoryListener = new DeploymentRepositoryListener() {
+        moduleAvailabilityRegistrarListener = new ModuleAvailabilityRegistrarListener() {
             @Override
-            public void listenerAdded(DeploymentRepository repository) {
-                if (!repositoryIsSuspended()) {
+            public void listenerAdded(ModuleAvailabilityRegistrar registrar) {
+                if (!moduleAvailabilityRegistrarSupplier.get().isSuspended()) {
                     // only add the initial list if the deployment repository is not in a suspended state
                     synchronized (serviceLock) {
-                        for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getStartedModules().keySet()) {
-                            EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
-                            ourModules.add(ejbModuleIdentifier);
+                        for (EJBModuleIdentifier ejbModuleIdentifier : registrar.getServices()) {
+                            Set<GroupMember> providers = registrar.getProviders(ejbModuleIdentifier);
+                            for (GroupMember provider : providers) {
+                                // only look for locally deployed modules
+                                if (provider.getName().equals(ourNodeName)) {
+                                    ourModules.add(ejbModuleIdentifier);
+                                    cachedServiceURL = null;
+                                }
+                            }
                         }
-                        cachedServiceURL = null;
                     }
                     EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Sending initial module availability to local discovery provider: server is not suspended");
                 } else {
@@ -86,49 +90,42 @@ public class LocalEJBDiscoveryProviderService implements Service {
                 }
             }
 
+            /*
+             * Add the locally deployed modules to the cache
+             */
             @Override
-            public void deploymentAvailable(DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment) {
-            }
-
-            @Override
-            public void deploymentStarted(DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment) {
-                // only mark modules as available until module has started (WFLY-13009)
-                synchronized (serviceLock) {
-                    ourModules.add(toModuleIdentifier(deployment));
-                    cachedServiceURL = null;
+            public void modulesAvailable(Map<EJBModuleIdentifier,List<GroupMember>> modules) {
+                for (Map.Entry<EJBModuleIdentifier,List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
+                    List<GroupMember> providers = entry.getValue();
+                    for (GroupMember provider : providers) {
+                        if (provider.getName().equals(ourNodeName)) {
+                            ourModules.add(ejbModuleIdentifier);
+                            cachedServiceURL = null;
+                        }
+                    }
                 }
             }
 
+            /*
+             * Re,ove the locally undeployed modules from the cache
+             */
             @Override
-            public void deploymentRemoved(DeploymentModuleIdentifier deployment) {
-                synchronized (serviceLock) {
-                    ourModules.remove(toModuleIdentifier(deployment));
-                    cachedServiceURL = null;
+            public void modulesUnavailable(Map<EJBModuleIdentifier,List<GroupMember>> modules) {
+                for (Map.Entry<EJBModuleIdentifier,List<GroupMember>> entry : modules.entrySet()) {
+                    EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
+                    List<GroupMember> providers = entry.getValue();
+                    for (GroupMember provider : providers) {
+                        if (provider.getName().equals(ourNodeName)) {
+                            ourModules.remove(ejbModuleIdentifier);
+                            cachedServiceURL = null;
+                        }
+                    }
                 }
-            }
-
-            @Override
-            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
-                synchronized (serviceLock) {
-                    ourModules.remove(toModuleIdentifier(deployment));
-                    cachedServiceURL = null;
-                }
-            }
-
-            @Override
-            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
-                synchronized (serviceLock) {
-                    ourModules.add(toModuleIdentifier(deployment));
-                    cachedServiceURL = null;
-                }
-            }
-
-            private boolean repositoryIsSuspended() {
-                return deploymentRepositorySupplier.get().isSuspended();
             }
         };
         // register the listener with the deployment repository
-        deploymentRepositorySupplier.get().addListener(deploymentRepositoryListener);
+        moduleAvailabilityRegistrarSupplier.get().addListener(moduleAvailabilityRegistrarListener);
 
         // define a discovery provider based on the set of modules deployed on this node
         mutableDiscoveryProvider.setDiscoveryProvider((serviceType, filterSpec, result) -> {
@@ -189,10 +186,6 @@ public class LocalEJBDiscoveryProviderService implements Service {
         discoveryProviderConsumer.accept(null);
 
         // de-register the listener with the deployment repository
-        deploymentRepositorySupplier.get().removeListener(deploymentRepositoryListener);
-    }
-
-    private EJBModuleIdentifier toModuleIdentifier(DeploymentModuleIdentifier identifier) {
-        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
+        moduleAvailabilityRegistrarSupplier.get().removeListener(moduleAvailabilityRegistrarListener);
     }
 }

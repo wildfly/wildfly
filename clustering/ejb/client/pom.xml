@@ -55,6 +55,12 @@
         </dependency>
 
         <!-- External test dependencies -->
+        <!-- Required by the EJBModuleIdentifier constructor, which calls org.wildfly.common.Assert -->
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
