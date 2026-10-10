@@ -192,9 +192,9 @@ public class ModuleNameBindingProcessor implements DeploymentUnitProcessor {
 
 When adding the binding configuration use:
 
-* addDeploymentBinding() for a binding that may not be overriden, such
+* addDeploymentBinding() for a binding that may not be overridden, such
 as the ones found in xml descriptors
-* addPlatformBinding() for a binding which may be overriden by a
+* addPlatformBinding() for a binding which may be overridden by a
 deployment descriptor bind or annotation, for instance
 java:comp/DefaultDatasource
 

@@ -1120,7 +1120,7 @@ The attribute transformations defined by the
 parameters to all operations defined on the resource. This means that if
 you have defined the `example` attribute of
 `/subsystem=my-subsystem/some-child=*` to reject transformation if its
-value is `true`, the inital domain transfer will reject if it is `true`,
+value is `true`, the initial domain transfer will reject if it is `true`,
 also the transformation of the following operations will reject:
 
 [source,options="nowrap"]
@@ -1393,7 +1393,7 @@ expression will resolve to on the secondary HC.
 `DiscardAttributeChecker.ALWAYS` will always discard an attribute. Use
 this sparingly, since normally the presence of an attribute in the
 current model implies some behaviour should be turned on, and if that
-does not exist in the legacy model it implies that that behaviour does
+does not exist in the legacy model it implies that behaviour does
 not exist in the legacy secondary HC and its servers. Normally the legacy
 secondary HC's subsystem has some implied behaviour which is better checked
 for by using a `DiscardAttributeChecker.DiscardAttributeValueChecker`.
@@ -1791,7 +1791,7 @@ check to make sure it is not an expression as well:
 
 Now it should be fine.
 
-`AttributeConverter.DefaultAttributeConverter` is is an abstract
+`AttributeConverter.DefaultAttributeConverter` is an abstract
 convenience class. In most cases you don't need a separate check for if
 an operation or a resource is being transformed, so it makes both the
 convertOperationParameter() and convertResourceAttribute() methods call
@@ -2181,7 +2181,7 @@ Next we configure a 'legacy' controller. This will run the version of
 the core libraries (e.g the `controller` module) as found in the
 targeted legacy version of JBoss AS/WildFly), and the subsystem. We need
 to pass in that it is using the core AS version 7.1.2.Final (i.e. the
-`ModelTestControllerVersion.V7_1_2_FINAL` part) and that that version is
+`ModelTestControllerVersion.V7_1_2_FINAL` part) and that version is
 ModelVersion 1.0.0. Next we have some `addMavenResourceURL()` calls
 passing in the Maven GAVs of the old version of the subsystem and any
 dependencies it has needed to boot up. Normally, specifying just the

@@ -318,7 +318,7 @@ The CLI can now be started using the following command: -
 ./jboss-cli.sh -c -Dwildfly.config.url=wildfly-config.xml
 ----
 
-The :whoami command can be used within the CLI to double check the current identity.
+The :whoami command can be used within the CLI to double-check the current identity.
 
 ----
 [standalone@localhost:9993 /] :whoami(verbose=true)

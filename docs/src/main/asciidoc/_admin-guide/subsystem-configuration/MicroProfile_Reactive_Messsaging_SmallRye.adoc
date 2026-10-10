@@ -115,7 +115,7 @@ If we replace the `Emitter` with the `generate()` method from the original metho
 User's applications intended to return published values to users via e.g. Jakarta RESTFul Webservices will need to do their own subscriptions and buffering of the data. Care must be taken to not let the cache grow uncontrolled, which could cause OutOfMemoryErrors.
 
 == Packaging
-MicroProfile Reactive Messaging applications are meant to be packaged in Web Archives (i.e. `.war` files). While other deployment types might work, we only test the `.war` case thoroughly. You may package the classes using MicroProfile Reactive Messaging in `.jar` archives, and put those inside the `.war` file's `WEB-INb/lib` folder, as long as you don't change the default classloading behaviour which is to add such `.jar` files to the `.war` classloader.
+MicroProfile Reactive Messaging applications are meant to be packaged in Web Archives (i.e. `.war` files). While other deployment types might work, we only test the `.war` case thoroughly. You may package the classes using MicroProfile Reactive Messaging in `.jar` archives, and put those inside the `.war` file's `WEB-INF/lib` folder, as long as you don't change the default classloading behaviour, which is to add such `.jar` files to the `.war` classloader.
 
 [[microprofile-reactive-messaging-smallrye-config-connectors]]
 === Connectors
@@ -431,7 +431,7 @@ The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an
 
 `mp.messaging.incoming.from.connector=smallrye-amqp` says that we want to use AMQP to back the `from` channel. As above, the value `smallrye-amqp` is SmallRye Reactive Messaging specific.
 
-`mp.messaging.incoming.from.address=my-topic` says says that the channel named `from` will read data from the AMQP topic (or queue) on address called `my-topic`.
+`mp.messaging.incoming.from.address=my-topic` says that the channel named `from` will read data from the AMQP topic (or queue) on address called `my-topic`.
 
 
 The full set of properties understood by the SmallRye Reactive Messaging's AMQP connector can be found in the SmallRye Reactive Messaging AMQP connector https://smallrye.io/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/amqp/amqp/[documentation].

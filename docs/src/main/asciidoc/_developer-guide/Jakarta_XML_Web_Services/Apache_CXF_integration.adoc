@@ -591,7 +591,7 @@ To cope with this issue, JBossWS integration comes with a mechanism for
 configuring simple bean hierarchies when building them up from
 properties. Properties can have bean reference values, that is strings
 starting with `##`. Property reference keys are used to specify the bean
-class name and the value for for each attribute. So for instance the
+class name and the value for each attribute. So, for instance, the
 following properties:
 
 [cols=",",options="header"]

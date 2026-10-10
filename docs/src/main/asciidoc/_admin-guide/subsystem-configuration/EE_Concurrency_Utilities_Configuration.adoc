@@ -180,7 +180,7 @@ may still be used to manually attempt the termination of hung tasks:
 The optional `long-running-tasks` is a hint to optimize the execution of
 long running tasks, and defaults to `false`.
 
-The optional `max-threads` defines the the maximum number of threads
+The optional `max-threads` defines the maximum number of threads
 used by the executor, which defaults to Integer.MAX_VALUE (2147483647).
 
 The optional `keepalive-time` defines the time, in milliseconds, that an

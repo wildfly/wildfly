@@ -420,7 +420,7 @@ To have most stable build process, it should start with:
 ** free of artefacts to be built
 ** free of dependencies to be used (especially snapshots)
 
-To use , you may use these commands:
+To clean the project, use the following commands:
 
 [source,options="nowrap"]
 ----

@@ -59,7 +59,7 @@ The <credential-stores />  element can be used to define individual named creden
 
 In addition to the name an individual <credential-store /> definition can contain the following optional attributes: -
 
-type:: The type of the credential store, e.g.KeyStoreCredentialStore.
+type:: The type of the credential store, e.g., KeyStoreCredentialStore.
 provider:: The name of the [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] to use to load the credential store.
 
 The following child elements can also be added to configure the credential store.
@@ -78,9 +78,9 @@ e.g.
 The <attribute/> element can be repeated as many times as is required for the configuration.
 
 [[client-credentials-type]]
- <protection-parameter-credentials />:: One or more credentials to be assembled into a protection parameter when initialising the credential store.
+protection-parameter-credentials:: One or more credentials to be assembled into a protection parameter when initialising the credential store.
 
-The <protection-paramter-credentials /> element can contain one more more child elements, which of these are actually supported will depend on the credential store implementation: -
+The <protection-parameter-credentials /> element can contain one or more child elements; which of these are actually supported depends on the credential store implementation:
 
 [source,xml,options="nowrap"]
 ----
@@ -494,7 +494,7 @@ This structure is identical to the structure use in [<key-store-credential />|#k
  provider-name:: - Name of the provider used to obtain the KeyManagerFactory.
  algorithm:: - The algorithm name of the KeyManagerFactory to obtain.
 
- <trust-store-key-store-name />:: A reference to a KeyStore that will be used to initialise the TrustManager.
+ trust-store-key-store-name:: A reference to a KeyStore that will be used to initialise the TrustManager.
 
  <cipher-suite selector="..." names="..." />:: Configuration to filter the enabled cipher suites. This element must contain at least one of the following two attributes: -
 
@@ -611,7 +611,7 @@ The _<providers />_ element is used to define how [java.security.Provider|https:
 </configuration>
 ----
 
-If an individual <credential-store />, <authentication-configuration />, or <ssl-context /> contains a <providers /> definition that that definition will apply specifically to that instance.  If a configured item does not contain a <providers /> definition but a top level <providers /> is defined within <authentication-configuration /> then that will be used instead.
+If an individual <credential-store />, <authentication-configuration />, or <ssl-context /> contains a <providers /> definition, that definition will apply specifically to that instance. If a configured item does not contain a <providers /> definition but a top-level <providers /> is defined within <authentication-configuration />, then that will be used instead.
 
 The <providers /> element can be defined as: -
 
@@ -628,7 +628,7 @@ Both the child elements are optional, can appear in any order and can be repeate
  <global />:: The providers from [java.security.Security.getProviders()|https://docs.oracle.com/javase/8/docs/api/java/security/Security.html#getProviders--]
  <credential-stores />:: Providers loaded using service loader discovery from the module specified, if no module is specified the ClassLoader which loaded the authentication client is used.
 
-Where no <provider /> configuration exists the default behaviour is the equivalent of: -
+Where no <provider /> configuration exists, the default behaviour is equivalent to:
 
 [source,xml,options="nowrap"]
 ----
