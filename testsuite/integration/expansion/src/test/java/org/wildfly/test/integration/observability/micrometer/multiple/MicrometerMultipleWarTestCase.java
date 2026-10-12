@@ -4,7 +4,7 @@
  */
 package org.wildfly.test.integration.observability.micrometer.multiple;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,17 +13,20 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
@@ -41,7 +44,7 @@ public class MicrometerMultipleWarTestCase extends BaseMicrometerMultipleTestCas
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkPingCount(@ArquillianResource @OperateOnDeployment(SERVICE_ONE) URL serviceOne,
                                @ArquillianResource @OperateOnDeployment(SERVICE_TWO) URL serviceTwo)
             throws URISyntaxException, InterruptedException {

@@ -17,18 +17,18 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.lra.EnableLRAExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.lra.participant.smoke.hotel.HotelParticipant;
 import org.wildfly.test.integration.microprofile.lra.participant.smoke.model.Booking;
@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(EnableLRAExtensionsSetupTask.class)
 public class LRAParticipantSmokeTestCase {
 
@@ -53,13 +53,13 @@ public class LRAParticipantSmokeTestCase {
 
     public CloseableHttpClient client;
 
-    @Before
+    @BeforeEach
     public void before() {
         System.setProperty(LRA_COORDINATOR_URL_KEY, "http://localhost:8080/lra-coordinator/lra-coordinator");
         client = HttpClientBuilder.create().build();
     }
 
-    @After
+    @AfterEach
     public void after() throws IOException {
         try {
             if (client != null) {
@@ -117,11 +117,11 @@ public class LRAParticipantSmokeTestCase {
             uriFrom(baseURL.toURI(), HotelParticipant.HOTEL_PARTICIPANT_PATH)))) {
             String result = EntityUtils.toString(response.getEntity());
             if (isEntryPresent) {
-                Assert.assertTrue(
-                    "Booking confirmed", result.contains("CONFIRMED"));
+                Assertions.assertTrue(
+                    result.contains("CONFIRMED"), "Booking confirmed");
             } else {
-                Assert.assertTrue(
-                    "Booking cancelled", result.contains("CANCELLED"));
+                Assertions.assertTrue(
+                    result.contains("CANCELLED"), "Booking cancelled");
             }
         }
     }

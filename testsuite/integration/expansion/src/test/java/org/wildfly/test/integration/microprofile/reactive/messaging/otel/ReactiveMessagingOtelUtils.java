@@ -20,7 +20,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 
@@ -32,7 +32,7 @@ public class ReactiveMessagingOtelUtils {
         ModelNode readChildren = Operations.createOperation(ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION, addr.toModelNode());
         readChildren.get(CHILD_TYPE).set(new ModelNode(childType));
         ModelNode result = client.execute(readChildren);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         result = Operations.readResult(result);
         return result.asList().stream().map(ModelNode::asString).collect(Collectors.toSet());
     }
@@ -57,7 +57,7 @@ public class ReactiveMessagingOtelUtils {
 
         if (op != null) {
             ModelNode result = client.execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+            Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         }
     }
 
@@ -86,7 +86,7 @@ public class ReactiveMessagingOtelUtils {
 
         if (op != null) {
             ModelNode result = client.execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+            Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         }
     }
 
@@ -100,7 +100,7 @@ public class ReactiveMessagingOtelUtils {
                 Operations.createWriteAttributeOperation(
                         RESOURCE_ADDRESS.toModelNode(), tracingAttributeName, tracingType);
             ModelNode result = client.execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+            Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
     }
 
     static void reload(ModelControllerClient client) throws Exception {

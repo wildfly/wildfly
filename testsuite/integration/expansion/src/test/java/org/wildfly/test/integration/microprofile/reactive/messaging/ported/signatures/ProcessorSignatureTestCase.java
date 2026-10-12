@@ -29,16 +29,16 @@ import org.eclipse.microprofile.reactive.streams.operators.ProcessorBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -50,7 +50,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @ServerSetup(EnableReactiveExtensionsSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ProcessorSignatureTestCase {
 
     @Deployment
@@ -103,7 +103,7 @@ public class ProcessorSignatureTestCase {
     @Inject
     BeanConsumingPayloadsAsynchronously beanConsumingPayloadsAsynchronously;
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         Spy.executor.shutdown();
     }

@@ -19,14 +19,16 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
 
@@ -35,6 +37,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  *
  * @author Radoslav Husar
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public abstract class AbstractFaultToleranceMicrometerIntegrationTestCase {
 
     private final boolean disabled;
@@ -61,16 +64,16 @@ public abstract class AbstractFaultToleranceMicrometerIntegrationTestCase {
     private MeterRegistry meterRegistry;
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void clearInjectedRegistry() {
-        Assert.assertNotNull(meterRegistry);
+        Assertions.assertNotNull(meterRegistry);
 
         meterRegistry.clear();
     }
 
     @Test
     @RunAsClient
-    @InSequence(2)
+    @Order(2)
     public void makeRequests() throws IOException, ExecutionException, TimeoutException {
         for (int i = 0; i < INVOCATION_COUNT; i++) {
             HttpRequest.get(url.toString() + "app/timeout", 10, TimeUnit.SECONDS);
@@ -78,7 +81,7 @@ public abstract class AbstractFaultToleranceMicrometerIntegrationTestCase {
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkCounters() {
         // Use specific tags to lookup proper counters
         // For reference, review definitions in class io.smallrye.faulttolerance.core.metrics.MetricsConstants
@@ -86,24 +89,24 @@ public abstract class AbstractFaultToleranceMicrometerIntegrationTestCase {
 
         // First verify total invocation count for the method + value returned + fallback applied
         Collection<Counter> counters = Search.in(meterRegistry).name("ft.invocations.total").tags(timeoutServiceMethodTag).tags("result", "valueReturned", "fallback", "applied").counters();
-        Assert.assertEquals(disabled ? 0 : 1, counters.size());
+        Assertions.assertEquals(disabled ? 0 : 1, counters.size());
         if (!disabled) {
-            Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
+            Assertions.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
         }
 
         // Verify the number of timeouts being equal to number of invocations
         counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "true").counters();
-        Assert.assertEquals(disabled ? 0 : 1, counters.size());
+        Assertions.assertEquals(disabled ? 0 : 1, counters.size());
         if (!disabled) {
-            Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
+            Assertions.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
         }
 
         // Verify the number of successful invocations to be none, since it always fails
         counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "false").counters();
-        Assert.assertEquals(disabled ? 0 : 1, counters.size());
+        Assertions.assertEquals(disabled ? 0 : 1, counters.size());
 
         if (!disabled) {
-            Assert.assertEquals(0, counters.iterator().next().count(), 0);
+            Assertions.assertEquals(0, counters.iterator().next().count(), 0);
         }
     }
 

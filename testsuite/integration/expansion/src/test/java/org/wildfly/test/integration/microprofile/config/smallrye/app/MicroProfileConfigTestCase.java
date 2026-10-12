@@ -19,7 +19,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.ReloadServerSetupTask;
@@ -28,9 +28,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfigSourceTask;
 
@@ -38,7 +38,7 @@ import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfig
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  * @author Jan Stourac <jstourac@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SubsystemConfigSourceTask.class, ReloadServerSetupTask.class})
 public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCase {
@@ -122,7 +122,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetWithConfigProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "my.prop.never.defined", Optional.empty().toString());
@@ -148,7 +148,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetBooleanProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.BOOLEAN_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "boolTrue", true);
@@ -175,7 +175,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetIntegerProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.INTEGER_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "intDefault", -42);
@@ -198,7 +198,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetLongProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.LONG_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "longDefault", -42);
@@ -219,7 +219,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetFloatProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.FLOAT_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "floatDefault", -3.14);
@@ -240,7 +240,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetDoubleProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.DOUBLE_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "doubleDefault", -3.14);
@@ -260,7 +260,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetWithArraySetListDefaultProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.ARRAY_SET_LIST_DEFAULT_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             LinkedList<String> petsList = new LinkedList<>();
@@ -284,7 +284,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testGetWithArraySetListOverriddenProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.ARRAY_SET_LIST_OVERRIDE_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             LinkedList<String> petsList = new LinkedList<>();
@@ -308,7 +308,7 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testPriorityOrderingProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.PRIORITY_APP_PATH));
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
 
             // Values from META-INF
@@ -342,11 +342,11 @@ public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCa
     public void testCapabilityServiceInstalled() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.CAPABILITY_TEST_PATH));
-            Assert.assertEquals("Capability test should return 200", 200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode(), "Capability test should return 200");
             String text = EntityUtils.toString(response.getEntity());
-            Assert.assertTrue("Response should indicate success", text.contains("SUCCESS"));
-            Assert.assertTrue("Should validate capability resolver", text.contains("Capability resolver == static resolver: true"));
-            Assert.assertTrue("Should see subsystem config sources", text.contains("Capability config sees subsystem sources: true"));
+            Assertions.assertTrue(text.contains("SUCCESS"), "Response should indicate success");
+            Assertions.assertTrue(text.contains("Capability resolver == static resolver: true"), "Should validate capability resolver");
+            Assertions.assertTrue(text.contains("Capability config sees subsystem sources: true"), "Should see subsystem config sources");
         }
     }
 }

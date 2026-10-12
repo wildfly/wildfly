@@ -13,22 +13,22 @@ import java.util.concurrent.TimeUnit;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(EnableReactiveExtensionsSetupTask.class)
 public class ReactiveMessagingSanityTestCase {
 
@@ -52,7 +52,7 @@ public class ReactiveMessagingSanityTestCase {
     @Test
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
-        Assert.assertEquals("HELLO SMALLRYE REACTIVE MESSAGE", bean.getPhrase());
+        Assertions.assertTrue(wait, "Timed out");
+        Assertions.assertEquals("HELLO SMALLRYE REACTIVE MESSAGE", bean.getPhrase());
     }
 }

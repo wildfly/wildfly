@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.wildfly.test.integration.microprofile.restclient.deployment.model.Message;
 
 /**
@@ -46,9 +46,9 @@ abstract class AbstractDeploymentTest {
      */
     Message readMessage(final Client client, final URI uri) {
         try (Response response = client.target(uri).request().get()) {
-            Assert.assertEquals(200, response.getStatus());
+            Assertions.assertEquals(200, response.getStatus());
             final Message message = response.readEntity(Message.class);
-            Assert.assertNotNull(message);
+            Assertions.assertNotNull(message);
             return message;
         }
     }

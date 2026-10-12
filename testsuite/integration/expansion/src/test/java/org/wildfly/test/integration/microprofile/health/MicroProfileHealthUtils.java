@@ -5,8 +5,8 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -39,7 +39,7 @@ public class MicroProfileHealthUtils {
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
 
-            assertEquals(content, mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
+            assertEquals(mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode(), content);
 
             try (JsonReader jsonReader = Json.createReader(new StringReader(content))) {
                 JsonObject payload = jsonReader.readObject();

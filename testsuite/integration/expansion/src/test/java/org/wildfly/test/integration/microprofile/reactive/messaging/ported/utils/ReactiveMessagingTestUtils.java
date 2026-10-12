@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Add some utils to make porting of tests from Quarkus easier
@@ -36,7 +36,7 @@ public class ReactiveMessagingTestUtils {
 
     public static <T> void checkList(List<T> list, T... expected) {
         List<T> expectedList = Arrays.asList(expected);
-        Assert.assertEquals(expectedList, list);
+        Assertions.assertEquals(expectedList, list);
     }
 
 }

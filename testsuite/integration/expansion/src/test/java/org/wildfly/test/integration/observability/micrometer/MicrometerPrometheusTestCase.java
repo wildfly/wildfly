@@ -17,8 +17,8 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
@@ -40,10 +40,10 @@ public class MicrometerPrometheusTestCase extends BaseMicrometerTest {
         otelCollector.assertMetrics(prometheusMetrics -> {
             List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics, "demo_counter_total"); // Adjust for Prometheus naming conventions
 
-            Assert.assertEquals(1, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            Assertions.assertEquals(1, results.size());
+            results.forEach(r -> Assertions.assertEquals("" + REQUEST_COUNT, r.getValue()));
 
-            Assert.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
+            Assertions.assertNotEquals(0, otelCollector.getMetricsByName(prometheusMetrics, "demo_timer_milliseconds_count").size());
         });
     }
 
@@ -53,18 +53,18 @@ public class MicrometerPrometheusTestCase extends BaseMicrometerTest {
         makeRequests();
 
         List<PrometheusMetric> metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("Metrics should not be exposed without authentication",
-                metrics.stream().noneMatch(m -> m.getKey().equals("demo_counter_total")));
+        Assertions.assertTrue(metrics.stream().noneMatch(m -> m.getKey().equals("demo_counter_total")),
+                "Metrics should not be exposed without authentication");
 
         metrics = fetchPrometheusMetrics(true);
-        Assert.assertTrue("'demo_counter_total' is expected",
-                metrics.stream().anyMatch(m -> m.getKey().equals("demo_counter_total")));
+        Assertions.assertTrue(metrics.stream().anyMatch(m -> m.getKey().equals("demo_counter_total")),
+                "'demo_counter_total' is expected");
 
         setPrometheusSecurity(false);
         makeRequests();
         metrics = fetchPrometheusMetrics(false);
-        Assert.assertTrue("'demo_counter_total' is expected",
-                metrics.stream().anyMatch(m -> m.getKey().equals("demo_counter_total")));
+        Assertions.assertTrue(metrics.stream().anyMatch(m -> m.getKey().equals("demo_counter_total")),
+                "'demo_counter_total' is expected");
     }
 
     private void setPrometheusSecurity(boolean enabled) throws Exception {

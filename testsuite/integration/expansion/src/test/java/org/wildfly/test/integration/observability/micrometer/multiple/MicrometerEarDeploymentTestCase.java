@@ -16,8 +16,8 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 
@@ -59,8 +59,8 @@ public class MicrometerEarDeploymentTestCase extends BaseMicrometerMultipleTestC
             List<PrometheusMetric> results = otelCollector.getMetricsByName(prometheusMetrics,
                     DuplicateMetricResource1.METER_NAME + "_total"); // Adjust for Prometheus naming conventions
 
-            Assert.assertEquals(2, results.size());
-            results.forEach(r -> Assert.assertEquals("" + REQUEST_COUNT, r.getValue()));
+            Assertions.assertEquals(2, results.size());
+            results.forEach(r -> Assertions.assertEquals("" + REQUEST_COUNT, r.getValue()));
         });
     }
 }

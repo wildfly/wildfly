@@ -27,16 +27,16 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -48,7 +48,7 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @ServerSetup(EnableReactiveExtensionsSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SubscriberSignatureTestCase {
 
     @Deployment
@@ -89,7 +89,7 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
+        Assertions.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
     }
 
     private void emit(Emitter<Integer> emitter) {
@@ -120,8 +120,8 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertEquals(10, beanUsingSubscriberOfMessage.getMessages().size());
-        Assert.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
+        Assertions.assertEquals(10, beanUsingSubscriberOfMessage.getMessages().size());
+        Assertions.assertTrue(beanUsingSubscriberOfPayload.hasCompleted());
     }
 
     @Test
@@ -155,7 +155,7 @@ public class SubscriberSignatureTestCase {
 
         await(() -> items.size() == 10);
         checkList(items, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        Assert.assertEquals(10, beanConsumingMessages.getMessages().size());
+        Assertions.assertEquals(10, beanConsumingMessages.getMessages().size());
     }
 
     @ApplicationScoped
