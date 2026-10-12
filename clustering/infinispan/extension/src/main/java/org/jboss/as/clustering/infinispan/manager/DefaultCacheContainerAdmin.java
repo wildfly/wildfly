@@ -90,4 +90,8 @@ public class DefaultCacheContainerAdmin implements EmbeddedCacheManagerAdmin {
     @Override
     public void updateConfigurationAttribute(String cacheName, String attribute, String value) {
     }
+
+    @Override
+    public void updateGlobalConfigurationAttribute(String attribute, String value) {
+    }
 }
