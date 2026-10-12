@@ -10,6 +10,12 @@ $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 # @(...) keeps the result an array; PowerShell unrolls the value returned by String-To-Array,
 # so an empty or single valued JAVA_OPTS would otherwise be assigned as $null or a String
 $JAVA_OPTS = @(String-To-Array -value $env:JAVA_OPTS)
+$JAVA_OPTS = @(Process-Java-Opts-Parameters -Params $JAVA_OPTS)
+
+if (Get-Env-Boolean SECMGR $false) {
+    Write-Warning "ERROR: The SECMGR option has been removed. The Security Manager is no longer supported."
+    exit 1
+}
 
 # Sample JPDA settings for remote socket debugging
 #$JAVA_OPTS+="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"

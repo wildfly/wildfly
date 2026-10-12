@@ -14,8 +14,8 @@ call "!DIRNAME!common.bat" :commonConf
 rem check for the security manager system property
 echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
 if not errorlevel 1 (
-    echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
-    GOTO :EOF
+    echo ERROR: The use of -Djava.security.manager is not supported. The Security Manager has been removed.
+    exit /b 1
 )
 setlocal DisableDelayedExpansion
 
@@ -63,11 +63,21 @@ if not exist "%JBOSS_RUNJAR%" (
 )
 
 
+if "%SECMGR%" == "true" (
+    echo ERROR: The SECMGR option has been removed. The Security Manager is no longer supported.
+    exit /b 1
+)
+
+setlocal EnableDelayedExpansion
+echo(!JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
+if not errorlevel 1 (
+    echo ERROR: The use of -Djava.security.manager is not supported. The Security Manager has been removed.
+    exit /b 1
+)
+setlocal DisableDelayedExpansion
+
 rem Set the module options
 set "MODULE_OPTS="
-if "%SECMGR%" == "true" (
-    set "MODULE_OPTS=-secmgr"
-)
 
 
 rem Set default module root paths
