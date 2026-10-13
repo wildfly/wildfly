@@ -44,6 +44,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -65,6 +66,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String LIST_CONNECTIONS_AS_JSON = "list-connections-as-json";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
     public static final String LIST_ALL_CONSUMERS_AS_JSON = "list-all-consumers-as-json";
+    public static final String LIST_ALL_SESSIONS_AS_JSON = "list-all-sessions-as-json";
     public static final String LIST_TARGET_DESTINATIONS = "list-target-destinations";
     public static final String GET_LAST_SENT_MESSAGE_ID = "get-last-sent-message-id";
     public static final String GET_SESSION_CREATION_TIME = "get-session-creation-time";
@@ -101,101 +103,124 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ActiveMQServerControl serverControl = server.getActiveMQServerControl();
 
         try {
-            if (LIST_CONNECTIONS_AS_JSON.equals(operationName)) {
-                String json = serverControl.listConnectionsAsJSON();
-                context.getResult().set(json);
-
-                final JsonArrayBuilder enrichedConnections = Json.createArrayBuilder();
-                try (
-                        JsonReader reader = Json.createReader(new StringReader(json));) {
-                    final JsonArray connections = reader.readArray();
-
-                    for (int i = 0; i < connections.size(); i++) {
-
-                        final JsonObject originalConnection = connections.getJsonObject(i);
-                        final JsonObject enrichedConnection = enrichConnection(originalConnection, serverControl);
-                        enrichedConnections.add(enrichedConnection);
-                    }
-                }
-
-                String enrichedJSON = enrichedConnections.build().toString();
-                context.getResult().set(enrichedJSON);
-            } else if (LIST_CONSUMERS_AS_JSON.equals(operationName)) {
-                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
-                String json = serverControl.listConsumersAsJSON(connectionID);
-
-                final JsonArrayBuilder enrichedConsumers = Json.createArrayBuilder();
-                try (
-                        JsonReader reader = Json.createReader(new StringReader(json));) {
-                    final JsonArray consumers = reader.readArray();
-
-                    for (int i = 0; i < consumers.size(); i++) {
-
-                        final JsonObject originalConsumer = consumers.getJsonObject(i);
-                        final JsonObject enrichedConsumer = enrichConsumer(originalConsumer, server);
-                        enrichedConsumers.add(enrichedConsumer);
-                    }
-                }
-
-                String enrichedJSON = enrichedConsumers.build().toString();
-                context.getResult().set(enrichedJSON);
-            } else if (LIST_ALL_CONSUMERS_AS_JSON.equals(operationName)) {
-                String json = serverControl.listAllConsumersAsJSON();
-
-                final JsonArrayBuilder enrichedConsumers = Json.createArrayBuilder();
-                try (
-                        JsonReader reader = Json.createReader(new StringReader(json));) {
-                    final JsonArray consumers = reader.readArray();
-
-                    for (int i = 0; i < consumers.size(); i++) {
-
-                        final JsonObject originalConsumer = consumers.getJsonObject(i);
-                        final JsonObject enrichedConsumer = enrichConsumer(originalConsumer, server);
-                        enrichedConsumers.add(enrichedConsumer);
-                    }
-                }
-
-                String enrichedJSON = enrichedConsumers.build().toString();
-                context.getResult().set(enrichedJSON);
-            } else if (LIST_TARGET_DESTINATIONS.equals(operationName)) {
-                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
-                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
-                String[] list = listTargetDestinations(server, sessionID);
-                reportListOfStrings(context, list);
-            } else if (GET_LAST_SENT_MESSAGE_ID.equals(operationName)) {
-                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
-                String addressName = ADDRESS_NAME.resolveModelAttribute(context, operation).asString();
-                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
-                ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
-                if (session != null) {
-                    for (ServerProducer producer : session.getServerProducers()) {
-                        if (addressName.equals(producer.getAddress())) {
-                            context.getResult().set(producer.getLastProducedMessageID().toString());
-                            break;
-                        }
-                    }
-                }
-            } else if (GET_SESSION_CREATION_TIME.equals(operationName)) {
-                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
-                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
-                ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
-                if (session != null) {
-                    String time = String.valueOf(session.getCreationTime());
-                    context.getResult().set(time);
-                }
-            } else if (LIST_SESSIONS_AS_JSON.equals(operationName)) {
-                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
-                String json = serverControl.listSessionsAsJSON(connectionID);
-                context.getResult().set(json);
-            } else if (LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON.equals(operationName)) {
-                String json = serverControl.listPreparedTransactionDetailsAsJSON();
-                context.getResult().set(json);
-            } else if (LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_HTML.equals(operationName)) {
-                String html = serverControl.listPreparedTransactionDetailsAsHTML();
-                context.getResult().set(html);
-            } else {
+            if (null == operationName) {
                 // Bug
                 throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+            } else {
+                switch (operationName) {
+                    case LIST_CONNECTIONS_AS_JSON: {
+                        String json = serverControl.listConnectionsAsJSON();
+                        context.getResult().set(json);
+                        final JsonArrayBuilder enrichedConnections = Json.createArrayBuilder();
+                        try (
+                                JsonReader reader = Json.createReader(new StringReader(json));) {
+                            final JsonArray connections = reader.readArray();
+
+                            for (int i = 0; i < connections.size(); i++) {
+
+                                final JsonObject originalConnection = connections.getJsonObject(i);
+                                final JsonObject enrichedConnection = enrichConnection(originalConnection, serverControl);
+                                enrichedConnections.add(enrichedConnection);
+                            }
+                        }
+                        String enrichedJSON = enrichedConnections.build().toString();
+                        context.getResult().set(enrichedJSON);
+                        break;
+                    }
+                    case LIST_CONSUMERS_AS_JSON: {
+                        String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
+                        String json = serverControl.listConsumersAsJSON(connectionID);
+                        final JsonArrayBuilder enrichedConsumers = Json.createArrayBuilder();
+                        try (
+                                JsonReader reader = Json.createReader(new StringReader(json));) {
+                            final JsonArray consumers = reader.readArray();
+
+                            for (int i = 0; i < consumers.size(); i++) {
+
+                                final JsonObject originalConsumer = consumers.getJsonObject(i);
+                                final JsonObject enrichedConsumer = enrichConsumer(originalConsumer, server);
+                                enrichedConsumers.add(enrichedConsumer);
+                            }
+                        }
+                        String enrichedJSON = enrichedConsumers.build().toString();
+                        context.getResult().set(enrichedJSON);
+                        break;
+                    }
+                    case LIST_ALL_CONSUMERS_AS_JSON: {
+                        String json = serverControl.listAllConsumersAsJSON();
+                        final JsonArrayBuilder enrichedConsumers = Json.createArrayBuilder();
+                        try (
+                                JsonReader reader = Json.createReader(new StringReader(json));) {
+                            final JsonArray consumers = reader.readArray();
+
+                            for (int i = 0; i < consumers.size(); i++) {
+
+                                final JsonObject originalConsumer = consumers.getJsonObject(i);
+                                final JsonObject enrichedConsumer = enrichConsumer(originalConsumer, server);
+                                enrichedConsumers.add(enrichedConsumer);
+                            }
+                        }
+                        String enrichedJSON = enrichedConsumers.build().toString();
+                        context.getResult().set(enrichedJSON);
+                        break;
+                    }
+                    case LIST_TARGET_DESTINATIONS: {
+                        String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
+                        // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                        String[] list = listTargetDestinations(server, sessionID);
+                        reportListOfStrings(context, list);
+                        break;
+                    }
+                    case GET_LAST_SENT_MESSAGE_ID: {
+                        String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
+                        String addressName = ADDRESS_NAME.resolveModelAttribute(context, operation).asString();
+                        // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                        ServerSession session = ((ActiveMQServer) server.getDelegate()).getSessionByID(sessionID);
+                        if (session != null) {
+                            for (ServerProducer producer : session.getServerProducers()) {
+                                if (addressName.equals(producer.getAddress())) {
+                                    context.getResult().set(producer.getLastProducedMessageID().toString());
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case GET_SESSION_CREATION_TIME: {
+                        String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
+                        // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                        ServerSession session = ((ActiveMQServer) server.getDelegate()).getSessionByID(sessionID);
+                        if (session != null) {
+                            String time = String.valueOf(session.getCreationTime());
+                            context.getResult().set(time);
+                        }
+                        break;
+                    }
+                    case LIST_ALL_SESSIONS_AS_JSON: {
+                        //Each JMS session creates 2 sessions on the broker: st session is used for authentication then the 2nd for messages.
+                        String json = serverControl.listAllSessionsAsJSON();
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case LIST_SESSIONS_AS_JSON: {
+                        String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
+                        String json = serverControl.listSessionsAsJSON(connectionID);
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON: {
+                        String json = serverControl.listPreparedTransactionDetailsAsJSON();
+                        context.getResult().set(json);
+                        break;
+                    }
+                    case LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_HTML:
+                        String html = serverControl.listPreparedTransactionDetailsAsHTML();
+                        context.getResult().set(html);
+                        break;
+                    default:
+                        // Bug
+                        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+                }
             }
         } catch (RuntimeException e) {
             throw e;
@@ -208,7 +233,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         JsonObjectBuilder enrichedConsumer = Json.createObjectBuilder();
 
         for (Map.Entry<String, JsonValue> entry : originalConsumer.entrySet()) {
-            if("lastProducedMessageID".equals(entry.getKey())) {
+            if ("lastProducedMessageID".equals(entry.getKey())) {
                 enrichedConsumer.add("lastUUIDSent", entry.getValue());
             } else {
                 enrichedConsumer.add(entry.getKey(), entry.getValue());
@@ -300,6 +325,12 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SESSIONS_AS_JSON, resolver)
                 .setParameters(CONNECTION_ID)
                 .setReplyType(STRING)
+                .setStability(Stability.COMMUNITY)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_ALL_SESSIONS_AS_JSON, resolver)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON, resolver)
@@ -320,7 +351,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     public String[] listTargetDestinations(ActiveMQBroker server, String sessionID) throws Exception {
-        ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
+        ServerSession session = ((ActiveMQServer) server.getDelegate()).getSessionByID(sessionID);
         if (session == null) {
             return new String[0];
         }
