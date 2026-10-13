@@ -30,7 +30,7 @@ import org.junit.Test;
  */
 public class FilterRefBatchTestCase extends AbstractUndertowSubsystemTestCase {
 
-    private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
+    private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement());
 
     public FilterRefBatchTestCase() {
         super(Feature.map(UndertowSubsystemSchema.CURRENT).get(Stability.DEFAULT));

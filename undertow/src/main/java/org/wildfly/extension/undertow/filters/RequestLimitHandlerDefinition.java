@@ -16,6 +16,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
@@ -25,7 +26,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class RequestLimitHandlerDefinition extends SimpleFilterDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("request-limit");
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("request-limit"));
 
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
             .setValidator(new IntRangeValidator(1, false, true))
@@ -46,7 +47,7 @@ public class RequestLimitHandlerDefinition extends SimpleFilterDefinition {
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
 
     RequestLimitHandlerDefinition() {
-        super(PATH_ELEMENT, RequestLimitHandlerDefinition::createHandlerWrapper);
+        super(REGISTRATION, RequestLimitHandlerDefinition::createHandlerWrapper);
     }
 
     @Override

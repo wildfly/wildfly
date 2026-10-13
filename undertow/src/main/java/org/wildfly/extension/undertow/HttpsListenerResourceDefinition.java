@@ -17,6 +17,7 @@ import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -38,7 +39,7 @@ import org.xnio.SslClientAuthMode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class HttpsListenerResourceDefinition extends AbstractHttpListenerResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HTTPS_LISTENER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HTTPS_LISTENER));
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
@@ -99,7 +100,7 @@ public class HttpsListenerResourceDefinition extends AbstractHttpListenerResourc
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SSL_CONTEXT, SECURITY_REALM, VERIFY_CLIENT, ENABLED_CIPHER_SUITES, ENABLED_PROTOCOLS, ENABLE_SPDY, SSL_SESSION_CACHE_SIZE, SSL_SESSION_TIMEOUT);
 
     HttpsListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER)
                 .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), new HttpsListenerAdd());
     }
 

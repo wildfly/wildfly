@@ -23,13 +23,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -40,7 +41,8 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  * @author Stuart Douglas
  */
 class ModClusterBalancerDefinition extends SimpleResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.BALANCER);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.BALANCER));
+    static final ParentResourceDescriptionResolver RESOLVER = ModClusterDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
 
     enum LoadBalancerMetric implements Metric<ModClusterStatus.LoadBalancer> {
         STICKY_SESSION_COOKIE(Constants.STICKY_SESSION_COOKIE, ModelType.STRING) {
@@ -104,7 +106,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
     private final FunctionExecutorRegistry<ModCluster> registry;
 
     ModClusterBalancerDefinition(FunctionExecutorRegistry<ModCluster> registry) {
-        super(new Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey())).setRuntime());
+        super(new Parameters(REGISTRATION, RESOLVER).setRuntime());
         this.registry = registry;
     }
 

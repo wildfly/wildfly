@@ -56,9 +56,9 @@ import org.xnio.ssl.XnioSsl;
 public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider implements ResourceServiceConfigurator, Supplier<Map.Entry<ModCluster, MCMPConfig>>, Consumer<Map.Entry<ModCluster, MCMPConfig>> {
 
     private static final Map<PathElement, RouteParsingStrategy> ROUTE_PARSING_STRATEGIES = Map.of(
-            NoAffinityResourceDefinition.PATH, RouteParsingStrategy.NONE,
-            SingleAffinityResourceDefinition.PATH, RouteParsingStrategy.SINGLE,
-            RankedAffinityResourceDefinition.PATH, RouteParsingStrategy.RANKED);
+            NoAffinityResourceDefinition.REGISTRATION.getPathElement(), RouteParsingStrategy.NONE,
+            SingleAffinityResourceDefinition.REGISTRATION.getPathElement(), RouteParsingStrategy.SINGLE,
+            RankedAffinityResourceDefinition.REGISTRATION.getPathElement(), RouteParsingStrategy.RANKED);
 
     private volatile SupplierDependency<XnioWorker> worker;
     private volatile SupplierDependency<SocketBinding> managementBinding;

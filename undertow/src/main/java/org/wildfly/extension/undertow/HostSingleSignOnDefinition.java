@@ -14,6 +14,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -40,7 +41,7 @@ public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
             @Override
             public ResourceDescriptor.Builder apply(ResourceDescriptor.Builder builder, ResourceServiceConfigurator configurator) {
                 return builder.addCapability(HOST_SSO_CAPABILITY)
-                        .withAddResourceOperationTransformation(AdminOnlyOperationStepHandlerTransformer.INSTANCE)
+                        .withOperationTransformation(ModelDescriptionConstants.ADD, AdminOnlyOperationStepHandlerTransformer.INSTANCE)
                         ;
             }
         });

@@ -36,12 +36,13 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -69,8 +70,8 @@ import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
  * @author Radoslav Husar
  */
 public class ModClusterDefinition extends AbstractFilterDefinition {
-
-    public static final PathElement PATH_ELEMENT = pathElement(Constants.MOD_CLUSTER);
+    public static final ResourceRegistration REGISTRATION = ResourceRegistration.of(pathElement(Constants.MOD_CLUSTER));
+    static final ParentResourceDescriptionResolver RESOLVER = FilterDefinitions.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -297,7 +298,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
     private final ServiceValueExecutorRegistry<ModCluster> registry = ServiceValueExecutorRegistry.newInstance();
 
     ModClusterDefinition() {
-        super(PATH_ELEMENT);
+        super(REGISTRATION);
     }
 
     @Override
@@ -305,7 +306,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(ATTRIBUTES)
                 .addCapabilities(FilterCapabilities.FILTER_CAPABILITY)
-                .addRequiredSingletonChildren(SingleAffinityResourceDefinition.PATH)
+                .addRequiredSingletonChildren(SingleAffinityResourceDefinition.REGISTRATION.getPathElement())
                 .setResourceTransformation(ModClusterResource::new)
                 ;
         ModClusterResourceServiceHandler handler = new ModClusterResourceServiceHandler(this.registry);

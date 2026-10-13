@@ -41,6 +41,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -100,7 +101,7 @@ import io.undertow.servlet.api.LoginConfig;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
     private static final Predicate<String> SERVLET_MECHANISM;
 
     static {
@@ -177,7 +178,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     }
 
     private ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains, AddHandler addHandler, RemoveHandler removeHandler) {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
                 .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
                         new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))

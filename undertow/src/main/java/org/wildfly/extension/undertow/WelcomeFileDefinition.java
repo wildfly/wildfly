@@ -10,6 +10,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleResourceDefinition;
 
 import java.util.Collection;
@@ -21,10 +22,10 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class WelcomeFileDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.WELCOME_FILE);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.WELCOME_FILE));
 
     WelcomeFileDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(ReloadRequiredAddStepHandler.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );

@@ -9,8 +9,8 @@ import java.util.List;
 
 import io.undertow.server.HttpHandler;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -20,7 +20,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.wildfly.extension.undertow.Capabilities;
-import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
@@ -32,8 +31,8 @@ abstract class HandlerDefinition extends PersistentResourceDefinition {
 
     private final HandlerFactory factory;
 
-    protected HandlerDefinition(PathElement path, HandlerFactory factory) {
-        super(new SimpleResourceDefinition.Parameters(path, UndertowExtension.getResolver(Constants.HANDLER, path.getKey())));
+    protected HandlerDefinition(ResourceRegistration registration, HandlerFactory factory) {
+        super(new SimpleResourceDefinition.Parameters(registration, HandlerDefinitions.RESOLVER.createChildResolver(registration.getPathElement())));
         this.factory = factory;
     }
 
