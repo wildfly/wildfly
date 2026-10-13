@@ -17,25 +17,13 @@ thereof, with various configuration options.
 [[running-the-testsuite]]
 == Running the testsuite
 
-The WildFly source code includes scripts to assist with building WildFly and running the testsuite. *Using these scripts is not required.* The scripts simply provide some convenience wrappers around directly calling `mvn`.
-Directly using `mvn` is fine and is commonly done.
+The testsuite is run using Maven.
 
-Tests are run either when running the `build.sh` and `build.bat` shell scripts, or by using `integration-tests.sh` or `integration-tests.bat`. All of these scripts are found in the root directory of the source tree.
+Tests are run either:
 
-* `build.sh` or `build.bat`, as a part of the WildFly build.
-** By default, only smoke tests are run. To run all tests, use `./build.sh install -DallTests`.
-* `integration-tests.sh` or `integration-tests.bat`, a convenience script which runs all parent testsuite modules (which configure the server).
-* Direct Maven invocation, using `mvn install`.
-
-The scripts are wrappers around the Maven-based build. Their arguments are
-passed to Maven (with few exceptions described below). This means you
-can use:
-
-* `./build.sh` (defaults to install)
-* `./build.sh install`
-* `./build.sh clean install`
-* `./integration-tests.sh install`
-* ...etc.
+* As a part of the WildFly build, using `mvn install` (or the `build.sh` and `build.bat` convenience wrappers).
+** By default, only smoke tests are run. To run all tests, use `mvn install -DallTests`.
+* By running only the testsuite modules (which configure the server), using `mvn -f testsuite/pom.xml install`.
 
 [[supported-maven-phases]]
 === Supported Maven phases
@@ -111,15 +99,14 @@ To define groups of tests to be run, these properties are available:
 [[examples]]
 == Examples
 
-* `./integration-tests.sh install` – Runs smoke tests.
-* `./integration-tests.sh clean install` – Cleans the target directory, then runs smoke tests.
-* `./integration-tests.sh install -Dts.smoke` – Same as above.
-* `./integration-tests.sh install -DallTests` – Runs all testsuite tests.
-* `./integration-tests.sh install -Ddomain-tests` – Runs domain tests (translated by the script to `-Ddomain.module -Dts.noSmoke`).
-* `./build.sh clean install -Dts.basic -Dts.domain` – Builds WildFly and runs the smoke, basic integration and domain tests.
+* `mvn -f testsuite/pom.xml install` – Runs smoke tests.
+* `mvn -f testsuite/pom.xml clean install` – Cleans the target directory, then runs smoke tests.
+* `mvn -f testsuite/pom.xml install -Dts.smoke` – Same as above.
+* `mvn -f testsuite/pom.xml install -DallTests -fae` – Runs all testsuite tests, failing *only* at the end if any module fails.
+* `mvn -f testsuite/pom.xml install -Dts.noSmoke -Dts.basic -Dts.domain` – Runs a selected set of modules and tests.
+* `mvn clean install -Dts.basic -Dts.domain` – Builds WildFly and runs the smoke, basic integration and domain tests.
 
-*Pure maven* - if you prefer not to use scripts, you may achieve the
-same result with:
+When building the whole project, you may also run the testsuite as part of the build with:
 
 * `mvn ... -rf testsuite`
 
@@ -183,11 +170,10 @@ operations.
 [[running-a-single-test-or-specified-tests]]
 === Running a single test (or specified tests)
 
-Single test is run using *-Dtest=...* . Examples:
+Single test is run using `-Dtest=...`. Examples:
 
-* `+./integration-tests.sh install -Dtest='*Clustered*' -Dts.clustering+`
-* `+./integration-tests.sh clean install -Dtest=org/jboss/as/test/integration/ejb/async/*TestCase.java -Dts.basic+`
-* `+cd testsuite; mvn install -Dtest='*Clustered*' -Dts.basic+`
+* `mvn -f testsuite/pom.xml install -Dtest='*Clustered*' -Dts.clustering`
+* `mvn -f testsuite/pom.xml clean install -Dtest='org/jboss/as/test/integration/ejb/async/*TestCase.java' -Dts.basic`
 
 The same shortcuts listed in "Test groups" may be used to activate the
 module and group profile.
@@ -220,7 +206,7 @@ For example, you might want to run the testsuite against AS located in
 
 [source,shell,options="nowrap"]
 ----
-./integration-tests.sh -DallTests -Djboss.dist=/opt/wildfly
+mvn -f testsuite/pom.xml install -DallTests -Djboss.dist=/opt/wildfly
 ----
 
 The difference between jboss.dist and jboss.home:
@@ -266,7 +252,7 @@ you have a server already running, it will be re-used.
 
 [source,shell,options="nowrap"]
 ----
-./integration-tests.sh install -DdebugClient -Ddebug.port.surefire=4040
+mvn -f testsuite/pom.xml install -DdebugClient -Ddebug.port.surefire=4040
 
 ...
 
@@ -278,7 +264,7 @@ Listening for transport dt_socket at address: 4040
 
 [source,options="nowrap"]
 ----
-./integration-tests.sh install -DdebugClient -Ddebug.port.surefire
+mvn -f testsuite/pom.xml install -DdebugClient -Ddebug.port.surefire
 
 ...
 
@@ -290,12 +276,12 @@ Listening for transport dt_socket at address: 5050
 
 [source,shell,options="nowrap"]
 ----
-./integration-tests.sh install -Ddebug
+mvn -f testsuite/pom.xml install -Ddebug
 ----
 
 [source,shell,options="nowrap"]
 ----
-./integration-tests.sh install -Ddebug -Das.debug.port=5005
+mvn -f testsuite/pom.xml install -Ddebug -Das.debug.port=5005
 ----
 
 [IMPORTANT]
@@ -354,14 +340,11 @@ Test reports are created in the form known from EAP 5. To create them,
 simply run the testsuite, which will create Surefire XML files.
 
 Creation of the reports is bound to the `site` Maven phase, so it must
-be run separately afterward. Use one of these:
+be run separately afterward:
 
 [source,options="nowrap"]
 ----
-./integration-tests.sh site
-cd testsuite
-mvn site
-mvn -pl testsuite site
+mvn -f testsuite/pom.xml site
 ----
 
 Note that it will take all test results under `testsuite/integration/` -
@@ -389,18 +372,9 @@ target/classes.
 
 [source,options="nowrap"]
 ----
-./build.sh clean install -DskipTests
-./integration-tests.sh clean install -DallTests -Dcoverage
-./integration-tests.sh site -DallTests -Dcoverage ## Must run in separatedly.
-----
-
-Alternative:
-
-[source,options="nowrap"]
-----
 mvn clean install -DskipTests
-mvn -rf testsuite clean install -DallTests -Dcoverage
-mvn -rf testsuite site -DallTests -Dcoverage
+mvn -f testsuite/pom.xml install -DallTests -Dcoverage
+mvn -f testsuite/pom.xml site -DallTests -Dcoverage
 ----
 
 [[cleaning-the-project]]
@@ -501,7 +475,7 @@ This allows substitution of properties specified on the command line, such as:
 
 [source,shell]
 ----
-./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
+mvn -f testsuite/pom.xml clean install -Dts.noSmoke -Dts.clustering -Dnode0=192.168.0.1 -Dnode1=192.168.0.2
 ----
 
 [[Changing_the_container_images_used_in_integration_tests]]

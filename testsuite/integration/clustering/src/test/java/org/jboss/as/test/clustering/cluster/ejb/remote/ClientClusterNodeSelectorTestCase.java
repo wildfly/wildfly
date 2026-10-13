@@ -48,7 +48,7 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
  * <p>This test was added after the functionality was broken because of the affinity not being correctly sent to the
  * client (refer to issue <a href="https://issues.jboss.org/browse/WFLY-10030">WFLY-10030</a>);</p>
  * <p>NOTE: this test can be run using the following command issued from the root directory of the whole WildFly project:
- * {@code ./integration-tests.sh test -Dts.noSmoke -Dts.clustering -Dtest=org.jboss.as.test.clustering.cluster.ejb.remote.ClientClusterNodeSelectorTestCase}</p>
+ * {@code mvn -f testsuite/pom.xml test -Dts.noSmoke -Dts.clustering -Dtest=org.jboss.as.test.clustering.cluster.ejb.remote.ClientClusterNodeSelectorTestCase}</p>
  *
  * @author <a href="mailto:tborgato@redhat.com">Tommaso Borgato</a>
  */
