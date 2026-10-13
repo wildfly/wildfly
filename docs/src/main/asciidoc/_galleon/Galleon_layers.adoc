@@ -538,7 +538,7 @@ link:#gal.base-server[base-server] +
 link:#gal.jmx[jmx] +
 
 |[[gal.security-manager]]security-manager
-|Retained for compatibility with existing Galleon provisioning configurations. In WildFly feature packs based on Jakarta EE 11, this layer is a no-op and does not enable the Security Manager.
+|Retained for compatibility with existing Galleon provisioning configurations. In WildFly 42, this layer is a no-op and enabling the Security Manager is not allowed.
 |
 link:#gal.base-server[base-server] +
 
