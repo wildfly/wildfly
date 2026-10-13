@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Tests of using EAP 7.4 domain.xml with a current DC and a 7.4 secondary.
+ * Tests of using EAP 8.0 domain.xml with a current DC and an 8.0 secondary.
  *
  * @author Brian Stansberry
  */

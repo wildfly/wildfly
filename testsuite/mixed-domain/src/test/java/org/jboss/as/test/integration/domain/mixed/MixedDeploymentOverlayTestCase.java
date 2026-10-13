@@ -354,10 +354,6 @@ public class MixedDeploymentOverlayTestCase {
     }
 
     protected String getUnknowOperationErrorCode() {
-        Version version = this.getClass().getAnnotation(Version.class);
-        if (version.value().compare(7, 1) < 0) {
-            return "WFLYCTL0031";
-        }
         return "WFLYDC0032";
     }
 }

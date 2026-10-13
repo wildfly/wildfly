@@ -80,12 +80,8 @@ public abstract class DomainHostExcludesTest {
 
     private static DomainTestSupport testSupport;
 
-    private static Version.AsVersion version;
-
     /** Subclasses call from a @BeforeClass method */
     protected static void setup(Class<?> clazz, String hostRelease, ModelVersion secondaryApiVersion) throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
-        version = clazz.getAnnotation(Version.class).value();
-
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
         // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer secondary hosts
@@ -162,7 +158,7 @@ public abstract class DomainHostExcludesTest {
         asbgs.add("full-ha-sockets");
 
         ModelNode extensions = addOp.get("excluded-extensions");
-        for (String ext : getExcludedExtensions()) {
+        for (String ext : EXCLUDED_EXTENSIONS) {
             extensions.add(ext);
         }
 
@@ -170,9 +166,9 @@ public abstract class DomainHostExcludesTest {
     }
 
     private static void addExtensions(boolean evens, ModelControllerClient client) throws IOException, MgmtOperationException {
-        for (int i = 0; i < getExcludedExtensions().length; i++) {
+        for (int i = 0; i < EXCLUDED_EXTENSIONS.length; i++) {
             if ((i % 2 == 0) == evens) {
-                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, getExcludedExtensions()[i])), client);
+                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, EXCLUDED_EXTENSIONS[i])), client);
             }
         }
     }
@@ -261,7 +257,7 @@ public abstract class DomainHostExcludesTest {
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 0);
         for (ModelNode ext : result.asList()) {
-            Assert.assertFalse(ext.asString(), getExtensionsSet().contains(ext.asString()));
+            Assert.assertFalse(ext.asString(), EXTENSIONS_SET.contains(ext.asString()));
         }
     }
 
@@ -342,20 +338,6 @@ public abstract class DomainHostExcludesTest {
         if (!secondaryUtil.isHostControllerStarted()) {
             startSecondary();
         }
-    }
-
-    private Set<String> getExtensionsSet() {
-        if (version.getMajor() >= 7) {
-            return EXTENSIONS_SET;
-        }
-        throw new IllegalStateException("Unknown version " + version);
-    }
-
-    private static String[] getExcludedExtensions() {
-        if (version.getMajor() >= 7) {
-            return EXCLUDED_EXTENSIONS;
-        }
-        throw new IllegalStateException("Unknown version " + version);
     }
 
     private static class TestExpressionResolver extends ExpressionResolverImpl {

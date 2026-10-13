@@ -16,7 +16,7 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
 
 /**
- * Tests of the ability of a DC to exclude resources from visibility to an EAP 7.4.0 secondary.
+ * Tests of the ability of a DC to exclude resources from visibility to an EAP 8.0.0 secondary.
  *
  * @author Brian Stansberry
  */
