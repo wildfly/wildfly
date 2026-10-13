@@ -520,8 +520,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setMajorVersion(Integer.parseInt(servletVersion.charAt(0) + ""));
                 d.setMinorVersion(Integer.parseInt(servletVersion.charAt(2) + ""));
             } else {
-                d.setMajorVersion(3);
-                d.setMinorVersion(1);
+                // JBoss Metadata properly recognizes servlet spec. version for all
+                // XML schema based web DDs but it fails to recognize spec. version
+                // for DTD based versions. Thus falling back to latest DTD version.
+                d.setMajorVersion(2);
+                d.setMinorVersion(3);
             }
 
             d.setDefaultCookieVersion(servletContainer.getDefaultCookieVersion());
