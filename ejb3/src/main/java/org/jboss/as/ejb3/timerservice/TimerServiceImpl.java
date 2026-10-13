@@ -46,6 +46,7 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
+import org.jboss.ejb3.timerservice.ExtendedTimerConfig;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -67,7 +68,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     /**
      * All timers which were created by this {@link ManagedTimerService}
      */
-    private final ConcurrentMap<String, TimerImpl> timers = new ConcurrentHashMap<>();
+    final ConcurrentMap<String, TimerImpl> timers = new ConcurrentHashMap<>();
 
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
@@ -82,7 +83,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     private final Executor executor;
     private final java.util.Timer timer;
     private final TimedObjectInvoker invoker;
-    private final TimerPersistence persistence;
+    final TimerPersistence persistence;
     private final TimerServiceRegistry timerServiceRegistry;
     private final TimerListener timerListener;
     private final Predicate<TimerConfig> timerFilter;
@@ -182,7 +183,13 @@ public class TimerServiceImpl implements ManagedTimerService {
                 .end(schedule.getEnd());
         Serializable info = timerConfig == null ? null : timerConfig.getInfo();
         boolean persistent = timerConfig == null || timerConfig.isPersistent();
-        return this.createCalendarTimer(scheduleClone, info, persistent, null);
+
+        String externalId = null;
+        if (timerConfig instanceof ExtendedTimerConfig) {
+            externalId = ((ExtendedTimerConfig) timerConfig).getExternalId();
+        }
+
+        return this.createCalendarTimer(scheduleClone, info, persistent, null, externalId);
     }
 
     @Override
@@ -197,7 +204,13 @@ public class TimerServiceImpl implements ManagedTimerService {
         if (intervalDuration < 0) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("intervalDuration", Long.toString(intervalDuration));
         }
-        return this.createTimer(initialExpiration, intervalDuration, timerConfig.getInfo(), timerConfig.isPersistent());
+
+        String externalId = null;
+        if (timerConfig instanceof ExtendedTimerConfig) {
+            externalId = ((ExtendedTimerConfig) timerConfig).getExternalId();
+        }
+
+        return this.createTimer(initialExpiration, intervalDuration, timerConfig.getInfo(), timerConfig.isPersistent(), externalId);
     }
 
     @Override
@@ -209,11 +222,17 @@ public class TimerServiceImpl implements ManagedTimerService {
         if (expiration.getTime() < 0) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("expiration.getTime", Long.toString(expiration.getTime()));
         }
-        return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent());
+
+        String externalId = null;
+        if (timerConfig instanceof ExtendedTimerConfig) {
+            externalId = ((ExtendedTimerConfig) timerConfig).getExternalId();
+        }
+
+        return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent(), externalId);
     }
 
     public TimerImpl loadAutoTimer(ScheduleExpression schedule,TimerConfig timerConfig, Method timeoutMethod) {
-        return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod);
+        return this.createCalendarTimer(schedule, timerConfig.getInfo(), timerConfig.isPersistent(), timeoutMethod, null);
     }
 
     @Override
@@ -238,6 +257,7 @@ public class TimerServiceImpl implements ManagedTimerService {
         }
         return activeTimers;
     }
+
 
     /**
      * {@inheritDoc}
@@ -280,6 +300,24 @@ public class TimerServiceImpl implements ManagedTimerService {
      * @return Returns the newly created timer
      */
     private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent) {
+        return createTimer(initialExpiration, intervalDuration, info, persistent, null);
+    }
+
+    /**
+     * Create a {@link jakarta.ejb.Timer}. Caller of this method should already have checked for allowed operations,
+     * and validated parameters.
+     *
+     * @param initialExpiration The {@link java.util.Date} at which the first timeout should occur.
+     *                          <p>If the date is in the past, then the timeout is triggered immediately
+     *                          when the timer moves to {@link TimerState#ACTIVE}</p>
+     * @param intervalDuration  The interval (in milliseconds) between consecutive timeouts for the newly created timer.
+     *                          <p>Cannot be a negative value. A value of 0 indicates a single timeout action</p>
+     * @param info              {@link java.io.Serializable} info that will be made available through the newly created timer's {@link jakarta.ejb.Timer#getInfo()} method
+     * @param persistent        True if the newly created timer has to be persistent
+     * @param externalId        External identifier from app creating timer
+     * @return Returns the newly created timer
+     */
+    private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent, String externalId) {
         // allowed method check and parameter validation are already done in all code paths before reaching here.
         // create an id for the new timer instance
         UUID uuid = UUID.randomUUID();
@@ -294,6 +332,7 @@ public class TimerServiceImpl implements ManagedTimerService {
                 .setPersistent(persistent)
                 .setTimerState(TimerState.CREATED)
                 .setTimedObjectId(getInvoker().getTimedObjectId())
+                .setExternalId(externalId)
                 .build(this);
 
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
@@ -315,7 +354,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      * @param persistent True if the newly created timer has to be persistent
      * @return Returns the newly created timer
      */
-    private TimerImpl createCalendarTimer(ScheduleExpression schedule, Serializable info, boolean persistent, Method timeoutMethod) {
+    private TimerImpl createCalendarTimer(ScheduleExpression schedule, Serializable info, boolean persistent, Method timeoutMethod, String externalId) {
         // allowed method check and parameter validation are already done in all code paths before reaching here.
         // generate an id for the timer
         UUID uuid = UUID.randomUUID();
@@ -330,6 +369,7 @@ public class TimerServiceImpl implements ManagedTimerService {
                 .setTimedObjectId(getInvoker().getTimedObjectId())
                 .setInfo(info)
                 .setNewTimer(true)
+                .setExternalId(externalId)
                 .build(this);
 
         this.persistTimer(timer, true);
@@ -701,7 +741,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      * Returns an unmodifiable view of timers in the current transaction that are waiting for the transaction
      * to finish
      */
-    private Map<String, TimerImpl> getWaitingOnTxCompletionTimers() {
+    Map<String, TimerImpl> getWaitingOnTxCompletionTimers() {
         Map<String, TimerImpl> timers = null;
         if (getTransaction() != null) {
             TransactionSynchronizationRegistry tsr = this.invoker.getComponent().getTransactionSynchronizationRegistry();

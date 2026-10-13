@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerService;
 
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 
 /**
@@ -32,18 +33,18 @@ import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
  */
 public class TimerServiceRegistryImpl implements TimerServiceRegistry {
 
-    private static final Function<TimerService, Collection<Timer>> GET_TIMERS = TimerService::getTimers;
+    private static final Function<ManagedTimerService, Collection<Timer>> GET_TIMERS = TimerService::getTimers;
     private static final Function<Collection<Timer>, Stream<Timer>> STREAM = Collection::stream;
 
-    private final Set<TimerService> services = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
+    private final Set<ManagedTimerService> services = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
 
     @Override
-    public void registerTimerService(TimerService service) {
+    public void registerTimerService(ManagedTimerService service) {
         this.services.add(service);
     }
 
     @Override
-    public void unregisterTimerService(TimerService service) {
+    public void unregisterTimerService(ManagedTimerService service) {
         this.services.remove(service);
     }
 

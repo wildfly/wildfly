@@ -24,6 +24,7 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.version.Stability;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.function.Functions;
 import org.wildfly.subsystem.service.DeploymentServiceInstaller;
@@ -36,18 +37,22 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  */
 public class TimerServiceFactoryServiceInstaller implements DeploymentServiceInstaller {
 
+    private static final Stability EXTENDED_TIMER_SERVICE_STABILITY = Stability.COMMUNITY;
+
     private final ServiceName name;
     private final ManagedTimerServiceFactoryConfiguration configuration;
     private final String threadPoolName;
     private final String store;
     private final Predicate<TimerConfig> filter;
+    private final boolean extended;
 
-    public TimerServiceFactoryServiceInstaller(ServiceName name, ManagedTimerServiceFactoryConfiguration configuration, Predicate<TimerConfig> filter, String threadPoolName, String store) {
+    public TimerServiceFactoryServiceInstaller(ServiceName name, ManagedTimerServiceFactoryConfiguration configuration, Predicate<TimerConfig> filter, String threadPoolName, String store, Stability stability) {
         this.name = name;
         this.configuration = configuration;
         this.filter = filter;
         this.threadPoolName = threadPoolName;
         this.store = store;
+        this.extended = stability.enables(EXTENDED_TIMER_SERVICE_STABILITY);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class TimerServiceFactoryServiceInstaller implements DeploymentServiceIns
             @Override
             public ManagedTimerService createTimerService(EJBComponent component) {
                 TimedObjectInvoker invoker = invokerFactory.createInvoker(component);
-                return new TimerServiceImpl(new TimerServiceConfiguration() {
+                TimerServiceConfiguration config = new TimerServiceConfiguration() {
                     @Override
                     public TimedObjectInvoker getInvoker() {
                         return invoker;
@@ -98,7 +103,8 @@ public class TimerServiceFactoryServiceInstaller implements DeploymentServiceIns
                     public Predicate<TimerConfig> getTimerFilter() {
                         return filter;
                     }
-                });
+                };
+                return extended ? new ExtendedTimerServiceImpl(config) : new TimerServiceImpl(config);
             }
         };
         ServiceInstaller.BlockingBuilder.of(Functions.constantSupplier(factory))

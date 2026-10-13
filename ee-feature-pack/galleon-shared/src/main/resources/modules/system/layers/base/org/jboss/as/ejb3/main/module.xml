@@ -64,6 +64,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.as.version"/>
         <!-- Needed for integration with hibernate validator -->
         <module name="org.jboss.as.weld.common" optional="true"/>
 

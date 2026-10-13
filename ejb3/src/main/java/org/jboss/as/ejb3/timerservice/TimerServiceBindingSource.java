@@ -20,29 +20,32 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link jakarta.ejb.TimerService}
- * <p/>
+ * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link jakarta.ejb.TimerService}.
+ * <p>
+ * At {@link org.jboss.as.version.Stability#COMMUNITY} or higher the factory creates an
+ * {@link ExtendedTimerServiceImpl}, so the injected object is also castable to
+ * {@link org.jboss.ejb3.timerservice.ExtendedTimerService}. At lower stability levels a plain
+ * {@link TimerServiceImpl} is created, which does not implement that interface.
+ * </p>
+ *
  * @author Jaikiran Pai
  */
 public class TimerServiceBindingSource extends InjectionSource {
 
-    private static final TimerServiceManagedReferenceFactory TIMER_SERVICE_MANAGED_REFERENCE_FACTORY_INSTANCE = new TimerServiceManagedReferenceFactory();
+    private static final TimerServiceManagedReferenceFactory INSTANCE = new TimerServiceManagedReferenceFactory();
 
     @Override
     public void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        injector.inject(TIMER_SERVICE_MANAGED_REFERENCE_FACTORY_INSTANCE);
+        injector.inject(INSTANCE);
     }
 
-    /**
-     * {@link ManagedReferenceFactory} for returning a {@link ManagedReference} to a {@link jakarta.ejb.TimerService}
-     */
     private static class TimerServiceManagedReferenceFactory implements ContextListManagedReferenceFactory {
 
-        private final TimerServiceManagedReference timerServiceManagedReference = new TimerServiceManagedReference();
+        private static final TimerServiceManagedReference REFERENCE = new TimerServiceManagedReference();
 
         @Override
         public ManagedReference getReference() {
-            return timerServiceManagedReference;
+            return REFERENCE;
         }
 
         @Override
@@ -51,19 +54,14 @@ public class TimerServiceBindingSource extends InjectionSource {
         }
     }
 
-    /**
-     * A {@link ManagedReference} to a {@link jakarta.ejb.TimerService}
-     */
     private static class TimerServiceManagedReference implements ManagedReference {
 
         @Override
         public void release() {
-
         }
 
         @Override
         public Object getInstance() {
-            // get the current invocation context and the EJBComponent out of it
             final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
             final EJBComponent ejbComponent = (EJBComponent) currentInvocationContext.getPrivateData(Component.class);
             if (ejbComponent == null) {
@@ -72,7 +70,6 @@ public class TimerServiceBindingSource extends InjectionSource {
             return ejbComponent.getTimerService();
         }
     }
-
 
     // All Timer bindings are equivalent since they just use a thread local context
     public boolean equals(Object o) {

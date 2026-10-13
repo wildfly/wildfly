@@ -20,13 +20,13 @@ public interface TimerServiceRegistry {
      * Registers the specified timer service.
      * @param service a timer service
      */
-    void registerTimerService(TimerService service);
+    void registerTimerService(ManagedTimerService service);
 
     /**
      * Unregisters the specified timer service.
      * @param service a timer service
      */
-    void unregisterTimerService(TimerService service);
+    void unregisterTimerService(ManagedTimerService service);
 
     /**
      * Returns the timers for all registered timer services.
