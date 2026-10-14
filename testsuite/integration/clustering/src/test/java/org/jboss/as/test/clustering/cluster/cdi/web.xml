@@ -9,13 +9,14 @@
          version="6.1">
     <distributable/>
 
-    <!-- Use mapping in the web.xml to override /simple servlet URL mapping defined in the @WebServlet annotation -->
+    <!-- Override the servlet class of the @WebServlet-annotated SimpleServlet (whose default name is its fully qualified class name) with CDIServlet.
+         Keeping the SimpleServlet name also lets @ArquillianResource(SimpleServlet.class) resolve the servlet URL. -->
     <servlet>
-        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-name>
+        <servlet-name>org.jboss.as.test.clustering.single.web.SimpleServlet</servlet-name>
         <servlet-class>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.webapp.CDIServlet</servlet-name>
+        <servlet-name>org.jboss.as.test.clustering.single.web.SimpleServlet</servlet-name>
         <url-pattern>/simple</url-pattern>
     </servlet-mapping>
 
