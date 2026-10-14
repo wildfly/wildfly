@@ -127,7 +127,30 @@ A Bootable JAR is well suited when:
 
 If that is the kind of installation you are aiming at, the guides that you should read next are:
 
-* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] 
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide]
 shows you how to configure a Maven `pom.xml` file to provision a customized WildFly server containing your application.
 * The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
 into a bootable JAR.
+
+[[wildfly_sbom]]
+= Software Bill of Materials (SBOM)
+
+WildFly installations include a Software Bill of Materials (SBOM) in https://cyclonedx.org/[CycloneDX] JSON format, gzip-compressed.
+
+It is located at the root of the installation as `sbom.cdx.json.gz`, or inside the jar at `META-INF/sbom/sbom.cdx.json.gz` in the case of a WildFly Bootable JAR.
+
+The SBOM lists all artifacts present in the server. For more details on the generated SBOM,
+refer to the https://docs.wildfly.org/galleon-plugins/#_galleon_plugins[Galleon Plugins documentation].
+
+[NOTE]
+====
+The SBOM structure may change in future releases of WildFly.
+====
+
+== Availability
+
+* **Standard Distributions**: Standard WildFly release zips contain the
+`sbom.cdx.json.gz` file for the full server distribution.
+* **Galleon-Provisioned Servers**: When provisioning a customized server
+using Galleon tools (Galleon CLI or WildFly Maven Plugin), the generated
+`sbom.cdx.json.gz` reflects the artifacts actually installed for that server configuration.
