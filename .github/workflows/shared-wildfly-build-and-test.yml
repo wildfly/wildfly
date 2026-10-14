@@ -123,7 +123,7 @@ jobs:
         run: |
          tar -xzf ${{ inputs.maven-repo-path }} -C ~
       - name: Build and Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }}
-        run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
+        run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} ./mvnw -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
         shell: bash
         # We need this due to long file names on Windows: https://github.com/actions/upload-artifact/issues/240
       - name: Find reports on Windows
