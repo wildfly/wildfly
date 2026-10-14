@@ -34,7 +34,6 @@
         <module name="jakarta.xml.bind.api"/>
 
         <!-- Other dependencies -->
-        <module name="com.fasterxml.classmate"/>
         <module name="com.fasterxml.jackson.core.jackson-core" optional="true"/>
         <module name="com.fasterxml.jackson.core.jackson-databind" optional="true"/>
         <!-- If the Oracle JDBC driver classes are accessible, Hibernate ORM will use them to tailor OracleDialect behavior -->
