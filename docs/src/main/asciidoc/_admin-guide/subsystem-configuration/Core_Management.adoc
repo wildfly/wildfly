@@ -27,7 +27,7 @@ changes thus enabling the developer to react to those changes.
 In order to use this feature you need to create your own module then
 configure and deploy it using the core management subsystem.
 
-For example let's create a simple listener :
+For example, let's create a simple listener:
 
 [source,java,options="nowrap"]
 ----
@@ -80,14 +80,14 @@ For example let's create a simple listener :
 ----
 
 To compile it you need to depend on the
-_org.wildfly.core:wildfly-core-management-client_ maven module. Now
-let's add the module to the wildfly modules :
+_org.wildfly.core:wildfly-core-management-client_ Maven module. Now
+let's add the module to the WildFly modules:
 
 ....
 module add --name=org.simple.lifecycle.events.listener --dependencies=org.wildfly.extension.core-management-client --resources=/home/ehsavoie/dev/demo/simple-listener/target/simple-process-state-listener.jar
 ....
 
-Now we can register or listener :
+Now we can register our listener:
 
 ....
 /subsystem=core-management/process-state-listener=simple-listener:add(class=org.simple.lifecycle.events.listener.SimpleListener, module=org.simple.lifecycle.events.listener, properties={file=/home/wildfly/tmp/events.txt})
@@ -105,7 +105,7 @@ For example to track the last 5 configuration changes let's active this
 /subsystem=core-management/service=configuration-changes:add(max-history=5)
 ....
 
-Now we can list the last configuration changes :
+Now we can list the last configuration changes:
 
 [source,options="nowrap"]
 ----
@@ -161,7 +161,6 @@ To enable the scanner and throw an error if annotated API elements are used in y
 ----
 
 If you use annotated API elements in your code, the deployment will fail, and the error message will contain  information about which API elements were called, from where, and which annotations they contain that indicate unstable API.
-
 
 
 

@@ -77,7 +77,7 @@ Blah blah = (Blah) ctx.lookup("foo:blah");
 ----
 
 That's it! You can see that the values that we pass to those properties
-are the same as what we did via the jndi.properties. It's upto the
+are the same as what we did via the jndi.properties. It's up to the
 client application to decide which approach they want to follow.
 
 [[Using-the-wildfly-config.xml]]

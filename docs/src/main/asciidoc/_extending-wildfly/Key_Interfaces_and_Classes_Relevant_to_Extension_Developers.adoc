@@ -274,7 +274,7 @@ as your `Extension` implementation, in a file named
 The `AttributeDefinition` class is used to create the static definition
 of one of a managed resource's attributes. It's a bit poorly named
 though, because the same interface is used to define the details of
-parameters to operations, and to define fields in the result of of
+parameters to operations, and to define fields in the result of
 operations.
 
 The definition includes all the static information about the
