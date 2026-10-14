@@ -189,7 +189,7 @@ public class TokenRealmTestCase {
                     .withReplacement(ALLOWED_PRINCIPAL.toUpperCase())
                     .build());
 
-            //Build token realm with a principal transforer
+            //Build token realm with a principal transformer
             configurableElements.add(TokenRealm.builder(TOKEN_REALM_PRINCIPAL_TRANSFORMER_NAME)
                 .withJwt(TokenRealm.jwtBuilder().withIssuer(JWT_ISSUER_1).build())
                 .withPrincipalClaim("sub")
