@@ -354,6 +354,9 @@ configured mapping of role names to map role names.
 |regex-role-mapper |A role mapper definition for a role mapper that
 performs a regex matching and maps matching roles with provided pattern.
 Regex can capture groups that replacement pattern can make use of.
+
+|properties-role-mapper |A role mapper definition for a role mapper that
+performs matching and maps matching roles with provided property file.
 |=======================================================================
 
 [[ssl-components]]
@@ -707,6 +710,7 @@ and openssl provider loaders.
                 }
             }
         },
+        "properties-role-mapper" => undefined,
         "provider-http-server-mechanism-factory" => {"global" => {"providers" => undefined}},
         "provider-loader" => {
             "elytron" => {
