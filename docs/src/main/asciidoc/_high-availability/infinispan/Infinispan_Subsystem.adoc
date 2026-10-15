@@ -28,7 +28,7 @@ e.g. To create a new cache container that loads marshallers from the "org.bar" m
 /subsystem=infinispan/cache-container=foo:add(module=org.foo)
 ----
 
-A cache container may designate a specific cache as its default cache, i.e. the cache returned via https://docs.jboss.org/infinispan/11.0/apidocs/org/infinispan/manager/CacheContainer.html#getCache()[CacheContainer.getCache()]:
+A cache container may designate a specific cache as its default cache, i.e. the cache returned via https://infinispan.org/docs/stable/apidocs/org/infinispan/manager/CacheContainer.html#getCache()[CacheContainer.getCache()]:
 
 e.g. To set "bar" as the default cache of the "foo" container:
 [source,options="nowrap"]
@@ -296,7 +296,7 @@ NONE::
     Non-transactional cache (the default behavior).
 BATCH::
     Transactional cache using a local Infinispan transaction manager.
-    Infinispan transactions are started/committed/rolled-back using http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/commons/api/BatchingCache.html[Infinispan's batching API].
+    Infinispan transactions are started/committed/rolled-back using https://infinispan.org/docs/stable/apidocs/org/infinispan/commons/api/BatchingCache.html[Infinispan's batching API].
 NON_XA::
     Transactional cache configured to use the server's transaction manager, registering as a Synchronization to the current transaction.
     Cache commit/rollback happens after the associated transaction completes.

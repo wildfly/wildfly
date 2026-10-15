@@ -633,8 +633,8 @@ is used to provide the contents of the ActAs element to the STSClient.
 In this example a STSClient object is created and provided to the
 proxy's request context. The alternative is to provide keys tagged with
 the ".it" suffix as was done in
-https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-WebservicerequesterImplementation[the
-Basic Scenario client]. The use of ActAs is configured through the props
+<<web-service-requester-implementation,the
+Basic Scenario client>>. The use of ActAs is configured through the props
 map using the SecurityConstants.STS_TOKEN_ACT_AS key. The alternative is
 to use the STSClient.setActAs method.
 

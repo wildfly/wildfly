@@ -96,8 +96,7 @@ wsdl contract of deployed services.
 === Server configuration options
 
 The configuration options are part of the
-https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[webservices
-subsystem section] of the application server domain model.
+xref:Admin_Guide.adoc#Web_services[webservices subsystem section] of the application server domain model.
 
 [source,xml,options="nowrap"]
 ----
@@ -160,7 +159,7 @@ of it is:
 Jakarta Enterprise Beans webservice endpoints bundled in `war` archives
 
 The structure of file is the following (schemas are available
-http://anonsvn.jboss.org/repos/jbossws/spi/trunk/src/main/resources/schema/[here]):
+https://www.jboss.org/schema/jbossas/[here]):
 
 [source,xml,options="nowrap"]
 ----
@@ -210,7 +209,7 @@ either specified in the referenced config file or in the WildFly domain
 model (webservices subsystem). For further details on the endpoint
 configurations and their management in the domain model, please see the
 related
-https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[documentation].
+xref:Admin_Guide.adoc#Web_services[documentation].
 
 [source,xml,options="nowrap"]
 ----

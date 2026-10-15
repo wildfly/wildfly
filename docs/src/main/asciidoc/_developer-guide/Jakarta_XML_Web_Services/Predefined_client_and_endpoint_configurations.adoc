@@ -89,7 +89,7 @@ implementations can also contain predefined client and endpoint
 configuration declarations. All endpoint/client configuration
 definitions for a given archive must be provided in a single deployment
 descriptor file, which must be an implementation of schema
-http://anonsvn.jboss.org/repos/jbossws/spi/tags/jbossws-spi-2.1.0.Final/src/main/resources/schema/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config].
+https://www.jboss.org/schema/jbossas/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config].
 Many endpoint/client configurations can be defined in the deployment
 descriptor file. Each configuration must have a name that is unique
 within the server on which the application is deployed. The
@@ -182,8 +182,7 @@ to be added to the chain of each endpoint or client assigned to a given
 configuration.
 
 Please refer to the
-https://docs.jboss.org/author/display/WFLY9/Web+services+configuration[WildFly
-documentation] for details on managing the _webservices_ subsystem such
+xref:Admin_Guide.adoc#Web_services[WildFly documentation] for details on managing the _webservices_ subsystem such
 as adding, removing and modifying handlers and properties.
 
 The allowed contents in the _webservices_ subsystem are defined by the
@@ -334,7 +333,7 @@ port.echo("Kermit");
 JBossWS parses the specified configuration file. The configuration file
 must be found as a resource by the classloader of the current thread.
 The
-http://anonsvn.jboss.org/repos/jbossws/spi/tags/jbossws-spi-2.1.0.Beta1/src/main/resources/schema/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config
+https://www.jboss.org/schema/jbossas/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config
 schema] defines the descriptor contents and is included in the
 _jbossws-spi_ artifact.
 
@@ -416,7 +415,7 @@ port.echo("Kermit");
 The default `ClientConfigurer` implementation parses the specified
 configuration file, if any, after having resolved it as a resources
 using the current thread context classloader. The
-http://anonsvn.jboss.org/repos/jbossws/spi/tags/jbossws-spi-2.1.0.Beta1/src/main/resources/schema/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config
+https://www.jboss.org/schema/jbossas/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config
 schema] defines the descriptor contents and is included in the
 _jbossws-spi_ artifact.
 
