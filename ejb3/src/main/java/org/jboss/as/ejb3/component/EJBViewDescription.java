@@ -56,6 +56,8 @@ public class EJBViewDescription extends ViewDescription {
         getConfigurators().add(EJBContainerInterceptorsViewConfigurator.INSTANCE);
         // add server interceptors configurator
         getConfigurators().add(ServerInterceptorsViewConfigurator.INSTANCE);
+        // add access-log interceptor (installed unconditionally; gated at invocation time)
+        getConfigurators().add(AccessLogViewConfigurator.INSTANCE);
     }
 
     public MethodInterfaceType getMethodIntf() {
