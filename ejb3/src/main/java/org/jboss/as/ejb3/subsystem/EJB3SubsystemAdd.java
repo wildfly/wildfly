@@ -121,6 +121,7 @@ import org.jboss.as.ejb3.local.LocalEJBDiscoveryProviderService;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.local.LocalTransportProvider;
+import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrar;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -130,9 +131,11 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
@@ -145,6 +148,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
+import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 import org.wildfly.common.function.Functions;
@@ -453,10 +459,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);
 
-        // install the DeploymentRepositoryService
-        serviceTarget.addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        // install the deployment repository service
+        installDeploymentRepository(context, resource, appclient);
 
         // add support for outgoing invocations on remote EJBs
         addOutgoingRemoteInvocationServices(context, model, resource, appclient);
@@ -476,7 +480,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         serviceTarget.addService(EJBSuspendHandlerService.SERVICE_NAME, ejbSuspendHandlerService)
                 .addDependency(suspendControllerServiceName, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
-                .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
@@ -503,6 +506,67 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         });
     }
 
+    /**
+     * Installs the DeploymentRepositoryService and its dependencies, which includes a cache-based ServiceProviderRegistrar instance.
+     *
+     * The ServiceProviderRegistrar is obtained in one of two ways:
+     * - from the distributable-ejb subsystem's EjbClientServiceProvider, if the subsystem is present
+     * - from the legacy Infinispan-based provider,LegacyEjbClientServicesProvider, if the subsystem is not present
+     *
+     * @param context the curreny OperationContext
+     * @param ejbSubsystemResource the EJB subsystem resource
+     * @param appclient true is this instance is an applclient
+     * @throws OperationFailedException
+     */
+    private static void installDeploymentRepository(final OperationContext context,
+                                                    final Resource ejbSubsystemResource,
+                                                    final boolean appclient) throws OperationFailedException {
+
+        // service dependencies of the DeploymentRepository
+        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
+                ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
+
+        // get the service which provides the service installers
+        ServiceDependency<EjbClientServicesProvider> ejbClientServicesProvider =
+                EJB3RemoteServiceAdd.getEjbClientServicesProvider(context, getRemoteResourceModel(ejbSubsystemResource), EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY);
+
+        // create an installer to install (1) the abstractions the DeplomentRepository depends upon and (2) the DeploymentRepository
+        ServiceInstaller installer = new ServiceInstaller() {
+            @Override
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                // install the cache-based abstractions
+                for (ServiceInstaller installer : ejbClientServicesProvider.get().getModuleAvailabilityRegistrarServiceInstallers()) {
+                    ServiceController<?> controller = installer.install(target);
+                }
+
+                // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
+                return ServiceInstaller.builder(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar))
+                        // this service performs blocking operations
+                        .blocking()
+                        .onStart(DeploymentRepositoryService::start)
+                        .onStop(DeploymentRepositoryService::stop)
+                        .requires(List.of(serviceProviderRegistrar, activityRegistry))
+                        .provides(DeploymentRepositoryService.SERVICE_NAME)
+                        .build()
+                        .install(target);
+            }
+        };
+        ServiceInstaller.Builder builder = ServiceInstaller.builder(installer, context.getCapabilityServiceSupport());
+        builder.requires(ejbClientServicesProvider);
+        builder.build().install(context);
+    }
+
+    /**
+     * Get the "remote" resource model, if it exists
+     *
+     * @param ejbSubsystemResource the ejb3 subsystem resource
+     * @return the "remote" model, if it exists, or an empty model node otherwise
+     */
+    private static ModelNode getRemoteResourceModel(final Resource ejbSubsystemResource) {
+        return ejbSubsystemResource.hasChild(REMOTE_SERVICE_PATH) ? ejbSubsystemResource.getChild(REMOTE_SERVICE_PATH).getModel() : new ModelNode();
+    }
+
     private static void addOutgoingRemoteInvocationServices(final OperationContext context,
                                                             final ModelNode ejbSubsystemModel,
                                                             final Resource ejbSubsystemResource,
@@ -513,7 +577,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         // add in the local discovery provider
         final ServiceBuilder<?> localDiscoveryProviderBuilder = serviceTarget.addService();
         final Consumer<DiscoveryProvider> discoveryProviderConsumer = localDiscoveryProviderBuilder.provides(LocalEJBDiscoveryProviderService.SERVICE_NAME);
-        final Supplier<DeploymentRepository> deploymentRepositorySupplier = localDiscoveryProviderBuilder.requires(DeploymentRepositoryService.SERVICE_NAME);
+        final Supplier<ModuleAvailabilityRegistrar> moduleAvailabilityRegistrarSupplier = localDiscoveryProviderBuilder.requires(DeploymentRepositoryService.SERVICE_NAME);
         final Supplier<ServerEnvironment> serverEnvironmentSupplier = localDiscoveryProviderBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
         // if the "remote" resource is present, pass in references to the client mappings registries installed there
         List<Supplier<Registry>> clientMappingsRegistrySupplierList = new ArrayList<>();
@@ -526,7 +590,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 clientMappingsRegistrySupplierList.add(registrySupplier);
             }
         }
-        final LocalEJBDiscoveryProviderService localDiscoveryProviderService = new LocalEJBDiscoveryProviderService(discoveryProviderConsumer, serverEnvironmentSupplier, deploymentRepositorySupplier, clientMappingsRegistrySupplierList);
+        final LocalEJBDiscoveryProviderService localDiscoveryProviderService = new LocalEJBDiscoveryProviderService(discoveryProviderConsumer, serverEnvironmentSupplier, moduleAvailabilityRegistrarSupplier, clientMappingsRegistrySupplierList);
         localDiscoveryProviderBuilder.setInstance(localDiscoveryProviderService);
         localDiscoveryProviderBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         localDiscoveryProviderBuilder.install();

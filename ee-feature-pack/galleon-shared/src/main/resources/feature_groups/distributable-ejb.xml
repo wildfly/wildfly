@@ -13,9 +13,9 @@
             <param name="cache-container" value="ejb"/>
             <param name="max-active-beans" value="10000"/>
         </feature>
-        <feature spec="subsystem.distributable-ejb.client-mappings-registry.infinispan">
+        <feature spec="subsystem.distributable-ejb.ejb-client-services.infinispan">
             <param name="cache-container" value="ejb"/>
-            <param name="cache" value="client-mappings"/>
+            <param name="cache" value="client-services"/>
         </feature>
         <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
             <param name="infinispan-timer-management" value="persistent"/>
