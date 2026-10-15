@@ -3,19 +3,18 @@
 
 == Runtime support
 
-WildFly 42 does not support running with the Java Security Manager enabled. If you attempt to start a xref:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly or WildFly Preview] version 40 or later process with the Security Manager enabled, the process will fail to start, even if you are using a Java SE version that still supports the Security Manager.
-Java SE https://openjdk.org/jeps/411[deprecated support for the Security Manager] in SE 17 and https://openjdk.org/jeps/486[permanently disabled it] in SE 24. As a result, the Jakarta specifications that
-WildFly 42 implements removed any requirement to support the Security Manager. The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a Security Manager enabled, and a number of libraries we integrate that implement those APIs removed their Security Manager logic as well. As a result, standard WildFly can no longer function properly with a Security Manager enabled, even when running on Java SE versions that still support it. So, we ensured that WildFly will fail to start if it is enabled.
+WildFly does not support running with the Java Security Manager enabled. If you attempt to start a xref:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly or WildFly Preview] version 40 or later process with the Security Manager enabled, the process will fail to start, even if you are using a Java SE version that still supports the Security Manager.
+Java SE https://openjdk.org/jeps/411[deprecated support for the Security Manager] in SE 17 and https://openjdk.org/jeps/486[permanently disabled it] in SE 24. As a result, the Jakarta specifications that WildFly implements removed any requirement to support the Security Manager.
+The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a Security Manager enabled, and a number of libraries we integrate that implement those APIs removed their Security Manager logic as well.
+As a result, standard WildFly can no longer function properly with a Security Manager enabled, even when running on Java SE versions that still support it. So, we ensured that WildFly will fail to start if it is enabled.
 
-WildFly 42 startup scripts reject attempts to enable the SecurityManager using `-secmgr`, `SECMGR=true`, or the `-Djava.security.manager` system property, including `-Djava.security.manager=allow`.
-This applies even when the JDK supports the Security Manager.
+WildFly startup scripts reject attempts to enable the SecurityManager using `-secmgr`, `SECMGR=true`, or the `-Djava.security.manager` system property, including `-Djava.security.manager=allow`. This applies even when the JDK supports the Security Manager.
 
 The WildFly EE 10 variants of WildFly 40 and 41, and earlier WildFly releases that support the Security Manager, retain their version-specific support, subject to the JDK versions they support.
-For instructions for those releases, see the
-https://docs.wildfly.org/41/WildFly_Elytron_Security.html#Elytron_Java_Security_Manager[WildFly 41 Security Manager documentation].
+For instructions for those releases, see the https://docs.wildfly.org/41/WildFly_Elytron_Security.html#Elytron_Java_Security_Manager[WildFly 41 Security Manager documentation].
 
 == The legacy Security manager subsystem
 
 Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only to allow a current version Domain Controller to manage a secondary host controller running WildFly 41 or earlier. Starting a WildFly 42 or later standalone server with the extension in the configuration will result in a boot failure, unless the server is started in `admin-only` mode.
 
-It's completely valid for a standard WildFly 42 domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier or the WildFly EE 10 variant of WildFly 40 or 41.
+It's completely valid for a standard WildFly 42 or later domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier or the WildFly EE 10 variant of WildFly 40 or 41.

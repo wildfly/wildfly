@@ -538,7 +538,7 @@ link:#gal.base-server[base-server] +
 link:#gal.jmx[jmx] +
 
 |[[gal.security-manager]]security-manager
-|Retained for compatibility with existing Galleon provisioning configurations. In WildFly 42, this layer is a no-op and enabling the Security Manager is not allowed.
+|Retained for compatibility with existing Galleon provisioning configurations. In WildFly 42 or later, this layer is a no-op and enabling the Security Manager is not allowed.
 |
 link:#gal.base-server[base-server] +
 
