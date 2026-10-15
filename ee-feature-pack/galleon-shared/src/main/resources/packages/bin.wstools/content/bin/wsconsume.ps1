@@ -5,6 +5,7 @@
 ##################################################################
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 . "$scripts\common.ps1"
+$SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
 # initialize JAVA_OPTS from the environment
 # @(...) keeps the result an array; PowerShell unrolls the value returned by String-To-Array,
@@ -22,7 +23,7 @@ if (Get-Env-Boolean SECMGR $false) {
 
 $JAVA_OPTS+="-Dprogram.name=wsconsume.ps1"
 
-$PROG_ARGS = Get-Java-Arguments -entryModule "org.jboss.ws.tools.wsconsume" -logFileProperties $null -serverOpts $ARGS
+$PROG_ARGS = Get-Java-Arguments -entryModule "org.jboss.ws.tools.wsconsume" -logFileProperties $null -serverOpts $SERVER_OPTS
 & $JAVA $PROG_ARGS
 
 Env-Clean-Up

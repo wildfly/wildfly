@@ -2,6 +2,7 @@
 
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
+set SERVER_OPTS=%*
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
@@ -18,6 +19,19 @@ if not errorlevel 1 (
     exit /b 1
 )
 setlocal DisableDelayedExpansion
+
+rem Read command-line args, the ~ removes the quotes from the parameter
+:READ-ARGS
+if "%~1" == "" (
+   goto MAIN
+) else if "%~1" == "-secmgr" (
+   echo ERROR: The -secmgr option has been removed. The Security Manager is no longer supported.
+   exit /b 1
+)
+shift
+goto READ-ARGS
+
+:MAIN
 
 pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
