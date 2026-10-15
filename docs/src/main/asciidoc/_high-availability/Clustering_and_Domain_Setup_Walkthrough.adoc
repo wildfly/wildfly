@@ -629,10 +629,7 @@ MemManagerFile /var/cache/httpd
 
 For more details on mod_cluster configurations please see this document:
 
-[source,options="nowrap"]
-----
-http://docs.jboss.org/mod_cluster/1.1.0/html/Quick_Start_Guide.html
-----
+https://docs.modcluster.io/
 
 [[testing]]
 == Testing

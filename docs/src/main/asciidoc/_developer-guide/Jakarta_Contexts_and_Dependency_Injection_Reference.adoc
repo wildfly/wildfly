@@ -17,8 +17,8 @@ This document is not intended to be a CDI tutorial, it only covers CDI
 usage that is specific to WildFly. For some general information on CDI
 see the below links:
 
-http://docs.jboss.org/cdi/spec/1.2/cdi-spec.html[CDI Specification] +
-http://docs.jboss.org/weld/reference/latest/en-US/html/[Weld Reference
+https://jakarta.ee/specifications/cdi/[CDI Specification] +
+https://docs.jboss.org/weld/reference/latest/en-US/html/[Weld Reference
 Guide] +
 https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 

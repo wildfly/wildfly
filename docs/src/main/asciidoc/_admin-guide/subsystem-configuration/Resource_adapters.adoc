@@ -67,17 +67,15 @@ A resource adapter archive can be automatically activated with a
 configuration by including an META-INF/ironjacamar.xml in the archive.
 
 The schema can be found at
-http://docs.jboss.org/ironjacamar/schema/ironjacamar_1_0.xsd
+https://docs.jboss.org/ironjacamar/schema/ironjacamar_1_0.xsd
 
 [[ra-component-reference]]
 == Component Reference
 
 The resource adapter subsystem is provided by the
-http://www.jboss.org/ironjacamar[IronJacamar] project. For a detailed
+https://ironjacamar.org/[IronJacamar] project. For a detailed
 description of the available configuration properties, please consult
 the project documentation.
 
-* IronJacamar homepage: http://www.jboss.org/ironjacamar
-* Project Documentation: http://www.jboss.org/ironjacamar/docs
-* Schema description:
-http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingra_descriptor
+* IronJacamar homepage: https://ironjacamar.org/
+* Schema description: https://docs.jboss.org/ironjacamar/schema/
