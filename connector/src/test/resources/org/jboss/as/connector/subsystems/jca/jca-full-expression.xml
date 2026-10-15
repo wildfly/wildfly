@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jca:6.0">
+<subsystem xmlns="urn:jboss:domain:jca:6.1">
   <!--Optional:-->
   <archive-validation enabled="${test.expr:true}" fail-on-error="${test.expr:true}" fail-on-warn="${test.expr:false}"/>
   <!--Optional:-->
