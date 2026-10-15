@@ -9,8 +9,6 @@ There are several ways to install the Vault feature-pack. Refer to the xref:Wild
 
 After the feature-pack is installed, define one or more credential store resources in the `hashicorp-vault` subsystem. You can then reference credentials from these stores elsewhere in the configuration using the standard `credential-reference` pattern with `store` and `alias`.
 
-Aliases use the form _`<vault-path>.<key>`_: the path to the secret in Vault (e.g. `secret/database`) followed by a dot and the key name (e.g. `password`), giving `secret/database.password`.
-
 The following management CLI operation adds a minimal credential store that uses a clear-text Vault token (adjust `host-address` and paths for your environment):
 
 [source,options="nowrap"]
@@ -20,16 +18,196 @@ The following management CLI operation adds a minimal credential store that uses
     credential-reference={clear-text="myroot"})
 ----
 
-=== Credential references backed by HashiCorp Vault
+The credential store resource supports the following attributes:
 
-Use the credential store name and alias in any resource that supports `credential-reference` (e.g. datasources, Elytron key stores, etc.). The following XML illustrates that pattern in configuration:
+[cols="1,1,3",options="header"]
+|===
+|Attribute |Required |Description
+
+|`host-address`
+|Yes
+|The URL of the Vault server (e.g. `http://localhost:8200`).
+
+|`namespace`
+|No
+|The Vault namespace to use (Vault Enterprise feature).
+
+|`authentication-context`
+|No
+|Reference to an Elytron `authentication-context` for TLS client certificate authentication.
+
+|`credential-reference`
+|No
+|A credential reference providing the Vault authentication token.
+|===
+
+== Alias format
+
+Aliases identify a specific value within a specific secret in Vault. The alias format is:
+
+[source,text,options="nowrap"]
+----
+[engine=TYPE][@mount-path][#]secret-path?key-path
+----
+
+The `?` delimiter separates the secret path from the key name and is always required.
+
+=== Basic format
+
+In the simplest case, an alias is just a secret path and a key name separated by `?`:
+
+[source,text,options="nowrap"]
+----
+myapp/database?password
+----
+
+This retrieves the `password` key from the secret at path `myapp/database` under the default mount (`secret`) using the default engine (KV v2).
+
+=== Specifying a mount path
+
+Use `@` to specify a non-default mount path. When `@` is present, use `#` to mark the start of the secret path:
+
+[source,text,options="nowrap"]
+----
+@custom-mount#myapp/database?password
+----
+
+=== Specifying the engine type
+
+Use the `engine=` prefix to select a KV engine version. Supported values are `KVv1` and `KVv2`:
+
+[source,text,options="nowrap"]
+----
+engine=KVv1@secret-v1#myapp/config?api_key
+----
+
+=== Multi-part secret paths
+
+Slashes in the secret path are literal Vault path segments:
+
+[source,text,options="nowrap"]
+----
+myapp/database?password
+team/backend/services?connection_string
+----
+
+=== Nested key paths
+
+If the Vault secret value is a JSON object, use `/` in the key path to traverse into nested fields:
+
+[source,text,options="nowrap"]
+----
+myapp/config?database/host
+myapp/config?database/credentials/password
+----
+
+For example, if the secret at `myapp/config` contains:
+
+[source,json,options="nowrap"]
+----
+{
+  "database": {
+    "host": "prod.db.example.com",
+    "credentials": {
+      "password": "s3cret"
+    }
+  }
+}
+----
+
+then the alias `myapp/config?database/credentials/password` resolves to `s3cret`.
+
+=== Keys containing dots
+
+Dots in key names are treated as literal characters, not separators:
+
+[source,text,options="nowrap"]
+----
+myapp/database?db.host
+----
+
+This looks up the key literally named `db.host`. When combined with nested traversal:
+
+[source,text,options="nowrap"]
+----
+myapp?db.config/host
+----
+
+Here `db.config` is a literal key name, and `/` traverses into its value.
+
+=== URL encoding
+
+If a literal `#`, `?`, or `@` character appears in a path segment, percent-encode it:
+
+[cols="1,1",options="header"]
+|===
+|Character |Encoding
+
+|`#` |`%23`
+|`?` |`%3F`
+|`@` |`%40`
+|space |`%20`
+|===
+
+For example, a secret path containing a `#` character:
+
+[source,text,options="nowrap"]
+----
+#secret%23path?key
+----
+
+=== Defaults
+
+When omitted from the alias:
+
+* *Engine type* defaults to KV v2.
+* *Mount path* defaults to `secret`.
+
+=== Quick reference
+
+[cols="2,3",options="header"]
+|===
+|Alias |Description
+
+|`myapp?password`
+|Key `password` from secret `myapp` at default mount
+
+|`myapp/database?password`
+|Key `password` from secret `myapp/database` at default mount
+
+|`myapp?db.host`
+|Key literally named `db.host` from secret `myapp`
+
+|`myapp?database/host`
+|Nested key traversal: `database` -> `host`
+
+|`@custom#myapp?password`
+|Secret `myapp` at mount `custom`
+
+|`engine=KVv1@kv-v1#myapp?password`
+|KV v1 engine at mount `kv-v1`
+
+|`engine=KVv2@prod#team/app?database/credentials/password`
+|Fully explicit: KV v2, mount `prod`, multi-part path, nested key
+|===
+
+== Credential references backed by HashiCorp Vault
+
+Use the credential store name and alias in any resource that supports `credential-reference` (e.g. datasources, Elytron key stores, etc.). The following XML shows the pattern:
 
 [source,xml,options="nowrap"]
 ----
-<credential-reference store="my-vault" alias="secret/database.password"/>
+<credential-reference store="my-vault" alias="myapp/database?password"/>
 ----
 
-=== Encrypted expressions backed by HashiCorp Vault
+A more complex example using a custom mount and nested key path:
+
+[source,xml,options="nowrap"]
+----
+<credential-reference store="my-vault" alias="@prod#services/auth?jwt/signing/key"/>
+----
+
+== Encrypted expressions backed by HashiCorp Vault
 
 You can reference a HashiCorp Vault credential store anywhere expressions are allowed in the management model. The pattern for these expressions is:
 
@@ -42,5 +220,35 @@ For example, a system property value might use an expression as follows:
 
 [source,xml,options="nowrap"]
 ----
-<property name="example.secret" value="${HC_VAULT::my-vault:secret/database.password}"/>
+<property name="db.password" value="${HC_VAULT::my-vault:myapp/database?password}"/>
 ----
+
+[[legacy-alias-format]]
+== Legacy alias format
+
+Prior versions used an alias format where the secret path and key were separated by a dot:
+
+[source,text,options="nowrap"]
+----
+secret/database.password
+----
+
+This format is deprecated. At *default* stability level, only the new alias format (using `?` as the delimiter) is accepted. At *community* stability level or lower, the legacy format is still recognised but a deprecation warning is logged.
+
+The following table shows how to convert legacy aliases to the new format:
+
+[cols="2,2",options="header"]
+|===
+|Legacy format |New format
+
+|`secret/database.password`
+|`database?password`
+
+|`secret/myapp/config.api_key`
+|`myapp/config?api_key`
+
+|`secret/services.db.host`
+|`services?db.host`
+|===
+
+In the legacy format, the first path segment (e.g. `secret`) was the mount path. In the new format, the mount path defaults to `secret` and is omitted unless you need a different mount.
