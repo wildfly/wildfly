@@ -8,6 +8,7 @@ package org.jboss.as.test.clustering.cluster.infinispan.lock;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.infinispan.lock.exception.ClusteredLockException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -124,6 +126,36 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
                 assertFalse(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
             }
 
+        }
+    }
+
+    /**
+     * Verifies that a {@link ClusteredLockException} thrown on a remote primary owner can be unmarshalled, see WFLY-21732.
+     * Since the primary owner of a given lock is not known upfront, the scenario is executed against each node using the same lock,
+     * thus one of the nodes is guaranteed not to be the primary owner.
+     */
+    @Test
+    void testRemoteClusteredLockException(@ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+                                          @ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws Exception {
+
+        String lockName = UUID.randomUUID().toString();
+
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
+            for (URL baseURL : List.of(baseURL1, baseURL2)) {
+                // (Potentially re)define the lock, since it was removed by the previous iteration
+                try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL, lockName, LockOperation.DEFINE)))) {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                }
+
+                try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL, lockName, LockOperation.IS_LOCKED_AFTER_REMOVE)))) {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    // Infinispan 16.2.x fails with MarshallingException caused by ClassNotFoundException if org.infinispan.core cannot load the exception class
+                    // Infinispan 16.3+ (ISPN #17934) resolves the class via the TCCL instead and falls back to a RemoteException
+                    assertEquals(ClusteredLockException.class.getName(), EntityUtils.toString(response.getEntity()));
+                }
+            }
         }
     }
 
