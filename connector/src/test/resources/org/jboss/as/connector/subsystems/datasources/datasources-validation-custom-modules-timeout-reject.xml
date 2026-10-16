@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.2">
+<subsystem xmlns="urn:jboss:domain:datasources:8.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS"
                     use-java-context="true">
@@ -15,6 +15,9 @@
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
                 <exception-sorter class-name="someClass4" module="someModule4"/>
             </validation>
+            <timeout>
+                <validation-timeout-seconds>5</validation-timeout-seconds>
+            </timeout>
         </datasource>
         <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
                        use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -31,6 +34,9 @@
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
                 <exception-sorter class-name="someClass4" module="someModule4"/>
             </validation>
+            <timeout>
+                <validation-timeout-seconds>5</validation-timeout-seconds>
+            </timeout>
         </xa-datasource>
         <drivers>
             <driver name="h2" module="com.h2database.h2">
