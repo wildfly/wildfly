@@ -1008,23 +1008,6 @@
                                     </target>
                                 </configuration>
                             </execution>
-
-                            <!-- Help banner. -->
-                            <execution>
-                                <id>banner</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <target>
-                                        <loadfile property="help.banner" srcFile="${basedir}/tools/help-banner.txt"/>
-                                        <echo>${help.banner}</echo>
-                                    </target>
-                                </configuration>
-                            </execution>
-
                         </executions>
                         <dependencies>
                             <dependency>
