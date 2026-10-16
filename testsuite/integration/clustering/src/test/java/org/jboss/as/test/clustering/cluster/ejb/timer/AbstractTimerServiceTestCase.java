@@ -27,6 +27,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -62,6 +63,8 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
     }
 
     private static final Duration GRACE_PERIOD = Duration.ofSeconds(TimeoutUtil.adjust(2));
+    // Failover of calendar-based timers was observed to take up to ~4s in CI environments
+    private static final Duration FAILOVER_TIMEOUT = Duration.ofSeconds(TimeoutUtil.adjust(15));
     private final String moduleName;
 
     protected AbstractTimerServiceTestCase() {
@@ -206,21 +209,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 beanTimeouts.clear();
             }
 
-            try (CloseableHttpResponse response = client.execute(new HttpGet(uris.get(NODE_2)))) {
-                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
-                    beanEntry.getValue().put(NODE_2, parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
-                }
-            }
-
-            for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
-                if (TimerServlet.PERSISTENT_TIMER_CLASSES.contains(entry.getKey()) || AutoTimerBean.class.isAssignableFrom(entry.getKey())) {
-                    assertNotEquals(0, entry.getValue().get(NODE_2).size(), entry.toString());
-                } else {
-                    // Manual transient timers were never created on node 2
-                    assertEquals(0, entry.getValue().get(NODE_2).size(), entry.toString());
-                }
-            }
+            awaitFailoverTimeouts(client, uris.get(NODE_2), NODE_2, timeouts);
 
             this.start(NODE_1);
 
@@ -290,21 +279,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 beanTimeouts.clear();
             }
 
-            try (CloseableHttpResponse response = client.execute(new HttpGet(uris.get(NODE_1)))) {
-                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
-                    beanEntry.getValue().put(NODE_1, parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
-                }
-            }
-
-            for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
-                if (TimerServlet.PERSISTENT_TIMER_CLASSES.contains(entry.getKey()) || AutoTimerBean.class.isAssignableFrom(entry.getKey())) {
-                    assertNotEquals(0, entry.getValue().get(NODE_1).size(), entry.toString());
-                } else {
-                    // Manual transient timers were never created on node 2
-                    assertEquals(0, entry.getValue().get(NODE_1).size(), entry.toString());
-                }
-            }
+            awaitFailoverTimeouts(client, uris.get(NODE_1), NODE_1, timeouts);
 
             this.start(NODE_2);
 
@@ -344,6 +319,33 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Awaits until remaining member has received timeouts for all persistent and auto timers following failover.
+     * Timeouts are accumulated across polls, since each GET drains the timeouts recorded by the server.
+     */
+    private static void awaitFailoverTimeouts(CloseableHttpClient client, URI uri, String node, Map<Class<? extends TimerBean>, Map<String, List<Instant>>> timeouts) {
+        Awaitility.await(node + " to receive timeouts of failed over timers")
+                .atMost(FAILOVER_TIMEOUT)
+                .pollInterval(Duration.ofMillis(500))
+                .untilAsserted(() -> {
+                    try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
+                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                        for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> beanEntry : timeouts.entrySet()) {
+                            beanEntry.getValue().computeIfAbsent(node, key -> new ArrayList<>()).addAll(parseTimeouts(response.getHeaders(beanEntry.getKey().getName())));
+                        }
+                    }
+
+                    for (Map.Entry<Class<? extends TimerBean>, Map<String, List<Instant>>> entry : timeouts.entrySet()) {
+                        if (TimerServlet.PERSISTENT_TIMER_CLASSES.contains(entry.getKey()) || AutoTimerBean.class.isAssignableFrom(entry.getKey())) {
+                            assertNotEquals(0, entry.getValue().get(node).size(), entry.toString());
+                        } else {
+                            // Manual transient timers do not survive failover
+                            assertEquals(0, entry.getValue().get(node).size(), entry.toString());
+                        }
+                    }
+                });
     }
 
     private static List<Instant> parseTimeouts(Header[] headers) {
