@@ -79,6 +79,9 @@ public final class ArjunaTransactionManagerService implements Service {
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
         TxControl.setDefaultTimeout(coordinatorDefaultTimeout);
+        if (!TxControl.isEnabled()) {
+            TxControl.enable();
+        }
 
         // Object Store Browser bean
         objStoreBrowser = ObjStoreBrowser.getInstance();
@@ -145,6 +148,7 @@ public final class ArjunaTransactionManagerService implements Service {
     @Override
     public void stop(final StopContext context) {
         txnManagerServiceConsumer.accept(null);
+        TxControl.disable();
         value.stop();
         value.destroy();
         objStoreBrowser.stop();

@@ -45,7 +45,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_7_0.xsd";
+        return "schema/wildfly-txn_7_1.xsd";
     }
 
     @Override
@@ -117,7 +117,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParserWildFly40() throws Exception {
+    public void testParserWildFly41() throws Exception {
+        standardSubsystemTest("full-7.0.0.xml");
+    }
+
+    @Test
+    public void testParserWildFly42_71Schema() throws Exception {
         standardSubsystemTest("full.xml");
     }
 
@@ -138,6 +143,48 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         result = kernelServices.executeOperation(operation);
         Assert.assertEquals("success", result.get("outcome").asString());
         Assert.assertEquals(TxStats.getInstance().getAverageCommitTime(), result.get(ModelDescriptionConstants.RESULT).asLong());
+    }
+
+    @Test
+    public void testGracefulShutdownTimeoutDefaultValue() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final KernelServices kernelServices = super.createKernelServicesBuilder(createAdditionalInitialization())
+            .setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
+
+        ModelNode operation = createReadAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN);
+        ModelNode result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+        Assert.assertEquals(0L, result.get(ModelDescriptionConstants.RESULT).asLong());
+    }
+
+    @Test
+    public void testGracefulShutdownTimeoutValidation() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final KernelServices kernelServices = super.createKernelServicesBuilder(createAdditionalInitialization())
+            .setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue("Subsystem boot failed!", kernelServices.isSuccessfulBoot());
+
+        // 0 (skip graceful shutdown) — valid (default)
+        ModelNode operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(0));
+        ModelNode result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // -1 (wait indefinitely) — valid
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(-1));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // 300 (positive timeout) — valid
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(300));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertEquals("success", result.get("outcome").asString());
+
+        // -2 (below minimum) — invalid, must be rejected
+        operation = createWriteAttributeOperation(CommonAttributes.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN, new ModelNode(-2));
+        result = kernelServices.executeOperation(operation);
+        Assert.assertNotEquals("write-attribute(-2) should have been rejected",
+                "success", result.get("outcome").asString());
     }
 
     @Test
@@ -206,6 +253,18 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
         operation.get(ModelDescriptionConstants.NAME).set(name);
+        return operation;
+    }
+
+    private ModelNode createWriteAttributeOperation(String name, ModelNode value) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, getMainSubsystemName());
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.NAME).set(name);
+        operation.get(ModelDescriptionConstants.VALUE).set(value);
         return operation;
     }
 }
