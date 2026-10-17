@@ -40,6 +40,7 @@ public class MicroProfileHealthReporter {
     private final Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
     private final Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
     private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> serverLivenessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
@@ -137,6 +138,7 @@ public class MicroProfileHealthReporter {
         HashMap<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
         if (defaultProceduresShouldBeAdded()) {
             serverChecks.putAll(serverReadinessChecks);
+            serverChecks.putAll(serverLivenessChecks);
             if (deploymentChecks.size() == 0) {
                 serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
                 serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
@@ -147,11 +149,13 @@ public class MicroProfileHealthReporter {
     }
 
     public SmallRyeHealth getLiveness() {
-        final Map<HealthCheck, ClassLoader> serverChecks;
-        if (livenessChecks.size() == 0 && defaultProceduresShouldBeAdded()) {
-            serverChecks = Collections.singletonMap(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
-        } else {
-            serverChecks = Collections.emptyMap();
+        final Map<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
+        final boolean addDefaultProcedures = defaultProceduresShouldBeAdded();
+        if (addDefaultProcedures) {
+            serverChecks.putAll(serverLivenessChecks);
+        }
+        if (livenessChecks.isEmpty() && serverChecks.isEmpty() && addDefaultProcedures) {
+            serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
         }
         return getHealth(serverChecks, livenessChecks);
     }
@@ -304,6 +308,12 @@ public class MicroProfileHealthReporter {
     public void addServerReadinessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
         if (check != null) {
             serverReadinessChecks.put(check, moduleClassLoader);
+        }
+    }
+
+    public void addServerLivenessCheck(HealthCheck check, ClassLoader moduleClassLoader) {
+        if (check != null) {
+            serverLivenessChecks.put(check, moduleClassLoader);
         }
     }
 
