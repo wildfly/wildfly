@@ -28,6 +28,9 @@
         <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.counter"/>
+        <!-- WFLY-21732 Allow Infinispan to resolve remote exceptions thrown by clustered locks -->
+        <!-- TODO Remove workaround once https://github.com/infinispan/infinispan/issues/18335 is resolved -->
+        <module name="org.infinispan.lock" optional="true"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.logging"/>

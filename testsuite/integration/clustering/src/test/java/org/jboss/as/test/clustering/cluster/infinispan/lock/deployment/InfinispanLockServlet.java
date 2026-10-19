@@ -6,6 +6,7 @@
 package org.jboss.as.test.clustering.cluster.infinispan.lock.deployment;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,6 +35,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 @WebServlet(urlPatterns = { InfinispanLockServlet.SERVLET_PATH })
 public class InfinispanLockServlet extends HttpServlet {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final String SERVLET_NAME = "lock";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
@@ -42,7 +44,7 @@ public class InfinispanLockServlet extends HttpServlet {
     public static final String OPERATION_PARAMETER = "operation";
 
     public enum LockOperation {
-        DEFINE, IS_LOCKED, LOCK, UNLOCK
+        DEFINE, IS_LOCKED, LOCK, UNLOCK, IS_LOCKED_AFTER_REMOVE
     }
 
     @Resource(lookup = "java:jboss/infinispan/container/lock")
@@ -94,6 +96,24 @@ public class InfinispanLockServlet extends HttpServlet {
                     ClusteredLock lock = clm.get(lockName);
                     CompletableFuture<Void> cf = lock.unlock();
                     cf.get();
+                    break;
+                }
+                case IS_LOCKED_AFTER_REMOVE: {
+                    // Retain a reference to the lock and then remove it
+                    // Use the stale reference to fail with ClusteredLockException on the primary owner
+                    ClusteredLock lock = clm.get(lockName);
+                    clm.remove(lockName).get();
+                    try {
+                        lock.isLocked().get();
+                    } catch (ExecutionException e) {
+                        // Print the class of the root cause so that the client can verify the exception was correctly unmarshalled
+                        // The test class will be expecting to see ClusteredLockException
+                        Throwable cause = e;
+                        while (cause.getCause() != null) {
+                            cause = cause.getCause();
+                        }
+                        response.getWriter().print(cause.getClass().getName());
+                    }
                     break;
                 }
             }
