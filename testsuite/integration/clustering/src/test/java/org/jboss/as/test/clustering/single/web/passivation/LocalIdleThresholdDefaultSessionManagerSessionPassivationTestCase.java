@@ -27,7 +27,7 @@ public class LocalIdleThresholdDefaultSessionManagerSessionPassivationTestCase e
             super(createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add("/subsystem=distributable-web/infinispan-session-management=default:write-attribute(name=idle-threshold, value=PT1S)")
+                            .add("/subsystem=distributable-web/infinispan-session-management=default:write-attribute(name=idle-threshold, value=%s)", LocalIdleThresholdSessionPassivationTestCase.IDLE_THRESHOLD)
                             .endBatch()
                             .build())
                     .build());
