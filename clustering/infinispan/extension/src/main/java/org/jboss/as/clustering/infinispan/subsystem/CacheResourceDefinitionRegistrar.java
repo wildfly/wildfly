@@ -204,7 +204,7 @@ public class CacheResourceDefinitionRegistrar implements ChildResourceDefinition
                 try {
                     // Configure invocation batching based on transaction configuration
                     TransactionConfigurationBuilder tx = builder.transaction();
-                    builder.invocationBatching().enable(tx.transactionMode().isTransactional() && (tx.transactionManagerLookup().getTransactionManager() == EmbeddedTransactionManager.getInstance()));
+                    builder.invocationBatching().enable(tx.mode().isTransactional() && (tx.transactionManagerLookup().getTransactionManager() == EmbeddedTransactionManager.getInstance()));
                 } catch (Exception e) {
                     throw new CacheException(e);
                 }
