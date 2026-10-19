@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import org.infinispan.configuration.cache.TransactionMode;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPool;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinitionRegistrar;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinitionRegistrar;
