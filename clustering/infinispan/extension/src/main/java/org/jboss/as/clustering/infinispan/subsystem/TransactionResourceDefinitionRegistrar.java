@@ -17,6 +17,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.TransactionConfigurationBuilder;
+import org.infinispan.configuration.cache.TransactionMode;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.as.clustering.infinispan.tx.InfinispanXAResourceRecovery;
@@ -138,12 +139,10 @@ public class TransactionResourceDefinitionRegistrar extends ConfigurationResourc
             @Override
             public TransactionConfigurationBuilder get() {
                 TransactionConfigurationBuilder builder = new ConfigurationBuilder().transaction()
+                        .mode(mode)
                         .lockingMode(locking)
                         .cacheStopTimeout(stopTimeout.toMillis(), TimeUnit.MILLISECONDS)
                         .completedTxTimeout(transactionTimeout.toMillis())
-                        .transactionMode((mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
-                        .useSynchronization(mode == TransactionMode.NON_XA)
-                        .recovery().enabled(mode == TransactionMode.FULL_XA).transaction()
                         ;
                 if (mode != TransactionMode.NONE) {
                     builder.transactionManagerLookup(new TransactionManagerProvider((mode == TransactionMode.BATCH) ? EmbeddedTransactionManager.getInstance() : ContextTransactionManager.getInstance()));
