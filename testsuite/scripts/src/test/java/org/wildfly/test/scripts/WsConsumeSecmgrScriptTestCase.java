@@ -40,7 +40,10 @@ public class WsConsumeSecmgrScriptTestCase extends ScriptTestCase {
         return List.of(
                 new Object[] { Map.of("SECMGR", "true"), new String[0], "ERROR: The SECMGR option has been removed" },
                 new Object[] { Map.of("JAVA_OPTS", "-Djava.security.manager"), new String[0], "ERROR: The use of -Djava.security.manager is not supported" },
-                new Object[] { Map.of("JAVA_OPTS", "-Djava.security.manager=allow"), new String[0], "ERROR: The use of -Djava.security.manager is not supported" }
+                new Object[] { Map.of("JAVA_OPTS", "-Djava.security.manager=allow"), new String[0], "ERROR: The use of -Djava.security.manager is not supported" },
+                new Object[] { Map.of(), new String[] { "-secmgr" }, "ERROR: The -secmgr option has been removed" },
+                new Object[] { Map.of(), new String[] { "-Djava.security.manager" }, "ERROR: The use of -Djava.security.manager is not supported" },
+                new Object[] { Map.of(), new String[] { "-Djava.security.manager=allow" }, "ERROR: The use of -Djava.security.manager is not supported" }
         );
     }
 

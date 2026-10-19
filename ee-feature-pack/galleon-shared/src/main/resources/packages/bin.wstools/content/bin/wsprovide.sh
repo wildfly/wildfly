@@ -23,6 +23,20 @@ GREP="grep"
 
 . "$DIRNAME/common.sh"
 
+# Check command-line arguments for security manager options
+for arg in "$@"; do
+    case "$arg" in
+        -secmgr)
+            echo "ERROR: The -secmgr option has been removed. The Security Manager is no longer supported."
+            exit 1
+            ;;
+        -Djava.security.manager*)
+            echo "ERROR: The use of -Djava.security.manager is not supported. The Security Manager has been removed."
+            exit 1
+            ;;
+    esac
+done
+
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
 case "`uname`" in
