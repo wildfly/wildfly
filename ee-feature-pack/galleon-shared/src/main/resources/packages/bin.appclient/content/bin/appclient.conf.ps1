@@ -67,6 +67,4 @@ if (!$JAVA_OPTS) {
     # $JAVA_OPTS += '-Djboss.modules.lockless=true'
 }
 
-# Uncomment this to run with a security manager enabled
-# $SECMGR=$true
 
