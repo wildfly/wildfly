@@ -24,7 +24,7 @@ ifdef::basebackend-html[toc::[]]
 :numbered:
 
 Beginning with the WildFly 22 release, the WildFly project began producing two variants of
-its landmark application server -- the standard "WildFly" variant and the newer "WildFly Preview". With WildFly 40, we've (temporarily) introduced a third variant -- "WildFly EE 10".
+its landmark application server -- the standard "WildFly" variant and the newer "WildFly Preview". With WildFly 40 and 41, we temporarily introduced a third variant -- "WildFly EE 10" -- but beginning with WildFly 42 we no longer produce that variant.
 
 In this document, we'll introduce these different flavors of WildFly.
 
@@ -80,95 +80,16 @@ For standard WildFly we also provide BOMs for developing applications that act a
 [[security-manager-removed]]
 === Security Manager Support Removed
 
-Standard WildFly 40 and later *do not support running with the Java SecurityManager enabled*. If you attempt to start a standard WildFly {wildflyVersion} process with the SecurityManager enabled, the process will fail to start, even if you are using a Java SE version that still supports the SecurityManager.
+Standard WildFly 40 and later *do not support running with the Java SecurityManager enabled*. If you attempt to start a standard WildFly 42 process with the SecurityManager enabled, the process will fail to start, even if you are using a Java SE version that still supports the SecurityManager.
 
 Standard WildFly supports the EE 11 versions of the Jakarta specifications, and the specifications that were updated for EE 11 removed any requirement to support the SecurityManager. The specification API artifacts that WildFly integrates removed the logic that allowed them to work properly with a SecurityManager enabled, and a number of libraries we integrate that implement those APIs removed their SecurityManager logic as well. As a result, standard WildFly can no longer function properly with a SecurityManager enabled, so we ensured that it will fail to start if it is.
 
 [[standard-wildfly-security-manager-subsystem]]
 ==== The `security-manager` subsystem
 
-Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only as a legacy management model; it's completely valid for a standard WildFly {wildflyVersion} domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
+Beginning with WildFly 42, the `org.wildfly.extension.security.manager` extension and its `security-manager` subsystem are retained only as a legacy management model for use in domain mode installations where secondary hosts in the domain are running older WildFly versions. It's completely valid for a standard WildFly 42 domain mode Domain Controller to have the `security-manager` subsystem in its `domain.xml` file, if the profiles that include the subsystem are used in server groups where all the servers are running WildFly 39 or earlier.
 
-A standalone WildFly {wildflyVersion} server running in normal (non-admin-only) mode cannot use this extension or subsystem; the server will fail to start if the configuration contains it. The subsystem no longer grants or validates deployment permissions. Standard out-of-the-box configurations do not include the extension or subsystem.
-
-
-== WildFly EE 10
-The "WildFly EE 10" variant has the same maturity, stability and core functionality as standard WildFly, but its subsystems provide the EE 10 versions of the Jakarta specifications. Standard WildFly has moved on to EE 11 for any specs that did new releases for EE 11. Please see the xref:Getting_Started_Guide{outfilesuffix}#standards_support[Getting Started Guide] for full details on the specification versions provided in standard WildFly and WildFly EE 10.
-
-[IMPORTANT]
-====
-The WildFly project is providing the WildFly EE 10 variant on a temporary basis only, to give our users a longer period to transition their applications to EE 11. We expect to produce this variant for WildFly 40 and 41 only.
-====
-
-=== Getting WildFly EE 10
-
-The zip or tar.gz file for WildFly EE 10 is available at link:https://wildfly.org/downloads[https://wildfly.org/downloads]
-right next to the standard WildFly release files for the same version.
-
-For xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[`wildfly-maven-plugin`] users and xref:Galleon_Guide{outfilesuffix}[Galleon CLI] users, we provide a Galleon feature-pack for WildFly EE 10. The
-Galleon feature-pack location for the feature-pack is ``wildfly-ee-10@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildfly:wildfly-ee-10-feature-pack``.
-This feature-pack is the WildFly EE 10 analogue to main WildFly's ``wildfly-ee@maven(org.jboss.universe:community-universe)``, with Maven coordinate ``org.wildfly:wildfly-ee-galleon-pack``.
-
-[IMPORTANT]
-====
-The `wildfly-ee-10` feature-pack is not a direct replacement for the `wildfly` feature-pack that most WildFly users use. Rather, it can replace the `wildfly-ee` feature-pack that the `wildfly` feature-pack depends on. If the `wildfly-ee-10` feature-pack is used by itself, functionality provided directly by `wildfly`, like MicroProfile, OpenTelemetry and Micrometer, will not be available.
-
-To get the full set of functionality available in standard WildFly your provisioning configuration *must explicitly declare both the `wildfly-ee-10` and `wildfly` feature-packs*. For details on how to do this, please see the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide].
-====
-
-=== BOMs
-
-WildFly EE 10 provides BOMs that users can use when developing applications.
-
-We provide the following BOMs for developing applications to deploy in a WildFly EE 10 server. (These BOMs have different Maven artifactIds than the xref:#standard-wildfly-server-boms[standard WildFly BOMS].)
-
-[cols=",,",options="header"]
-|=======================================================================
-|BOM| Maven GroupId |WildFly EE 10 ArtifactId
-|EE| `org.wildfly.bom` |`wildfly-ee-10`
-|EE With Tools| `org.wildfly.bom` |`wildfly-ee-10-with-tools`
-|Expansion| `org.wildfly.bom` |`wildfly-expansion-ee-10`
-|Expansion With Tools| `org.wildfly.bom` |`wildfly-expansion-ee-10-with-tools`
-|=======================================================================
-
-The 'EE' BOMs cover technologies that in are provisioned when the `wildfly-ee-10` feature-pack is used.
-
-The 'Expansion' BOMs cover additional technologies that are only provisioned when the `wildfly` feature-pack is used. This includes things like MicroProfile, Micrometer and OpenTelemetry. (Most WildFly EE 10 installations would use this feature-pack, including the zips/tars that are available link:https://wildfly.org/downloads[for download].)
-
-The 'With Tools' variants incorporate additional dependencies for tools that may be helpful when developing or testing applications.
-
-Standard WildFly provides xref:#standard-wildfly-client-boms[BOMs for developing applications that act as various kinds of external clients to a standard WildFly server]. These same BOMs can be used for developing applications that act as a client to a WildFly EE 10 server.
-
-[NOTE]
-====
-The same client BOMs can be used with both standard WildFly and WildFly EE 10 because the Jakarta specifications and implementations relevant to those BOMs do not differ between EE 10 and EE 11.
-====
-
-=== Other Differences in WildFly EE 10
-
-Besides providing a different version of the EE APIs, WildFly EE 10 has a couple of other significant differences from standard WildFly:
-
-==== Jakarta Data
-
-link:https://jakarta.ee/specifications/data/1.0/[Jakarta Data 1.0] is a new specification that was first included in EE in the EE 11 release. But, the Jakarta Data 1.0 API works fine with the other EE APIs in WildFly EE 10, and the Hibernate project produces a version of the Hibernate Data Repositories tool (the `org.hibernate.orm:hibernate-jpamodelgen` annotation processor) that xref:Developer_Guide{outfilesuffix}#using-hibernate-data-repositories[generates Jakarta Data repository implementations] that work with the Hibernate ORM 6.6 version used in WildFly EE 10. So, you can use Jakarta Data with WildFly EE 10.
-
-Although Jakarta Data can work in WildFly EE 10, _the out-of-the-box configuration files in the WildFly EE 10 download zip do not include the `jakarta-data` subsystem and associated extension_, while they are present in the standard WildFly out-of-the-box configurations.
-
-However, this is just a matter what is included in the out-of-the-box configuration files:
-
-* The extension module and its dependencies are available in an un-slimmed WildFly EE 10 installation, so you can xref:Admin_Guide{outfilesuffix}#jakarta-data-subsystem-enable[add the extension and subsystem to your config] with the WildFly CLI tool.
-* The `wildfly-ee-10` feature-pack also includes the `jakarta-data` layer, so if you are provisioning a slimmed WildFly installation with Galleon layers, you can use the layer to include Jakarta Data in your configuration.
-
-[IMPORTANT]
-====
-If you are using Jakarta Data with WildFly EE 10, be sure to use a version 6.6 release of the `org.hibernate.orm:hibernate-jpamodelgen` annotation processor, ideally one with the same micro-version as the Hibernate ORM libraries in the server's `modules/system/layers/base/org/hibernate/main/` directory.
-====
-
-==== Security Manager
-
-A WildFly EE 10 process can still run with the Java SecurityManager enabled, xref:#security-manager-removed[unlike a standard WildFly process].
-
-Accordingly, the out-of-the-box configuration files in an unslimmed WildFly EE 10 installation still include the `security-manager` subsystem.
+A standalone WildFly 42 server running in normal (non-admin-only) mode cannot use this extension or subsystem; the server will fail to start if the configuration contains it. The subsystem no longer grants or validates deployment permissions. Standard out-of-the-box configurations do not include the extension or subsystem.
 
 == WildFly Preview
 
@@ -224,17 +145,28 @@ For standard WildFly we also provide BOMs for developing applications that act a
 
 Often, but not always, a key difference between standard WildFly and WildFly Preview is support for different versions of Jakarta specifications. The WildFly project uses WildFly Preview to showcase full or partial support for new versions of Jakarta specifications, including EE releases that are not yet released for general availability.
 
+Beginning with WildFly Preview 42, we've begun integrating milestone or final releases of some of the Jakara specifications that are planned for EE 12:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Jakarta Specification |Version in standard WildFly |Version in WildFly Preview
+
+|Jakarta Contexts and Dependency Injection  |4.1|5.0
+
+|Jakarta JSON Binding  |3.0 |3.1.0-M2
+
+|=======================================================================
+
+Otherwise than the specifications listed above, WildFly Preview 40 provides support for xref:Getting_Started_Guide{outfilesuffix}#standards_support[the same specification versions as standard WildFly 42]
+
+We plan to continue integrating other EE 12 APIs in WildFly 43.
+
+
 [NOTE]
 ====
 Formally certifying WildFly Preview as a compatible implementation of EE is not a priority
 for the WildFly project and may not happen at the time of a release, or ever.
 ====
-
-==== EE Support in WildFly Preview
-
-WildFly Preview 40 provides support for xref:Getting_Started_Guide{outfilesuffix}#standards_support[the same specification versions as standard WildFly 40].
-
-This is a somewhat unusual situation, one that occurs in a release like WildFly 40 where standard WildFly has just updated to support the EE version that WildFly Preview had been previewing. We expect that WildFly Preview 41 will again diverge from standard WildFly as it begins previewing support for the in-progress EE 12 specifications.
 
 === WildFly Preview Support for EE 8 Deployments
 
@@ -287,5 +219,16 @@ requirements than a server primarily dedicated to handling HTTP requests would h
 embedded broker is still supported. We've added to the $JBOSS_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
 * WildFly Preview provides the link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[`micrometer` subsystem] in its out-of-the-box `standalone.xml`, `standalone-ha.xml`, `standalone-full.xml` and `standalone-full-ha.xml` configuration files, while standard WildFly instead provides the basic link:Admin_Guide{outfilesuffix}#MicroProfile_Metrics_SmallRye[`metrics` subsystem].
-* WildFly Preview includes a new xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a new `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
+* WildFly Preview includes a xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability] `org.wildfly.extension.vertx` extension and its `vertx` subsystem, along with a  `vertx` Galleon layer so you can provision it in a slimmed server. This subsystem can be used to configure the Vert.x instance used by our OpenTelemetry integration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as a coordination strategy for automatic indexing.
+
+== WildFly EE 10
+
+"WildFly EE 10" was a variant produced for the 40 and 41 releases. Beginning with WildFly 42, it is no longer produced. It had the same maturity, stability and core functionality as the corresponding standard WildFly 40 or 41 variant, but its subsystems provided the EE 10 versions of the Jakarta specifications instead of EE 11. It also supported using the Java Security Manager, while standard WildFly did not.
+
+For more on WildFly EE 10, see the link:https://docs.wildfly.org/41/Different_Flavors_of_WildFly.html#wildfly-ee-10[WildFly 41 documentation].
+
+[IMPORTANT]
+====
+The WildFly project provided the WildFly EE 10 variant on a temporary basis only, to give our users a longer period to transition their applications to EE 11. In accordance with this plan, this variant is no longer being produced.
+====
