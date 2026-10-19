@@ -4,20 +4,20 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean;
 
-import java.util.UUID;
+import java.time.Instant;
+import java.util.Deque;
+import java.util.concurrent.LinkedBlockingDeque;
 
-import jakarta.annotation.PostConstruct;
+import org.jboss.as.test.clustering.single.ejb.stateful.bean.IncrementorBean;
+
 import jakarta.ejb.PostActivate;
 import jakarta.ejb.PrePassivate;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateful;
 
-import org.jboss.as.test.clustering.PassivationEventTrackerUtil;
-import org.jboss.as.test.clustering.single.ejb.stateful.bean.IncrementorBean;
-
 /**
- * A stateful session bean that records passivation and activation events.
- * Used for testing idle time-based passivation with idle-threshold configuration.
+ * A stateful session bean that records passivation and activation events. Used for testing idle time-based passivation with
+ * idle-threshold configuration.
  *
  * @author Radoslav Husar
  */
@@ -25,28 +25,28 @@ import org.jboss.as.test.clustering.single.ejb.stateful.bean.IncrementorBean;
 @Remote(PassivatingIncrementor.class)
 public class PassivatingIncrementorBean extends IncrementorBean implements PassivatingIncrementor {
 
-    private String identifier;
+    private final Deque<Instant> activations = new LinkedBlockingDeque<>();
+    private final Deque<Instant> passivations = new LinkedBlockingDeque<>();
 
-    @PostConstruct
-    public void postConstruct() {
-        this.identifier = UUID.randomUUID().toString();
-        System.out.println("Called postConstruct() - identifier: " + this.identifier);
+    @Override
+    public Deque<Instant> getActivations() {
+        return this.activations;
     }
 
     @Override
-    public String getIdentifier() {
-        return this.identifier;
+    public Deque<Instant> getPassivations() {
+        return this.passivations;
     }
 
     @PrePassivate
     public void prePassivate() {
-        System.out.println("Called @PrePassivate - identifier: " + this.identifier);
-        PassivationEventTrackerUtil.recordPassivation(this.identifier);
+        System.out.println("Received @PrePassivate event for " + PassivatingIncrementorBean.class.getName());
+        this.passivations.add(Instant.now());
     }
 
     @PostActivate
     public void postActivate() {
-        System.out.println("Called @PostActivate - identifier: " + this.identifier);
-        PassivationEventTrackerUtil.recordActivation(this.identifier);
+        System.out.println("Received @PostActivate event for " + PassivatingIncrementorBean.class.getName());
+        this.activations.add(Instant.now());
     }
 }
