@@ -9,9 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
-
-import org.jboss.as.test.clustering.PassivationEventTrackerUtil;
+import java.time.Instant;
 
 /**
  * Serializable timer info object used to test timer passivation.
@@ -25,23 +23,11 @@ public class TimerInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = -3314782443771710521L;
 
-    private final String name;
-
-    public TimerInfo(String name) {
-        this.name = name;
-        PassivationEventTrackerUtil.clearEvents();
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        // Record passivation event
-        PassivationEventTrackerUtil.recordPassivation(this.name);
-
-        System.out.println("TimerInfo.writeObject() called for: " + this.name);
+        // Record passivation prior to serialisation
+        PassivationTimeoutCollectorBean.PASSIVATIONS.add(Instant.now());
+        System.out.println("TimerInfo.writeObject() called for: " + this.getClass().getName());
 
         // Perform default serialization
         out.defaultWriteObject();
@@ -52,27 +38,9 @@ public class TimerInfo implements Serializable {
         // Perform default deserialization
         in.defaultReadObject();
 
-        // Record activation event
-        PassivationEventTrackerUtil.recordActivation(this.name);
+        // Record passivation following to deserialisation
+        PassivationTimeoutCollectorBean.ACTIVATIONS.add(Instant.now());
 
-        System.out.println("TimerInfo.readObject() called for: " + this.name);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof TimerInfo)) return false;
-        TimerInfo other = (TimerInfo) obj;
-        return Objects.equals(this.name, other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.name);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("TimerInfo{name=%s}", this.name);
+        System.out.println("TimerInfo.readObject() called for: " + this.getClass().getName());
     }
 }
