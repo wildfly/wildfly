@@ -38,7 +38,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
 
-        // 7.1.0 --> 7.0.0:
+        // 8.0.0 --> 7.0.0:
         // transactions-recovery-graceful-shutdown changed type from enum to int.
         //   0  (skip, default) → discard; old slave uses its default "ignore"
         //   -1 (wait indefinitely) → convert int to string "wait" (same attribute name)
@@ -70,7 +70,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
 
         // 7.0.0 --> 6.0.0:
         // transactions-recovery-graceful-shutdown did not exist in EAP 8.1 (6.0 model).
-        // After the 7.1→7.0 step, the attribute is either absent (0 was discarded) or "wait" (-1 was converted).
+        // After the 8.0→7.0 step, the attribute is either absent (0 was discarded) or "wait" (-1 was converted).
         // Reject if present (only "wait" can appear here).
         ResourceTransformationDescriptionBuilder builder81 = chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY41, MODEL_VERSION_EAP81);
         builder81.getAttributeBuilder()

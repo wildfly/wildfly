@@ -6,11 +6,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:transactions:7.1"
-           xmlns="urn:jboss:domain:transactions:7.1"
+           targetNamespace="urn:jboss:domain:transactions:8.0"
+           xmlns="urn:jboss:domain:transactions:8.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="7.1">
+           version="8.0">
 
     <!-- The transaction subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>

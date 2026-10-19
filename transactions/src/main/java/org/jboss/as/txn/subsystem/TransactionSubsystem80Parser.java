@@ -18,12 +18,12 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 /**
- * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 7.1 of Transaction subsystem xml.
+ * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 8.0 of Transaction subsystem xml.
  */
-class TransactionSubsystem71Parser extends TransactionSubsystem70Parser {
+class TransactionSubsystem80Parser extends TransactionSubsystem70Parser {
 
-    TransactionSubsystem71Parser() {
-        super(Namespace.TRANSACTIONS_7_1);
+    TransactionSubsystem80Parser() {
+        super(Namespace.TRANSACTIONS_8_0);
     }
 
     @Override
