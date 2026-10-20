@@ -4,6 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.apache.activemq.artemis.utils.XmlProvider.ARTEMIS_DISABLE_XXE_PROPERTY;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.BROWSE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CONSUME;
@@ -149,4 +150,20 @@ public class ManagementUtil {
             MessagingLogger.ROOT_LOGGER.settingDiscoveryEnabledProperty();
         }
     }
+
+    public static void configureXxeSystemProperty() throws OperationFailedException {
+        String existingXxeDisabled = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                .getProperty(ARTEMIS_DISABLE_XXE_PROPERTY);
+        if (existingXxeDisabled != null) {
+            if (!"true".equalsIgnoreCase(existingXxeDisabled) && !"false".equalsIgnoreCase(existingXxeDisabled)) {
+                throw MessagingLogger.ROOT_LOGGER.invalidXxeDisabledPropertyValue(existingXxeDisabled);
+            }
+            MessagingLogger.ROOT_LOGGER.xxeDisabledPropertyAlreadySet(existingXxeDisabled);
+        } else {
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                    .setProperty(ARTEMIS_DISABLE_XXE_PROPERTY, "true");
+            MessagingLogger.ROOT_LOGGER.settingXxeDisabledProperty();
+        }
+    }
+
 }

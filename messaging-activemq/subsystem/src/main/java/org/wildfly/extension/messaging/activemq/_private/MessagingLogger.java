@@ -938,4 +938,15 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 124, value = "System property 'artemis.discovery.enabled' is set to '%s'; valid values are 'true' or 'false'.")
     OperationFailedException invalidDiscoveryEnabledPropertyValue(String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 125, value = "System property 'artemis.disableXxe' is already set to '%s'.")
+    void xxeDisabledPropertyAlreadySet(String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 126, value = "Setting system property 'artemis.disableXxe=true'.")
+    void settingXxeDisabledProperty();
+
+    @Message(id = 127, value = "System property 'artemis.disableXxe' is set to '%s'; valid values are 'true' or 'false'.")
+    OperationFailedException invalidXxeDisabledPropertyValue(String value);
 }
