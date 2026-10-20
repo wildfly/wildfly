@@ -302,7 +302,7 @@ For read-heavy applications, this can dramatically reduce the replication/persis
 === Session concurrency
 
 By default, WildFly's distributed session manager configuration permits concurrent access to a given session on a single cluster member at a time,
-as mandated by https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1#distributed-environments[§7.7.2 of the Jakarta Servlet specification].
+as mandated by https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1.html#distributed-environments[§7.7.2 of the Jakarta Servlet specification].
 
 By default, the first request for a given session acquires exclusive, cluster-wide access to its associated session, and maintains that exclusivity until the last concurrent request for that session has completed.
 Concurrent requests for the same session arriving on other cluster members will be blocked until all requests for the given session have completed on the cluster member retaining exclusive access.

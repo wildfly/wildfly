@@ -156,7 +156,7 @@ process the consumed messages and it can use the JMSReplyTo destination
 if it is defined on the message. +
 If the MDB needs any other Jakarta Messaging destinations defined on the remote
 server, it must use client-side JNDI by following the
-http://http://activemq.apache.org/artemis/docs/2.6.0/using-jms.html#jndi-configuration[Artemis
+https://artemis.apache.org/components/artemis/documentation/latest/using-jms.html#jndi[Artemis
 documentation] or configure external configuration context in the naming
 subsystem (which allows to inject the Jakarta Messaging resources using the
 `@Resource` annotation).
