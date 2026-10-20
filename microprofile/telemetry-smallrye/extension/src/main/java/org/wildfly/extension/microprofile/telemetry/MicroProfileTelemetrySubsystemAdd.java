@@ -16,7 +16,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 
 public class MicroProfileTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
-
     MicroProfileTelemetrySubsystemAdd() {
         super();
     }

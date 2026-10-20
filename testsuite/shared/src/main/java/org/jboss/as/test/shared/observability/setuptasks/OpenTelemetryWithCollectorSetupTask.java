@@ -13,12 +13,24 @@ import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorC
 @TestcontainersRequired
 public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask {
 
+    private static volatile OpenTelemetryCollectorContainer collector;
+
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollectorContainer;
+
+    /**
+     * Returns the collector configured as the server's OpenTelemetry endpoint.
+     *
+     * @return the active OpenTelemetry collector
+     */
+    public static OpenTelemetryCollectorContainer getCollector() {
+        return collector;
+    }
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         super.setup(managementClient, containerId);
+        collector = otelCollectorContainer;
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint", otelCollectorContainer.getOtlpGrpcEndpoint()));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
@@ -32,5 +44,6 @@ public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask 
 
         // Stop the container last to avoid spurious connection errors from the GrpcExporter
         otelCollectorContainer.stop();
+        collector = null;
     }
 }

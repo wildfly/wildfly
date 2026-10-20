@@ -7,6 +7,7 @@ package org.wildfly.extension.opentelemetry;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 
 import java.lang.invoke.MethodHandles;
@@ -20,7 +21,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 @MessageLogger(projectCode = "WFLYOTELEXT", length = 4)
-interface OpenTelemetryExtensionLogger extends BasicLogger {
+public interface OpenTelemetryExtensionLogger extends BasicLogger {
     OpenTelemetryExtensionLogger OTEL_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), OpenTelemetryExtensionLogger.class,
             OpenTelemetryExtensionLogger.class.getPackage().getName());
 
@@ -77,4 +78,12 @@ interface OpenTelemetryExtensionLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14, value = "Additional metrics systems discovered while configuring OpenTelemetry: %s. Please refer to the documentation for more information.")
     void multipleMetricsSystemsEnabled(String others);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Timed out waiting for metric export: %s")
+    void timedOutWaitingForMetricExport(String deploymentName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 16, value = "Failed to collect final metrics from deployment %s: %s")
+    void failedToCollectMetrics(String deploymentName, String error);
 }

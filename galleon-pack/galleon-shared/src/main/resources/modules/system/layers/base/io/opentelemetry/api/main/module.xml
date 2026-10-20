@@ -10,6 +10,7 @@
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-api}"/>
         <artifact name="${io.opentelemetry:opentelemetry-api-incubator}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-common}"/>
     </resources>
 
     <dependencies>

@@ -15,11 +15,16 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.capability.RuntimeCapability;
 
+/**
+ * Defines the management resource and deployment-visible modules for the MicroProfile Telemetry subsystem.
+ */
 public class MicroProfileTelemetrySubsystemDefinition extends PersistentResourceDefinition {
     static final String MICROPROFILE_TELEMETRY_MODULE = "org.wildfly.extension.microprofile.telemetry";
-    static final String MICROPROFILE_TELEMETRY_API_MODULE = "org.wildfly.extension.microprofile.telemetry-api";
     static final String OPENTELEMETRY_CAPABILITY_NAME = "org.wildfly.extension.opentelemetry";
 
+    /**
+     * Modules made available to deployments when the subsystem is active.
+     */
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
             "io.opentelemetry.context",
@@ -27,8 +32,7 @@ public class MicroProfileTelemetrySubsystemDefinition extends PersistentResource
             "io.opentelemetry.sdk",
             "io.smallrye.config",
             "io.smallrye.opentelemetry",
-            "org.eclipse.microprofile.config.api",
-            MICROPROFILE_TELEMETRY_API_MODULE
+            "org.eclipse.microprofile.config.api"
     };
 
     static final RuntimeCapability<Void> MICROPROFILE_TELEMETRY_CAPABILITY =

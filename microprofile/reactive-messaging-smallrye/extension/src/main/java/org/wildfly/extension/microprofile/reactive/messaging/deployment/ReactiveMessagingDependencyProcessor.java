@@ -82,6 +82,8 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         moduleSpecification.addSystemDependency(cdiDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.messaging").setImportServices(true).build()));
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.config").setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.config.api").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.opentelemetry.api")
+                .setOptional(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.reactivex.rxjava2.rxjava").setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators").setImportServices(true).build());
         moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.wildfly.reactive.messaging.config").setImportServices(true).build());
