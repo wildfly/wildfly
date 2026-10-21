@@ -24,6 +24,7 @@ import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
+import org.infinispan.registry.InternalCacheRegistry;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
 import org.jboss.as.clustering.infinispan.marshalling.MarshallerFactory;
@@ -48,12 +49,14 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     private final EmbeddedCacheManagerAdmin administrator;
     private final ModuleLoader loader;
     private final MarshallerFactory marshallerFactory;
+    private final InternalCacheRegistry internalCacheRegistry;
 
     public DefaultCacheContainer(EmbeddedCacheManager container, ModuleLoader loader) {
         super(container);
         this.administrator = new DefaultCacheContainerAdmin(this);
         this.loader = loader;
         this.marshallerFactory = UserMarshallerFactory.forMediaType(container.getCacheManagerConfiguration().serialization().marshaller().mediaType());
+        this.internalCacheRegistry = GlobalComponentRegistry.componentOf(container, InternalCacheRegistry.class);
     }
 
     @Override
@@ -97,7 +100,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.getCache(cacheName, createIfAbsent);
-        if (cache == null) return null;
+        if ((cache == null) || this.internalCacheRegistry.isInternalCache(cacheName)) return cache;
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
