@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +19,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.infinispan.lock.exception.ClusteredLockException;
+import org.infinispan.remoting.RemoteException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -151,9 +153,10 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
 
                 try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL, lockName, LockOperation.IS_LOCKED_AFTER_REMOVE)))) {
                     assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                    // Infinispan 16.2.x fails with MarshallingException caused by ClassNotFoundException if org.infinispan.core cannot load the exception class
-                    // Infinispan 16.3+ (ISPN #17934) resolves the class via the TCCL instead and falls back to a RemoteException
-                    assertEquals(ClusteredLockException.class.getName(), EntityUtils.toString(response.getEntity()));
+                    String rootCause = EntityUtils.toString(response.getEntity());
+                    // Infinispan 16.3+ (ISPN #17934) resolves the exception class via the TCCL and falls back to a RemoteException, losing the original exception type
+                    // TODO Require ClusteredLockException once https://github.com/infinispan/infinispan/issues/18335 is resolved
+                    assertTrue(Set.of(ClusteredLockException.class.getName(), RemoteException.class.getName()).contains(rootCause), rootCause);
                 }
             }
         }
