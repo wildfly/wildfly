@@ -106,7 +106,7 @@ wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
 ...
 
-[Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly 8.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (48 services are lazy, passive or on-demand)
+[Server:server-two] 10:34:56,263 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly {wildflyVersion}.0.0.Final (WildFly Core 34.0.0.Final) started in 4669ms - Started 71 of 72 services (15 services are lazy, passive or on-demand)
 ----
 
 Now exit from the primary host and let's repeat the same steps on the secondary host. Finally,
@@ -257,9 +257,9 @@ Now everything is set for the two hosts to run in domain mode. Let's
 start them by running domain.sh on both hosts. If everything goes fine,
 we could see from the log on the primary Host Controller:
 
-[source,options="nowrap"]
+[source,subs="verbatim,attributes",options="nowrap"]
 ----
-[Host Controller] 21:30:52,042 INFO  [org.jboss.as.domain] (management-handler-threads - 1) JBAS010918: Registered remote secondary host "secondary"
+[Host Controller] 10:34:56,255 INFO  [org.jboss.as.host.controller] (server-registration-threads - 1) WFLYHC0019: Registered remote secondary host "secondary", WildFly {wildflyVersion}.0.0.Final (WildFly Core 34.0.0.Final)
 ----
 
 That means all the configurations are correct and two hosts are run in

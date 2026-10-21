@@ -9,7 +9,6 @@ WildFly authors;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 14
 
 ifdef::env-github[]
 :tip-caption: :bulb:

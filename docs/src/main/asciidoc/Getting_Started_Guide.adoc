@@ -471,13 +471,13 @@ subsystems you want to add, remove, or modify.
 After executing one of the above commands, you should see output similar
 to what's shown below.
 
-[source,options="nowrap"]
+[source,subs="verbatim,attributes",options="nowrap"]
 ----
 =========================================================================
 
   JBoss Bootstrap Environment
 
-  JBOSS_HOME: /opt/wildfly-10.0.0.Final
+  JBOSS_HOME: /opt/wildfly-{wildflyVersion}.0.0.Final
 
   JAVA: java
 
@@ -485,11 +485,11 @@ to what's shown below.
 
 =========================================================================
 
-11:46:11,161 INFO  [org.jboss.modules] (main) JBoss Modules version 1.5.1.Final
-11:46:11,331 INFO  [org.jboss.msc] (main) JBoss MSC version 1.2.6.Final
-11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) starting
+10:34:10,005 INFO  [org.jboss.modules] (main) JBoss Modules version 2.1.6.Final
+10:34:10,348 INFO  [org.jboss.msc] (main) JBoss MSC version 1.5.6.Final
+10:34:10,395 INFO  [org.jboss.as] (MSC service thread 1-2) WFLYSRV0049: WildFly {wildflyVersion}.0.0.Final (WildFly Core 34.0.0.Final) starting
 <snip>
-11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
+10:34:11,668 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly {wildflyVersion}.0.0.Final (WildFly Core 34.0.0.Final) started in 1881ms - Started 335 of 540 services (349 services are lazy, passive or on-demand) - Server configuration file in use: standalone.xml - Minimum feature stability level: community
 ----
 
 You can point your browser to
