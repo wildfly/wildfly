@@ -167,9 +167,8 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
             super(NODE_1_2, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add("/subsystem=infinispan/cache-container=lock:add(default-cache=repl, modules=[org.infinispan.lock])")
+                            .add("/subsystem=infinispan/cache-container=lock:add(modules=[org.infinispan.lock])")
                             .add("/subsystem=infinispan/cache-container=lock/transport=jgroups:add")
-                            .add("/subsystem=infinispan/cache-container=lock/replicated-cache=repl:add")
                             .endBatch()
                             .build())
                     .build());
