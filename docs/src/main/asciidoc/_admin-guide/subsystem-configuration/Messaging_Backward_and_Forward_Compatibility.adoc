@@ -92,7 +92,7 @@ can then use these resources to communicate with the legacy server
 using the HornetQ CORE protocol.
 
 Artemis supports
-http://activemq.apache.org/artemis/docs/1.1.0/using-jms.html#jndi-configuration[Client-side
+https://artemis.apache.org/components/artemis/documentation/latest/using-jms.html#jndi[Client-side
 JNDI] to create Jakarta Messaging resources ( `ConnectionFactory` and `Destination`).
 
 For example, if a WildFly messaging client wants to communicate with a

@@ -162,7 +162,7 @@ WildFly instance by executing the following command:
 ----
 
 *Note that new portable extensions should always use the*
-*https://jakarta.ee/specifications/cdi/4.0/apidocs/jakarta.cdi/jakarta/enterprise/inject/spi/beanmanager[BeanManager
+*https://jakarta.ee/specifications/cdi/4.0/apidocs/jakarta.cdi/jakarta/enterprise/inject/spi/BeanManager.html[BeanManager
 API]* *properly and thus never require the non-portable mode. The
 non-portable mode only exists to preserve compatibility with legacy
 extensions!*
