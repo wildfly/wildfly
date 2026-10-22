@@ -1013,6 +1013,22 @@
             <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
+        <!-- ========================= Temporary ========================================== -->
+        <!-- Eclipse MicroProfile Telemetry Staging Repository -->
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>microprofile-telemetry-maven2-staging</id>
+            <name>Eclipse MicroProfile Telemetry Staging Repository</name>
+            <url>https://repo.eclipse.org/content/repositories/microprofile-telemetry-maven2-staging/</url>
+            <layout>default</layout>
+        </repository>
+        <!-- ======================== /Temporary ========================================== -->
     </repositories>
 
     <pluginRepositories>
