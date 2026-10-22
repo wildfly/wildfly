@@ -38,6 +38,15 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             }
             war.addAsWebInfResource("WEB-INF/web.xml", "web.xml");
             war.addAsWebInfResource("WEB-INF/jboss-web.xml", "jboss-web.xml");
+            // TODO WFLY-22362: remove once the MP-JWT TCK packages the keyset itself.
+            // The MP-JWT 2.2 RsaAndEcSignatureAlgorithmTest references
+            // mp.jwt.verify.publickey.location=/rs256es256.jwk but its createDeployment() never
+            // adds the keyset to the WAR (unlike the sibling *LocationTest classes), so the test
+            // 500s on any isolated-deployment server. Acknowledged upstream TCK bug; add the key here.
+            if (testClass.getName().equals("org.eclipse.microprofile.jwt.tck.config.RsaAndEcSignatureAlgorithmTest")
+                    && !war.contains("rs256es256.jwk")) {
+                war.addAsResource("rs256es256.jwk");
+            }
         }
 
         if (applicationArchive instanceof ManifestContainer<?>) {

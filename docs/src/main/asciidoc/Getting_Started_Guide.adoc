@@ -147,7 +147,7 @@ WildFly also provides support for MicroProfile technologies. The same versions o
 |MicroProfile Config 3.1 |X |X
 |MicroProfile Fault Tolerance 4.1 |-- |X
 |MicroProfile Health 4.0 |-- |X
-|MicroProfile JWT Authentication 2.1 |X |X
+|MicroProfile JWT Authentication 2.2 |X |X
 |MicroProfile LRA 2.0 |-- |--
 |MicroProfile OpenAPI 4.1 |-- |X
 |MicroProfile Reactive Messaging 3.0 |-- |--
