@@ -47,6 +47,8 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
     private static final Duration MAX_PASSIVATION_DURATION = Duration.ofSeconds(TimeoutUtil.adjust(10));
     private static final Duration PASSIVATION_WAIT_DURATION = MAX_PASSIVATION_DURATION.dividedBy(100);
 
+    private static final String ATTRIBUTE_NAME = "a";
+
     static WebArchive getBaseDeployment(String moduleName) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
         war.addClasses(SessionOperationServlet.class, PassivationEventTrackerUtil.class);
@@ -66,7 +68,7 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
              CloseableHttpClient client2 = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             try {
                 // This should not trigger any passivation/activation events
-                try (CloseableHttpResponse response = client1.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, "a", "1")))) {
+                try (CloseableHttpResponse response = client1.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, ATTRIBUTE_NAME, "1")))) {
                     assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     session1 = getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID);
                 }
@@ -74,14 +76,13 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
                 // Avoid passivating cache entries before they are committed
                 Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
-                Instant start = Instant.now();
                 Map<String, Queue<PassivationEventTrackerUtil.EventType>> events = new HashMap<>();
                 Map<String, PassivationEventTrackerUtil.EventType> expectedEvents = new HashMap<>();
                 events.put(session1, new LinkedList<>());
                 expectedEvents.put(session1, PassivationEventTrackerUtil.EventType.PASSIVATION);
 
                 // This will trigger passivation of session1
-                try (CloseableHttpResponse response = client2.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, "a", "2")))) {
+                try (CloseableHttpResponse response = client2.execute(new HttpPut(SessionOperationServlet.createURI(baseURL, ATTRIBUTE_NAME, "2")))) {
                     assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                     session2 = getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID);
                     events.put(session2, new LinkedList<>());
@@ -90,78 +91,45 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
                 }
 
                 // Ensure session1 was passivated
-                while (events.get(session1).isEmpty() && Duration.between(start, Instant.now()).compareTo(MAX_PASSIVATION_DURATION) < 0) {
-                    try (CloseableHttpResponse response = client2.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "a")))) {
-                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        assertEquals(session2, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
-                        assertEquals("2", getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
-                        collectEvents(response, events);
-                    }
-                    Thread.sleep(PASSIVATION_WAIT_DURATION.toMillis());
-                }
-
-                assertFalse(events.get(session1).isEmpty());
+                awaitEvents(client2, baseURL, session2, "2", session1, events);
                 validateEvents(session1, events, expectedEvents);
 
-                // Avoid passivating cache entries before they are committed
+                // Avoid passivating cache entries before they are committed.
+                // Additionally, HttpSessionActivationListener.sessionWillPassivate(...) is triggered at the start of the eviction
+                // of a cache entry - consequently session1 may not yet have been evicted from memory, in which case the request
+                // below would not trigger its activation.
                 Thread.sleep(GRACE_TIME_TO_REPLICATE);
-
-                start = Instant.now();
 
                 // This should trigger activation of session1 and passivation of session2
-                try (CloseableHttpResponse response = client1.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "a")))) {
-                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                    assertEquals(session1, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
-                    assertEquals("1", getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
+                try (CloseableHttpResponse response = client1.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, ATTRIBUTE_NAME)))) {
+                    validateResponse(response, session1, "1");
                     collectEvents(response, events);
-                    assertFalse(events.get(session1).isEmpty());
-                    assertTrue(events.get(session1).contains(PassivationEventTrackerUtil.EventType.ACTIVATION));
                 }
 
-                // Verify session2 was passivated
-                while (events.get(session2).isEmpty() && Duration.between(start, Instant.now()).compareTo(MAX_PASSIVATION_DURATION) < 0) {
-                    try (CloseableHttpResponse response = client1.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "a")))) {
-                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        assertEquals(session1, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
-                        assertEquals("1", getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
-                        collectEvents(response, events);
-                    }
-                    Thread.sleep(PASSIVATION_WAIT_DURATION.toMillis());
-                }
-
-                assertFalse(events.get(session2).isEmpty());
-                validateEvents(session2, events, expectedEvents);
-
-                // Avoid passivating cache entries before they are committed
-                Thread.sleep(GRACE_TIME_TO_REPLICATE);
-
-                start = Instant.now();
-
-                // This should trigger activation of session2 and passivation of session1
-                try (CloseableHttpResponse response = client2.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "a")))) {
-                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                    assertEquals(session2, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
-                    assertEquals("2", getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
-                    collectEvents(response, events);
-                    assertFalse(events.get(session2).isEmpty());
-                    assertTrue(events.get(session2).contains(PassivationEventTrackerUtil.EventType.ACTIVATION));
-                }
-
-                // Verify session1 was passivated
-                while (!events.get(session1).isEmpty() && Duration.between(start, Instant.now()).compareTo(MAX_PASSIVATION_DURATION) < 0) {
-                    try (CloseableHttpResponse response = client2.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, "a")))) {
-                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        assertEquals(session2, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
-                        assertEquals("2", getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
-                        collectEvents(response, events);
-                    }
-                    Thread.sleep(PASSIVATION_WAIT_DURATION.toMillis());
-                }
-
-                assertFalse(events.get(session1).isEmpty());
+                // Ensure session1 was activated
+                awaitEvents(client1, baseURL, session1, "1", session1, events);
                 validateEvents(session1, events, expectedEvents);
 
+                // Ensure session2 was passivated
+                awaitEvents(client1, baseURL, session1, "1", session2, events);
                 validateEvents(session2, events, expectedEvents);
+
+                // Ditto, this time for the passivation of session2
+                Thread.sleep(GRACE_TIME_TO_REPLICATE);
+
+                // This should trigger activation of session2 and passivation of session1
+                try (CloseableHttpResponse response = client2.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, ATTRIBUTE_NAME)))) {
+                    validateResponse(response, session2, "2");
+                    collectEvents(response, events);
+                }
+
+                // Ensure session2 was activated
+                awaitEvents(client2, baseURL, session2, "2", session2, events);
+                validateEvents(session2, events, expectedEvents);
+
+                // Ensure session1 was passivated
+                awaitEvents(client2, baseURL, session2, "2", session1, events);
+                validateEvents(session1, events, expectedEvents);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
@@ -172,6 +140,37 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
                 }
             }
         }
+    }
+
+    /**
+     * Reads the session associated with the specified client - collecting any reported passivation/activation events - until an event
+     * was reported for the session identified by {@code sessionId}, or until {@link #MAX_PASSIVATION_DURATION} has elapsed.
+     * Passivation of a cache entry happens asynchronously with respect to the request that triggered it, thus the associated event is
+     * not necessarily reported by the response of that request.
+     * @param client a client whose session is currently active, i.e. the session used to poll the server for events
+     * @param baseURL the base URL of the deployment
+     * @param activeSessionId the identifier of the session associated with the specified client
+     * @param activeSessionValue the value of the session attribute of the session associated with the specified client
+     * @param sessionId the identifier of the session whose event we are waiting for
+     * @param events the per session event queues, populated by this method
+     */
+    private static void awaitEvents(CloseableHttpClient client, URL baseURL, String activeSessionId, String activeSessionValue, String sessionId, Map<String, Queue<PassivationEventTrackerUtil.EventType>> events) throws Exception {
+        Instant start = Instant.now();
+        while (events.get(sessionId).isEmpty() && Duration.between(start, Instant.now()).compareTo(MAX_PASSIVATION_DURATION) < 0) {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createURI(baseURL, ATTRIBUTE_NAME)))) {
+                validateResponse(response, activeSessionId, activeSessionValue);
+                collectEvents(response, events);
+            }
+            Thread.sleep(PASSIVATION_WAIT_DURATION.toMillis());
+        }
+
+        assertFalse(events.get(sessionId).isEmpty(), () -> String.format("No passivation/activation event was reported for session %s within %s", sessionId, MAX_PASSIVATION_DURATION));
+    }
+
+    private static void validateResponse(HttpResponse response, String sessionId, String value) {
+        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(sessionId, getRequiredHeaderValue(response, SessionOperationServlet.SESSION_ID));
+        assertEquals(value, getRequiredHeaderValue(response, SessionOperationServlet.RESULT));
     }
 
     private static void collectEvents(HttpResponse response, Map<String, Queue<PassivationEventTrackerUtil.EventType>> events) {
@@ -189,7 +188,7 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
         PassivationEventTrackerUtil.EventType type = types.poll();
         PassivationEventTrackerUtil.EventType expected = expectedEvents.get(sessionId);
         while (type != null) {
-            assertSame(expected, type);
+            assertSame(expected, type, String.format("Unexpected event reported for session %s", sessionId));
             type = types.poll();
             // ACTIVATE event must follow PASSIVATE event and vice versa
             expected = PassivationEventTrackerUtil.EventType.values()[(expected.ordinal() + 1) % 2];
