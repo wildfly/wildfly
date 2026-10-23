@@ -143,9 +143,6 @@
         <!-- The EL API artifact has a different artifactId between EE 10 and 11. Make it easy to switch which we use. -->
         <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
 
-        <!-- Repository Deployment Settings -->
-        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
-        <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
         <!-- Nexus staging repository URL used to retrieve test component releases -->
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
@@ -1532,6 +1529,24 @@
                     <artifactId>wildfly-detach-plugin</artifactId>
                     <version>${version.org.wildfly.plugin.wildfly-detach-plugin}</version>
                 </plugin>
+                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>${version.central.publishing.maven.plugin}</version>
+                </plugin>
+                <!-- Disable the classic maven-deploy-plugin -->
+                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -2095,16 +2110,6 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
                             <execution>
@@ -2130,7 +2135,6 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>${version.central.publishing.maven.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>${sonatype.server.id}</publishingServerId>
