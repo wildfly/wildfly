@@ -470,9 +470,8 @@ The management console can be secured with OpenID Connect using the Keycloak Ope
 
 [NOTE]
 ====
-The ability to secure the management console with the Keycloak OpenID provider is only available when
-running a standalone server and is not supported when running a managed domain. The management
-CLI cannot be secured with OpenID Connect.
+The management CLI cannot be secured with OpenID Connect. Only the management console is secured by the
+configuration described here, both when running a standalone server and when running a managed domain.
 ====
 
 To secure the management console with OpenID Connect, configuration is required on the Keycloak side
@@ -501,7 +500,7 @@ in the previous section.
 
 A `secure-server` that references the `wildfly-console` client is also needed.
 
-Some example CLI commands that add these resources can be seen here:
+Some example CLI commands that add these resources to a standalone server can be seen here:
 
 [source,options="nowrap"]
 ----
@@ -521,6 +520,63 @@ Some example CLI commands that add these resources can be seen here:
 # reload
 reload
 ----
+
+=== Elytron OIDC Client Subsystem Configuration in a Managed Domain
+
+In a managed domain, the management console is served by the host controller rather than by a server, so the
+`elytron-oidc-client` subsystem needs to be configured on the host controller itself instead of in a profile. This
+requires the extension to be added to the host model and the resources to be added under
+`/host=<host-name>/subsystem=elytron-oidc-client`.
+
+Unlike a standalone server, the HTTP management interface of a host controller does not pick up the OpenID Connect
+configuration automatically. The `secure-deployment` resource instead exposes an `http-authentication-factory` that
+is named after the resource and that the HTTP management interface needs to reference.
+
+Some example CLI commands that secure the management console of the host controller named `primary` can be seen here:
+
+[source,options="nowrap"]
+----
+# Make the subsystem available in the host model
+/host=primary/extension=org.wildfly.extension.elytron-oidc-client:add
+/host=primary/subsystem=elytron-oidc-client:add
+
+# Configure the Keycloak provider
+/host=primary/subsystem=elytron-oidc-client/provider=keycloak:add(provider-url=http://localhost:8180/realms/wildfly-infra)
+
+# Create a secure-deployment in order to protect mgmt interface
+/host=primary/subsystem=elytron-oidc-client/secure-deployment=wildfly-management:add(provider=keycloak,client-id=wildfly-management,principal-attribute=preferred_username,bearer-only=true,ssl-required=EXTERNAL)
+
+# Make the HTTP management interface use the authentication factory provided by the secure-deployment
+/host=primary/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=wildfly-management)
+
+# Enable RBAC where roles are obtained from the identity
+/core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+/core-service=management/access=authorization:write-attribute(name=use-identity-roles,value=true)
+
+# Create a secure-server in order to publish the management console configuration via mgmt interface
+/host=primary/subsystem=elytron-oidc-client/secure-server=wildfly-console:add(provider=keycloak,client-id=wildfly-console,public-client=true)
+
+# reload
+reload --host=primary
+----
+
+The same configuration has to be repeated on every host controller whose management console should be secured with
+OpenID Connect.
+
+[NOTE]
+====
+Only the `http-authentication-factory` of the HTTP management interface is replaced by the above configuration.
+Communication within the domain, i.e., between a secondary host controller and the primary host controller and
+between a managed server and its host controller, is authenticated using SASL and is therefore unaffected. The
+`sasl-authentication-factory` configured in the `http-upgrade` attribute of the HTTP management interface keeps being
+used by the management CLI and by secondary host controllers, so it must not be removed.
+====
+
+[NOTE]
+====
+A `secure-server` resource that is added to a profile is ignored by the servers of that profile, because a server in
+a managed domain does not host a management console. A warning is logged in that case.
+====
 
 == Accessing the management console
 

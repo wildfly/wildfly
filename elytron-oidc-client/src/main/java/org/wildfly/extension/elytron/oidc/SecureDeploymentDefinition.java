@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.server.security.SecurityMetaData.OPERATION_CONTEXT_ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
 import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL;
@@ -22,6 +23,7 @@ import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.RE
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,14 +32,17 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -53,7 +58,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.security.auth.permission.LoginPermission;
+import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.MechanismConfiguration;
+import org.wildfly.security.auth.server.MechanismConfigurationSelector;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.wildfly.security.http.oidc.OidcClientConfigurationBuilder;
@@ -69,6 +79,16 @@ import org.wildfly.security.http.oidc.OidcSecurityRealm;
 class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
     static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT), Stability.DEFAULT);
+
+    static final String HTTP_AUTHENTICATION_FACTORY_CAPABILITY_NAME = "org.wildfly.security.http-authentication-factory";
+
+    /*
+     * Only registered when the resource is used to secure the HTTP management interface of a host controller. On a
+     * server the resulting authentication factory is created by the management interface itself from the virtual
+     * security domain and the virtual HTTP server mechanism factory installed below.
+     */
+    static final RuntimeCapability<Void> HTTP_AUTHENTICATION_FACTORY_CAPABILITY =
+            RuntimeCapability.Builder.of(HTTP_AUTHENTICATION_FACTORY_CAPABILITY_NAME, true, HttpAuthenticationFactory.class).build();
 
     /*
      * These are attributes at a stability level other than Default, the OidcActivationProcessor also cross references them
@@ -265,9 +285,18 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         }
 
         @Override
+        protected void recordCapabilitiesAndRequirements(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            if (isHostControllerConfiguration(context)) {
+                // the management interface of a host controller references the authentication factory by capability name
+                context.registerCapability(HTTP_AUTHENTICATION_FACTORY_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue()));
+            }
+        }
+
+        @Override
         protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
             super.populateModel(context, operation, resource);
-            if (! isWarDeployment(context)) {
+            if (context.getProcessType().isServer() && ! isWarDeployment(context)) {
                 VirtualDomainMarkerUtility.virtualDomainRequired(context);
                 AdvancedSecurityMetaData advancedSecurityMetaData = new AdvancedSecurityMetaData();
                 advancedSecurityMetaData.setHttpServerAuthenticationMechanismFactory(virtualMechanismFactoryName(context));
@@ -293,7 +322,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(secureDeploymentName, context.resolveExpressions(model));
 
-            if (! isWarDeployment(context)) {
+            if (isHostControllerConfiguration(context)) {
+                installManagementHttpAuthenticationFactory(context, secureDeploymentName);
+
+                if (! context.isBooting()) {
+                    context.reloadRequired();
+                }
+            } else if (! isWarDeployment(context)) {
                 ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
                 ServiceName virtualMechanismFactoryName = virtualMechanismFactoryName(context);
@@ -311,11 +346,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                 ServiceName virtualDomainName = VirtualDomainMarkerUtility.virtualDomainName(context);
                 serviceBuilder = serviceTarget.addService(virtualDomainName);
 
-                SecurityDomain virtualDomain = SecurityDomain.builder()
-                        .addRealm(VIRTUAL, new OidcSecurityRealm()).build()
-                        .setDefaultRealmName(VIRTUAL)
-                        .setPermissionMapper((permissionMappable, roles) -> LoginPermission.getInstance())
-                        .build();
+                SecurityDomain virtualDomain = createVirtualSecurityDomain();
 
                 Consumer<SecurityDomain> securityDomainConsumer = serviceBuilder.provides(new ServiceName[]{virtualDomainName});
                 serviceBuilder.setInstance(Service.newInstance(securityDomainConsumer, virtualDomain));
@@ -359,6 +390,14 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         }
 
         @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            if (isHostControllerConfiguration(context)) {
+                context.deregisterCapability(HTTP_AUTHENTICATION_FACTORY_CAPABILITY.getDynamicName(context.getCurrentAddress()));
+            }
+        }
+
+        @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.removeSecureDeployment(context.getCurrentAddressValue());
@@ -370,5 +409,59 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
     static boolean isWarDeployment(OperationContext context) {
         return context.getCurrentAddressValue().endsWith(WAR_FILE_EXTENSION);
+    }
+
+    /**
+     * Determine if this resource is being used to secure the management interface of a host controller, i.e., if the
+     * resource has been added under {@code /host=<host-name>/subsystem=elytron-oidc-client}. A managed domain serves
+     * its management console from the host controller rather than from a server, so this is the only way a secure
+     * deployment can be used to secure the management console of a managed domain.
+     *
+     * @param context the operation context
+     * @return {@code true} if the resource is part of the configuration of a host controller and {@code false} otherwise
+     */
+    static boolean isHostControllerConfiguration(OperationContext context) {
+        PathAddress address = context.getCurrentAddress();
+        return context.getProcessType().isHostController() && address.size() > 0 && HOST.equals(address.getElement(0).getKey());
+    }
+
+    /**
+     * Install an {@link HttpAuthenticationFactory} that can be referenced from the {@code http-authentication-factory}
+     * attribute of the HTTP management interface of a host controller in order to secure the management console of a
+     * managed domain with OpenID Connect.
+     */
+    private static void installManagementHttpAuthenticationFactory(OperationContext context, String secureDeploymentName) {
+        final RuntimeCapability<?> capability = HTTP_AUTHENTICATION_FACTORY_CAPABILITY.fromBaseCapability(secureDeploymentName);
+        final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService();
+        final Consumer<HttpAuthenticationFactory> httpAuthenticationFactoryConsumer = serviceBuilder.provides(capability);
+        // the configuration is only assembled once the service starts so that child resources such as credentials,
+        // which are added after this resource, are taken into account as well
+        serviceBuilder.setInstance(new Service() {
+
+            public void start(StartContext startContext) {
+                String json = OidcConfigService.getInstance().getJSON(secureDeploymentName);
+                OidcClientContext oidcClientContext = new OidcClientContext(OidcClientConfigurationBuilder
+                        .build(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))));
+                httpAuthenticationFactoryConsumer.accept(HttpAuthenticationFactory.builder()
+                        .setFactory(new OidcMechanismFactory(oidcClientContext))
+                        .setSecurityDomain(createVirtualSecurityDomain())
+                        .setMechanismConfigurationSelector(MechanismConfigurationSelector.constantSelector(MechanismConfiguration.EMPTY))
+                        .build());
+            }
+
+            public void stop(StopContext stopContext) {
+                httpAuthenticationFactoryConsumer.accept(null);
+            }
+        });
+        serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        serviceBuilder.install();
+    }
+
+    private static SecurityDomain createVirtualSecurityDomain() {
+        return SecurityDomain.builder()
+                .addRealm(VIRTUAL, new OidcSecurityRealm()).build()
+                .setDefaultRealmName(VIRTUAL)
+                .setPermissionMapper((permissionMappable, roles) -> LoginPermission.getInstance())
+                .build();
     }
 }
