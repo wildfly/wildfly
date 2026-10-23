@@ -95,6 +95,7 @@ public class DatasourceCustomModulesTestCase {
 
 
         Assert.assertTrue(TestValidConnectionChecker.wasInvoked());
+        Assert.assertEquals(TestValidConnectionChecker.getTimeout(), 5);
         Assert.assertTrue(TestExceptionSorter.wasInvoked());
         Assert.assertTrue(TestStaleConnectionChecker.wasInvoked());
 
@@ -172,6 +173,7 @@ public class DatasourceCustomModulesTestCase {
         createDsOp.get("driver-name").set("h2");
         createDsOp.get("valid-connection-checker-class-name").set(TestValidConnectionChecker.class.getName());
         createDsOp.get("valid-connection-checker-module").set("org.jboss.test.customModule");
+        createDsOp.get("validation-timeout-seconds").set("5");
         createDsOp.get("exception-sorter-class-name").set(TestExceptionSorter.class.getName());
         createDsOp.get("exception-sorter-module").set("org.jboss.test.customModule");
         createDsOp.get("stale-connection-checker-class-name").set(TestStaleConnectionChecker.class.getName());
