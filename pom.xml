@@ -444,7 +444,7 @@
         <version.io.smallrye.smallrye-config>4.0.0</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.11.4</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.3.0</version.io.smallrye.smallrye-health>
-        <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
+        <version.io.smallrye.smallrye-jwt>5.0.0-RC2</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-mutiny>3.1.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.23.1</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
@@ -495,7 +495,7 @@
         <version.org.eclipse.microprofile.config.api>3.1.2</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.1.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
-        <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
+        <version.org.eclipse.microprofile.jwt.api>2.2</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.lra.api>2.0.2</version.org.eclipse.microprofile.lra.api>
         <version.org.eclipse.microprofile.openapi>4.1.1</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
