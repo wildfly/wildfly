@@ -5,16 +5,22 @@
 
 package org.wildfly.test.common;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -35,6 +41,54 @@ public class ServerConfigurator {
                 PATHS.add(copy("wildfly core"));
                 PATHS.add(copy("wildfly (core)"));
             }
+        }
+    }
+
+    public static void appendJavaOpts(final Path containerHome, final String baseName, final String variable) throws IOException {
+        final Path binDir = containerHome.resolve("bin");
+        if (TestSuiteEnvironment.isWindows()) {
+            Path conf = binDir.resolve(baseName + ".conf.bat");
+            OpenOption[] options;
+            if (Files.notExists(conf)) {
+                options = new OpenOption[]{StandardOpenOption.CREATE_NEW};
+            } else {
+                options = new OpenOption[]{StandardOpenOption.APPEND};
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(conf, options)) {
+                if ("standalone".equals(baseName)) {
+                    writer.newLine();
+                    writer.write("set \"JAVA_OPTS=%JAVA_OPTS% " + variable +"\"");
+                    writer.newLine();
+                }
+            }
+        }
+    }
+
+    public static void removeJavaOpts(final Path containerHome, final String baseName, final String variable) throws IOException {
+        final Path binDir = containerHome.resolve("bin");
+        if (TestSuiteEnvironment.isWindows()) {
+            Path conf = binDir.resolve(baseName + ".conf.bat");
+            Path confTemp = binDir.resolve(baseName + "Temp" + ".conf.bat");
+            OpenOption[] options = new OpenOption[]{StandardOpenOption.CREATE_NEW};
+            BufferedReader reader = Files.newBufferedReader(conf);
+            BufferedWriter writer = Files.newBufferedWriter(confTemp, options);
+
+            String lineToRemove = "set \"JAVA_OPTS=%JAVA_OPTS% " + variable +"\"";
+            String currentLine;
+            while ((currentLine = reader.readLine()) != null) {
+                String trimmedLine = currentLine.trim();
+
+                if (trimmedLine.isEmpty() || trimmedLine.equals(lineToRemove)) continue;
+
+                writer.newLine();
+                writer.write(currentLine);
+                writer.newLine();
+            }
+            writer.close();
+            reader.close();
+            Files.delete(conf);
+            Files.copy(confTemp, conf);
+            Files.delete(confTemp);
         }
     }
 
