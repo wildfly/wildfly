@@ -31,6 +31,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -665,6 +666,7 @@ public class Constants {
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setStability(Stability.COMMUNITY)
             .build();
 
 

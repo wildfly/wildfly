@@ -1512,7 +1512,7 @@ public class DsParser extends AbstractParser {
                         }
                         case TIMEOUT: {
                             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                                case DATASOURCES_8_0:
+                                case DATASOURCES_COMMUNITY_8_0:
                                     parseTimeOutSettings_8_0(reader, operation);
                                     break;
                                 default:
@@ -2533,7 +2533,7 @@ public class DsParser extends AbstractParser {
                         }
                         case TIMEOUT: {
                             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                                case DATASOURCES_8_0:
+                                case DATASOURCES_COMMUNITY_8_0:
                                     parseTimeOutSettings_8_0(reader, operation);
                                     break;
                                 default:

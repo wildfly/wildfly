@@ -36,12 +36,12 @@ public enum Namespace {
 
     DATASOURCES_7_2("urn:jboss:domain:datasources:7.2"),
 
-    DATASOURCES_8_0("urn:jboss:domain:datasources:8.0");
+    DATASOURCES_COMMUNITY_8_0("urn:jboss:domain:datasources:community:8.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_8_0;
+    public static final Namespace CURRENT = DATASOURCES_COMMUNITY_8_0;
 
     private final String name;
 

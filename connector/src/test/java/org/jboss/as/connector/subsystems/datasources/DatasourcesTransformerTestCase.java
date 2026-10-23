@@ -20,6 +20,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONN
 public class DatasourcesTransformerTestCase extends AbstractSubsystemBaseTest {
 
     public DatasourcesTransformerTestCase() {
-        super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
+        super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension(), Stability.COMMUNITY);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class DatasourcesTransformerTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_8_0.xsd";
+        return "schema/wildfly-datasources_community_8_0.xsd";
     }
 
     @Test
@@ -55,8 +56,19 @@ public class DatasourcesTransformerTestCase extends AbstractSubsystemBaseTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        // Create a AdditionalInitialization.MANAGEMENT variant that has all the external
-        // capabilities used by the various configs used in this test class
+        // The validation-timeout-seconds attribute is not available when running at default stability
+        return AdditionalInitialization.withCapabilities(
+                Stability.COMMUNITY,
+                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".DsAuthCtxt",
+                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt",
+                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".test-store",
+                NamingService.CAPABILITY_NAME,
+                ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME
+        );
+    }
+
+    private AdditionalInitialization createLegacyAdditionalInitialization() {
+        // Legacy controllers can not load Stability, so they keep the stability agnostic initialization
         return AdditionalInitialization.MANAGEMENT.withCapabilities(
                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".DsAuthCtxt",
                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt",
@@ -92,7 +104,7 @@ public class DatasourcesTransformerTestCase extends AbstractSubsystemBaseTest {
     }
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
-        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createLegacyAdditionalInitialization(), controllerVersion, modelVersion);
         initializer.addMavenResourceURL(controllerVersion.createGAV("wildfly-connector"));
         initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.0.28.Final")
                 .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.0.28.Final")
