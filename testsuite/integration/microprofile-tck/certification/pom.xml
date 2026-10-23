@@ -76,11 +76,6 @@
 
                 <!-- Don't deploy -->
                 <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nxrm3-maven-plugin</artifactId>
-                    <configuration><skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo></configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
                     <executions>
