@@ -440,4 +440,96 @@ public class FooInterceptor implements EJBClientInterceptor {
 }
 ----
 
+[[access-log]]
+== <access-log>
+
+The `access-log` element configures access logging for Jakarta Enterprise Beans invocations. When it is present,
+a structured record in JSON format is written for each invocation of a business method or a timeout (timer) method
+of a Jakarta Enterprise Beans component.
+
+NOTE: The access log is provided at xref:Admin_Guide.adoc#Feature_stability_levels[`community` stability]. This means
+that the `/subsystem=ejb3/service=access-log` resource, and the `urn:jboss:domain:ejb3:community:12.0` XML namespace
+used to configure it, are not available when using the `--stability=default` parameter when starting WildFly. Unless
+the `access-log` element is configured, the subsystem is persisted using the `urn:jboss:domain:ejb3:11.0` namespace.
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:ejb3:community:12.0">
+  ...
+  <access-log destination="file" path="ejb-access.log" relative-to="jboss.server.log.dir" rotate-suffix=".yyyy-MM-dd"
+              worker="default" include-local="false" include-node-name="true" queue-length="1024"
+              attributes="timestamp app module bean method user outcome duration">
+    <metadata>
+      <property name="env" value="prod"/>
+    </metadata>
+  </access-log>
+  ...
+</subsystem>
+----
+
+The attributes of the resource are:
+
+* `destination` - where the records are written. One of:
+** `file` (default) - a file, rotated according to `rotate-suffix`.
+** `console` - the `stdout` of the server process. Each record is a single line of JSON.
+** `logging` - the server logging subsystem, using the `org.jboss.as.ejb3.access-log` logger category.
+* `path`, `relative-to`, `rotate-suffix` - the location of the log file, relative to the path `relative-to`, and the
+suffix appended to the file name when it is rotated. They default to `ejb-access.log`, `jboss.server.log.dir` and
+`.yyyy-MM-dd`. An empty `rotate-suffix` disables rotation. These attributes are only allowed when `destination` is `file`.
+* `worker` - the I/O worker used to write the records asynchronously. Defaults to `default`.
+* `queue-length` - the maximum number of records waiting to be written. Records are dropped while the queue is full.
+Defaults to `1024`.
+* `include-local` - whether to also log invocations made from within the same server, such as calls through a local
+view. Defaults to `false`, so that only invocations received from remote clients are logged.
+* `include-node-name` - whether to add the name of the node to each record. Defaults to `true`.
+* `attributes` - the list of fields to log. If not defined, all fields are logged. The valid values are `timestamp`,
+`app`, `module`, `bean`, `bean-class`, `view`, `method`, `user`, `remote-address`, `remote-port`, `local-address`,
+`local-port`, `protocol`, `transport`, `invocation-type`, `session-id`, `outcome`, `exception`, `duration`,
+`thread-name` and `node-name`.
+* `metadata` - extra key/value properties added to each record.
+
+The invocations of message driven beans made by the messaging system are not logged.
+
+Changing `destination`, `path`, `relative-to`, `rotate-suffix`, `worker`, `queue-length` or `attributes` restarts the
+access log, without a reload of the server. The `include-local`, `include-node-name` and `metadata` attributes are
+applied immediately.
+
+The resource also has two read-only runtime attributes, `events-logged` and `events-dropped`. The latter counts
+the records lost because the queue was full or a record could not be written.
+
+=== CLI Examples
+
+.add-ejb-access-log.cli
+----
+/subsystem=ejb3/service=access-log:add
+----
+
+.complex-add-ejb-access-log.cli
+----
+/subsystem=ejb3/service=access-log:add(destination=console, include-local=true, attributes=[app, module, bean, method, user, outcome, duration], metadata={"env"="prod"})
+----
+
+.read-ejb-access-log-statistics.cli
+----
+/subsystem=ejb3/service=access-log:read-attribute(name=events-dropped)
+----
+
+A record looks like the following. It is shown formatted only for readability; the output is on a single line.
+
+[source,json]
+----
+{
+    "eventSource":"ejb-access",
+    "env":"prod",
+    "app":"my-app",
+    "module":"my-ejb",
+    "bean":"OrderBean",
+    "method":"submit(String)",
+    "user":"alice",
+    "outcome":"success",
+    "duration":12
+}
+----
+
+
 NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
