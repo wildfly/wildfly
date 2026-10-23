@@ -961,7 +961,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-converter-api</artifactId>
-                <version>${version.io.smallrye.reactive-utils}</version>
+                <version>${version.io.smallrye.reactive-converters}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
