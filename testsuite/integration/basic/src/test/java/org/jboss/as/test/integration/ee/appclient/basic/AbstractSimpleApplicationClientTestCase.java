@@ -15,6 +15,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
 import org.jboss.as.test.integration.jpa.packaging.Employee;
 import org.jboss.as.test.integration.jpa.packaging.PersistenceUnitPackagingTestCase;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -48,7 +49,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         ear.addAsLibrary(otherLib);
 
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class);
+        ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class, TimeoutUtil.class);
         if (!useCommonEjbInterface) {
             ejb.addClasses(AppClientSingletonRemote.class);
         }
