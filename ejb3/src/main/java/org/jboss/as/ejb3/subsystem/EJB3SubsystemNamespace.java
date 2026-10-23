@@ -33,7 +33,7 @@ public enum EJB3SubsystemNamespace {
     EJB3_9_0("urn:jboss:domain:ejb3:9.0"),
     EJB3_10_0("urn:jboss:domain:ejb3:10.0"),
     EJB3_11_0("urn:jboss:domain:ejb3:11.0"),
-    EJB3_12_0("urn:jboss:domain:ejb3:12.0");
+    EJB3_COMMUNITY_12_0("urn:jboss:domain:ejb3:community:12.0");
 
 
     private final String name;

@@ -349,8 +349,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return accessLogHolder;
     }
 
+    /**
+     * Returns the access-log holder, or {@code null} if the access-log feature is not enabled at the current stability level.
+     */
     public AccessLogHolder getAccessLogHolder() {
-        return accessLogHolder.getValue();
+        return accessLogHolder.getOptionalValue();
     }
 
     Injector<SecurityDomain> getSecurityDomainInjector() {

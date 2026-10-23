@@ -16,6 +16,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -29,6 +30,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.component.AccessLogHolder;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -37,6 +39,14 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.extension.io.IOServices;
 
 public class AccessLogResourceDefinition extends SimpleResourceDefinition {
+
+    /**
+     * The stability level of the EJB access-log feature. The feature is not available when the server runs at the
+     * {@link Stability#DEFAULT default} stability level: the management resource, the XML namespace and the runtime
+     * interceptor are all absent. It is available when the server runs at the {@code community} stability level or at
+     * a less stable one ({@code preview}, {@code experimental}).
+     */
+    public static final Stability STABILITY = Stability.COMMUNITY;
 
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.ejb3.access-log", AccessLogService.class).build();
@@ -231,7 +241,7 @@ public class AccessLogResourceDefinition extends SimpleResourceDefinition {
     }
 
     AccessLogResourceDefinition() {
-        super(new Parameters(EJB3SubsystemModel.ACCESS_LOG_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.SERVICE + "." + EJB3SubsystemModel.ACCESS_LOG))
+        super(new Parameters(ResourceRegistration.of(EJB3SubsystemModel.ACCESS_LOG_PATH, STABILITY), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.SERVICE + "." + EJB3SubsystemModel.ACCESS_LOG))
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(RemoveHandler.INSTANCE)
                 .addCapabilities(ACCESS_LOG_CAPABILITY));

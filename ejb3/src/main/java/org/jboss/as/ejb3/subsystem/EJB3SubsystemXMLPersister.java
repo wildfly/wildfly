@@ -64,7 +64,12 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_12_0.getUriString(), false);
+        // Only use the community namespace, which is not parseable when running at default stability, if the model
+        // actually needs it. Otherwise keep persisting the default stability namespace.
+        final ModelNode model = context.getModelNode();
+        final boolean accessLogPresent = model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(ACCESS_LOG);
+        final EJB3SubsystemNamespace namespace = accessLogPresent ? EJB3SubsystemNamespace.EJB3_COMMUNITY_12_0 : EJB3SubsystemNamespace.EJB3_11_0;
+        context.startSubsystemElement(namespace.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();

@@ -23,7 +23,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
- * Parser for ejb3:12.0 namespace.
+ * Parser for the ejb3:community:12.0 namespace (not available when running at {@code default} stability).
  *
  * TODO Parameterize a single parser class by schema version.  Inheritence is a poor model for versioning.
  */
@@ -31,7 +31,7 @@ public class EJB3Subsystem120Parser extends EJB3Subsystem110Parser {
 
     @Override
     protected EJB3SubsystemNamespace getExpectedNamespace() {
-        return EJB3SubsystemNamespace.EJB3_12_0;
+        return EJB3SubsystemNamespace.EJB3_COMMUNITY_12_0;
     }
 
     @Override

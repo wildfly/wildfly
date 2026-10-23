@@ -22,6 +22,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
@@ -41,14 +42,18 @@ import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
+    // The access-log feature is not available when running at default stability
+    private static final AdditionalInitialization COMMUNITY_MANAGEMENT = new AdditionalInitialization.ManagementAdditionalInitialization(Stability.COMMUNITY);
+
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
+            Stability.COMMUNITY,
             RuntimeCapability.resolveCapabilityName(TimerManagementProvider.SERVICE_DESCRIPTOR, "transient"),
             RuntimeCapability.resolveCapabilityName(TimerManagementProvider.SERVICE_DESCRIPTOR, "persistent"),
             ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR.getName()
             );
 
     public Ejb3SubsystemUnitTestCase() {
-        super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());
+        super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension(), Stability.COMMUNITY);
     }
 
     @Override
@@ -70,7 +75,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-ejb3_12_0.xsd";
+        return "schema/wildfly-ejb3_community_12_0.xsd";
     }
 
     @Test
@@ -181,7 +186,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     public void testPoolSizeAlternatives() throws Exception {
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = getSubsystemXml();
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(subsystemXml).build();
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
         PathAddress pa = PathAddress.pathAddress("subsystem", "ejb3").append("strict-max-bean-instance-pool", "slsb-strict-max-pool");
@@ -218,7 +223,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testDefaultPools() throws Exception {
         final String subsystemXml = readResource("subsystem-pools.xml");
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(subsystemXml).build();
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT).setSubsystemXml(subsystemXml).build();
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
         // add a test pool
@@ -407,7 +412,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogDestinationConsole() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -426,7 +431,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogDestinationLogging() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -444,7 +449,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRestartNoneWriteAttribute() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -465,7 +470,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogMetadataWriteAttribute() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -485,7 +490,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogAttributesListValidation() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -518,7 +523,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRejectFileAttributesOnDestinationWrite() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -541,7 +546,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRestartServicesWriteDestination() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -593,7 +598,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRestartServicesWriteRotateSuffix() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -606,7 +611,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRestartServicesRepeatedWrites() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -623,7 +628,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRestartServicesBatchWrite() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -642,7 +647,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRemoveNoReloadRequired() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -654,7 +659,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAccessLogRemoveThenAddNoReload() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -677,7 +682,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRotateSuffixEmptyAccepted() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -691,7 +696,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRotateSuffixEmptyOnAdd() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -708,7 +713,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRotateSuffixEmptyXmlRoundTrip() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-no-rotation.xml")).build();
         assertTrue("boot failed: " + ks.getBootError(), ks.isSuccessfulBoot());
 
@@ -718,7 +723,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testQueueLengthDefault() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -728,7 +733,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testQueueLengthExplicit() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -750,7 +755,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void accessLogTestQueueLengthWriteAttribute() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -763,7 +768,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void accessLogTestQueueLengthRejectZero() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 
@@ -777,7 +782,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransportTokenRoundTripsInAttributesList() throws Exception {
-        final KernelServices ks = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        final KernelServices ks = createKernelServicesBuilder(COMMUNITY_MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-access-log-minimal.xml")).build();
         assertTrue("boot failed", ks.isSuccessfulBoot());
 

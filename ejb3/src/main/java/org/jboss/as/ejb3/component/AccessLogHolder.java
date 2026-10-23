@@ -15,9 +15,10 @@ import org.jboss.msc.service.StopContext;
  * MSC service that bridges the runtime lifecycle of {@link AccessLogService} to the
  * statically-registered {@link EjbAccessLogInterceptor}.
  *
- * <p>Installed <em>unconditionally</em> at subsystem boot (by {@code EJB3SubsystemAdd}),
- * so it is always present whether or not the {@code service=access-log} resource has been
- * added.  Deployments take a normal MSC dependency on it through
+ * <p>Installed at subsystem boot (by {@code EJB3SubsystemAdd}) whenever the access-log feature
+ * is enabled at the server's stability level, so it is present whether or not the
+ * {@code service=access-log} resource has been added.  Deployments take a normal MSC
+ * dependency on it, under the same stability condition, through
  * {@link #ACCESS_LOG_HOLDER_SERVICE_NAME}; the interceptor reads {@link #get()} on every
  * invocation — one volatile field read.
  *
