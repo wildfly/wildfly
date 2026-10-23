@@ -54,7 +54,7 @@
     </xs:complexType>
 
     <xs:complexType name="realm-type">
-        <xs:all>
+        <xs:all minOccurs="0">
             <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -499,7 +499,7 @@
     </xs:complexType>
 
     <xs:complexType name="provider-type">
-        <xs:all>
+        <xs:all minOccurs="0">
             <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
@@ -935,7 +935,7 @@
     </xs:complexType>
 
     <xs:complexType name="secure-deployment-type">
-        <xs:all>
+        <xs:all minOccurs="0">
             <xs:element name="authentication-request-format" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>
