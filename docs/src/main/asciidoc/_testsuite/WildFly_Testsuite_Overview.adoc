@@ -44,7 +44,7 @@ Make sure `JAVA_HOME` is set to point to your JDK installation.
 
 === Apache Maven
 
-A recent version of Apache Maven is required. The WildFly source tree includes `mvnw` (and `mvnw.cmd` on Windows) Maven Wrapper scripts that automatically
+Apache Maven 3.9 or newer is required. The WildFly source tree includes `mvnw` (and `mvnw.cmd` on Windows) Maven Wrapper scripts that automatically
 download and use the correct Maven version. Using these scripts is recommended over a system-installed Maven.
 
 === Supported Operating Systems
