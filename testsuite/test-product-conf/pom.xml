@@ -103,13 +103,18 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nxrm3-maven-plugin</artifactId>
-                <configuration>
-                    <!-- This is a test-only artifact with a never-changing version.
-                         DO NOT DEPLOY IT! -->
-                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-                </configuration>
+                <!-- This is a test-only artifact with a never-changing version.
+                     DO NOT DEPLOY IT!
+                     The testsuite/pom.xml already has this, so this is a 2nd line of defense
+                -->
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>injected-central-publishing</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
