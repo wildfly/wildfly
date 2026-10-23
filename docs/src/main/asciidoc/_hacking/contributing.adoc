@@ -18,7 +18,7 @@ Use maven. Simplest is to use the build.sh or build.bat scripts in the root of t
 
 Building WildFly requires JDK 17 or newer.
 Make sure you have JAVA_HOME set to point to the JDK 17 installation.
-Build uses Maven 3.
+Building WildFly requires Apache Maven 3.9 or newer.
 
 [source,options="nowrap"]
 ----
