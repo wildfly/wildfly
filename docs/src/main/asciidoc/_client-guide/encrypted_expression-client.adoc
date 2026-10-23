@@ -1,0 +1,107 @@
+[[encrypted_expression-client]]
+= <encrypted-expression />
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+The _<encrypted-expression/>_ element can be added to the wildfly-config.xml configuration to allow other clients to specify passwords and any other sensitive information using encrypted expressions. 
+
+Note: In order for encrypted expressions to be used by other clients, this class must be the first to be defined in the client configuration file and must be parsed first as well. 
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <encrypted-expression xmlns="urn:encrypted:expression:1.0">
+       ...
+    </encrypted-expression>
+</configuration>
+----
+
+The _<authentication-client />_ configuration can contain the following sections: -
+
+ <credential-stores />:: Definitions of credential stores to be used to back up resolvers. Entries from these credential-stores will be used to encrypt and decrypt attribute and element values.
+ <expression-resolvers/>:: Resolvers are backed by specific entries within a credential-store. These resolvers are used to decrypt expressions that were encrypted by the secret-key they are backed by. There may be a default-resolver defined for the client configuration. This resolver would be used when a resolver is not defined. 
+
+
+== <credential-stores />
+
+The <credential-stores />  element can be used to define individual named credential stores that can subsequently be used to back up resolvers. While credential-stores in authentication-client can be used for 
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <encrypted-expression xmlns="urn:elytron:1.0">
+        <credential-stores>
+            <credential-store name="..." type="..." provider="..." >
+                <attributes>
+                    <attribute name="..." value="..." />
+                </attributes>
+                <protection-parameter-credentials>...</protection-parameter-credentials>
+            </credential-store>
+        </credential-stores>
+    </encrypted-expression>
+</configuration>
+----
+
+In addition to the name an individual <credential-store /> definition can contain the following optional attributes: -
+
+type:: The type of the credential store, e.g.KeyStoreCredentialStore.
+provider:: The name of the [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] to use to load the credential store.
+
+The following child elements can also be added to configure the credential store.
+
+ <attributes .>:: Definition of configuration attributes used to initialise the credential store.
+
+e.g.
+
+[source,xml,options="nowrap"]
+----
+<attributes>
+    <attribute name="..." value="..." />
+</attributes>
+----
+
+The <attribute/> element can be repeated as many times as is required for the configuration.
+
+[[protection-parameter-credentials]]
+== Protection Parameter Credentials
+ <protection-parameter-credentials />:: Holds the password for the credential-store. 
+
+The <protection-paramter-credentials /> element can hold the protection parameter, or the password for the credential store. Whether or not this is needed will depend on the credential store type: -
+
+[source,xml,options="nowrap"]
+----
+<protection-parameter-credentials>
+    <clear-password password="..."/>
+</protection-parameter-credentials>
+----
+
+== <expression-resolvers />
+
+Resolvers are used to encrypt clear-text values and decrypt encrypted expressions. An encrypted-expression configuration can have at least one and only one block of expression-resolvers and can have multiple resolvers inside it. Each expression-resolver is backed by a credential-store entry from the <credential-stores/> section uniquely identified by the name of the credential-store and the alias of the secret-key. 
+
+A default-resolver may be defined with the expression-resolvers element. This default resolver is used to decrypt expressions when a resolver is not specified. It is optional to define a default-resolver. In cases where a default expression resolver is not defined and the resolver to use is not specified, appropriate error message would be thrown by the resolver class when decrypting the encrypted expression. 
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <encrypted-expression xmlns="urn:encrypted:expression:1.0">
+        <expression-resolvers default-resolver="...">
+            <expression-resolver name="..." credential-store-name="..." alias="..."/>
+            <expression-resolver name="..." credential-store-name="..." alias="..."/>
+        </expression-resolvers>
+    </encrypted-expression>
+</configuration>
+----
+
