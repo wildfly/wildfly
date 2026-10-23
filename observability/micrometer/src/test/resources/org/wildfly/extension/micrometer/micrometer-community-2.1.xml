@@ -1,0 +1,14 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:micrometer:community:2.1" exposed-subsystems="*" system-metrics="true">
+    <filters>
+        <filter name="accept-app" outcome="accept" field="meter-name" condition="starts-with" value="my_application"/>
+        <filter name="accept-jvm" outcome="accept" field="meter-name" condition="starts-with" value="jvm" negate="true"/>
+        <filter name="tag-match" field="tag-name" condition="equals" value="someValue"/>
+    </filters>
+    <otlp-registry endpoint="${test.endpoint:http\://localhost\:4318/v1/metrics}" step="${test.step:10}"/>
+    <prometheus-registry context="${test.prometheus.context:/prometheus}" security-enabled="${test.prometheus.secured:true}"/>
+</subsystem>
