@@ -44,6 +44,7 @@ public class EJB3AdditionalInitialization extends AdditionalInitialization imple
                 "org.wildfly.clustering.infinispan.cache-container.ejb", // EAP 8.0
                 "org.wildfly.clustering.infinispan.default-cache-configuration.ejb",
                 "org.wildfly.ejb3.pool-config.pool",
+                "org.wildfly.io.worker.default",
                 "org.wildfly.remoting.connector.http-remoting-connector",
                 "org.wildfly.remoting.endpoint",
                 "org.wildfly.threads.executor.ejb3.timer-service-thread-pool", // EAP 7.4
