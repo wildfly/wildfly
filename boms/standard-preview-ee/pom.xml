@@ -59,7 +59,7 @@
         <version.org.glassfish.jakarta.faces>4.1.18</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
         <version.org.hibernate.search>8.4.0.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>9.1.1.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>9.1.5.Final</version.org.hibernate.validator>
         <!-- The ORM version is controlled in the root pom because we need to use its value in contexts not controlled by this bom -->
         <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
         <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Final</version.org.wildfly.security.jakarta.elytron-ee>
