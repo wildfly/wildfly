@@ -5,7 +5,6 @@
 
 package org.wildfly.test.integration.microprofile.openapi.service.multimodule;
 
-import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -25,14 +24,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TestResource {
 
-    @Inject
-    private TestEjb testEjb;
-
     @POST
     @Operation(summary = "Test the indexing of multi module deployments")
     @APIResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TestResponse.class)),
             description = "Indexes found")
     public TestResponse echo(TestRequest request) {
-        return testEjb.hello(request);
+        return new TestEjb().hello(request);
     }
 }

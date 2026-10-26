@@ -91,6 +91,21 @@ Note that you only have to add the mapping, not the corresponding
 servlet. The server is responsible for adding the corresponding servlet
 automatically.
 
+[[jakarta-rest-cdi-integration]]
+== Jakarta Contexts and Dependency Injection Integration
+
+This applies to xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview], which provides Jakarta RESTful Web
+Services 5.0.
+
+The `@Path`, `@Provider` and `@ApplicationPath` annotations are bean defining annotations. Resources, providers and
+`jakarta.ws.rs.core.Application` subclasses are therefore CDI beans, even in an archive with
+`bean-discovery-mode="annotated"` or without a `beans.xml` file. See
+<<suppressing-implicit-bean-archives,Suppressing implicit bean archives>> for how implicit bean archives are handled.
+
+See the https://jakarta.ee/specifications/restful-ws/5.0/[Jakarta RESTful Web Services 5.0 specification] for the
+default scopes of resources and providers, and the https://resteasy.dev/docs[RESTEasy documentation] for other
+changes in the CDI integration.
+
 == Using Jackson for serialization
 
 By default, for JSON processing the Jakarta JSON Processing API is used. However, you can use Jackson instead. This can
