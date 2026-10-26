@@ -7,11 +7,12 @@ package org.jboss.as.test.integration.ejb.remote.distinctname;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the distinct-name configured in the jboss-app.xml of an EAR deployment is taken into
@@ -19,7 +20,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EarDeploymentDistinctNameTestCase extends DistinctNameTestCase {
 

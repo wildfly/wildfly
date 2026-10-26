@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -33,13 +33,13 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.ExplodedExporterImpl;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Alexey Loubyansky
@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
  * NOTE: References in this file to JavaServer Pages (JSP) refer to the Jakarta Server Pages unless otherwise noted
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeploymentOverlayCLITestCase {
 
@@ -80,7 +80,7 @@ public class DeploymentOverlayCLITestCase {
         return ja;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         String tempDir = TestSuiteEnvironment.getTmpDir();
 
@@ -157,34 +157,34 @@ public class DeploymentOverlayCLITestCase {
 
         final URL overrideXmlUrl = DeploymentOverlayCLITestCase.class.getResource("override.xml");
         if (overrideXmlUrl == null) {
-            Assert.fail("Failed to locate override.xml");
+            Assertions.fail("Failed to locate override.xml");
         }
         overrideXml = new File(overrideXmlUrl.toURI());
         if (!overrideXml.exists()) {
-            Assert.fail("Failed to locate override.xml");
+            Assertions.fail("Failed to locate override.xml");
         }
 
         final URL webXmlUrl = DeploymentOverlayCLITestCase.class.getResource("web.xml");
         if (webXmlUrl == null) {
-            Assert.fail("Failed to locateweb.xml");
+            Assertions.fail("Failed to locateweb.xml");
         }
         webXml = new File(webXmlUrl.toURI());
         if (!webXml.exists()) {
-            Assert.fail("Failed to locate web.xml");
+            Assertions.fail("Failed to locate web.xml");
         }
 
 
         final URL ajsp = DeploymentOverlayCLITestCase.class.getResource("a-replaced.jsp");
         if (ajsp == null) {
-            Assert.fail("Failed to locate a-replaced.jsp");
+            Assertions.fail("Failed to locate a-replaced.jsp");
         }
         replacedAjsp = new File(ajsp.toURI());
         if (!replacedAjsp.exists()) {
-            Assert.fail("Failed to locate a-replaced.jsp");
+            Assertions.fail("Failed to locate a-replaced.jsp");
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         war1.delete();
         FileUtils.deleteDirectory(war1_exploded);
@@ -204,14 +204,14 @@ public class DeploymentOverlayCLITestCase {
         return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ctx = CLITestUtil.getCommandContext();
         ctx.connectController();
         baseUrl = getBaseURL(url);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (ctx != null) {
             ctx.handleSafe("undeploy " + war1.getName());
@@ -724,7 +724,7 @@ public class DeploymentOverlayCLITestCase {
         try {
 //            Assert.assertNotEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
             HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS);
-            Assert.fail();
+            Assertions.fail();
         } catch (IOException e) {
             //ok
         }

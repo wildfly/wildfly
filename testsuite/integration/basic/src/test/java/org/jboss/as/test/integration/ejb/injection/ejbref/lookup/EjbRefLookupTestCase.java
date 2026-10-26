@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,14 +20,14 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Tomas Remes
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EjbRefLookupTestCase {
 
@@ -62,21 +62,21 @@ public class EjbRefLookupTestCase {
 
     @Test
     public void testEjbRefInServlet() throws Exception {
-        Assert.assertEquals("1", doGetReq("test1"));
+        Assertions.assertEquals("1", doGetReq("test1"));
     }
 
     @Test
     public void testJBossEjbRefInServlet() throws Exception {
-        Assert.assertEquals("1", doGetReq("test2"));
+        Assertions.assertEquals("1", doGetReq("test2"));
     }
 
     @Test
     public void testEjbRefInRest() throws Exception {
-        Assert.assertEquals("1", doGetReq("rest/first/text"));
+        Assertions.assertEquals("1", doGetReq("rest/first/text"));
     }
 
     @Test
     public void testJBossEjbRefInRest() throws Exception {
-        Assert.assertEquals("1", doGetReq("rest/second/text"));
+        Assertions.assertEquals("1", doGetReq("rest/second/text"));
     }
 }

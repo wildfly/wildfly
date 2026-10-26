@@ -12,23 +12,23 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that @DataSourceDefinition works, and that the datasource is automatically enlisted in the transaction
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RepeatableDataSourceDefinitionTestCase {
 
     @Deployment
@@ -43,7 +43,7 @@ public class RepeatableDataSourceDefinitionTestCase {
     @ArquillianResource
     private InitialContext ctx;
 
-    @Before
+    @BeforeEach
     public void createTables() throws NamingException, SQLException {
         RepeatedAnnotationDataSourceBean bean = lookup();
         bean.createTable();
@@ -55,7 +55,7 @@ public class RepeatableDataSourceDefinitionTestCase {
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select 1");
-        Assert.assertTrue(result.next());
+        Assertions.assertTrue(result.next());
         c.close();
     }
 
@@ -64,13 +64,13 @@ public class RepeatableDataSourceDefinitionTestCase {
         RepeatedAnnotationDataSourceBean bean = lookup();
         try {
             bean.insert1RolledBack();
-            Assert.fail("expect exception");
+            Assertions.fail("expect exception");
         } catch (RuntimeException expected) {
         }
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select id from coffee where id=1;");
-        Assert.assertFalse(result.next());
+        Assertions.assertFalse(result.next());
         c.close();
     }
 
@@ -81,16 +81,16 @@ public class RepeatableDataSourceDefinitionTestCase {
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select id from coffee where id=2;");
-        Assert.assertTrue(result.next());
+        Assertions.assertTrue(result.next());
         c.close();
     }
 
     @Test
     public void testResourceInjectionWithSameName() throws NamingException {
         RepeatedAnnotationDataSourceBean bean = lookup();
-        Assert.assertNotNull(bean.getDataSource2());
-        Assert.assertNotNull(bean.getDataSource3());
-        Assert.assertNotNull(bean.getDataSource4());
+        Assertions.assertNotNull(bean.getDataSource2());
+        Assertions.assertNotNull(bean.getDataSource3());
+        Assertions.assertNotNull(bean.getDataSource4());
     }
 
     /**
@@ -101,7 +101,7 @@ public class RepeatableDataSourceDefinitionTestCase {
     @Test
     public void testEmbeddedDatasource() throws NamingException, SQLException {
         RepeatedAnnotationDataSourceBean bean = lookup();
-        Assert.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
+        Assertions.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
     }
 
     private RepeatedAnnotationDataSourceBean lookup() throws NamingException {

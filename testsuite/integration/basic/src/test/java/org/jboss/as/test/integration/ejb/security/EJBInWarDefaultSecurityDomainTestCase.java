@@ -13,7 +13,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -21,16 +21,16 @@ import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * User: jpai
  */
-@RunWith(Arquillian.class)
-@Category(CommonCriteria.class)
+@ExtendWith(ArquillianExtension.class)
+@Tag("CommonCriteria")
 @ServerSetup({EjbSecurityDomainSetup.class})
 public class EJBInWarDefaultSecurityDomainTestCase {
     @ArquillianResource
@@ -67,7 +67,7 @@ public class EJBInWarDefaultSecurityDomainTestCase {
         try {
             // try invoking a method annotated @DenyAll (expected to fail)
             restrictedBean.restrictedMethod();
-            Assert.fail("Call to restrictedMethod() method was expected to fail");
+            Assertions.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -83,7 +83,7 @@ public class EJBInWarDefaultSecurityDomainTestCase {
             // invoke a method which only a specific role can access.
             // this is expected to fail since we haven't logged in as any user
             specificRoleAccessBean.allowOnlyRoleTwoToAccess();
-            Assert.fail("Invocation was expected to fail since only a specific role was expected to be allowed to access the bean method");
+            Assertions.fail("Invocation was expected to fail since only a specific role was expected to be allowed to access the bean method");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -97,7 +97,7 @@ public class EJBInWarDefaultSecurityDomainTestCase {
             // expected to fail since user1 *doesn't* belong to Role2
             try {
                 specificRoleAccessBean.allowOnlyRoleTwoToAccess();
-                Assert.fail("Call to toBeInvokedByRole2() was expected to fail");
+                Assertions.fail("Call to toBeInvokedByRole2() was expected to fail");
             } catch (EJBAccessException ejbae) {
                 // expected
             }
@@ -113,7 +113,7 @@ public class EJBInWarDefaultSecurityDomainTestCase {
             // expected to fail since user2 *doesn't* belong to Role1
             try {
                 specificRoleAccessBean.allowOnlyRoleOneToAccess();
-                Assert.fail("Call to toBeInvokedOnlyByRole1() was expected to fail");
+                Assertions.fail("Call to toBeInvokedOnlyByRole1() was expected to fail");
             } catch (EJBAccessException ejbae) {
                 // expected
             }

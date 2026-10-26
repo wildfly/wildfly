@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -46,11 +46,11 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DatasourceCustomModulesTestCase.Setup.class)
 public class DatasourceCustomModulesTestCase {
 
@@ -94,9 +94,9 @@ public class DatasourceCustomModulesTestCase {
         runDataSourceOperationAndAssertSuccess("flush-invalid-connection-in-pool");
 
 
-        Assert.assertTrue(TestValidConnectionChecker.wasInvoked());
-        Assert.assertTrue(TestExceptionSorter.wasInvoked());
-        Assert.assertTrue(TestStaleConnectionChecker.wasInvoked());
+        Assertions.assertTrue(TestValidConnectionChecker.wasInvoked());
+        Assertions.assertTrue(TestExceptionSorter.wasInvoked());
+        Assertions.assertTrue(TestStaleConnectionChecker.wasInvoked());
 
 
     }
@@ -201,7 +201,7 @@ public class DatasourceCustomModulesTestCase {
     public void executeAndAssertSuccess(ModelNode op) throws IOException {
         final ModelNode result = managementClient.getControllerClient().execute(op);
         if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
-            Assert.fail("Operation failed: " + result.toJSONString(true));
+            Assertions.fail("Operation failed: " + result.toJSONString(true));
         }
     }
 

@@ -5,10 +5,10 @@
 
 package org.jboss.as.test.integration.messaging.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,11 +24,12 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the security integration for HornetQ
@@ -36,7 +37,7 @@ import org.junit.runner.RunWith;
  * @author Justin Bertram (c) 2011 Red Hat Inc.
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SecurityTestCase {
 
     @ContainerResource
@@ -50,7 +51,7 @@ public class SecurityTestCase {
             fail("must not allow to create a session with bad authentication");
         } catch (ActiveMQException e) {
             assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ229031"));
+            assertTrue(e.getMessage().startsWith("AMQ229031"), e.getMessage());
         } finally {
             if (sf != null) {
                 sf.close();
@@ -66,7 +67,7 @@ public class SecurityTestCase {
             fail("must not allow to create a session without any authentication");
         } catch (ActiveMQException e) {
             assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ229031"));
+            assertTrue(e.getMessage().startsWith("AMQ229031"), e.getMessage());
         } finally {
             if (sf != null) {
                 sf.close();
@@ -82,7 +83,7 @@ public class SecurityTestCase {
             fail("must not allow to create a session with the default cluster user credentials");
         } catch (ActiveMQException e) {
             assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ229031"));
+            assertTrue(e.getMessage().startsWith("AMQ229031"), e.getMessage());
         } finally {
             if (sf != null) {
                 sf.close();

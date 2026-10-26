@@ -9,14 +9,14 @@ import org.jboss.logging.Logger;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * SingletonUnitTestCase
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonUnitTestCase {
     private static final Logger log = Logger.getLogger(SingletonUnitTestCase.class.getName());
 
@@ -47,7 +47,7 @@ public class SingletonUnitTestCase {
                 + AccountManagerBean.class.getSimpleName() + "!" + AccountManager.class.getName());
 
         int initialBalance = accountManagerRemote.balance();
-        Assert.assertEquals("Unexpected initial balance", 0, initialBalance);
+        Assertions.assertEquals(0, initialBalance, "Unexpected initial balance");
 
         // credit
         accountManagerRemote.credit(100);
@@ -55,7 +55,7 @@ public class SingletonUnitTestCase {
         AccountManager anotherAccountManagerRemoteInstance = (AccountManager) ctx.lookup("java:module/"
                 + AccountManagerBean.class.getSimpleName() + "!" + AccountManager.class.getName());
         int balanceAfterCredit = anotherAccountManagerRemoteInstance.balance();
-        Assert.assertEquals("Unexpected balance after credit", 100, balanceAfterCredit);
+        Assertions.assertEquals(100, balanceAfterCredit, "Unexpected balance after credit");
 
         // debit
         anotherAccountManagerRemoteInstance.debit(50);
@@ -69,9 +69,9 @@ public class SingletonUnitTestCase {
         }
 
         int balanceAfterDebit = accountManagerRemote.balance();
-        Assert.assertEquals("Unexpected balance after debit", 50, balanceAfterDebit);
+        Assertions.assertEquals(50, balanceAfterDebit, "Unexpected balance after debit");
         // testing singleton identity - EJB3.1 3.4.7.3
-        Assert.assertFalse(accountManagerRemote.equals(accountManagerLocal));
-        Assert.assertTrue(accountManagerRemote.equals(anotherAccountManagerRemoteInstance));
+        Assertions.assertFalse(accountManagerRemote.equals(accountManagerLocal));
+        Assertions.assertTrue(accountManagerRemote.equals(anotherAccountManagerRemoteInstance));
     }
 }

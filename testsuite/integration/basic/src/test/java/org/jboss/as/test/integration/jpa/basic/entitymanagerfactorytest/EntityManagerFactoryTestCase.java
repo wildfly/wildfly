@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.jpa.basic.entitymanagerfactorytest;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -14,22 +14,23 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.basic.Employee;
 import org.jboss.as.test.integration.jpa.basic.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * EntityManagerFactory tests
  *
  * @author Zbynek Roubalik
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EntityManagerFactoryTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_emfactory";
@@ -69,11 +70,11 @@ public class EntityManagerFactoryTestCase {
         sfsb1.createEmployee("Sally", "1 home street", 1);
 
         EntityManagerFactory emf = rawLookup("myEMF", EntityManagerFactory.class);
-        assertNotNull("JNDI lookup of jboss.entity.manager.factory.jndi.name should return EntityManagerFactory", emf);
+        assertNotNull(emf, "JNDI lookup of jboss.entity.manager.factory.jndi.name should return EntityManagerFactory");
 
         EntityManager em = emf.createEntityManager();
         Employee emp = em.find(Employee.class, 1);
-        assertTrue("Name read from EntityManager is Sally", "Sally".equals(emp.getName()));
+        assertTrue("Sally".equals(emp.getName()), "Name read from EntityManager is Sally");
 
     }
 
@@ -86,10 +87,10 @@ public class EntityManagerFactoryTestCase {
         sfsb1.createEmployee("Sharon", "304 Bubbles Lane", 2);
 
         EntityManager em = rawLookup("java:/Manager1", EntityManager.class);
-        assertNotNull("JNDI lookup of jboss.entity.manager.jndi.name should return EntityManager", em);
+        assertNotNull(em, "JNDI lookup of jboss.entity.manager.jndi.name should return EntityManager");
 
         Employee emp = em.find(Employee.class, 2);
-        assertTrue("Name read from EntityManager is Sharon", "Sharon".equals(emp.getName()));
+        assertTrue("Sharon".equals(emp.getName()), "Name read from EntityManager is Sharon");
 
     }
 

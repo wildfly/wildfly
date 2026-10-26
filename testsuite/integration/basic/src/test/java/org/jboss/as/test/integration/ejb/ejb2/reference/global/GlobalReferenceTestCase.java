@@ -13,16 +13,16 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (reference21_30) to AS7 [JIRA JBQA-5483].
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author William DeCoste, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GlobalReferenceTestCase {
 
     private static final String EJB2 = "global-reference-ejb2";
@@ -73,9 +73,9 @@ public class GlobalReferenceTestCase {
         Session21Home home = this.getHome(Session21Home.class, "Session21");
         Session21 session = home.create();
         String access = session.access();
-        Assert.assertEquals("Session21", access);
+        Assertions.assertEquals("Session21", access);
         access = session.globalAccess30();
-        Assert.assertEquals("Session30", access);
+        Assertions.assertEquals("Session30", access);
     }
 
     @Test
@@ -83,8 +83,8 @@ public class GlobalReferenceTestCase {
         Session30RemoteBusiness session = (Session30RemoteBusiness) getInitialContext().lookup(
                 "ejb:/" + EJB3 + "/GlobalSession30!" + Session30RemoteBusiness.class.getName());
         String access = session.access();
-        Assert.assertEquals("Session30", access);
+        Assertions.assertEquals("Session30", access);
         access = session.globalAccess21();
-        Assert.assertEquals("Session21", access);
+        Assertions.assertEquals("Session21", access);
     }
 }

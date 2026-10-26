@@ -16,7 +16,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Server setup task which set up ejb3 subsystem to allow regex
@@ -37,7 +38,7 @@ public class RegexServerSetup implements ServerSetupTask {
 
         final ModelNode result = managementClient.getControllerClient().execute(node);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
     }
 
@@ -49,7 +50,7 @@ public class RegexServerSetup implements ServerSetupTask {
         node.get(NAME).set(ALLOW_EJB_NAME_REGEX);
         final ModelNode result = managementClient.getControllerClient().execute(node);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
     }
 }

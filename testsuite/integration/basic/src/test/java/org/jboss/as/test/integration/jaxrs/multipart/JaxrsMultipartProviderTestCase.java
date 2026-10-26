@@ -14,23 +14,23 @@ import jakarta.mail.util.ByteArrayDataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the resteasy multipart provider
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JaxrsMultipartProviderTestCase {
 
@@ -60,10 +60,10 @@ public class JaxrsMultipartProviderTestCase {
         DataSource mimeData = new ByteArrayDataSource(result.getBytes(StandardCharsets.UTF_8),"multipart/related");
         MimeMultipart mime = new MimeMultipart(mimeData);
         String string  = (String)mime.getBodyPart(0).getContent();
-        Assert.assertEquals("Hello", string);
+        Assertions.assertEquals("Hello", string);
 
         string = (String)mime.getBodyPart(1).getContent();
-        Assert.assertEquals("World", string);
+        Assertions.assertEquals("World", string);
     }
 
 }

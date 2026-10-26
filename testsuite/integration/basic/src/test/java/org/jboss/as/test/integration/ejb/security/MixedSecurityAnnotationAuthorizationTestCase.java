@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.DenyAllOverrideBean;
@@ -18,9 +18,10 @@ import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
@@ -35,9 +36,9 @@ import java.io.File;
 import java.util.concurrent.Callable;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test case to test the general authorization requirements for annotated beans. The server setup has both
@@ -45,7 +46,7 @@ import static org.junit.Assert.fail;
  *
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2017 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         MixedSecurityAnnotationAuthorizationTestCase.OverridingElytronDomainSetup.class,
         MixedSecurityAnnotationAuthorizationTestCase.OverridingEjbElytronDomainSetup.class,
@@ -77,7 +78,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverriden_NoUser() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         try {
             rolesAllowedOverridenBean.defaultEcho("1");
             fail("Expected EJBAccessException not thrown");
@@ -102,7 +103,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverriden_User1() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             String response = rolesAllowedOverridenBean.defaultEcho("1");
             assertEquals("1", response);
@@ -128,7 +129,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverridenInBaseClass_Admin() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             try {
                 rolesAllowedOverridenBean.aMethod("aMethod");
@@ -145,7 +146,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverridenInBaseClass_HR() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             String response = rolesAllowedOverridenBean.aMethod("aMethod");
             assertEquals("aMethod", response);
@@ -162,7 +163,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverriden_User2() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             try {
                 rolesAllowedOverridenBean.defaultEcho("1");
@@ -195,7 +196,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testPermitAllOverride_NoUser() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         String response = permitAllOverrideBean.defaultEcho("1");
         assertEquals("1", response);
 
@@ -214,7 +215,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testPermitAllOverride_User1() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             String response = permitAllOverrideBean.defaultEcho("1");
             assertEquals("1", response);
@@ -241,7 +242,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testDenyAllOverride_NoUser() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         try {
             denyAllOverrideBean.defaultEcho("1");
             fail("Expected EJBAccessException not thrown");
@@ -260,7 +261,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
 
     @Test
     public void testDenyAllOverride_User1() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             try {
                 denyAllOverrideBean.defaultEcho("1");
@@ -285,11 +286,11 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
      */
     @Test
     public void testPermitAllMethodWithArrayParams() throws Exception {
-        Assert.assertNotNull("An Elytron security domain should be associated with test EJB deployment.", SecurityDomain.getCurrent());
+        Assertions.assertNotNull(SecurityDomain.getCurrent(), "An Elytron security domain should be associated with test EJB deployment.");
         final Callable<Void> callable = () -> {
             final String[] messages = new String[] {"foo", "bar"};
             final String[] echoes = denyAllOverrideBean.permitAllEchoWithArrayParams(messages);
-            assertArrayEquals("Unexpected echoes returned by bean method", messages, echoes);
+            assertArrayEquals(messages, echoes, "Unexpected echoes returned by bean method");
             return null;
         };
         runAsElytronIdentity("user1", "elytronPassword1", callable);

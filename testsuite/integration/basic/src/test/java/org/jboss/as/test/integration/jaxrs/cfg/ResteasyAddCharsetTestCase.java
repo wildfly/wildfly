@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -24,8 +23,11 @@ import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-add-charset} attribute works as expected.
@@ -37,6 +39,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyAddCharsetTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -53,22 +56,22 @@ public class ResteasyAddCharsetTestCase extends AbstractResteasyAttributeTest {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkTextDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder().path("/text")).request().post(Entity.text("test"))) {
                 final String body = response.readEntity(String.class);
-                Assert.assertEquals(String.format("Invalid response code %d: %s", response.getStatus(), body), 200, response.getStatus());
-                Assert.assertEquals("test", body);
+                Assertions.assertEquals(200, response.getStatus(), String.format("Invalid response code %d: %s", response.getStatus(), body));
+                Assertions.assertEquals("test", body);
                 final String contentType = response.getHeaderString("Content-Type");
-                Assert.assertNotNull(contentType);
-                Assert.assertEquals("text/plain;charset=UTF-8", contentType);
+                Assertions.assertNotNull(contentType);
+                Assertions.assertEquals("text/plain;charset=UTF-8", contentType);
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkXmlDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -77,33 +80,33 @@ public class ResteasyAddCharsetTestCase extends AbstractResteasyAttributeTest {
                             .post(Entity.xml("<test>test</test>"))
             ) {
                 final String body = response.readEntity(String.class);
-                Assert.assertEquals(String.format("Invalid response code %d: %s", response.getStatus(), body), 200, response.getStatus());
-                Assert.assertEquals("<test>test</test>", body);
+                Assertions.assertEquals(200, response.getStatus(), String.format("Invalid response code %d: %s", response.getStatus(), body));
+                Assertions.assertEquals("<test>test</test>", body);
                 final String contentType = response.getHeaderString("Content-Type");
-                Assert.assertNotNull(contentType);
-                Assert.assertEquals("application/xml;charset=UTF-8", contentType);
+                Assertions.assertNotNull(contentType);
+                Assertions.assertEquals("application/xml;charset=UTF-8", contentType);
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkText() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder().path("/text")).request().post(Entity.text("test"))) {
                 final String body = response.readEntity(String.class);
-                Assert.assertEquals(String.format("Invalid response code %d: %s", response.getStatus(), body), 200, response.getStatus());
-                Assert.assertEquals("test", body);
+                Assertions.assertEquals(200, response.getStatus(), String.format("Invalid response code %d: %s", response.getStatus(), body));
+                Assertions.assertEquals("test", body);
                 final String contentType = response.getHeaderString("Content-Type");
-                Assert.assertNotNull(contentType);
-                Assert.assertEquals("text/plain", contentType);
+                Assertions.assertNotNull(contentType);
+                Assertions.assertEquals("text/plain", contentType);
             }
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void checkXml() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -113,11 +116,11 @@ public class ResteasyAddCharsetTestCase extends AbstractResteasyAttributeTest {
                             .post(Entity.xml("<test>test</test>"))
             ) {
                 final String body = response.readEntity(String.class);
-                Assert.assertEquals(String.format("Invalid response code %d: %s", response.getStatus(), body), 200, response.getStatus());
-                Assert.assertEquals("<test>test</test>", body);
+                Assertions.assertEquals(200, response.getStatus(), String.format("Invalid response code %d: %s", response.getStatus(), body));
+                Assertions.assertEquals("<test>test</test>", body);
                 final String contentType = response.getHeaderString("Content-Type");
-                Assert.assertNotNull(contentType);
-                Assert.assertEquals("application/xml", contentType);
+                Assertions.assertNotNull(contentType);
+                Assertions.assertEquals("application/xml", contentType);
             }
         }
     }

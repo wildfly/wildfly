@@ -9,17 +9,17 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EntityListenerBeanManagerInjectionTestCase {
 
     private static final String ARCHIVE_NAME = "test";
@@ -49,7 +49,7 @@ public class EntityListenerBeanManagerInjectionTestCase {
         bean.updateEmployee(20);
         bean.removeEmployee(20);
         // PostLoad call back is called twice
-        Assert.assertEquals(8, foo.getCounter().get());
-        Assert.assertEquals(8, bar.getCounter().get());
+        Assertions.assertEquals(8, foo.getCounter().get());
+        Assertions.assertEquals(8, bar.getCounter().get());
     }
 }

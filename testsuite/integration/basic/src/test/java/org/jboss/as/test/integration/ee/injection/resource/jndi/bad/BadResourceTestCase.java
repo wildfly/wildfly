@@ -5,9 +5,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.jndi.bad;
 
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -19,18 +18,19 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class BadResourceTestCase {
 
@@ -44,7 +44,7 @@ public class BadResourceTestCase {
         return jar;
     }
 
-    @Before
+    @BeforeEach
     public void createDeployment() throws Exception {
         final ModelNode addDeploymentOp = new ModelNode();
         addDeploymentOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT,
@@ -57,10 +57,10 @@ public class BadResourceTestCase {
         final ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
     }
 
-    @After
+    @AfterEach
     public void removeDeployment() throws Exception {
         final ModelNode remove = Util.getEmptyOperation(ModelDescriptionConstants.REMOVE,
                 new ModelNode().add(ModelDescriptionConstants.DEPLOYMENT, Constants.TESTED_DU_NAME));
@@ -68,7 +68,7 @@ public class BadResourceTestCase {
         final ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
     }
 
     @Test
@@ -82,13 +82,13 @@ public class BadResourceTestCase {
         final ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, !Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(!Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
 
         // asserts
         String failureDescription = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
-        MatcherAssert.assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
+        assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
                 failureDescription, containsString(Constants.ERROR_MESSAGE));
-        MatcherAssert.assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
+        assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
                 failureDescription, containsString(Constants.JNDI_NAME_BAD));
     }
 

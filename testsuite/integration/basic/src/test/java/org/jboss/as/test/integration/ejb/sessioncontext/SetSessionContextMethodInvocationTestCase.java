@@ -9,13 +9,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that bean implementing the {@link jakarta.ejb.SessionBean} interface has its
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SetSessionContextMethodInvocationTestCase {
 
     @ArquillianResource
@@ -50,8 +50,8 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSetSessionContextOnSLSB() throws Exception {
         final SLSBImplementingSessionBean slsb = lookup(SLSBImplementingSessionBean.class);
-        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateless bean implementing jakarta.ejb.SessionBean",
-                slsb.wasSetSessionContextMethodInvoked());
+        Assertions.assertTrue(slsb.wasSetSessionContextMethodInvoked(),
+                "setSessionContext(SessionContext) method was not invoked on a stateless bean implementing jakarta.ejb.SessionBean");
     }
 
     /**
@@ -63,8 +63,8 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSetSessionContextOnSFSB() throws Exception {
         final SFSBImplementingSessionBean sfsb = lookup(SFSBImplementingSessionBean.class);
-        Assert.assertTrue("setSessionContext(SessionContext) method was not invoked on a stateful bean implementing jakarta.ejb.SessionBean",
-                sfsb.wasSetSessionContextMethodInvoked());
+        Assertions.assertTrue(sfsb.wasSetSessionContextMethodInvoked(),
+                "setSessionContext(SessionContext) method was not invoked on a stateful bean implementing jakarta.ejb.SessionBean");
     }
 
 
@@ -76,7 +76,7 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSessionContextInjectionOnSLSB() throws Exception {
         final SLSBImplementingSessionBean slsb = lookup(SLSBImplementingSessionBean.class);
-        Assert.assertTrue("SessionContext was not injectd in stateless bean", slsb.wasSessionContextInjected());
+        Assertions.assertTrue(slsb.wasSessionContextInjected(), "SessionContext was not injectd in stateless bean");
     }
 
     /**
@@ -87,7 +87,7 @@ public class SetSessionContextMethodInvocationTestCase {
     @Test
     public void testSessionContextInjectionOnSFSB() throws Exception {
         final SFSBImplementingSessionBean sfsb = lookup(SFSBImplementingSessionBean.class);
-        Assert.assertTrue("SessionContext was not injectd in stateful bean", sfsb.wasSessionContextInjected());
+        Assertions.assertTrue(sfsb.wasSessionContextInjected(), "SessionContext was not injectd in stateful bean");
     }
 
     /**
@@ -99,11 +99,11 @@ public class SetSessionContextMethodInvocationTestCase {
         try {
             slsb.wasCanceledCalled();
         } catch (Exception e) {
-            Assert.assertEquals("The SessionContext.wasCanceledCalled() method was called on not asynchronous method. We supposing " + IllegalStateException.class.getName(),
-                    IllegalStateException.class, e.getCause().getClass());
+            Assertions.assertEquals(IllegalStateException.class,
+                    e.getCause().getClass(), "The SessionContext.wasCanceledCalled() method was called on not asynchronous method. We supposing " + IllegalStateException.class.getName());
             return; // we are fine with this
         }
-        Assert.fail("Expecting: " + IllegalStateException.class.getName() + " and it was not thrown.");
+        Assertions.fail("Expecting: " + IllegalStateException.class.getName() + " and it was not thrown.");
     }
 
 }

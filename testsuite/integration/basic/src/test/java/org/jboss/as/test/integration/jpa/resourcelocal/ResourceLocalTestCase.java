@@ -10,22 +10,22 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Transaction tests for a RESOURCE_LOCAL entity manager
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ResourceLocalTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
@@ -62,7 +62,7 @@ public class ResourceLocalTestCase {
         try {
             sfsb1.flushWithNoTx();
         } catch (EJBException e) {
-            Assert.assertEquals(jakarta.persistence.TransactionRequiredException.class, e.getCause().getClass());
+            Assertions.assertEquals(jakarta.persistence.TransactionRequiredException.class, e.getCause().getClass());
         }
     }
 
@@ -72,7 +72,7 @@ public class ResourceLocalTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployeeNoJTATransaction("Bob", "Home", 1);
         Employee emp = sfsb1.getEmployeeNoTX(1);
-        Assert.assertEquals("Bob", emp.getName());
+        Assertions.assertEquals("Bob", emp.getName());
     }
 
 }

@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -22,11 +22,12 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
@@ -38,7 +39,7 @@ import org.wildfly.security.auth.client.MatchRule;
  *
  * @author Joerg Baesner
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ClientInterceptorReturnDataEjbOverHttpTestCase {
 
@@ -57,7 +58,7 @@ public class ClientInterceptorReturnDataEjbOverHttpTestCase {
 
     private static AuthenticationContext old;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         AuthenticationConfiguration config = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
         AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, config);
@@ -65,7 +66,7 @@ public class ClientInterceptorReturnDataEjbOverHttpTestCase {
         AuthenticationContext.getContextManager().setGlobalDefault(context);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         AuthenticationContext.getContextManager().setGlobalDefault(old);
     }
@@ -94,7 +95,7 @@ public class ClientInterceptorReturnDataEjbOverHttpTestCase {
             try {
                 useCaseValidator = bean.invoke(useCaseValidator);
             } catch(TestException te) {
-                Assert.fail(te.getMessage());
+                Assertions.fail(te.getMessage());
             }
             return useCaseValidator;
         });

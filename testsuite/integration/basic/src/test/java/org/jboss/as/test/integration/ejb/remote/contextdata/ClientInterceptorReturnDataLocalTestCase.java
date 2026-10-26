@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.ejb.remote.contextdata;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that context data from the server is returned to client interceptors
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  * @author Brad Maxwell
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ClientInterceptorReturnDataLocalTestCase {
 
     @Deployment()
@@ -43,7 +43,7 @@ public class ClientInterceptorReturnDataLocalTestCase {
             UseCaseValidator useCaseValidator = new UseCaseValidator(UseCaseValidator.Interface.LOCAL);
             testSingleton.invoke(useCaseValidator);
         } catch(TestException te) {
-            Assert.fail(te.getMessage());
+            Assertions.fail(te.getMessage());
         }
     }
 }

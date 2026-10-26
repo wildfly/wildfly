@@ -9,14 +9,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.test.integration.management.jca.ComplexPropertiesParseUtils.checkModelParams;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidResourceAdapter;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
@@ -24,16 +24,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-//import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * JBQA-6277 -IronJacamar deployments subsystem test case
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
@@ -78,42 +78,42 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = executeOperation(operation);
 
-        assertEquals("Bootstrap-context value is wrong", result.get("bootstrap-context").asString(), "default");
-        assertEquals("Transaction-support value is wrong", result.get("transaction-support").asString(), "XATransaction");
-        assertEquals("RA config property value is wrong", result.get("config-properties", "raProperty", "value").asString(),
-                "4");
+        assertEquals(result.get("bootstrap-context").asString(), "default", "Bootstrap-context value is wrong");
+        assertEquals(result.get("transaction-support").asString(), "XATransaction", "Transaction-support value is wrong");
+        assertEquals(result.get("config-properties", "raProperty", "value").asString(), "4",
+                "RA config property value is wrong");
         assertEquals(
-                "Bean validation groups set wrong",
                 result.get("beanvalidationgroups").asString(),
-                "[\"org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup\",\"org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup1\"]");
+                "[\"org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup\",\"org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup1\"]",
+                "Bean validation groups set wrong");
 
         ModelNode node = result.get("admin-objects", "java:jboss/VAO");
         Properties params = getAOProperties(true);
-        assertTrue("compare failed, node:" + node.asString() + "\nparams:" + params, checkModelParams(node, params));
-        assertEquals("AO config property value is wrong", node.get("config-properties", "aoProperty", "value").asString(),
-                "admin");
+        assertTrue(checkModelParams(node, params), "compare failed, node:" + node.asString() + "\nparams:" + params);
+        assertEquals(node.get("config-properties", "aoProperty", "value").asString(), "admin",
+                "AO config property value is wrong");
 
         node = result.get("admin-objects", "java:jboss/VAO1");
         params = getAOProperties(false);
-        assertTrue("compare failed, node:" + node.asString() + "\nparams:" + params, checkModelParams(node, params));
-        assertEquals("AO1 config property value is wrong", node.get("config-properties", "aoProperty", "value").asString(),
-                "admin1");
+        assertTrue(checkModelParams(node, params), "compare failed, node:" + node.asString() + "\nparams:" + params);
+        assertEquals(node.get("config-properties", "aoProperty", "value").asString(), "admin1",
+                "AO1 config property value is wrong");
 
         node = result.get("connection-definitions", "java:jboss/VCF");
         params = getCFProperties(true);
-        assertTrue("compare failed, node:" + node.asString() + "\nparams:" + params, checkModelParams(node, params));
-        assertEquals("CF config property value is wrong", node.get("config-properties", "cfProperty", "value").asString(),
-                "first");
-        assertEquals("Recovery plugin property value is wrong", "C", node.get("recovery-plugin-properties", "Property")
-                .asString());
+        assertTrue(checkModelParams(node, params), "compare failed, node:" + node.asString() + "\nparams:" + params);
+        assertEquals(node.get("config-properties", "cfProperty", "value").asString(), "first",
+                "CF config property value is wrong");
+        assertEquals("C", node.get("recovery-plugin-properties", "Property")
+                .asString(), "Recovery plugin property value is wrong");
 
         node = result.get("connection-definitions", "java:jboss/VCF1");
         params = getCFProperties(false);
-        assertTrue("compare failed, node:" + node.asString() + "\nparams:" + params, checkModelParams(node, params));
-        assertEquals("CF1 config property value is wrong", node.get("config-properties", "cfProperty", "value").asString(),
-                "2nd");
-        assertEquals("Recovery plugin 1 property value is wrong", "C", node.get("recovery-plugin-properties", "Property")
-                .asString());
+        assertTrue(checkModelParams(node, params), "compare failed, node:" + node.asString() + "\nparams:" + params);
+        assertEquals(node.get("config-properties", "cfProperty", "value").asString(), "2nd",
+                "CF1 config property value is wrong");
+        assertEquals("C", node.get("recovery-plugin-properties", "Property")
+                .asString(), "Recovery plugin 1 property value is wrong");
 
     }
 

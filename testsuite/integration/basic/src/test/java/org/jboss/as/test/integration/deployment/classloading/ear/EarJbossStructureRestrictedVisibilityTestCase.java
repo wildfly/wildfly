@@ -4,8 +4,10 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.rar.HelloWorldConnection;
 import org.jboss.as.test.integration.rar.HelloWorldConnectionFactory;
 import org.jboss.as.test.integration.rar.HelloWorldConnectionFactoryImpl;
@@ -21,8 +23,9 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the ear-subdeployments-isolated option in jboss-deployment-structure.xml
@@ -30,7 +33,7 @@ import org.junit.runner.RunWith;
  * By default ejb-jar's are made visible to each other, this option removes this default visibility
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarJbossStructureRestrictedVisibilityTestCase {
 
     @Deployment
@@ -73,14 +76,16 @@ public class EarJbossStructureRestrictedVisibilityTestCase {
         return ear;
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void testWarModuleStillNotAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA",getClass().getClassLoader());
+    @Test
+    public void testWarModuleStillNotAccessible() {
+        assertThrows(ClassNotFoundException.class, () ->
+            loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA", getClass().getClassLoader()));
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void testOtherEjbJarNotAcessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.test.integration.deployment.classloading.ear.MyEjb2",getClass().getClassLoader());
+    @Test
+    public void testOtherEjbJarNotAcessible() {
+        assertThrows(ClassNotFoundException.class, () ->
+            loadClass("org.jboss.as.test.integration.deployment.classloading.ear.MyEjb2", getClass().getClassLoader()));
     }
 
     @Test

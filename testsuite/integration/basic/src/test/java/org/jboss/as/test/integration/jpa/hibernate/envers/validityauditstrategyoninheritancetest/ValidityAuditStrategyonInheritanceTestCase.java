@@ -8,7 +8,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Player;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBAuditInheritance;
@@ -16,17 +16,17 @@ import org.jboss.as.test.integration.jpa.hibernate.envers.SoccerPlayer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test Auditing on inherited attributes using Validity Audit strategy
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ValidityAuditStrategyonInheritanceTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_TestValidityAuditStrategyonInheritance";
@@ -34,7 +34,7 @@ public class ValidityAuditStrategyonInheritanceTestCase {
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
 
         iniCtx = new InitialContext();
@@ -68,11 +68,11 @@ public class ValidityAuditStrategyonInheritanceTestCase {
         socplayer = slsb.updateSoccerPlayer(socplayer);
 
         SoccerPlayer val = slsb.retrieveSoccerPlayerbyId(socplayer.getId());
-        Assert.assertNotNull(val);
-        Assert.assertEquals("LEONARDO", val.getFirstName());
-        Assert.assertEquals("MESSI", val.getLastName());
+        Assertions.assertNotNull(val);
+        Assertions.assertEquals("LEONARDO", val.getFirstName());
+        Assertions.assertEquals("MESSI", val.getLastName());
 
-        Assert.assertNull(val.getGame());
+        Assertions.assertNull(val.getGame());
 
     }
 

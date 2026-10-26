@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.AttendanceRegistry;
@@ -22,9 +22,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBAccessException;
@@ -32,9 +32,9 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test case to test the general authorization requirements for annotated beans, more specific requirements such as RunAs
@@ -44,9 +44,9 @@ import static org.junit.Assert.fail;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class AnnotationAuthorizationTestCase {
 
     private static final Logger log = Logger.getLogger(AnnotationAuthorizationTestCase.class.getName());
@@ -282,7 +282,7 @@ public class AnnotationAuthorizationTestCase {
         final Callable<Void> callable = () -> {
             final String[] messages = new String[] {"foo", "bar"};
             final String[] echoes = denyAllOverrideBean.permitAllEchoWithArrayParams(messages);
-            assertArrayEquals("Unexpected echoes returned by bean method", messages, echoes);
+            assertArrayEquals(messages, echoes, "Unexpected echoes returned by bean method");
             return null;
         };
         Util.switchIdentity("user1", "password1", callable);
@@ -302,12 +302,12 @@ public class AnnotationAuthorizationTestCase {
         final Date date = new Date();
         // expected to pass through fine (since the invocation is expected to happen on a @PermitAll method)
         final String entryForPermitAll = attendanceRegistryBean.recordEntry(user, new AttendanceRegistrySLSB.DefaultTimeProvider(date));
-        assertEquals("Unexpected entry returned for @PermitAll invocation", "(PermitAll) - User " + user + " logged in at " + date.getTime(), entryForPermitAll);
+        assertEquals("(PermitAll) - User " + user + " logged in at " + date.getTime(), entryForPermitAll, "Unexpected entry returned for @PermitAll invocation");
 
         // now call the (overloaded) method on the bean, after switching to a specific role that's allowed to access that method
         final Callable<String> specificRoleMethodCall = () -> attendanceRegistryBean.recordEntry(user, date.getTime());
         final String entryForSpecificRole = Util.switchIdentity("user2", "password2", specificRoleMethodCall);
-        assertEquals("Unexpected entry returned for @RolesAllowed invocation", "User " + user + " logged in at " + date.getTime(), entryForSpecificRole);
+        assertEquals("User " + user + " logged in at " + date.getTime(), entryForSpecificRole, "Unexpected entry returned for @RolesAllowed invocation");
     }
 
 }

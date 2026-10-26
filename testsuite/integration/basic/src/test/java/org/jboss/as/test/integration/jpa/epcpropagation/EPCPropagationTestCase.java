@@ -4,22 +4,23 @@
  */
 package org.jboss.as.test.integration.jpa.epcpropagation;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.persistence.EntityManager;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * For managed debugging:
@@ -32,7 +33,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:bdecoste@jboss.com">William DeCoste</a>
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EPCPropagationTestCase {
 
     @Deployment
@@ -67,7 +68,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("StatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(1, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertTrue(equal, "Name changes should propagate");
     }
 
     @Test
@@ -78,7 +79,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(2, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertTrue(equal, "Name changes should propagate");
     }
 
     @Test
@@ -89,7 +90,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("CMTStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(3, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertTrue(equal, "Name changes should propagate");
     }
 
     @Test
@@ -100,7 +101,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("CMTEPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(4, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertTrue(equal, "Name changes should propagate");
     }
 
     @Test
@@ -111,7 +112,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("NoTxStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(5, "EntityName");
 
-        assertFalse("Name changes should not propagate", equal);
+        assertFalse(equal, "Name changes should not propagate");
     }
 
     /**
@@ -127,7 +128,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(6, "EntityName");
 
-        assertFalse("Name changes should not propagate (non-tx SFSB XPC shouldn't see SLSB PC changes)", equal);
+        assertFalse(equal, "Name changes should not propagate (non-tx SFSB XPC shouldn't see SLSB PC changes)");
     }
 
     @Test
@@ -138,13 +139,13 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("InitEPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(7, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertTrue(equal, "Name changes should propagate");
     }
 
     @Test
     public void testXPCPostConstruct() throws Exception {
         StatefulInterface stateful = lookup("EPCStatefulBean", StatefulInterface.class);
-        assertNull("stateful postConstruct operation should success: " + stateful.getPostConstructErrorMessage(), stateful.getPostConstructErrorMessage());
+        assertNull(stateful.getPostConstructErrorMessage(), "stateful postConstruct operation should success: " + stateful.getPostConstructErrorMessage());
     }
 
     /**
@@ -161,7 +162,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.createEntity(8, "EntityName X");
 
-        assertTrue("XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
+        assertTrue(equal, "XPC inheritance should copy entity to other SFSB created on SFSB invocation call");
 
         // stateful should be the only SFSB left
 
@@ -171,11 +172,11 @@ public class EPCPropagationTestCase {
         stateful = null;      // clear reference to avoid using it by accident
         // both entities (8,9) should still be in XPC
         equal = anotherStateful.createEntity(9, "John Steed");
-        assertTrue("again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call", equal);
+        assertTrue(equal, "again, XPC inheritance should copy entity to other SFSB created on SFSB invocation call");
         EntityManager xpc = anotherStateful.getExtendedPersistenceContext();
-        assertTrue("extended persistence context is still open", xpc.isOpen());
+        assertTrue(xpc.isOpen(), "extended persistence context is still open");
         anotherStateful.finishUp();
-        assertFalse("extended persistence context is closed after last referencing SFSB is destroyed", xpc.isOpen());
+        assertFalse(xpc.isOpen(), "extended persistence context is closed after last referencing SFSB is destroyed");
     }
 
 

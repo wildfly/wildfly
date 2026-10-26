@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.messaging.jms.context.notclosinginjectedcontext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -25,10 +25,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.annotation.Resource;
 import jakarta.jms.ConnectionFactory;
@@ -62,7 +62,7 @@ import org.jboss.remoting3.security.RemotingPermission;
  *
  * @author Jiri Ondrusek <jondruse@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(NotClosingInjectedContextTestCase.NotClosingInjectedContextServerSetupTask.class)
 public class NotClosingInjectedContextTestCase {
     private static final Logger LOGGER = Logger.getLogger(NotClosingInjectedContextTestCase.class);
@@ -98,7 +98,7 @@ public class NotClosingInjectedContextTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller,org.jboss.remoting\n"), "MANIFEST.MF");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws JMSException {
         // drain the queue to remove any pending messages from it
         try (JMSContext context = factory.createContext()) {
@@ -137,7 +137,7 @@ public class NotClosingInjectedContextTestCase {
                     LOGGER.info("Received message:" + (++j));
                 }
             }
-            Assert.assertEquals("There should be 2 received messages.", 2, j);
+            Assertions.assertEquals(2, j, "There should be 2 received messages.");
 
             //size of log after execution
             String sizeAfter = getLogLineCount(managementClient.getControllerClient());
@@ -148,7 +148,7 @@ public class NotClosingInjectedContextTestCase {
             List<ModelNode> lines = getLogs(managementClient.getControllerClient(), difference);
             for (ModelNode line : lines) {
                 if (line.asString().contains("IJ000100:")) {
-                    Assert.fail("JMS context is not closed");
+                    Assertions.fail("JMS context is not closed");
                 }
             }
         }

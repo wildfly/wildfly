@@ -9,20 +9,20 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the {@link jakarta.ejb.Remove @Remove} methods on Stateful session beans.
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoveMethodOnSFSBTestCase {
 
     private static final Logger log = Logger.getLogger(RemoveMethodOnSFSBTestCase.class.getName());
@@ -48,7 +48,7 @@ public class RemoveMethodOnSFSBTestCase {
         // try invoking again. we should expect a NoSuchEJBException
         try {
             sfsbWithRemoveMethods.remove();
-            Assert.fail("SFSB was expected to be removed after a call to the @Remove method");
+            Assertions.fail("SFSB was expected to be removed after a call to the @Remove method");
         } catch (NoSuchEJBException nsee) {
             // expected
             log.trace("Got the expected NoSuchEJBException after invoking remove on the SFSB");
@@ -64,7 +64,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.retainIfAppException();
-            Assert.fail("Did not get the expected app exception");
+            Assertions.fail("Did not get the expected app exception");
         } catch (SimpleAppException sae) {
             // expected
         }
@@ -72,7 +72,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke again and it should *not* throw NoSuchEJBException
         try {
             sfsbWithRemoveMethods.retainIfAppException();
-            Assert.fail("Did not get the expected app exception on second invocation on SFSB");
+            Assertions.fail("Did not get the expected app exception on second invocation on SFSB");
         } catch (SimpleAppException sae) {
             // expected
         }
@@ -89,7 +89,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.removeEvenIfAppException();
-            Assert.fail("Did not get the expected app exception");
+            Assertions.fail("Did not get the expected app exception");
         } catch (SimpleAppException sae) {
             // expected
         }
@@ -97,7 +97,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke again and it *must* throw NoSuchEJBException
         try {
             sfsbWithRemoveMethods.removeEvenIfAppException();
-            Assert.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
+            Assertions.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
         } catch (NoSuchEJBException nsee) {
             // expected
             log.trace("Got the expected NoSuchEJBException on second invocation on SFSB");
@@ -125,7 +125,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.baseRemoveEvenIfAppException();
-            Assert.fail("Did not get the expected app exception");
+            Assertions.fail("Did not get the expected app exception");
         } catch (SimpleAppException sae) {
             // expected
         }
@@ -133,7 +133,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke again and it *must* throw NoSuchEJBException
         try {
             sfsbWithRemoveMethods.doNothing();
-            Assert.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
+            Assertions.fail("Did not get the expected NoSuchEJBException on second invocation on SFSB");
         } catch (NoSuchEJBException nsee) {
             // expected
             log.trace("Got the expected NoSuchEJBException on second invocation on SFSB");
@@ -150,7 +150,7 @@ public class RemoveMethodOnSFSBTestCase {
         // try invoking again. we should expect a NoSuchEJBException
         try {
             sfsbWithRemoveMethods.doNothing();
-            Assert.fail("SFSB was expected to be removed after a call to the @Remove method");
+            Assertions.fail("SFSB was expected to be removed after a call to the @Remove method");
         } catch (NoSuchEJBException nsee) {
             // expected
             log.trace("Got the expected NoSuchEJBException after invoking remove on the SFSB");
@@ -166,7 +166,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.baseRetainIfAppException();
-            Assert.fail("Did not get the expected app exception");
+            Assertions.fail("Did not get the expected app exception");
         } catch (SimpleAppException sae) {
             // expected
         }
@@ -174,7 +174,7 @@ public class RemoveMethodOnSFSBTestCase {
         // invoke again and it should *not* throw NoSuchEJBException
         try {
             sfsbWithRemoveMethods.baseRetainIfAppException();
-            Assert.fail("Did not get the expected app exception on second invocation on SFSB");
+            Assertions.fail("Did not get the expected app exception on second invocation on SFSB");
         } catch (SimpleAppException sae) {
             // expected
         }

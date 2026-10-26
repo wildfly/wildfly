@@ -16,7 +16,7 @@ import jakarta.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,9 +26,9 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (ejbthree-985 + enventry) to AS7 [JIRA
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  *
  * @author Carlo de Wolf, William DeCoste, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EnvEntryTestCase.JmsQueueSetup.class})
 public class EnvEntryTestCase {
 
@@ -91,7 +91,7 @@ public class EnvEntryTestCase {
         OptionalEnvEntry bean = lookupEnvEntryBean();
         Double actual = bean.getEntry();
         // 1.1 is defined in OptionalEnvEntryBean
-        Assert.assertEquals(new Double(1.1), actual);
+        Assertions.assertEquals(new Double(1.1), actual);
     }
 
     @Test
@@ -104,28 +104,28 @@ public class EnvEntryTestCase {
     @Test
     public void testEnvEntries() throws Exception {
         TestEnvEntry test = (TestEnvEntry) ctx.lookup("java:module/TestEnvEntry!" + TestEnvEntry.class.getName());
-        Assert.assertNotNull(test);
+        Assertions.assertNotNull(test);
 
         int maxExceptions = test.getMaxExceptions();
-        Assert.assertEquals(15, maxExceptions);
+        Assertions.assertEquals(15, maxExceptions);
 
         int minExceptions = test.getMinExceptions();
-        Assert.assertEquals(5, minExceptions);
+        Assertions.assertEquals(5, minExceptions);
 
         int numExceptions = test.getNumExceptions();
-        Assert.assertEquals(10, numExceptions);
+        Assertions.assertEquals(10, numExceptions);
 
         TestEnvEntry etest = (TestEnvEntry) ctx.lookup("java:module/ExtendedTestEnvEntry!" + TestEnvEntry.class.getName());
-        Assert.assertNotNull(etest);
+        Assertions.assertNotNull(etest);
 
         maxExceptions = etest.getMaxExceptions();
-        Assert.assertEquals(14, maxExceptions);
+        Assertions.assertEquals(14, maxExceptions);
 
         minExceptions = etest.getMinExceptions();
-        Assert.assertEquals(6, minExceptions);
+        Assertions.assertEquals(6, minExceptions);
 
         numExceptions = etest.getNumExceptions();
-        Assert.assertEquals(11, numExceptions);
+        Assertions.assertEquals(11, numExceptions);
     }
 
     @Test
@@ -149,10 +149,10 @@ public class EnvEntryTestCase {
             producer.send(msg);
 
             MapMessage replyMsg = (MapMessage) consumer.receive(5000);
-            Assert.assertNotNull(replyMsg);
-            Assert.assertEquals(16, replyMsg.getInt("maxExceptions"));
-            Assert.assertEquals(12, replyMsg.getInt("numExceptions"));
-            Assert.assertEquals(7, replyMsg.getInt("minExceptions"));
+            Assertions.assertNotNull(replyMsg);
+            Assertions.assertEquals(16, replyMsg.getInt("maxExceptions"));
+            Assertions.assertEquals(12, replyMsg.getInt("numExceptions"));
+            Assertions.assertEquals(7, replyMsg.getInt("minExceptions"));
         } finally {
             con.close();
         }
@@ -161,8 +161,8 @@ public class EnvEntryTestCase {
     @Test
     public void testJNDI() throws Exception {
         TestEnvEntry test = (TestEnvEntry) ctx.lookup("java:module/TestEnvEntry!" + TestEnvEntry.class.getName());
-        Assert.assertNotNull(test);
+        Assertions.assertNotNull(test);
 
-        Assert.assertEquals(15, test.checkJNDI());
+        Assertions.assertEquals(15, test.checkJNDI());
     }
 }

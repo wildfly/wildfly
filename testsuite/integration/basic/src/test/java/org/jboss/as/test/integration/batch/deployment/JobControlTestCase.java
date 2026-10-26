@@ -17,7 +17,7 @@ import jakarta.batch.runtime.JobExecution;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -32,16 +32,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the start, stop and restart functionality for deployments.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(JobControlTestCase.DebugLoggingSetup.class)
 public class JobControlTestCase extends AbstractBatchTestCase {
 
@@ -79,18 +79,18 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         final ModelNode result = executeOperation(op);
         currentCount += 5;
         final long executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
 
         // Validate that the job as executed
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         final JobExecution execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 3 seconds max for the execution to finish.
         waitForTermination(execution, 3);
 
         // Check that we have 5 items
-        Assert.assertEquals(currentCount, countingItemWriter.getWrittenItemSize());
+        Assertions.assertEquals(currentCount, countingItemWriter.getWrittenItemSize());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(1000)));
         final ModelNode result = executeOperation(op);
         final long executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
 
         // Test the stop operation
         op = Operations.createOperation("stop-job", address);
@@ -114,7 +114,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         // Validate that the job as executed
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         final JobExecution execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 1 seconds max for the execution to finish.
         waitForTermination(execution, 3);
@@ -123,7 +123,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         currentCount = countingItemWriter.getWrittenItemSize();
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(1000)));
         final ModelNode result = executeOperation(op);
         final long executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
 
         // Test the stop operation
         final ModelNode executionAddress = Operations.createAddress("deployment", DEPLOYMENT_NAME, "subsystem", "batch-jberet", "job", "test-chunk", "execution", Long.toString(executionId));
@@ -146,7 +146,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         // Validate that the job as executed
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         final JobExecution execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 1 seconds max for the execution to finish.
         waitForTermination(execution, 3);
@@ -155,7 +155,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         currentCount = countingItemWriter.getWrittenItemSize();
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
     }
 
     @Test
@@ -169,7 +169,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(2000)));
         ModelNode result = executeOperation(op);
         long executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
 
         // Test the stop operation
         op = Operations.createOperation("stop-job", address);
@@ -179,7 +179,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         // Validate that the job as executed
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobExecution execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 5 seconds max for the execution to finish.
         waitForTermination(execution, 5);
@@ -188,7 +188,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         currentCount = countingItemWriter.getWrittenItemSize();
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
 
         // Restart the execution
         op = Operations.createOperation("restart-job", address);
@@ -198,15 +198,15 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set("0");
         result = executeOperation(op);
         executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
         execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 5 seconds max for the execution to finish.
         waitForTermination(execution, 5);
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
     }
 
     @Test
@@ -220,7 +220,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(1000)));
         ModelNode result = executeOperation(op);
         long executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
 
         // Test the stop operation
         final ModelNode executionAddress = Operations.createAddress("deployment", DEPLOYMENT_NAME, "subsystem", "batch-jberet", "job", "test-chunk", "execution", Long.toString(executionId));
@@ -229,7 +229,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         // Validate that the job as executed
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobExecution execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 1 seconds max for the execution to finish.
         waitForTermination(execution, 3);
@@ -238,7 +238,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         currentCount = countingItemWriter.getWrittenItemSize();
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.STOPPED, execution.getBatchStatus());
 
         // Restart the execution
         op = Operations.createOperation("restart-job", executionAddress);
@@ -247,15 +247,15 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         properties.get("writer.sleep.time").set("0");
         result = executeOperation(op);
         executionId = result.asLong();
-        Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
+        Assertions.assertTrue(executionId > 0L, "Execution id should be greater than 0");
         execution = jobOperator.getJobExecution(executionId);
-        Assert.assertNotNull(execution);
+        Assertions.assertNotNull(execution);
 
         // Wait for 3 seconds max for the execution to finish.
         waitForTermination(execution, 3);
 
         // Check that the status is stopped
-        Assert.assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
     }
 
     private ModelNode executeOperation(final ModelNode op) throws IOException {
@@ -264,7 +264,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(Operations.getFailureDescription(result).asString());
+        Assertions.fail(Operations.getFailureDescription(result).asString());
         // Should never be reached
         return new ModelNode();
     }
@@ -289,7 +289,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
             final ModelNode result = client.execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                Assert.fail(Operations.getFailureDescription(result).toString());
+                Assertions.fail(Operations.getFailureDescription(result).toString());
             }
             return result;
         }

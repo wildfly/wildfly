@@ -15,14 +15,15 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.common.context.ContextPermission;
 
 /**
@@ -30,7 +31,7 @@ import org.wildfly.common.context.ContextPermission;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EJBClientInterceptorTestCase {
 
     private static final String APP_NAME = "";
@@ -79,12 +80,12 @@ public class EJBClientInterceptorTestCase {
             final Map<String, Object> valuesSeenOnServerSide = remoteSFSB.getInvocationData(keyOne, keyTwo);
             // make sure the server side bean was able to get the data which was passed on by the client side
             // interceptor
-            Assert.assertNotNull("Server side context data was expected to be non-null", valuesSeenOnServerSide);
-            Assert.assertFalse("Server side context data was expected to be non-empty", valuesSeenOnServerSide.isEmpty());
+            Assertions.assertNotNull(valuesSeenOnServerSide, "Server side context data was expected to be non-null");
+            Assertions.assertFalse(valuesSeenOnServerSide.isEmpty(), "Server side context data was expected to be non-empty");
             for (final Map.Entry<String, Object> clientInterceptorDataEntry : interceptorData.entrySet()) {
                 final String key = clientInterceptorDataEntry.getKey();
                 final Object expectedValue = clientInterceptorDataEntry.getValue();
-                Assert.assertEquals("Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key, expectedValue, valuesSeenOnServerSide.get(key));
+                Assertions.assertEquals(expectedValue, valuesSeenOnServerSide.get(key), "Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key);
             }
             return null;
         });
@@ -111,12 +112,12 @@ public class EJBClientInterceptorTestCase {
         final Map<String, Object> valuesSeenOnServerSide = remoteViewInvokingBean.invokeRemoteViewAndGetInvocationData(interceptorData.keySet().toArray(new String[interceptorData.size()]));
         // make sure the server side bean was able to get the data which was passed on by the client side
         // interceptor
-        Assert.assertNotNull("Server side context data was expected to be non-null", valuesSeenOnServerSide);
-        Assert.assertFalse("Server side context data was expected to be non-empty", valuesSeenOnServerSide.isEmpty());
+        Assertions.assertNotNull(valuesSeenOnServerSide, "Server side context data was expected to be non-null");
+        Assertions.assertFalse(valuesSeenOnServerSide.isEmpty(), "Server side context data was expected to be non-empty");
         for (final Map.Entry<String, Object> clientInterceptorDataEntry : interceptorData.entrySet()) {
             final String key = clientInterceptorDataEntry.getKey();
             final Object expectedValue = clientInterceptorDataEntry.getValue();
-            Assert.assertEquals("Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key, expectedValue, valuesSeenOnServerSide.get(key));
+            Assertions.assertEquals(expectedValue, valuesSeenOnServerSide.get(key), "Unexpected value in bean, on server side, via InvocationContext.getContextData() for key " + key);
         }
     }
 }

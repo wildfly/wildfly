@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.URL;
@@ -13,7 +13,7 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
@@ -28,18 +28,18 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class UndeployWildcardTestCase {
 
@@ -56,7 +56,7 @@ public class UndeployWildcardTestCase {
         return ja;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         String tempDir = TestSuiteEnvironment.getSystemProperty("java.io.tmpdir");
 
@@ -93,7 +93,7 @@ public class UndeployWildcardTestCase {
         new ZipExporterImpl(ear).exportTo(appFiles[3], true);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         for(File f : appFiles) {
             f.delete();
@@ -102,7 +102,7 @@ public class UndeployWildcardTestCase {
 
     private Set<String> afterTestDeployments;
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         ctx = CLITestUtil.getCommandContext();
         ctx.connectController();
@@ -112,7 +112,7 @@ public class UndeployWildcardTestCase {
         afterTestDeployments = new HashSet<String>();
     }
 
-    @After
+    @AfterEach
     public void afterTest() throws Exception {
         StringBuilder buf = null;
         for(File f : appFiles) {

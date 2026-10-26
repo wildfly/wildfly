@@ -4,14 +4,14 @@
  */
 package org.jboss.as.test.integration.jpa.initializeinorder;
 
-import static org.junit.Assert.assertTrue;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -19,16 +19,16 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that <initialize-in-order> works as expected.
  *
  * @author Scott Marlow (clone of test written by Stuart Douglas)
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InitializeInOrderTestCase {
 
     private static final String ARCHIVE_NAME = "InitializeInOrderTestCase";
@@ -71,9 +71,9 @@ public class InitializeInOrderTestCase {
 
     @Test
     public void testPostConstruct() throws NamingException {
-        Assert.assertEquals("check of initOrder (" + TestState.getInitOrder().toString() + ") size is expected to be 3 but was " + TestState.getInitOrder().size(), 3, TestState.getInitOrder().size());
-        Assert.assertEquals("MyServlet", TestState.getInitOrder().get(0));
-        Assert.assertEquals("MyEjb", TestState.getInitOrder().get(1));
+        Assertions.assertEquals(3, TestState.getInitOrder().size(), "check of initOrder (" + TestState.getInitOrder().toString() + ") size is expected to be 3 but was " + TestState.getInitOrder().size());
+        Assertions.assertEquals("MyServlet", TestState.getInitOrder().get(0));
+        Assertions.assertEquals("MyEjb", TestState.getInitOrder().get(1));
         TestState.clearInitOrder();
     }
 
@@ -117,20 +117,20 @@ public class InitializeInOrderTestCase {
         cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
         Employee emp = cmtBean.getEmployeeNoTX(empId);
         cmtBean.updateEmployee(emp);
-        assertTrue("could not load added employee", emp != null);
-        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+        assertTrue(emp != null, "could not load added employee");
+        assertTrue(2 == MyListener.getInvocationCount(), "EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount());
     }
 
     @Test
     public void testInjectedPersistenceContext() throws Exception {
-        Assert.assertTrue("CdiJpaInjectingBean should be true but is",
-                TestState.isJpaInjectingBeanAvailable());
+        Assertions.assertTrue(TestState.isJpaInjectingBeanAvailable(),
+                "CdiJpaInjectingBean should be true but is");
 
-        Assert.assertTrue("injected EntityManagerFactory should not be null but is",
-                TestState.isEntityManagerFactoryAvailable());
+        Assertions.assertTrue(TestState.isEntityManagerFactoryAvailable(),
+                "injected EntityManagerFactory should not be null but is");
 
-        Assert.assertTrue("injected EntityManager should not be null but is",
-                TestState.isEntityManagerAvailable());
+        Assertions.assertTrue(TestState.isEntityManagerAvailable(),
+                "injected EntityManager should not be null but is");
 
     }
 

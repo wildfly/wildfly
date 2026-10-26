@@ -4,25 +4,25 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.persistencecontextref;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PersistenceContextRefTestCase {
     private static final String ARCHIVE_NAME = "persistence-context-ref";
 
@@ -70,7 +70,7 @@ public class PersistenceContextRefTestCase {
         try {
             PcBean bean = getManagedBean();
             bean.getMypc().getMetamodel().entity(PcOtherEntity.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException expected) {
 
         }
@@ -81,7 +81,7 @@ public class PersistenceContextRefTestCase {
         try {
             PcBean bean = getManagedBean();
             bean.getOtherpc().getMetamodel().entity(PcMyEntity.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException expected) {
 
         }
@@ -104,7 +104,7 @@ public class PersistenceContextRefTestCase {
         try {
             PcBean bean = getManagedBean();
             bean.getMypc2().getMetamodel().entity(PcOtherEntity.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException expected) {
 
         }
@@ -114,14 +114,14 @@ public class PersistenceContextRefTestCase {
     public void testUnsynchronizedPCisNotJoinedToTransaction() throws NamingException {
         PcBean bean = getManagedBean();
         boolean isJoined = bean.unsynchronizedIsNotJoinedToTX();
-        Assert.assertFalse("Unsynchronized entity manager should not of been joined to the JTA transaction but was",isJoined);
+        Assertions.assertFalse(isJoined,"Unsynchronized entity manager should not of been joined to the JTA transaction but was");
     }
 
     @Test
     public void testSynchronizedPCisJoinedToTransaction() throws NamingException {
         PcBean bean = getManagedBean();
         boolean isJoined = bean.synchronizedIsJoinedToTX();
-        Assert.assertTrue("Synchronized entity manager should of been joined to the JTA transaction but was not",isJoined);
+        Assertions.assertTrue(isJoined,"Synchronized entity manager should of been joined to the JTA transaction but was not");
     }
 
     private PcBean getManagedBean() throws NamingException {

@@ -11,18 +11,18 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:lgao@redhat.com">Lin Gao</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
 
@@ -40,18 +40,18 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
         ModelNode operation = getDsClsInfoOperation("h2");
         ModelNode result = getManagementClient().getControllerClient().execute(operation);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("success", result.get("outcome").asString());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result").get("datasource-class-info");
-        Assert.assertNotNull(dsInfoList);
+        Assertions.assertNotNull(dsInfoList);
         ModelNode dsInfo = dsInfoList.get(0).get("org.h2.jdbcx.JdbcDataSource");
-        Assert.assertNotNull(dsInfo);
+        Assertions.assertNotNull(dsInfo);
 
-        Assert.assertEquals("java.lang.String", dsInfo.get("description").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("user").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("url").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("password").asString());
-        Assert.assertEquals("int", dsInfo.get("loginTimeout").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("description").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("user").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("url").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("password").asString());
+        Assertions.assertEquals("int", dsInfo.get("loginTimeout").asString());
 
     }
 
@@ -67,18 +67,18 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
 
         ModelNode result = getManagementClient().getControllerClient().execute(op);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("success", result.get("outcome").asString());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result");
-        Assert.assertNotNull(dsInfoList);
+        Assertions.assertNotNull(dsInfoList);
         ModelNode dsInfo = dsInfoList.get(0).get("org.h2.jdbcx.JdbcDataSource");
-        Assert.assertNotNull(dsInfo);
+        Assertions.assertNotNull(dsInfo);
 
-        Assert.assertEquals("java.lang.String", dsInfo.get("description").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("user").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("url").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("password").asString());
-        Assert.assertEquals("int", dsInfo.get("loginTimeout").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("description").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("user").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("url").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("password").asString());
+        Assertions.assertEquals("int", dsInfo.get("loginTimeout").asString());
 
     }
 
@@ -93,19 +93,19 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
 
         ModelNode result = getManagementClient().getControllerClient().execute(op);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("success", result.get("outcome").asString());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result");
-        Assert.assertNotNull(dsInfoList);
-        Assert.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
+        Assertions.assertNotNull(dsInfoList);
+        Assertions.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
         ModelNode dsInfo = dsInfoList.get(0).get("datasource-class-info").get(0).get("org.h2.jdbcx.JdbcDataSource");
-        Assert.assertNotNull(dsInfo);
+        Assertions.assertNotNull(dsInfo);
 
-        Assert.assertEquals("java.lang.String", dsInfo.get("description").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("user").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("url").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("password").asString());
-        Assert.assertEquals("int", dsInfo.get("loginTimeout").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("description").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("user").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("url").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("password").asString());
+        Assertions.assertEquals("int", dsInfo.get("loginTimeout").asString());
     }
 
     @Test
@@ -120,19 +120,19 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
 
         ModelNode result = getManagementClient().getControllerClient().execute(op);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("success", result.get("outcome").asString());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result");
-        Assert.assertNotNull(dsInfoList);
-        Assert.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
+        Assertions.assertNotNull(dsInfoList);
+        Assertions.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
         ModelNode dsInfo = dsInfoList.get(0).get("datasource-class-info").get(0).get("org.h2.jdbcx.JdbcDataSource");
-        Assert.assertNotNull(dsInfo);
+        Assertions.assertNotNull(dsInfo);
 
-        Assert.assertEquals("java.lang.String", dsInfo.get("description").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("user").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("url").asString());
-        Assert.assertEquals("java.lang.String", dsInfo.get("password").asString());
-        Assert.assertEquals("int", dsInfo.get("loginTimeout").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("description").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("user").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("url").asString());
+        Assertions.assertEquals("java.lang.String", dsInfo.get("password").asString());
+        Assertions.assertEquals("int", dsInfo.get("loginTimeout").asString());
     }
 
 }

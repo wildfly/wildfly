@@ -7,10 +7,12 @@ package org.jboss.as.test.integration.jca.security.workmanager;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -34,10 +36,9 @@ import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.callback.CallerPrincipalCallback;
 import jakarta.security.auth.message.callback.GroupPrincipalCallback;
 
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -60,11 +61,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.permission.ElytronPermission;
@@ -75,7 +75,7 @@ import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 /**
  * Test security inflow with Jakarta Connectors work manager using Elytron security domain
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEnabledTestCase.ElytronSetup.class,
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEnabledTestCase.Ejb3Setup.class,
@@ -120,7 +120,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
             ModelNode addAppSecDomainOperation = Operations.createAddOperation(EJB3_APP_SEC_DOMAIN_ADDRESS.toModelNode());
             addAppSecDomainOperation.get("security-domain").set(WM_ELYTRON_SECURITY_DOMAIN_NAME);
             ModelNode response = execute(addAppSecDomainOperation, client);
-            Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
         }
 
         private void removeApplicationSecurityDomainSilently(ModelControllerClient client) throws IOException {
@@ -211,9 +211,6 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
     @EJB
     private TestBean bean;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @Test
     @OperateOnDeployment("ejb")
     public void testValidRole() throws Exception {
@@ -231,12 +228,14 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
 
     @Test
     @OperateOnDeployment("ejb")
-    public void testInvalidRole() throws Exception {
-        expectedException.expectCause(isA(EJBAccessException.class));
-        expectedException.expectMessage(containsString("WFLYEJB0364"));
-        WorkManager wm = getWorkManager();
-        MyWork myWork = new MyWork(wm, bean, "eis", "invalid-role");
-        wm.doWork(myWork);
+    public void testInvalidRole() {
+        Throwable exception = assertThrows(Exception.class, () -> {
+            WorkManager wm = getWorkManager();
+            MyWork myWork = new MyWork(wm, bean, "eis", "invalid-role");
+            wm.doWork(myWork);
+        });
+        assertInstanceOf(EJBAccessException.class, exception.getCause());
+        assertThat(exception.getMessage(), containsString("WFLYEJB0364"));
     }
 
     private WorkManager getWorkManager() {
@@ -248,12 +247,12 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
     private void verifyUsers(MyWork work, String... expectedUsers) {
         Set<Principal> principals = work.getPrincipals();
         Set<Principal> expectedPrincipals = Stream.of(expectedUsers).map(NamePrincipal::new).collect(Collectors.toSet());
-        MatcherAssert.assertThat(principals, is(expectedPrincipals));
+        assertThat(principals, is(expectedPrincipals));
     }
 
     private void verifyRoles(MyWork work, String... expectedRoles) {
         String[] roles = work.getRoles();
-        MatcherAssert.assertThat(roles, is(expectedRoles));
+        assertThat(roles, is(expectedRoles));
     }
 
     public static class MyWork implements Work, WorkContextProvider {

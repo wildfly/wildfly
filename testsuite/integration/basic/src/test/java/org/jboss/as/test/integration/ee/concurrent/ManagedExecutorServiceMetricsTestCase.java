@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ee.concurrent;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -24,9 +24,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 import jakarta.enterprise.concurrent.ManagedExecutorService;
@@ -51,7 +52,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ManagedExecutorServiceMetricsTestCase {
 
     private static final Logger logger = Logger.getLogger(ManagedExecutorServiceMetricsTestCase.class);
@@ -90,18 +91,18 @@ public class ManagedExecutorServiceMetricsTestCase {
         // task will be considered hung if duration > 1s
         addOperation.get(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(1000);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testRuntimeStats(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -117,19 +118,19 @@ public class ManagedExecutorServiceMetricsTestCase {
         // task will be considered hung if duration > 1s
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(1000);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             // lookup the executor
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testRuntimeStats(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -150,18 +151,18 @@ public class ManagedExecutorServiceMetricsTestCase {
         addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
         addOperation.get(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH).set(1);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testActiveRequestStats(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -182,11 +183,11 @@ public class ManagedExecutorServiceMetricsTestCase {
         addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
         addOperation.get(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH).set(1);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         writeAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, 3, true);
         try {
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testActiveRequestStats(pathAddress, executorService);
         } finally {
             try {
@@ -194,8 +195,8 @@ public class ManagedExecutorServiceMetricsTestCase {
                 final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
                 removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
                 final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-                Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                        .isDefined());
+                Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                        .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
             } finally {
                 undefineAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, true);
             }
@@ -220,7 +221,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 barrier1.await();
                 barrier2.await();
             } catch (Exception e) {
-                Assert.fail();
+                Assertions.fail();
             }
         });
         assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 1);
@@ -230,7 +231,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 barrier1.await();
                 barrier2.await();
             } catch (Exception e) {
-                Assert.fail();
+                Assertions.fail();
             }
         });
         assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 2);
@@ -247,7 +248,7 @@ public class ManagedExecutorServiceMetricsTestCase {
             final Future f4 = executorService.submit(() -> {
                 logger.info("Executing task #4.4");
             });
-            Assert.fail();
+            Assertions.fail();
         } catch (RejectedExecutionException e) {
             // expected exception
         }
@@ -286,7 +287,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 1);
                 assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.THREAD_COUNT, 1);
             } catch (IOException | InterruptedException e) {
-                Assert.fail();
+                Assertions.fail();
             }
         }).get();
 
@@ -310,7 +311,7 @@ public class ManagedExecutorServiceMetricsTestCase {
             try {
                 assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT, 1);
             } catch (IOException | InterruptedException e) {
-                Assert.fail();
+                Assertions.fail();
             }
         }).get();
         assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
@@ -330,7 +331,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 barrier1.await();
                 barrier2.await();
             } catch (Exception e) {
-                Assert.fail();
+                Assertions.fail();
             }
         });
         final Future f2 = executorService.submit(() -> {
@@ -339,7 +340,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 barrier1.await();
                 barrier2.await();
             } catch (Exception e) {
-                Assert.fail();
+                Assertions.fail();
             }
         });
         barrier1.await();
@@ -365,7 +366,7 @@ public class ManagedExecutorServiceMetricsTestCase {
     private int readStatsAttribute(PathAddress resourceAddress, String attrName) throws IOException {
         ModelNode op = Util.getReadAttributeOperation(resourceAddress, attrName);
         final ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
         return result.get(RESULT).asInt();
     }
 
@@ -377,7 +378,7 @@ public class ManagedExecutorServiceMetricsTestCase {
             actualAttrValue = readStatsAttribute(resourceAddress, attrName);
             retries--;
         }
-        Assert.assertEquals(attrName, expectedAttrValue, actualAttrValue);
+        Assertions.assertEquals(expectedAttrValue, actualAttrValue, attrName);
     }
 
     private void undefineAttribute(PathAddress resourceAddress, String attrName, boolean allowResourseServiceRestart) throws IOException {
@@ -395,6 +396,6 @@ public class ManagedExecutorServiceMetricsTestCase {
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         }
         final ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
     }
 }

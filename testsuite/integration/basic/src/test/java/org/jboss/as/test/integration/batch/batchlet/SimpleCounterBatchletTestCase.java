@@ -17,12 +17,12 @@ import jakarta.batch.runtime.JobInstance;
 import jakarta.batch.runtime.StepExecution;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a {@code @RequestScoped} bean will work correctly in a batch job.
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
 
     @Deployment
@@ -62,17 +62,17 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
         final String inactiveJobName = "inactive-job";
         final List<String> expectedJobNames = Arrays.asList("simple-counter-batchlet", inactiveJobName);
         final Set<String> jobNames = jobOperator.getJobNames();
-        Assert.assertTrue(String.format("Expecting job names: %s, but got %s", expectedJobNames, jobNames),
-                jobNames.containsAll(expectedJobNames));
-        Assert.assertEquals(2, jobNames.size());
+        Assertions.assertTrue(jobNames.containsAll(expectedJobNames),
+                String.format("Expecting job names: %s, but got %s", expectedJobNames, jobNames));
+        Assertions.assertEquals(2, jobNames.size());
 
         //getJobInstanceCount, getJobInstances & getRunningExecutions on an inactive job name should not cause exception
         final int jobInstanceCount = jobOperator.getJobInstanceCount(inactiveJobName);
-        Assert.assertEquals("getJobInstanceCount() should return 0 for job name: " + inactiveJobName, 0, jobInstanceCount);
+        Assertions.assertEquals(0, jobInstanceCount, "getJobInstanceCount() should return 0 for job name: " + inactiveJobName);
         final List<JobInstance> jobInstances = jobOperator.getJobInstances(inactiveJobName, 0, Integer.MAX_VALUE);
-        Assert.assertEquals("getJobInstances() should return empty list for job name: " + inactiveJobName, 0, jobInstances.size());
+        Assertions.assertEquals(0, jobInstances.size(), "getJobInstances() should return empty list for job name: " + inactiveJobName);
         final List<Long> runningExecutions = jobOperator.getRunningExecutions(inactiveJobName);
-        Assert.assertEquals("getRunningExecutions() should return empty list for job name: " + inactiveJobName, 0, runningExecutions.size());
+        Assertions.assertEquals(0, runningExecutions.size(), "getRunningExecutions() should return empty list for job name: " + inactiveJobName);
 
         // Start the first job
         long executionId = jobOperator.start("simple-counter-batchlet", jobProperties);
@@ -81,10 +81,10 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
 
         // Wait until the job is complete for a maximum of 5 seconds
         waitForTermination(jobExecution, 5);
-        Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
         // Get the first step, should only be one, and get the exit status
-        Assert.assertEquals("1,2,3,4,5,6,7,8,9,10", getFirst(jobOperator, executionId).getExitStatus());
+        Assertions.assertEquals("1,2,3,4,5,6,7,8,9,10", getFirst(jobOperator, executionId).getExitStatus());
     }
 
 
@@ -106,15 +106,15 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
 
         // Wait until the job is complete for a maximum of 5 seconds
         waitForTermination(jobExecution, 5);
-        Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
         // Get the first step, should only be one, and get the exit status
-        Assert.assertEquals("1,2,3,4,5,6,7,8", getFirst(jobOperator, executionId).getExitStatus());
+        Assertions.assertEquals("1,2,3,4,5,6,7,8", getFirst(jobOperator, executionId).getExitStatus());
     }
 
     private StepExecution getFirst(final JobOperator jobOperator, final long executionId) {
         final List<StepExecution> steps = jobOperator.getStepExecutions(executionId);
-        Assert.assertFalse(steps.isEmpty());
+        Assertions.assertFalse(steps.isEmpty());
         return steps.get(0);
     }
 }

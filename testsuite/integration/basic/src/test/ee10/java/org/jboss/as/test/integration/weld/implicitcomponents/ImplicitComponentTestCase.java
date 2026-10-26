@@ -5,11 +5,11 @@
 package org.jboss.as.test.integration.weld.implicitcomponents;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 import jakarta.inject.Inject;
@@ -32,6 +32,6 @@ public class ImplicitComponentTestCase {
 
     @Test
     public void testManagedBeanInjection() {
-        Assert.assertEquals(ManagedBean2.MESSAGE, bean1.getMessage());
+        Assertions.assertEquals(ManagedBean2.MESSAGE, bean1.getMessage());
     }
 }

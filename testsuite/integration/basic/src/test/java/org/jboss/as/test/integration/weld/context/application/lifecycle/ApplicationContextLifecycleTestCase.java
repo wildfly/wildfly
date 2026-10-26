@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.context.application.lifecycle;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -15,9 +15,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -30,7 +30,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  * Tests possible deployment scenarios for CDI ApplicationScoped events, and usage of other EE technologies in such event handlers.
  * @author emmartins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ApplicationContextLifecycleTestCase {
 
     private static final String TEST_BEANS_LIB_JAR = "TEST_BEANS_LIB_JAR";
@@ -94,8 +94,8 @@ public class ApplicationContextLifecycleTestCase {
         deployer.deploy(TEST_BEANS_EJB_JAR);
         // await and assert initialized results
         testResults.await(TimeoutUtil.adjust(5), TimeUnit.SECONDS);
-        Assert.assertTrue(testResults.isCdiBeanInitialized());
-        Assert.assertTrue(testResults.isEjbBeanInitialized());
+        Assertions.assertTrue(testResults.isCdiBeanInitialized());
+        Assertions.assertTrue(testResults.isEjbBeanInitialized());
         // NOTE: before destroyed and destroyed atm only guaranteed for web deployments, uncomment all once that's solved
         // setup before destroyed and destroyed test
         //testResults.setup(4);
@@ -118,8 +118,8 @@ public class ApplicationContextLifecycleTestCase {
         deployer.deploy(TEST_BEANS_EAR);
         // await and assert initialized results
         testResults.await(TimeoutUtil.adjust(5), TimeUnit.SECONDS);
-        Assert.assertTrue(testResults.isCdiBeanInitialized());
-        Assert.assertTrue(testResults.isEjbBeanInitialized());
+        Assertions.assertTrue(testResults.isCdiBeanInitialized());
+        Assertions.assertTrue(testResults.isEjbBeanInitialized());
         // NOTE: before destroyed and destroyed atm only guaranteed for web deployments, uncomment all once that's solved
         // setup before destroyed and destroyed test
         //testResults.setup(4);
@@ -142,17 +142,17 @@ public class ApplicationContextLifecycleTestCase {
         deployer.deploy(TEST_BEANS_WAR);
         // await and assert initialized results
         testResults.await(TimeoutUtil.adjust(5), TimeUnit.SECONDS);
-        Assert.assertTrue(testResults.isCdiBeanInitialized());
-        Assert.assertTrue(testResults.isServletInitialized());
+        Assertions.assertTrue(testResults.isCdiBeanInitialized());
+        Assertions.assertTrue(testResults.isServletInitialized());
         // setup before destroyed and destroyed test
         testResults.setup(4);
         // undeploy app
         deployer.undeploy(TEST_BEANS_WAR);
         // await and assert before destroyed and destroyed results
         testResults.await(TimeoutUtil.adjust(5), TimeUnit.SECONDS);
-        Assert.assertTrue(testResults.isCdiBeanBeforeDestroyed());
-        Assert.assertTrue(testResults.isCdiBeanDestroyed());
-        Assert.assertTrue(testResults.isServletBeforeDestroyed());
-        Assert.assertTrue(testResults.isServletDestroyed());
+        Assertions.assertTrue(testResults.isCdiBeanBeforeDestroyed());
+        Assertions.assertTrue(testResults.isCdiBeanDestroyed());
+        Assertions.assertTrue(testResults.isServletBeforeDestroyed());
+        Assertions.assertTrue(testResults.isServletDestroyed());
     }
 }

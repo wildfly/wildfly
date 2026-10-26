@@ -5,15 +5,15 @@
 package org.jboss.as.test.integration.ejb.timerservice.serialization;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -24,7 +24,7 @@ import javax.naming.NamingException;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServiceSerializationFirstTestCase {
 
     /**
@@ -70,9 +70,9 @@ public class TimerServiceSerializationFirstTestCase {
         TimerServiceSerializationBean bean = (TimerServiceSerializationBean) ctx.lookup("java:module/" + TimerServiceSerializationBean.class.getSimpleName());
         bean.createTimer();
         InfoA info = TimerServiceSerializationBean.awaitTimerCall();
-        Assert.assertNotNull(info);
-        Assert.assertNotNull(info.infoB);
-        Assert.assertNotNull(info.infoB.infoC);
+        Assertions.assertNotNull(info);
+        Assertions.assertNotNull(info.infoB);
+        Assertions.assertNotNull(info.infoB.infoC);
     }
 
     public static final String EJB_JAR = "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +

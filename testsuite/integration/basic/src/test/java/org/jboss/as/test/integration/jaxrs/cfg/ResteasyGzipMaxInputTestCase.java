@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.Variant;
 import jakarta.ws.rs.ext.Providers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -30,8 +29,11 @@ import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-gzip-max-input} attribute works as expected.
@@ -44,6 +46,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyGzipMaxInputTestCase extends AbstractResteasyAttributeTest {
 
     private static final String PAYLOAD = ("This is a test payload for " + ResteasyGzipMaxInputTestCase.class.getName());
@@ -69,7 +72,7 @@ public class ResteasyGzipMaxInputTestCase extends AbstractResteasyAttributeTest 
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = createClient()) {
             try (
@@ -77,14 +80,14 @@ public class ResteasyGzipMaxInputTestCase extends AbstractResteasyAttributeTest 
                             .request()
                             .post(Entity.entity(PAYLOAD, variant))
             ) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals(PAYLOAD, response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(PAYLOAD, response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkFailure() throws Exception {
         writeAttribute(new ModelNode(PAYLOAD.length() - 10));
         try (Client client = createClient()) {
@@ -93,7 +96,7 @@ public class ResteasyGzipMaxInputTestCase extends AbstractResteasyAttributeTest 
                             .request()
                             .post(Entity.entity(PAYLOAD, variant))
             ) {
-                Assert.assertEquals(413, response.getStatus());
+                Assertions.assertEquals(413, response.getStatus());
             }
         }
     }

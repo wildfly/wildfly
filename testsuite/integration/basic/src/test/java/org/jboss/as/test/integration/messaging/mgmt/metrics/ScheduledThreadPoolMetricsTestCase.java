@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.messaging.mgmt.metrics;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -16,9 +16,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.annotation.Resource;
 import jakarta.jms.Connection;
@@ -41,7 +41,7 @@ import org.jboss.remoting3.security.RemotingPermission;
 /**
  * @author Ivan Straka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JMSThreadPoolMetricsSetup.class})
 public class ScheduledThreadPoolMetricsTestCase {
 
@@ -78,12 +78,12 @@ public class ScheduledThreadPoolMetricsTestCase {
     public void metricsAvailableTest() throws IOException {
         Map<String, ModelNode> resources = JMSThreadPoolMetricsUtil.getResources(managementClient);
         // scheduled thread pool metrics
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_ACTIVE_COUNT));
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_COMPLETED_COUNT));
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_CURRENT_COUNT));
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_KEEPALIVE_TIME));
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_LARGEST_COUNT));
-        Assert.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_TASK_COUNT));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_ACTIVE_COUNT));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_COMPLETED_COUNT));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_CURRENT_COUNT));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_KEEPALIVE_TIME));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_LARGEST_COUNT));
+        Assertions.assertTrue(resources.containsKey(JMSThreadPoolMetricsUtil.SCHEDULED_TASK_COUNT));
     }
 
     @Test

@@ -4,31 +4,31 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JmsTestCase extends AbstractCliTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
@@ -82,7 +82,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("cd /subsystem=messaging-activemq/server=default/jms-topic");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        Assert.assertNull(ls);
+        Assertions.assertNull(ls);
 
         // create topic
         cli.sendLine("jms-topic add --topic-address=testJmsTopic --entries=testJmsTopic");
@@ -103,6 +103,6 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("cd /subsystem=messaging-activemq/server=default/jms-topic");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        Assert.assertNull(ls);
+        Assertions.assertNull(ls);
     }
 }

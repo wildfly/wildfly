@@ -12,8 +12,7 @@ import java.util.PropertyPermission;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.remoting3.security.RemotingPermission;
@@ -23,9 +22,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.api.Authentication;
 
 /**
@@ -37,7 +40,8 @@ import org.wildfly.test.api.Authentication;
  *
  * @author <a href="ochaloup@jboss.com">Ondrej Chaloupka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ExpressionSubstitutionInContainerTestCase {
 
     private static final String ARCHIVE_NAME = "expression-substitution-test";
@@ -91,7 +95,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testPropertyDefinedFirst() {
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
@@ -131,7 +135,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testSystemPropertyEvaluation() {
         // the system property has to be defined in the same VM as the container resides
         bean.addSystemProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE);
@@ -152,7 +156,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testSystemPropertyEvaluationSetAfterExpression() {
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
         // the system property has to be defined in the same VM as the container resides
@@ -169,14 +173,14 @@ public class ExpressionSubstitutionInContainerTestCase {
     private void systemPropertyEvaluation() {
         // test resolution of expressions
         String result = bean.getJBossProperty(PROP_NAME);
-        Assert.assertEquals("jboss property " + PROP_NAME + " evaluation - value should be taken from system property", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "jboss property " + PROP_NAME + " evaluation - value should be taken from system property");
 
 
         result = bean.getSystemProperty(EXPRESSION_PROP_NAME);
-        Assert.assertEquals("system property " + EXPRESSION_PROP_NAME + " from directly defined system property", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "system property " + EXPRESSION_PROP_NAME + " from directly defined system property");
 
         result = bean.getSystemProperty(PROP_NAME);
-        Assert.assertEquals("system property " + PROP_NAME + " from evaluated jboss property", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "system property " + PROP_NAME + " from evaluated jboss property");
     }
 
     /**
@@ -187,7 +191,7 @@ public class ExpressionSubstitutionInContainerTestCase {
      * </system-properties>
      */
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testMultipleLevelExpression() {
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
         Utils.setProperty(INNER_PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + INNER_PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
@@ -196,10 +200,10 @@ public class ExpressionSubstitutionInContainerTestCase {
         try {
             // evaluation the inner prop name in addition
             String result = bean.getJBossProperty(INNER_PROP_NAME);
-            Assert.assertEquals("jboss property " + INNER_PROP_NAME + " substitution evaluation expected", EXPRESSION_PROP_VALUE, result);
+            Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "jboss property " + INNER_PROP_NAME + " substitution evaluation expected");
 
             result = bean.getSystemProperty(INNER_PROP_NAME);
-            Assert.assertEquals("system property " + INNER_PROP_NAME + " from substitued jboss property", EXPRESSION_PROP_VALUE, result);
+            Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "system property " + INNER_PROP_NAME + " from substitued jboss property");
 
             // then evaluation of the rest
             expresionEvaluation();
@@ -238,17 +242,17 @@ public class ExpressionSubstitutionInContainerTestCase {
     }*/
     private void expresionEvaluation() {
         String result = bean.getJBossProperty(EXPRESSION_PROP_NAME);
-        Assert.assertEquals("jboss property " + EXPRESSION_PROP_NAME + " defined directly", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "jboss property " + EXPRESSION_PROP_NAME + " defined directly");
 
 
         result = bean.getJBossProperty(PROP_NAME);
-        Assert.assertEquals("jboss property " + PROP_NAME + " substitution evaluation expected", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "jboss property " + PROP_NAME + " substitution evaluation expected");
 
 
         result = bean.getSystemProperty(EXPRESSION_PROP_NAME);
-        Assert.assertEquals("system property " + EXPRESSION_PROP_NAME + " from directly defined jboss property", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "system property " + EXPRESSION_PROP_NAME + " from directly defined jboss property");
 
         result = bean.getSystemProperty(PROP_NAME);
-        Assert.assertEquals("system property " + PROP_NAME + " from evaluated jboss property", EXPRESSION_PROP_VALUE, result);
+        Assertions.assertEquals(EXPRESSION_PROP_VALUE, result, "system property " + PROP_NAME + " from evaluated jboss property");
     }
 }

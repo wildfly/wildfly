@@ -21,7 +21,8 @@ import java.io.IOException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Utility class used for manipulation with system properties via dmr api.
@@ -72,11 +73,11 @@ public class Utils {
         modelNode.get(RESOLVE_EXPRESSIONS).set(true);
 
         ModelNode result = executeOp(modelNode, client);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         ModelNode resolvedResult = result;//resolved by read operation already
         log.debugf("Resolved property %s with result: %s", name, resolvedResult);
-        Assert.assertEquals(SUCCESS, resolvedResult.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, resolvedResult.get(OUTCOME).asString());
         return resolvedResult.get("result").asString();
     }
 }

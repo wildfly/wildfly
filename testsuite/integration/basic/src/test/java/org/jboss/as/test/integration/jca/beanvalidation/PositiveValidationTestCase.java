@@ -5,8 +5,8 @@
 package org.jboss.as.test.integration.jca.beanvalidation;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 import java.util.Set;
@@ -15,7 +15,7 @@ import jakarta.resource.spi.ActivationSpec;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
@@ -34,13 +34,14 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5904
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PositiveValidationTestCase {
 
     @ArquillianResource
@@ -83,8 +84,8 @@ public class PositiveValidationTestCase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-        assertNotNull("CF not found", connectionFactory);
-        assertNotNull("AO not found", adminObject);
+        assertNotNull(connectionFactory, "CF not found");
+        assertNotNull(adminObject, "AO not found");
         ValidConnection con = connectionFactory.getConnection();
         assertEquals("admin", adminObject.getAoProperty());
         assertEquals(4, con.getResourceAdapterProperty());

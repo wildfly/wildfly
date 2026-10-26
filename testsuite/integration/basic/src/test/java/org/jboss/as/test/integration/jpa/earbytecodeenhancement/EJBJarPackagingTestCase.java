@@ -5,25 +5,26 @@
 
 package org.jboss.as.test.integration.jpa.earbytecodeenhancement;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * Test that an EJB jar can reference the persistence provider classes
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EJBJarPackagingTestCase {
 
     @Deployment
@@ -49,10 +50,10 @@ public class EJBJarPackagingTestCase {
 
     @Test
     public void testEntityByteCodeIsEnhanced() throws Exception {
-            assertTrue("Employee entity class needs to be bytecode enhanced",
-                    bean.isEmployeeClassByteCodeEnhanced());
-            assertTrue("Organisation entity class (that resides in ear/lib/lib.jar) needs to be bytecode enhanced",
-                    bean.isOrganisationClassByteCodeEnhanced());
+            assertTrue(bean.isEmployeeClassByteCodeEnhanced(),
+                    "Employee entity class needs to be bytecode enhanced");
+            assertTrue(bean.isOrganisationClassByteCodeEnhanced(),
+                    "Organisation entity class (that resides in ear/lib/lib.jar) needs to be bytecode enhanced");
         }
 
     private static StringAsset emptyEjbJar() {

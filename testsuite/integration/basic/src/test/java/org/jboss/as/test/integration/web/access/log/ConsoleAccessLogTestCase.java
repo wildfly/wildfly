@@ -34,7 +34,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -47,11 +47,11 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests various console-access-log by overriding the {@link System#out stdout} and capturing each line.
@@ -63,7 +63,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ConsoleAccessLogTestCase.ConsoleAccessLogSetupTask.class)
 @SuppressWarnings("MagicNumber")
@@ -119,7 +119,7 @@ public class ConsoleAccessLogTestCase {
                 .addClass(SimpleServlet.class);
     }
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void setup() {
         // Capture the current stdout to be replaced then replace stdout
@@ -128,7 +128,7 @@ public class ConsoleAccessLogTestCase {
         System.setOut(new PrintStream(stdout));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         // Replaced with the captured stdout
         System.setOut(currentStdout);
@@ -140,11 +140,11 @@ public class ConsoleAccessLogTestCase {
         executeOperation(client.getControllerClient(), Operations.createAddOperation(CONSOLE_ACCESS_LOG_ADDRESS));
         sendRequest();
         final Collection<JsonObject> lines = findLines();
-        Assert.assertFalse("Did not find eventSource in " + stdout.toString(), lines.isEmpty());
+        Assertions.assertFalse(lines.isEmpty(), "Did not find eventSource in " + stdout.toString());
         for (JsonObject jsonObject : lines) {
-            Assert.assertEquals("web-access", jsonObject.getString("eventSource"));
-            Assert.assertEquals("default-host", jsonObject.getString("hostName"));
-            Assert.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("responseCode"));
+            Assertions.assertEquals("web-access", jsonObject.getString("eventSource"));
+            Assertions.assertEquals("default-host", jsonObject.getString("hostName"));
+            Assertions.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("responseCode"));
         }
     }
 
@@ -165,30 +165,30 @@ public class ConsoleAccessLogTestCase {
         executeOperation(client.getControllerClient(), op);
         sendRequest();
         final Collection<JsonObject> lines = findLines();
-        Assert.assertFalse("Did not find eventSource in " + stdout.toString(), lines.isEmpty());
+        Assertions.assertFalse(lines.isEmpty(), "Did not find eventSource in " + stdout.toString());
         for (JsonObject jsonObject : lines) {
             // First assert all keys are there
             for (String name : ATTRIBUTE_NAMES) {
-                Assert.assertNotNull("Missing key " + name, jsonObject.get(translateToKey(name)));
+                Assertions.assertNotNull(jsonObject.get(translateToKey(name)), "Missing key " + name);
             }
-            Assert.assertNotNull("Missing key testPathParameter", jsonObject.get("testPathParameter"));
-            Assert.assertNotNull("Missing key testPredicate", jsonObject.get("testPredicate"));
-            Assert.assertNotNull("Missing key testQueryParameter", jsonObject.get("testQueryParameter"));
-            Assert.assertNotNull("Missing key User-Agent", jsonObject.get("User-Agent"));
-            Assert.assertNotNull("Missing key Content-Type", jsonObject.get("Content-Type"));
+            Assertions.assertNotNull(jsonObject.get("testPathParameter"), "Missing key testPathParameter");
+            Assertions.assertNotNull(jsonObject.get("testPredicate"), "Missing key testPredicate");
+            Assertions.assertNotNull(jsonObject.get("testQueryParameter"), "Missing key testQueryParameter");
+            Assertions.assertNotNull(jsonObject.get("User-Agent"), "Missing key User-Agent");
+            Assertions.assertNotNull(jsonObject.get("Content-Type"), "Missing key Content-Type");
 
             // Assert known values
-            Assert.assertEquals("web-access", jsonObject.getString("eventSource"));
-            Assert.assertEquals("default-host", jsonObject.getString("hostName"));
-            Assert.assertEquals("GET", jsonObject.getString("requestMethod"));
-            Assert.assertEquals(url.getProtocol(), jsonObject.getString("requestScheme"));
-            Assert.assertEquals("/simple-war/simple", jsonObject.getString("requestUrl"));
-            Assert.assertEquals("/simple-war", jsonObject.getString("resolvedPath"));
-            Assert.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("responseCode"));
-            Assert.assertEquals(url.getPort(), jsonObject.getInt("localPort"));
-            Assert.assertEquals("/simple", jsonObject.getString("relativePath"));
-            Assert.assertEquals("OK", jsonObject.getString("responseReasonPhrase"));
-            Assert.assertTrue(jsonObject.getString("Content-Type").startsWith("application/json"));
+            Assertions.assertEquals("web-access", jsonObject.getString("eventSource"));
+            Assertions.assertEquals("default-host", jsonObject.getString("hostName"));
+            Assertions.assertEquals("GET", jsonObject.getString("requestMethod"));
+            Assertions.assertEquals(url.getProtocol(), jsonObject.getString("requestScheme"));
+            Assertions.assertEquals("/simple-war/simple", jsonObject.getString("requestUrl"));
+            Assertions.assertEquals("/simple-war", jsonObject.getString("resolvedPath"));
+            Assertions.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("responseCode"));
+            Assertions.assertEquals(url.getPort(), jsonObject.getInt("localPort"));
+            Assertions.assertEquals("/simple", jsonObject.getString("relativePath"));
+            Assertions.assertEquals("OK", jsonObject.getString("responseReasonPhrase"));
+            Assertions.assertTrue(jsonObject.getString("Content-Type").startsWith("application/json"));
         }
     }
 
@@ -206,11 +206,11 @@ public class ConsoleAccessLogTestCase {
         executeOperation(client.getControllerClient(), op);
         sendRequest();
         final Collection<JsonObject> lines = findLines();
-        Assert.assertFalse("Did not find eventSource in " + stdout.toString(), lines.isEmpty());
+        Assertions.assertFalse(lines.isEmpty(), "Did not find eventSource in " + stdout.toString());
         for (JsonObject jsonObject : lines) {
             // First assert all keys are there
             for (String key : keys) {
-                Assert.assertNotNull("Missing key " + key, jsonObject.get(translateToKey(key)));
+                Assertions.assertNotNull(jsonObject.get(translateToKey(key)), "Missing key " + key);
             }
         }
     }
@@ -248,25 +248,25 @@ public class ConsoleAccessLogTestCase {
 
         sendRequest(new BasicNameValuePair("testParam", "testValue"));
         final Collection<JsonObject> lines = findLines();
-        Assert.assertFalse("Did not find eventSource in " + stdout.toString(), lines.isEmpty());
+        Assertions.assertFalse(lines.isEmpty(), "Did not find eventSource in " + stdout.toString());
         for (JsonObject jsonObject : lines) {
-            Assert.assertEquals("web-access", jsonObject.getString("eventSource"));
-            Assert.assertNull("include-host-name attribute was set to false and should not be included in the output.", jsonObject.get("hostName"));
-            Assert.assertEquals("Expected @version to be 1", "1", jsonObject.getString("@version"));
+            Assertions.assertEquals("web-access", jsonObject.getString("eventSource"));
+            Assertions.assertNull(jsonObject.get("hostName"), "include-host-name attribute was set to false and should not be included in the output.");
+            Assertions.assertEquals("1", jsonObject.getString("@version"), "Expected @version to be 1");
             final String timestamp = jsonObject.getString("@timestamp");
             try {
                 DateTimeFormatter.ofPattern(dateFormat).parse(timestamp);
             } catch (DateTimeParseException e) {
-                Assert.fail(String.format("Failed to parse date %s with pattern %s: %s", timestamp, dateFormat, e.getMessage()));
+                Assertions.fail(String.format("Failed to parse date %s with pattern %s: %s", timestamp, dateFormat, e.getMessage()));
             }
-            Assert.assertEquals("?testParam=testValue", jsonObject.getString("query_string"));
-            Assert.assertEquals("GET", jsonObject.getString("request_method"));
-            Assert.assertEquals(url.getProtocol(), jsonObject.getString("request_scheme"));
-            Assert.assertEquals("/simple-war/simple", jsonObject.getString("request_url"));
-            Assert.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("http_response_code"));
-            Assert.assertEquals(url.getPort(), jsonObject.getInt("port"));
-            Assert.assertTrue(jsonObject.getString("response_header_Content-Type").startsWith("application/json"));
-            Assert.assertNotNull(jsonObject.get("response_header_Content-Encoding"));
+            Assertions.assertEquals("?testParam=testValue", jsonObject.getString("query_string"));
+            Assertions.assertEquals("GET", jsonObject.getString("request_method"));
+            Assertions.assertEquals(url.getProtocol(), jsonObject.getString("request_scheme"));
+            Assertions.assertEquals("/simple-war/simple", jsonObject.getString("request_url"));
+            Assertions.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("http_response_code"));
+            Assertions.assertEquals(url.getPort(), jsonObject.getInt("port"));
+            Assertions.assertTrue(jsonObject.getString("response_header_Content-Type").startsWith("application/json"));
+            Assertions.assertNotNull(jsonObject.get("response_header_Content-Encoding"));
         }
     }
 
@@ -282,7 +282,7 @@ public class ConsoleAccessLogTestCase {
                 CloseableHttpClient httpClient = HttpClientBuilder.create().build();
                 CloseableHttpResponse response = httpClient.execute(request)
         ) {
-            Assert.assertEquals("Failed to access " + uri, HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode(), "Failed to access " + uri);
         }
     }
 
@@ -328,7 +328,7 @@ public class ConsoleAccessLogTestCase {
     private static ModelNode executeOperation(final ModelControllerClient client, final Operation op, final boolean failOnError) throws IOException {
         final ModelNode result = client.execute(op);
         if (failOnError && !Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
+            Assertions.fail(String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
         }
         return Operations.readResult(result);
     }

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
@@ -21,16 +21,16 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for servlet activations
  *
  * @author <a href="jpederse@redhat.com">Jesper Pedersen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EjbDeploymentTestCase {
 
@@ -114,6 +114,6 @@ public class EjbDeploymentTestCase {
     @Test
     public void testEAR() throws Exception {
         String res = HttpRequest.get(earUrl.toExternalForm() + "EjbTestServlet", 4, TimeUnit.SECONDS);
-        Assert.assertEquals("EjbTestServlet OK", res);
+        Assertions.assertEquals("EjbTestServlet OK", res);
     }
 }

@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.ejb.interceptor.lifecycle.order;
 
 import jakarta.annotation.PostConstruct;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -18,9 +18,9 @@ public class SFSBParent {
     @PostConstruct
     public void parent() {
         parentPostConstructCalled = true;
-        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
-        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
-        Assert.assertFalse(SFSBChild.childPostConstructCalled);
+        Assertions.assertTrue(InterceptorChild.childPostConstructCalled);
+        Assertions.assertTrue(InterceptorParent.parentPostConstructCalled);
+        Assertions.assertFalse(SFSBChild.childPostConstructCalled);
     }
 
 }

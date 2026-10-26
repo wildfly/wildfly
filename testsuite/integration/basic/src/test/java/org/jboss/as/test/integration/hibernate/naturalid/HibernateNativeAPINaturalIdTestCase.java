@@ -5,14 +5,14 @@
 
 package org.jboss.as.test.integration.hibernate.naturalid;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.ejb.EJB;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -21,9 +21,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that naturalId API used with Hibernate sessionfactory can be initiated from hibernate.cfg.xml and properties added to
@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateNativeAPINaturalIdTestCase {
 
     private static final String ARCHIVE_NAME = "hibernate4naturalid_test";
@@ -72,7 +72,7 @@ public class HibernateNativeAPINaturalIdTestCase {
     @EJB
     private SFSBHibernateSFNaturalId sfsb;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();

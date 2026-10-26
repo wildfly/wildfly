@@ -5,22 +5,25 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Transaction timeout test that ensures that the entity manager is not closed concurrently while application
@@ -29,7 +32,8 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TxTimeoutTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_txTimeoutTestWithMockProvider";
@@ -98,13 +102,13 @@ public class TxTimeoutTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(1)
+    @Order(1)
     public void test_positiveTxTimeoutTest() throws Exception {
         TestEntityManager.clearState();
-        assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
+        assertFalse(TestEntityManager.getClosedByReaperThread(), "entity manager state is not reset");
         SFSB1 sfsb1 = lookup("ejbjar/SFSB1", SFSB1.class);
         sfsb1.createEmployee("Wily", "1 Appletree Lane", 10);
-        assertFalse("entity manager should be closed by application thread but was closed by TX Reaper thread",
-                TestEntityManager.getClosedByReaperThread());
+        assertFalse(TestEntityManager.getClosedByReaperThread(),
+                "entity manager should be closed by application thread but was closed by TX Reaper thread");
     }
 }

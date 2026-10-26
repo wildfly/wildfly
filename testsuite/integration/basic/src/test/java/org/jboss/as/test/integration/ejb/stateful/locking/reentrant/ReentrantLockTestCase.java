@@ -6,14 +6,14 @@
 package org.jboss.as.test.integration.ejb.stateful.locking.reentrant;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 import javax.naming.InitialContext;
@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ReentrantLockTestCase {
 
     private static final String ARCHIVE_NAME = "ReentrantLockTestCase";
@@ -44,7 +44,7 @@ public class ReentrantLockTestCase {
 
     private static final int NUM_THREADS = 5;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         iniCtx = new InitialContext();
     }

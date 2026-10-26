@@ -9,16 +9,16 @@ import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AS7-1761
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldJpaInjectionScopeTestCase {
 
     private static final String persistence_xml =
@@ -67,30 +67,30 @@ public class WeldJpaInjectionScopeTestCase {
             Employee emp = bean.queryEmployeeName(1);
         } catch (Exception e) {
             if (!(e instanceof NoResultException)) {
-                Assert.fail("Expected NoResultException but got " + e);
+                Assertions.fail("Expected NoResultException but got " + e);
             }
             return;
         }
-        Assert.fail("NoResultException should occur but didn't!");
+        Assertions.fail("NoResultException should occur but didn't!");
     }
 
     // [WFLY-19973] (Weld injected) @PersistenceContext (initial) properties attribute should be processed
     @Test
     public void testInitialPersistenceContextPropertiesAreSet() throws Exception {
-        Assert.assertEquals("true",bean.getInitialPropertyValue());
+        Assertions.assertEquals("true",bean.getInitialPropertyValue());
     }
 
     // [WFLY-19973] (Weld injected) @PersistenceContext (later set) properties attribute should be available
     @Test
     public void testEntityManagerPropertiesAreSaved() throws Exception {
         bean.setAdditionalPropertyValue("WeldJpaInjectionScopeTestCase.testproperty");
-        Assert.assertEquals("WeldJpaInjectionScopeTestCase.testproperty",bean.getAdditionalPropertyValue());
+        Assertions.assertEquals("WeldJpaInjectionScopeTestCase.testproperty",bean.getAdditionalPropertyValue());
     }
 
     // [WFLY-19973] (Weld injected) @PersistenceContext (later set) ensure that property can be added to empty property map
     @Test
     public void testEntityManagerPropertiesEmptyCase() throws Exception {
-        Assert.assertEquals("AddedToEmptyHashMap", bean.addPropertyToEmptyPropertyMap("AddedToEmptyHashMap"));
+        Assertions.assertEquals("AddedToEmptyHashMap", bean.addPropertyToEmptyPropertyMap("AddedToEmptyHashMap"));
     }
 
 }

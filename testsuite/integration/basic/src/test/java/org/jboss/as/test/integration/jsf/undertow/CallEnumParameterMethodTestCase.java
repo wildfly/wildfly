@@ -11,7 +11,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jsf.undertow.deployment.SpecificOrder;
 import org.jboss.as.test.integration.jsf.undertow.deployment.OrdersSearchQuery;
@@ -21,12 +21,13 @@ import org.jboss.as.test.integration.jsf.undertow.deployment.PersonalDetails;
 import org.jboss.as.test.integration.jsf.undertow.deployment.PersonalOrder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test calls deployed application with a Jakarta Server Faces page. No error should occur when
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class CallEnumParameterMethodTestCase {
 

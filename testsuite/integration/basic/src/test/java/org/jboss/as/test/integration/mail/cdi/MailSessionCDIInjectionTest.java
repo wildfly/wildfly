@@ -10,14 +10,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 import jakarta.mail.Session;
@@ -25,7 +25,7 @@ import jakarta.mail.Session;
 /**
  * Verifies Mail Session can be injected using CDI
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MailSessionCDIInjectionTest {
 
     @Inject
@@ -44,7 +44,7 @@ public class MailSessionCDIInjectionTest {
 
     @Test
     public void test() throws IOException, ExecutionException, TimeoutException {
-        Assert.assertNotNull(sessionOne);
-        Assert.assertNotNull(sessionTwo);
+        Assertions.assertNotNull(sessionOne);
+        Assertions.assertNotNull(sessionTwo);
     }
 }

@@ -8,18 +8,18 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PostConstructOrderTestCase {
 
     @Deployment
@@ -34,10 +34,10 @@ public class PostConstructOrderTestCase {
         InitialContext ctx = new InitialContext();
         SFSBChild bean = (SFSBChild) ctx.lookup("java:module/" + SFSBChild.class.getSimpleName());
         bean.doStuff();
-        Assert.assertTrue(SFSBParent.parentPostConstructCalled);
-        Assert.assertTrue(SFSBChild.childPostConstructCalled);
-        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
-        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
+        Assertions.assertTrue(SFSBParent.parentPostConstructCalled);
+        Assertions.assertTrue(SFSBChild.childPostConstructCalled);
+        Assertions.assertTrue(InterceptorParent.parentPostConstructCalled);
+        Assertions.assertTrue(InterceptorChild.childPostConstructCalled);
     }
 
 }

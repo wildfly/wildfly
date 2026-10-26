@@ -12,8 +12,9 @@ import jakarta.batch.runtime.context.JobContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import org.junit.Assert;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import org.junit.jupiter.api.Assertions;
 
 @Named("L1")
 public class JobListener1 extends AbstractJobListener implements JobListener {
@@ -37,14 +38,14 @@ public class JobListener1 extends AbstractJobListener implements JobListener {
 
     @Override
     public void beforeJob() throws Exception {
-        Assert.assertEquals(null, jobProp);
-        Assert.assertEquals("listener-prop", listenerProp);
-        Assert.assertEquals("job-prop", referenceJobProp);
-        Assert.assertEquals("job-param", referenceJobParam);
-        Assert.assertEquals(WildFlySecurityManager.getPropertyPrivileged("java.version", ""), referenceSystemProperty);
+        Assertions.assertEquals(null, jobProp);
+        Assertions.assertEquals("listener-prop", listenerProp);
+        Assertions.assertEquals("job-prop", referenceJobProp);
+        Assertions.assertEquals("job-param", referenceJobParam);
+        Assertions.assertEquals(WildFlySecurityManager.getPropertyPrivileged("java.version", ""), referenceSystemProperty);
 
-        Assert.assertEquals(2, jobContext.getProperties().size());
-        Assert.assertEquals("job-prop", jobContext.getProperties().get("job-prop"));
+        Assertions.assertEquals(2, jobContext.getProperties().size());
+        Assertions.assertEquals("job-prop", jobContext.getProperties().get("job-prop"));
     }
 
     @Override

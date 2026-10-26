@@ -7,34 +7,37 @@ package org.jboss.as.test.integration.jpa.secondlevelcache;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Jakarta Persistence Second level cache tests
  *
  * @author Scott Marlow and Zbynek Roubalik and Tommaso Borgato
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class JPA2LCTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_SecondLevelCacheTestCase";
@@ -72,7 +75,7 @@ public class JPA2LCTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Kelly Smith", "Watford, England", 1000);
@@ -85,7 +88,7 @@ public class JPA2LCTestCase {
         try {
             int deleted = conn.prepareStatement("delete from Employee").executeUpdate();
             // verify that delete worked (or test is invalid)
-            assertTrue("was able to delete added rows.  delete count=" + deleted, deleted > 1);
+            assertTrue(deleted > 1, "was able to delete added rows.  delete count=" + deleted);
 
         } finally {
             conn.close();
@@ -94,13 +97,13 @@ public class JPA2LCTestCase {
         // read deleted data from second level cache
         Employee emp = sfsb1.getEmployeeNoTX(1000);
 
-        assertTrue("was able to read deleted database row from second level cache", emp != null);
+        assertTrue(emp != null, "was able to read deleted database row from second level cache");
     }
 
     // When caching is disabled, no extra action is done or exception happens
     // even if the code marks an entity and/or a query as cacheable
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testDisabledCache() throws Exception {
 
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -135,9 +138,9 @@ public class JPA2LCTestCase {
     // is used, instead of the 2lc, which leads to emp2LCStats.getElementCountInMemory() being zero, which would
     // cause this test to fail.
     // Since this test, as currently written, doesn't really test the 2lc, we will ignore it.
-    @Ignore
+    @Disabled
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testEntityCacheSameSession() throws Exception {
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
         String message = sfsb.sameSessionCheck(CACHE_REGION_NAME);
@@ -151,9 +154,9 @@ public class JPA2LCTestCase {
     // when looking up for the ID of an entity which was returned by
     // the original query, no SQL queries should be executed.
 
-    @Ignore // see comment for testEntityCacheSameSession, ignored for same reason.
+    @Disabled // see comment for testEntityCacheSameSession, ignored for same reason.
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testEntityCacheSecondSession() throws Exception {
 
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -166,9 +169,9 @@ public class JPA2LCTestCase {
     }
 
     // Check if evicting entity second level cache is working as expected
-    @Ignore // see comment for testEntityCacheSameSession, ignored for same reason.
+    @Disabled // see comment for testEntityCacheSameSession, ignored for same reason.
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testEvictEntityCache() throws Exception {
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
         String message = sfsb.addEntitiesAndEvictAll(CACHE_REGION_NAME);
@@ -187,7 +190,7 @@ public class JPA2LCTestCase {
     // When query caching is enabled, running the same query twice
     // without any operations between them will perform SQL queries only once.
     @Test
-    @InSequence(6)
+    @Order(6)
     public void testSameQueryTwice() throws Exception {
 
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -204,7 +207,7 @@ public class JPA2LCTestCase {
     //When query caching is enabled, running a query to return all entities of a class
     // and then adding one entity of such class would invalidate the cache
     @Test
-    @InSequence(7)
+    @Order(7)
     public void testInvalidateQuery() throws Exception {
 
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
@@ -229,7 +232,7 @@ public class JPA2LCTestCase {
 
     // Check if evicting query cache is working as expected
     @Test
-    @InSequence(8)
+    @Order(8)
     public void testEvictQueryCache() throws Exception {
         SFSB2LC sfsb = lookup("SFSB2LC", SFSB2LC.class);
         String id = "3";
@@ -265,7 +268,7 @@ public class JPA2LCTestCase {
      </p>
      */
     @Test
-    @InSequence(9)
+    @Order(9)
     public void testTransaction() throws Exception {
         SFSB3LC sfsb = lookup("SFSB3LC", SFSB3LC.class);
 
@@ -282,20 +285,20 @@ public class JPA2LCTestCase {
 
         // update entity
         message = sfsb.testL2CacheWithRollbackAndRetry(id, "Brookline, Massachusetts (MA), US");
-        assertEquals("Expected message is OK", "OK", message);
+        assertEquals("OK", message, "Expected message is OK");
     }
 
     /**
      * Verify that we can read Cache Region Statistics via cli
      */
     @Test
-    @InSequence(10)
+    @Order(10)
     @RunAsClient
     public void testStatistics() throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         cli.sendLine(String.format("/deployment=%s.jar:read-resource(include-runtime=true,recursive=true)", ARCHIVE_NAME));
         CLIOpResult opResult = cli.readAllAsOpResult();
-        Assert.assertTrue(opResult.isIsOutcomeSuccess());
+        Assertions.assertTrue(opResult.isIsOutcomeSuccess());
     }
 
 }

@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.lifecycle.chains;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Stateless;
@@ -30,8 +30,8 @@ public class InterceptedWithProceedSLSB {
      */
     @PostConstruct
     public void postConstruct() {
-        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
-        Assert.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
+        Assertions.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
+        Assertions.assertFalse(LifecycleInterceptorWithProceed.postConstructFinished);
         postConstructCalled = true;
     }
 

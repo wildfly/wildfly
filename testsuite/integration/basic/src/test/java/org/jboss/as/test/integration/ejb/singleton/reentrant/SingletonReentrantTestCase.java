@@ -18,21 +18,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testing reentrant calls on Singleton for container-managed concurrency (EJB3.1 4.8.5.1.1)
  *
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonReentrantTestCase {
     private static final String ARCHIVE_NAME = "reentrant-test";
     private static final int WAITING_S = 5;
@@ -69,8 +69,8 @@ public class SingletonReentrantTestCase {
 
         // first one could proceed - other one has to wait for end of work of first one
         waitForOtherOne.countDown();
-        Assert.assertEquals(new Integer(1), firstOne.get(WAITING_S, TimeUnit.SECONDS));
-        Assert.assertEquals(new Integer(2), otherOne.get(WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertEquals(new Integer(1), firstOne.get(WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertEquals(new Integer(2), otherOne.get(WAITING_S, TimeUnit.SECONDS));
         pool.shutdown();
         pool2.shutdown();
     }
@@ -89,20 +89,20 @@ public class SingletonReentrantTestCase {
 
         // first one could proceed - other one has to wait for end of work of first one
         oneWaiting.countDown();
-        Assert.assertEquals(new Integer(1), firstOne.get(WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertEquals(new Integer(1), firstOne.get(WAITING_S, TimeUnit.SECONDS));
         twoWaiting.countDown();
-        Assert.assertEquals(new Integer(2), otherOne.get(WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertEquals(new Integer(2), otherOne.get(WAITING_S, TimeUnit.SECONDS));
 
         // Expecting exception - calling reentrant write method with read lock
         try {
             firstOne = pool.submit(new SingletonCallableRead(null));
             firstOne.get();
-            Assert.fail("Supposing " + IllegalLoopbackException.class.getName());
+            Assertions.fail("Supposing " + IllegalLoopbackException.class.getName());
         } catch (IllegalLoopbackException ile) {
             // OK - supposed
         } catch (Exception e) {
             if (!hasCause(e, IllegalLoopbackException.class)) {
-                Assert.fail("Supposed caused exception is " + IllegalLoopbackException.class.getName());
+                Assertions.fail("Supposed caused exception is " + IllegalLoopbackException.class.getName());
             }
         }
 

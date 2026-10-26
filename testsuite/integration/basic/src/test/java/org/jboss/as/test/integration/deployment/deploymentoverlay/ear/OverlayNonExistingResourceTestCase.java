@@ -12,20 +12,20 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.deployment.deploymentoverlay.jar.OverlayEJB;
 import org.jboss.as.test.integration.deployment.deploymentoverlay.jar.OverlayableInterface;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author baranowb
  * @author lgao
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OverlayNonExistingResourceTestCase extends EarOverlayTestBase {
     private static final String OVERLAY = "HAL9000";
@@ -49,30 +49,30 @@ public class OverlayNonExistingResourceTestCase extends EarOverlayTestBase {
         try{
             OverlayableInterface iface = (OverlayableInterface) ctx.lookup(getEjbBinding(DEPLOYMENT_SHELL, DEPLOYMENT_OVERLAYED, "",
                     OverlayEJB.class, OverlayableInterface.class));
-            Assert.assertEquals("Overlayed resource in ear/jar does not match pre-overlay expectations!", null, iface.fetchResource());
-            Assert.assertEquals("Static resource in ear/jar does not match pre-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
+            Assertions.assertEquals(null, iface.fetchResource(), "Overlayed resource in ear/jar does not match pre-overlay expectations!");
+            Assertions.assertEquals(OverlayableInterface.STATIC, iface.fetchResourceStatic(), "Static resource in ear/jar does not match pre-overlay expectations!");
 
-            Assert.assertEquals("HTML resource in ear/war does not match pre-overlay expectations!", null,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/" + OVERLAY_HTML));
-            Assert.assertEquals("HTML Static resource in ear/war does not match pre-overlay expectations!", OverlayableInterface.STATIC,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/" + STATIC_HTML));
+            Assertions.assertEquals(null, readContent(managementClient.getWebUri() + "/" + WEB + "/" + OVERLAY_HTML),
+                    "HTML resource in ear/war does not match pre-overlay expectations!");
+            Assertions.assertEquals(OverlayableInterface.STATIC, readContent(managementClient.getWebUri() + "/" + WEB + "/" + STATIC_HTML),
+                    "HTML Static resource in ear/war does not match pre-overlay expectations!");
 
-            Assert.assertEquals("Static resource in ear/war/jar does not match pre-overlay expectations!", OverlayableInterface.STATIC,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/echoStatic"));
-            Assert.assertEquals("Resource in ear/war/jar does not match pre-overlay expectations!", null,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/echoOverlay"));
+            Assertions.assertEquals(OverlayableInterface.STATIC, readContent(managementClient.getWebUri() + "/" + WEB + "/echoStatic"),
+                    "Static resource in ear/war/jar does not match pre-overlay expectations!");
+            Assertions.assertEquals(null, readContent(managementClient.getWebUri() + "/" + WEB + "/echoOverlay"),
+                    "Resource in ear/war/jar does not match pre-overlay expectations!");
 
             overlay.put(RESOURCE, OverlayableInterface.OVERLAYED);
             overlay.put(WEB_OVERLAY, OverlayableInterface.OVERLAYED);
             setupOverlay(DEPLOYMENT_SHELL_ARCHIVE, OVERLAY, overlay);
 
-            Assert.assertEquals("Overlayed resource in ear/jar does not match post-overlay expectations!", OverlayableInterface.OVERLAYED, iface.fetchResource());
-            Assert.assertEquals("Static resource in ear/jar does not match post-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
+            Assertions.assertEquals(OverlayableInterface.OVERLAYED, iface.fetchResource(), "Overlayed resource in ear/jar does not match post-overlay expectations!");
+            Assertions.assertEquals(OverlayableInterface.STATIC, iface.fetchResourceStatic(), "Static resource in ear/jar does not match post-overlay expectations!");
 
-            Assert.assertEquals("HTML static resource in ear/war does not match post-overlay expectations!", OverlayableInterface.STATIC,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/" + STATIC_HTML));
-            Assert.assertEquals("HTML resource in ear/war does not match post-overlay expectations!", OverlayableInterface.OVERLAYED,
-                    readContent(managementClient.getWebUri() + "/" + WEB + "/" + OVERLAY_HTML));
+            Assertions.assertEquals(OverlayableInterface.STATIC, readContent(managementClient.getWebUri() + "/" + WEB + "/" + STATIC_HTML),
+                    "HTML static resource in ear/war does not match post-overlay expectations!");
+            Assertions.assertEquals(OverlayableInterface.OVERLAYED, readContent(managementClient.getWebUri() + "/" + WEB + "/" + OVERLAY_HTML),
+                    "HTML resource in ear/war does not match post-overlay expectations!");
 
         } finally {
             try {

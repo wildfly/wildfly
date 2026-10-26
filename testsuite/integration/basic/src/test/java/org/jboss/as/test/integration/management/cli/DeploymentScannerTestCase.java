@@ -6,16 +6,16 @@ package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
@@ -26,16 +26,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeploymentScannerTestCase extends AbstractCliTestBase {
 
@@ -52,18 +52,18 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         return ja;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
 
         deployDir = new File(tempDir + File.separator + "tempDeployment");
         if (deployDir.exists()) {
             FileUtils.deleteDirectory(deployDir);
         }
-        assertTrue("Unable to create deployment scanner directory.", deployDir.mkdir());
+        assertTrue(deployDir.mkdir(), "Unable to create deployment scanner directory.");
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         FileUtils.deleteDirectory(deployDir);
         AbstractCliTestBase.closeCLI();
@@ -95,7 +95,7 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         assertTrue(marker.exists());
 
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+        assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
 
     }
 
@@ -107,14 +107,14 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
         assertTrue(result.isIsOutcomeSuccess());
 
         // delete deployment
-        assertTrue("Could not delete deployed file.", warFile.delete());
+        assertTrue(warFile.delete(), "Could not delete deployed file.");
 
         // wait for deployment
         Thread.sleep(2000);
 
         // check that the deployment is still live
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+        assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
 
         // undeploy using CLI
         cli.sendLine("undeploy SimpleServlet.war");

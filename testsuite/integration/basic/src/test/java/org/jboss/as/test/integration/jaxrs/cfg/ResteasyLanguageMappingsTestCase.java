@@ -16,7 +16,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.EchoResource;
@@ -26,16 +26,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the {@code resteasy-language-mappings} attribute works as expected.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ResteasyLanguageMappingsTestCase.WriteAttributeServerSetupTask.class)
 @RunAsClient
 public class ResteasyLanguageMappingsTestCase {
@@ -83,13 +83,13 @@ public class ResteasyLanguageMappingsTestCase {
                             .request()
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
-                Assert.assertNotNull(json);
-                Assert.assertTrue(String.format("Expected acceptedLanguages to be set in %s", json), json.containsKey("acceptedLanguages"));
+                Assertions.assertNotNull(json);
+                Assertions.assertTrue(json.containsKey("acceptedLanguages"), String.format("Expected acceptedLanguages to be set in %s", json));
                 final JsonArray acceptedLanguages = json.getJsonArray("acceptedLanguages");
-                Assert.assertEquals(1, acceptedLanguages.size());
-                Assert.assertEquals(String.format("%s-%s", lang, country), acceptedLanguages.getString(0));
+                Assertions.assertEquals(1, acceptedLanguages.size());
+                Assertions.assertEquals(String.format("%s-%s", lang, country), acceptedLanguages.getString(0));
             }
         }
     }

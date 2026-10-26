@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.gzip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,26 +15,25 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for RESTEasy @GZIP annotation feature
  *
  * @author Pavel Janousek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class BasicGZIPTestCase {
 
@@ -70,11 +69,11 @@ public class BasicGZIPTestCase {
         conn.setRequestProperty("Accept-Encoding", "gzip,deflate");
         conn.setDoInput(true);
         InputStream in = conn.getInputStream();
-        Assert.assertTrue(conn.getContentEncoding().contains("gzip"));
+        Assertions.assertTrue(conn.getContentEncoding().contains("gzip"));
         in = new GZIPInputStream(in);
         String result = read(in);
         in.close();
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
         return result;
     }
 

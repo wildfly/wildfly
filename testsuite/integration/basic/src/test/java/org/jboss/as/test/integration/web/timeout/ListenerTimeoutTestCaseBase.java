@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.web.timeout;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -37,13 +37,13 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public abstract class ListenerTimeoutTestCaseBase {
     public static final String DEPLOYMENT_NAME = "sockettimeout";
@@ -69,12 +69,12 @@ public abstract class ListenerTimeoutTestCaseBase {
         return war;
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         serverSnapshot.close();
     }
@@ -85,7 +85,7 @@ public abstract class ListenerTimeoutTestCaseBase {
         final ModelNode setTimeoutOperation = Operations.createWriteAttributeOperation(listenerAddress.toModelNode(), "read-timeout", SMALL_TIMEOUT);
         final ModelControllerClient controllerClient = managementClient.getControllerClient();
         final ModelNode response = controllerClient.execute(setTimeoutOperation);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(response));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(response));
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
         final String message = "POST /"+DEPLOYMENT_NAME+READ_SERVLET_PATH+" HTTP/1.1\r\n" +
                 "JSESSIONID: MY_ID\r\n" +
@@ -102,7 +102,7 @@ public abstract class ListenerTimeoutTestCaseBase {
             sendMessageToServer(socket, message, false);
             Thread.sleep(SMALL_TIMEOUT/3);
 
-            assertThrows(SocketException.class, () -> {sendMessageToServer(socket, message, false);});
+            assertThrows(SocketException.class, () ->sendMessageToServer(socket, message, false));
 
         }
     }
@@ -110,12 +110,12 @@ public abstract class ListenerTimeoutTestCaseBase {
     @Test
     public void testWriteTimeout() throws IOException, InterruptedException, NamingException {
         final TimeoutLog log = lookupEJB();
-        Assert.assertNotNull(log);
+        Assertions.assertNotNull(log);
         final PathAddress listenerAddress = getListenerAddress();
         final ModelNode setTimeoutOperation = Operations.createWriteAttributeOperation(listenerAddress.toModelNode(), "write-timeout", SMALL_TIMEOUT);
         final ModelControllerClient controllerClient = managementClient.getControllerClient();
         final ModelNode response = controllerClient.execute(setTimeoutOperation);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(response));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(response));
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
         //trigger other side and read what we get and wait for bean to get info
         final String message = "POST /"+DEPLOYMENT_NAME+WRITE_SERVLET_PATH+" HTTP/1.1\r\n" +
@@ -136,9 +136,9 @@ public abstract class ListenerTimeoutTestCaseBase {
             expectedResult.add(ActionSequence.MSG_RECEIVED);
             expectedResult.add(ActionSequence.IO_EXCEPTION);
             final List<ActionSequence> result = log.getTestResult();
-            Assert.assertEquals(expectedResult.size(), result.size());
+            Assertions.assertEquals(expectedResult.size(), result.size());
             for(int index = 0; index < expectedResult.size() ; index++) {
-                Assert.assertEquals(expectedResult+":"+result,expectedResult.get(index), result.get(index));
+                Assertions.assertEquals(expectedResult.get(index),result.get(index), expectedResult+":"+result);
             }
         }
     }
@@ -182,7 +182,7 @@ public abstract class ListenerTimeoutTestCaseBase {
                         Thread.sleep(200);
                     }
                 } catch (Exception e) {
-                    Assert.assertNull(e.getMessage());
+                    Assertions.assertNull(e.getMessage());
                 }
             }
         };
@@ -190,10 +190,10 @@ public abstract class ListenerTimeoutTestCaseBase {
         latch.await(TimeoutUtil.adjust(1000), TimeUnit.MILLISECONDS);
         if(socket.getInputStream().available() > 0) {
             final String httpResponse = readStream(socket.getInputStream());
-            Assert.assertTrue(httpResponse, httpResponse.contains("100"));
+            Assertions.assertTrue(httpResponse.contains("100"), httpResponse);
         } else {
             if(failOnNoMessage) {
-                Assert.assertNull("Failed to receive response");
+                Assertions.assertNull("Failed to receive response");
             }
         }
     }

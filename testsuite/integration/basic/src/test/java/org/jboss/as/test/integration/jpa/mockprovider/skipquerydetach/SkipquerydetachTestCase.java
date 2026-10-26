@@ -5,22 +5,23 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.skipquerydetach;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
@@ -28,7 +29,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SkipquerydetachTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_skipquerydetachTestWithMockProvider";
@@ -84,7 +85,7 @@ public class SkipquerydetachTestCase {
     public void test_withSkipQueryDetachEnabled() throws NamingException {
         SFSB1 sfsb1 = (SFSB1)iniCtx.lookup("java:module/" + SFSB1.class.getSimpleName());
         try {
-            assertNotNull("EJB injection of SFSB1 failed",sfsb1);
+            assertNotNull(sfsb1,"EJB injection of SFSB1 failed");
             assertNull(sfsb1.queryWithSkipQueryDetachEnabled());
         } finally {
             TestAdapter.clearInitialized();
@@ -99,7 +100,7 @@ public class SkipquerydetachTestCase {
         SFSB1 sfsb1 = (SFSB1)iniCtx.lookup("java:module/" + SFSB1.class.getSimpleName());
 
         try {
-            assertNotNull("EJB injection of SFSB1 failed",sfsb1);
+            assertNotNull(sfsb1,"EJB injection of SFSB1 failed");
             assertNull(sfsb1.queryWithSkipQueryDetachDisabled());
         } finally {
             TestAdapter.clearInitialized();

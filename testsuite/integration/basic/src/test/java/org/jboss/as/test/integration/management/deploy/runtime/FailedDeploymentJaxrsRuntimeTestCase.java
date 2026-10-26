@@ -10,7 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloApplication;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService;
@@ -19,19 +19,20 @@ import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.SubHelloRes
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class FailedDeploymentJaxrsRuntimeTestCase extends AbstractFailedDeploymentRuntimeTestCase {
 
     private static final String DEPLOYMENT_NAME = "failed-jaxrs.ear";
     private static final String SUBDEPLOYMENT_NAME = "failed-jaxrs.war";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SUBDEPLOYMENT_NAME);
         war.addClass(HelloApplication.class);
@@ -42,15 +43,15 @@ public class FailedDeploymentJaxrsRuntimeTestCase extends AbstractFailedDeployme
         setup(DEPLOYMENT_NAME, war);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         tearDown(DEPLOYMENT_NAME);
     }
 
     @Override
     void validateReadResourceResponse(ModelNode response) {
-        Assert.assertTrue(response.toString(), response.hasDefined(RESULT, SUBDEPLOYMENT, getSubdeploymentName(),
-                SUBSYSTEM, "jaxrs", "rest-resource", HelloResource.class.getCanonicalName()));
+        Assertions.assertTrue(response.hasDefined(RESULT, SUBDEPLOYMENT, getSubdeploymentName(),
+                SUBSYSTEM, "jaxrs", "rest-resource", HelloResource.class.getCanonicalName()), response.toString());
     }
 
     @Override

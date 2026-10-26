@@ -12,7 +12,7 @@ import org.jboss.logging.Logger;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -24,17 +24,18 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 //todo this test could probably be done in manual mode test with wildfly runner, also could be merged into VirtualHostTestCase
 public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
@@ -89,7 +90,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
         // check the deployment is available on and only on virtual server
         URL vURL = new URL(url.getProtocol(), virtualHost, url.getPort(), "/vsDeployment/index.html");
         String response = HttpRequest.get(vURL.toString(), 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("Virtual Server Deployment") >=0);
+        assertTrue(response.indexOf("Virtual Server Deployment") >=0, "Invalid response: " + response);
 
         URL dURL = new URL(url.getProtocol(), defaultHost, url.getPort(), "/vsDeployment/index.html");
         boolean failed = false;
@@ -98,7 +99,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
         } catch (Exception e) {
             failed = true;
         }
-        assertTrue("Deployment also on default server. " , failed);
+        assertTrue(failed, "Deployment also on default server. ");
 
         // undeploy form virtual server
         deployer.undeploy("vsdeployment");

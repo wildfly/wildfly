@@ -12,7 +12,7 @@ import jakarta.ejb.NoSuchEJBException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,18 +20,19 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationFailedTestCase {
 
-    @org.junit.BeforeClass
+    @BeforeAll
     public static void init() {
         org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19293");
     }
@@ -61,30 +62,30 @@ public class PassivationFailedTestCase {
         // create first bean
         try (TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + BeanWithSerializationIssue.class.getSimpleName())) {
             // make an invocation
-            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote1.returnTrueString());
+            Assertions.assertEquals(TestPassivationRemote.EXPECTED_RESULT, remote1.returnTrueString(), "Returned remote1 result was not expected");
 
             // create second bean, this should force the first bean to passivate
             try (TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/" + BeanWithSerializationIssue.class.getSimpleName())) {
                 // make an invocation
-                Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote2.returnTrueString());
+                Assertions.assertEquals(TestPassivationRemote.EXPECTED_RESULT, remote2.returnTrueString(), "Returned remote2 result was not expected");
 
                 // verify that a bean was prePassivated
                 TestPassivationBean target = (TestPassivationBean) PassivationInterceptor.getPrePassivateTarget();
-                Assert.assertNotNull(target);
+                Assertions.assertNotNull(target);
                 // verify that bean was not postActivated yet
-                Assert.assertTrue(target.hasBeenPassivated());
+                Assertions.assertTrue(target.hasBeenPassivated());
 
                 // From EJB 4.2.1:
                 // The container may destroy a session bean instance if the instance does not meet the requirements for serialization after PrePassivate.
                 try {
                     // At least one of these invocations should fail
                     remote1.returnTrueString();
-                    Assert.fail("Invocation of pre-passivated EJB should not succeed since passivation failed");
+                    Assertions.fail("Invocation of pre-passivated EJB should not succeed since passivation failed");
                 } catch (NoSuchEJBException e) {
                     // Expected
                 }
                 // No EJBs should have activated, since they were unable to passivate
-                Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
+                Assertions.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
             } catch (NoSuchEJBException e) {
                 // Expected
             }

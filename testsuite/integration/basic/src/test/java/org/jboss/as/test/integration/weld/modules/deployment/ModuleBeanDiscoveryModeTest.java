@@ -4,13 +4,14 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
@@ -22,10 +23,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.beans11.BeansDescriptor;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that the bean discovery mode defined in dependencies is taken into account.
@@ -33,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author Yoann Rodiere
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ModuleBeanDiscoveryModeTest {
 
     private static final String MODULE_NAME = "module-with-annotated-bean-discovery-mode";
@@ -65,7 +66,7 @@ public class ModuleBeanDiscoveryModeTest {
         return new StringAsset(beansXml);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModule.remove();
     }
@@ -87,8 +88,8 @@ public class ModuleBeanDiscoveryModeTest {
 
     @Test
     public void testBeanDiscovery() {
-        Assert.assertFalse(injected.isUnsatisfied());
-        Assert.assertFalse(injected.isAmbiguous());
-        MatcherAssert.assertThat(injected.get(), CoreMatchers.instanceOf(FooImplAnnotated.class));
+        Assertions.assertFalse(injected.isUnsatisfied());
+        Assertions.assertFalse(injected.isAmbiguous());
+        assertThat(injected.get(), CoreMatchers.instanceOf(FooImplAnnotated.class));
     }
 }

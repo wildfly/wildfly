@@ -9,7 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.cli.DeployURLTestCase;
@@ -23,11 +23,11 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.NoSuchEJBException;
 import java.io.File;
@@ -36,7 +36,7 @@ import java.net.URL;
 /**
  * @author Bartosz Spyrko-Smietanko
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
@@ -83,7 +83,7 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
     private static File unorderedEarFile;
     private static File inOrderEarFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         unorderedEarFile = exportEar(false, "TestEar.ear");
         inOrderEarFile = exportEar(true, "TestEarInOrder.ear");
@@ -99,7 +99,7 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
         return earFile;
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         unorderedEarFile.delete();
         inOrderEarFile.delete();
@@ -124,12 +124,12 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
             final StatelessEJBLocator<HelloRemote> locator = new StatelessEJBLocator(HelloRemote.class, "TestEar", "ejb2", HelloBean.class.getSimpleName(), "");
             final HelloRemote proxy = EJBClient.createProxy(locator);
-            Assert.assertNotNull("Received a null proxy", proxy);
+            Assertions.assertNotNull(proxy, "Received a null proxy");
             try {
                 proxy.hello();
-                Assert.fail("Call should have failed");
+                Assertions.fail("Call should have failed");
             } catch (NoSuchEJBException e) {
-                Assert.assertTrue(e.getMessage(), e.getMessage().startsWith("EJBCLIENT000079"));
+                Assertions.assertTrue(e.getMessage().startsWith("EJBCLIENT000079"), e.getMessage());
             }
         } finally {
             cli.sendLine("undeploy " + earFile.getName());
@@ -152,7 +152,7 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
             try(CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 final HttpGet get = new HttpGet(url.toExternalForm() + "/test/index.html");
-                Assert.assertEquals(500, client.execute(get).getStatusLine().getStatusCode());
+                Assertions.assertEquals(500, client.execute(get).getStatusLine().getStatusCode());
             }
         } finally {
             cli.sendLine("undeploy " + earFile.getName());

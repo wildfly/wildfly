@@ -47,7 +47,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -107,7 +107,7 @@ abstract class AbstractConfigTestCase {
 
     private BufferedReader readLogFile(final String logFileName) throws IOException {
         final Path path = resolveLogDirectory().resolve(logFileName);
-        Assert.assertTrue("Path " + path + " does not exist.", Files.exists(path));
+        Assertions.assertTrue(Files.exists(path), "Path " + path + " does not exist.");
         return Files.newBufferedReader(path, StandardCharsets.UTF_8);
     }
 
@@ -116,7 +116,7 @@ abstract class AbstractConfigTestCase {
         final ModelNode op = Operations.createOperation("path-info", address);
         final ModelNode result = executeOperation(op);
         final Path dir = Paths.get(result.get("path", "resolved-path").asString());
-        Assert.assertTrue("Log directory " + dir + " does not exist", Files.exists(dir));
+        Assertions.assertTrue(Files.exists(dir), "Log directory " + dir + " does not exist");
         return dir;
     }
 
@@ -130,7 +130,7 @@ abstract class AbstractConfigTestCase {
                     .append(logFile)
                     .append(':');
             appendLines(unexpectedLogs, msg);
-            Assert.fail(msg.toString());
+            Assertions.fail(msg.toString());
         }
     }
 
@@ -144,7 +144,7 @@ abstract class AbstractConfigTestCase {
                     .append(logFile)
                     .append(':');
             appendLines(lines, msg);
-            Assert.fail(msg.toString());
+            Assertions.fail(msg.toString());
         }
     }
 
@@ -186,7 +186,7 @@ abstract class AbstractConfigTestCase {
     static ModelNode executeOperation(final ManagementClient client, final Operation op) throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).toString());
+            Assertions.fail(Operations.getFailureDescription(result).toString());
         }
         // Reload if required
         if (result.hasDefined(ClientConstants.RESPONSE_HEADERS)) {
@@ -195,7 +195,7 @@ abstract class AbstractConfigTestCase {
                 if (ClientConstants.CONTROLLER_PROCESS_STATE_RELOAD_REQUIRED.equals(responseHeaders.get("process-state").asString())) {
                     ServerReload.executeReloadAndWaitForCompletion(client);
                 } else if (ClientConstants.CONTROLLER_PROCESS_STATE_RESTART_REQUIRED.equalsIgnoreCase(responseHeaders.get("process-state").asString())) {
-                    Assert.fail("Tests that require a restart need to be manual mode tests.");
+                    Assertions.fail("Tests that require a restart need to be manual mode tests.");
                 }
             }
         }

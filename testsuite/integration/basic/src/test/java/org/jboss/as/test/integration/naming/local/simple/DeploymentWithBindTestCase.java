@@ -7,14 +7,13 @@ package org.jboss.as.test.integration.naming.local.simple;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -22,8 +21,13 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.java.permission.JndiPermission;
 
 import java.net.SocketPermission;
@@ -31,7 +35,8 @@ import java.net.SocketPermission;
 /**
  * @author John Bailey
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DeploymentWithBindTestCase {
 
     @Deployment
@@ -64,7 +69,7 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testEjb() throws Exception {
         final BeanWithBind bean = lookup(BeanWithBind.class);
         bean.doBind();
@@ -77,7 +82,7 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testServlet() throws Exception {
         performCall("simple", "bind");
         assertNotNull(iniCtx.lookup("java:jboss/test"));
@@ -85,7 +90,7 @@ public class DeploymentWithBindTestCase {
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testBasicsNamespaces() throws Exception {
         iniCtx.lookup("java:global");
         iniCtx.listBindings("java:global");

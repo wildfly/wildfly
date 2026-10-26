@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import jakarta.transaction.NotSupportedException;
@@ -12,19 +14,19 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BeanManagedTransactionsTestCase {
 
     @Inject
@@ -48,29 +50,32 @@ public class BeanManagedTransactionsTestCase {
         return war;
     }
 
-    @Test(expected = EJBException.class)
+    @Test
     public void testStatelessBeanLeaksTransactions() throws SystemException, NotSupportedException {
-        try {
-            //start a transaction. this transaction should be suspended before the invocation
-            userTransaction.begin();
+        assertThrows(EJBException.class, () -> {
+            try {
+                //start a transaction. this transaction should be suspended before the invocation
+                userTransaction.begin();
 
-            bmtStateless.leakTransaction();
-        } finally {
-            userTransaction.rollback();
-        }
+                bmtStateless.leakTransaction();
+            } finally {
+                userTransaction.rollback();
+            }
+        });
     }
 
-    @Test(expected = EJBException.class)
+    @Test
     public void testSingletonBeanLeaksTransactions() {
-        bmtSingleton.leakTransaction();
+        assertThrows(EJBException.class, () ->
+            bmtSingleton.leakTransaction());
     }
 
     @Test
     public void testStatefulBeanTransaction() throws SystemException {
         bmtStateful.createTransaction();
-        Assert.assertEquals(userTransaction.getStatus(), Status.STATUS_NO_TRANSACTION);
+        Assertions.assertEquals(userTransaction.getStatus(), Status.STATUS_NO_TRANSACTION);
         bmtStateful.rollbackTransaction();
-        Assert.assertEquals(userTransaction.getStatus(), Status.STATUS_NO_TRANSACTION);
+        Assertions.assertEquals(userTransaction.getStatus(), Status.STATUS_NO_TRANSACTION);
     }
 
 }

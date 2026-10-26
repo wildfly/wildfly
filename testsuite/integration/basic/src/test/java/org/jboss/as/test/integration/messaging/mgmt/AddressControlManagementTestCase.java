@@ -10,7 +10,7 @@ import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
@@ -18,11 +18,11 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the management API for HornetQ core addresss.
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AddressControlManagementTestCase {
 
     private static long count = System.currentTimeMillis();
@@ -40,7 +40,7 @@ public class AddressControlManagementTestCase {
 
     private JMSOperations jmsOperations;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
@@ -50,7 +50,7 @@ public class AddressControlManagementTestCase {
         jmsOperations.addCoreQueue(getOtherQueueName(), getAddress(), false, "anycast");
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws Exception {
         jmsOperations.removeCoreQueue(getQueueName());
         jmsOperations.removeCoreQueue(getOtherQueueName());
@@ -62,7 +62,7 @@ public class AddressControlManagementTestCase {
         ModelNode op = getSubsystemOperation("read-children-types");
         op.get("child-type").set("core-address");
         ModelNode result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         boolean found = false;
         for (ModelNode type : result.asList()) {
             if ("core-address".equals(type.asString())) {
@@ -70,12 +70,12 @@ public class AddressControlManagementTestCase {
                 break;
             }
         }
-        Assert.assertTrue(found);
+        Assertions.assertTrue(found);
 
         op = getSubsystemOperation("read-children-names");
         op.get("child-type").set("core-address");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         found = false;
         for (ModelNode address : result.asList()) {
             if (getAddress().equals(address.asString())) {
@@ -83,12 +83,12 @@ public class AddressControlManagementTestCase {
                 break;
             }
         }
-        Assert.assertTrue(found);
+        Assertions.assertTrue(found);
 
         op = getSubsystemOperation("read-children-resources");
         op.get("child-type").set("core-address");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         found = false;
         for (Property address : result.asPropertyList()) {
             if (getAddress().equals(address.getName())) {
@@ -96,7 +96,7 @@ public class AddressControlManagementTestCase {
                 break;
             }
         }
-        Assert.assertTrue(found);
+        Assertions.assertTrue(found);
     }
 
     @Test
@@ -105,20 +105,20 @@ public class AddressControlManagementTestCase {
         ModelNode op = getAddressOperation("read-children-types");
         op.get("child-type").set("core-address");
         ModelNode result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(1, result.asInt());
 
         op = getAddressOperation("read-children-names");
         op.get("child-type").set("role");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(1, result.asInt());
 
         op = getAddressOperation("read-children-resources");
         op.get("child-type").set("role");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(1, result.asInt());
     }
 
     @Test
@@ -128,27 +128,27 @@ public class AddressControlManagementTestCase {
         op.get("include-runtime").set(true);
         op.get("recursive").set(true);
         ModelNode result = execute(op, true);
-        Assert.assertEquals(ModelType.OBJECT, result.getType());
+        Assertions.assertEquals(ModelType.OBJECT, result.getType());
 
-        Assert.assertEquals(ModelType.OBJECT, result.get("role").getType());
+        Assertions.assertEquals(ModelType.OBJECT, result.get("role").getType());
 
-        Assert.assertEquals(ModelType.LONG, result.get("number-of-pages").getType());
+        Assertions.assertEquals(ModelType.LONG, result.get("number-of-pages").getType());
 
-        Assert.assertEquals(ModelType.LONG, result.get("number-of-bytes-per-page").getType());
-        Assert.assertEquals(ModelType.LIST, result.get("binding-names").getType());
+        Assertions.assertEquals(ModelType.LONG, result.get("number-of-bytes-per-page").getType());
+        Assertions.assertEquals(ModelType.LIST, result.get("binding-names").getType());
         boolean foundMain = false;
         boolean foundOther = false;
         for (ModelNode node : result.get("binding-names").asList()) {
             if (getQueueName().equals(node.asString())) {
-                Assert.assertFalse(foundMain);
+                Assertions.assertFalse(foundMain);
                 foundMain = true;
             } else if (getOtherQueueName().equals(node.asString())) {
-                Assert.assertFalse(foundOther);
+                Assertions.assertFalse(foundOther);
                 foundOther = true;
             }
         }
-        Assert.assertTrue(foundMain);
-        Assert.assertTrue(foundOther);
+        Assertions.assertTrue(foundMain);
+        Assertions.assertTrue(foundOther);
     }
 
     private ModelNode getSubsystemOperation(String operationName) {
@@ -169,13 +169,13 @@ public class AddressControlManagementTestCase {
             /*if (!"success".equals(outcome)) {
                 System.out.println(response);
             }*/
-            Assert.assertEquals("success", outcome);
+            Assertions.assertEquals("success", outcome);
             return response.get("result");
         } else {
             /*if ("success".equals(outcome)) {
                System.out.println(response);
             }*/
-            Assert.assertEquals("failed", outcome);
+            Assertions.assertEquals("failed", outcome);
             return response.get("failure-description");
         }
     }

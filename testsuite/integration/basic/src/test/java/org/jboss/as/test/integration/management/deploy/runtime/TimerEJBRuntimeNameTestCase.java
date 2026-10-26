@@ -12,7 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -28,13 +28,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
@@ -52,7 +52,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".jar";
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
 
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
@@ -82,17 +82,17 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         ModelNode result = controllerClient.execute(composite(
                 undeploy(DEPLOYMENT_NAME),
                 remove(DEPLOYMENT_NAME)
         ));
         // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to undeploy: " + result);
     }
 
     @Test
@@ -105,22 +105,22 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBDEPLOYMENT, SUB_DEPLOYMENT_NAME);
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(EJB_TYPE, BEAN_NAME);
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
             PointlessInterface pointlessInterface = (PointlessInterface) context.lookup(getEJBJNDIBinding());
             pointlessInterface.triggerTimer();
             Thread.currentThread().sleep(1000);
-            Assert.assertTrue("Did not receive timer invocation!",pointlessInterface.getTimerCount()>0);
+            Assertions.assertTrue(pointlessInterface.getTimerCount()>0,"Did not receive timer invocation!");
         } finally{
             safeClose(context);
         }

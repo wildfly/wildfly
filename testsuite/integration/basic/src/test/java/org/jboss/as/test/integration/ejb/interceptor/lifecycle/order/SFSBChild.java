@@ -8,7 +8,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Stateful;
 import jakarta.interceptor.Interceptors;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -22,9 +22,9 @@ public class SFSBChild extends SFSBParent {
     @PostConstruct
     public void child() {
         childPostConstructCalled = true;
-        Assert.assertTrue(SFSBParent.parentPostConstructCalled);
-        Assert.assertTrue(InterceptorParent.parentPostConstructCalled);
-        Assert.assertTrue(InterceptorChild.childPostConstructCalled);
+        Assertions.assertTrue(SFSBParent.parentPostConstructCalled);
+        Assertions.assertTrue(InterceptorParent.parentPostConstructCalled);
+        Assertions.assertTrue(InterceptorChild.childPostConstructCalled);
     }
 
     public void doStuff() {

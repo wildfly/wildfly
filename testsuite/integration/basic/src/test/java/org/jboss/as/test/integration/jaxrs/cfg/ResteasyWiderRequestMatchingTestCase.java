@@ -13,7 +13,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -24,8 +23,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-wider-request-matching} attribute works as expected.
@@ -38,6 +40,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyWiderRequestMatchingTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -58,7 +61,7 @@ public class ResteasyWiderRequestMatchingTestCase extends AbstractResteasyAttrib
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -66,15 +69,15 @@ public class ResteasyWiderRequestMatchingTestCase extends AbstractResteasyAttrib
                             .request()
                             .options()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 // This invokes the OPTION HTTP method in the WiderMappingResource.post()
-                Assert.assertEquals("POST, OPTIONS", response.readEntity(String.class));
+                Assertions.assertEquals("POST, OPTIONS", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkUnregisteredProvider() throws Exception {
         writeAttribute(ModelNode.TRUE);
 
@@ -85,8 +88,8 @@ public class ResteasyWiderRequestMatchingTestCase extends AbstractResteasyAttrib
                             .options()
             ) {
                 // This invokes the OPTION HTTP method in WiderMappingDefaultOptions.options()
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("hello", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("hello", response.readEntity(String.class));
             }
         }
     }

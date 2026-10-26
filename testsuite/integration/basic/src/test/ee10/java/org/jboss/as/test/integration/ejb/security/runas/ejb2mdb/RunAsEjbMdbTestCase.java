@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,8 +26,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
@@ -98,7 +98,7 @@ public class RunAsEjbMdbTestCase {
     public void clientCall() throws Exception {
         Hello helloBean = (Hello) initialContext.lookup("runasmdbejb-ejb3/Hello!org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.Hello");
         String hellomsg = helloBean.sayHello();
-        Assert.assertEquals(String.format("%s %s, %s %s, %s %s! %s.",
+        Assertions.assertEquals(String.format("%s %s, %s %s, %s %s! %s.",
             HelloBean.SAYING, PRINCIPAL, HowdyBean.SAYING, PRINCIPAL, HolaBean.SAYING, PRINCIPAL, GoodByeBean.SAYING), hellomsg);
     }
 
@@ -115,7 +115,7 @@ public class RunAsEjbMdbTestCase {
         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("jms/RemoteConnectionFactory");
         String replyMessage =  HelloBean.sendMessage(cf);
 
-        Assert.assertEquals(String.format("%s %s, %s %s! %s.",
+        Assertions.assertEquals(String.format("%s %s, %s %s! %s.",
             HowdyBean.SAYING, PRINCIPAL, HolaBean.SAYING, PRINCIPAL, GoodByeBean.SAYING), replyMessage);
     }
 }

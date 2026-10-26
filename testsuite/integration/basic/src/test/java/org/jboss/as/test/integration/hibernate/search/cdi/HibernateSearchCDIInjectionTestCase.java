@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.hibernate.search.cdi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.hibernate.search.cdi.beans.CDIBeansPackage;
 import org.jboss.as.test.integration.hibernate.search.cdi.beans.i18n.InternationalizedValue;
 import org.jboss.as.test.integration.hibernate.search.cdi.beans.model.EntityWithCDIAwareBridges;
@@ -19,22 +19,22 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateSearchCDIInjectionTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void securityManagerNotSupportedInHibernateSearch() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
@@ -68,8 +68,8 @@ public class HibernateSearchCDIInjectionTestCase {
     @Inject
     private EntityWithCDIAwareBridgesDao dao;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void cleanupDatabase() {
         dao.deleteAll();
     }

@@ -4,19 +4,20 @@
  */
 package org.jboss.as.test.integration.jpa.jndi;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import static org.junit.Assert.assertTrue;
-
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -24,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JNDITestCase {
 
     private static final String ARCHIVE_NAME = "JNDITestCase";
@@ -58,8 +59,8 @@ public class JNDITestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         // tx1 will create the employee
         sfsb1.createEmployee("Sally", "1 home street", 1);
-        assertTrue("Persistence.xml configured hibernate.jndi.class " +
-                "was not used as InitialContextFactoryImpl.wasCalled() returned false", InitialContextFactoryImpl.wasCalled());
+        assertTrue(InitialContextFactoryImpl.wasCalled(), "Persistence.xml configured hibernate.jndi.class " +
+                "was not used as InitialContextFactoryImpl.wasCalled() returned false");
     }
 
 }

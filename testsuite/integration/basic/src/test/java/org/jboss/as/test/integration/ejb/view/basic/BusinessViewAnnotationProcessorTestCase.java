@@ -8,19 +8,19 @@ import java.io.Externalizable;
 import java.io.Serializable;
 
 import jakarta.ejb.EJBException;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the number of views exposed by EJBs are correct
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Jaikiran Pai
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BusinessViewAnnotationProcessorTestCase {
 
     @Deployment
@@ -47,10 +47,10 @@ public class BusinessViewAnnotationProcessorTestCase {
     public void testBeanWithExplicitView() throws Exception {
         final Context ctx = new InitialContext();
         final MyInterface singleView = (MyInterface) ctx.lookup("java:module/" + MyBean.class.getSimpleName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", singleView);
+        assertNotNull(singleView, "View " + MyInterface.class.getName() + " not found");
 
         final MyInterface myInterfaceView = (MyInterface) ctx.lookup("java:module/" + MyBean.class.getSimpleName() + "!" + MyInterface.class.getName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", myInterfaceView);
+        assertNotNull(myInterfaceView, "View " + MyInterface.class.getName() + " not found");
     }
 
     /**
@@ -62,10 +62,10 @@ public class BusinessViewAnnotationProcessorTestCase {
     public void testImplicitLocalBusinessInterface() throws Exception {
         final Context ctx = new InitialContext();
         final MyInterface singleView = (MyInterface) ctx.lookup("java:module/" + ImplicitLocalBusinessInterfaceBean.class.getSimpleName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", singleView);
+        assertNotNull(singleView, "View " + MyInterface.class.getName() + " not found");
 
         final MyInterface myInterfaceView = (MyInterface) ctx.lookup("java:module/" + ImplicitLocalBusinessInterfaceBean.class.getSimpleName() + "!" + MyInterface.class.getName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", myInterfaceView);
+        assertNotNull(myInterfaceView, "View " + MyInterface.class.getName() + " not found");
     }
 
     /**
@@ -77,10 +77,10 @@ public class BusinessViewAnnotationProcessorTestCase {
     public void testImplicitNoInterface() throws Exception {
         final Context ctx = new InitialContext();
         final ImplicitNoInterfaceBean singleView = (ImplicitNoInterfaceBean) ctx.lookup("java:module/" + ImplicitNoInterfaceBean.class.getSimpleName());
-        assertNotNull("View " + ImplicitNoInterfaceBean.class.getName() + " not found", singleView);
+        assertNotNull(singleView, "View " + ImplicitNoInterfaceBean.class.getName() + " not found");
 
         final ImplicitNoInterfaceBean noInterfaceBean = (ImplicitNoInterfaceBean) ctx.lookup("java:module/" + ImplicitNoInterfaceBean.class.getSimpleName() + "!" + ImplicitNoInterfaceBean.class.getName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", noInterfaceBean);
+        assertNotNull(noInterfaceBean, "View " + MyInterface.class.getName() + " not found");
     }
 
 
@@ -93,11 +93,11 @@ public class BusinessViewAnnotationProcessorTestCase {
     public void testInvocationOnNonPublicMethod() throws Exception {
         final Context ctx = new InitialContext();
         final ImplicitNoInterfaceBean singleView = (ImplicitNoInterfaceBean) ctx.lookup("java:module/" + ImplicitNoInterfaceBean.class.getSimpleName());
-        assertNotNull("View " + MyInterface.class.getName() + " not found", singleView);
-        Assert.assertEquals("Hello", singleView.sayHello());
+        assertNotNull(singleView, "View " + MyInterface.class.getName() + " not found");
+        Assertions.assertEquals("Hello", singleView.sayHello());
         try {
             singleView.sayGoodbye();
-            Assert.fail("should have been disallowed");
+            Assertions.fail("should have been disallowed");
         } catch (EJBException expected) {
 
         }
@@ -115,25 +115,25 @@ public class BusinessViewAnnotationProcessorTestCase {
         final Context ctx = new InitialContext();
 
         final One interfaceOne = (One) ctx.lookup("java:module/" + MultipleRemoteViewBean.class.getSimpleName() + "!" + One.class.getName());
-        assertNotNull("View " + One.class.getName() + " not found", interfaceOne);
+        assertNotNull(interfaceOne, "View " + One.class.getName() + " not found");
 
         final Two interfaceTwo = (Two) ctx.lookup("java:module/" + MultipleRemoteViewBean.class.getSimpleName() + "!" + Two.class.getName());
-        assertNotNull("View " + Two.class.getName() + " not found", interfaceTwo);
+        assertNotNull(interfaceTwo, "View " + Two.class.getName() + " not found");
 
 
         final Three interfaceThree = (Three) ctx.lookup("java:module/" + MultipleRemoteViewBean.class.getSimpleName() + "!" + Three.class.getName());
-        assertNotNull("View " + Three.class.getName() + " not found", interfaceThree);
+        assertNotNull(interfaceThree, "View " + Three.class.getName() + " not found");
 
         try {
             final Object view = ctx.lookup("java:module/" + MultipleRemoteViewBean.class.getSimpleName() + "!" + Serializable.class.getName());
-            Assert.fail("Unexpected view found: " + view + " for interface " + Serializable.class.getName());
+            Assertions.fail("Unexpected view found: " + view + " for interface " + Serializable.class.getName());
         } catch (NameNotFoundException nnfe) {
             // expected
         }
 
         try {
             final Object view = ctx.lookup("java:module/" + MultipleRemoteViewBean.class.getSimpleName() + "!" + Externalizable.class.getName());
-            Assert.fail("Unexpected view found: " + view + " for interface " + Externalizable.class.getName());
+            Assertions.fail("Unexpected view found: " + view + " for interface " + Externalizable.class.getName());
         } catch (NameNotFoundException nnfe) {
             // expected
         }
@@ -150,25 +150,25 @@ public class BusinessViewAnnotationProcessorTestCase {
         final Context ctx = new InitialContext();
 
         final One interfaceOne = (One) ctx.lookup("java:module/" + MultipleLocalViewBean.class.getSimpleName() + "!" + One.class.getName());
-        assertNotNull("View " + One.class.getName() + " not found", interfaceOne);
+        assertNotNull(interfaceOne, "View " + One.class.getName() + " not found");
 
         final Two interfaceTwo = (Two) ctx.lookup("java:module/" + MultipleLocalViewBean.class.getSimpleName() + "!" + Two.class.getName());
-        assertNotNull("View " + Two.class.getName() + " not found", interfaceTwo);
+        assertNotNull(interfaceTwo, "View " + Two.class.getName() + " not found");
 
 
         final Three interfaceThree = (Three) ctx.lookup("java:module/" + MultipleLocalViewBean.class.getSimpleName() + "!" + Three.class.getName());
-        assertNotNull("View " + Three.class.getName() + " not found", interfaceThree);
+        assertNotNull(interfaceThree, "View " + Three.class.getName() + " not found");
 
         try {
             final Object view = ctx.lookup("java:module/" + MultipleLocalViewBean.class.getSimpleName() + "!" + Serializable.class.getName());
-            Assert.fail("Unexpected view found: " + view + " for interface " + Serializable.class.getName());
+            Assertions.fail("Unexpected view found: " + view + " for interface " + Serializable.class.getName());
         } catch (NameNotFoundException nnfe) {
             // expected
         }
 
         try {
             final Object view = ctx.lookup("java:module/" + MultipleLocalViewBean.class.getSimpleName() + "!" + Externalizable.class.getName());
-            Assert.fail("Unexpected view found: " + view + " for interface " + Externalizable.class.getName());
+            Assertions.fail("Unexpected view found: " + view + " for interface " + Externalizable.class.getName());
         } catch (NameNotFoundException nnfe) {
             // expected
         }
