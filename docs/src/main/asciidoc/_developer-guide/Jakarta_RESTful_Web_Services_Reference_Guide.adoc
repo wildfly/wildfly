@@ -91,6 +91,39 @@ Note that you only have to add the mapping, not the corresponding
 servlet. The server is responsible for adding the corresponding servlet
 automatically.
 
+[[jakarta-rest-cdi-integration]]
+== Jakarta Contexts and Dependency Injection Integration
+
+This applies to xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview], which provides Jakarta RESTful Web
+Services 5.0.
+
+The `@Path`, `@Provider` and `@ApplicationPath` annotations are bean defining annotations. Resources, providers and
+`jakarta.ws.rs.core.Application` subclasses are therefore CDI beans, even in an archive with
+`bean-discovery-mode="annotated"` or without a `beans.xml` file. See
+<<suppressing-implicit-bean-archives,Suppressing implicit bean archives>> for how implicit bean archives are handled.
+
+As these classes are CDI beans, CDI validates their injection points when the application is deployed. Previously, a
+resource in such an archive was not a CDI bean, and an `@Inject` field without a matching bean was left `null`. Now
+an unsatisfied or ambiguous injection point fails the deployment, e.g. with `WELD-001408`.
+
+[source,java]
+----
+@Path("/echo")
+public class EchoResource {
+    @Inject
+    EchoService service; // fails the deployment if EchoService is not a bean
+}
+----
+
+Make the injected type a bean, e.g. by adding a bean defining annotation such as `@Dependent` or
+`@ApplicationScoped`, or a `beans.xml` file to its archive. An EJB in an archive whose `ejb-jar.xml` is
+`metadata-complete="true"` is not a session bean, as its EJB annotations are ignored, and needs a bean defining
+annotation as well.
+
+See the https://jakarta.ee/specifications/restful-ws/5.0/[Jakarta RESTful Web Services 5.0 specification] for the
+default scopes of resources and providers, and the https://resteasy.dev/docs[RESTEasy documentation] for other
+changes in the CDI integration.
+
 == Using Jackson for serialization
 
 By default, for JSON processing the Jakarta JSON Processing API is used. However, you can use Jackson instead. This can
