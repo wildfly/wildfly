@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -27,10 +27,10 @@ import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -42,7 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(DeployedXmlJMSManagementTestCase.DeployedXmlJMSManagementTestCaseSetup.class)
 public class DeployedXmlJMSManagementTestCase {
@@ -87,7 +87,7 @@ public class DeployedXmlJMSManagementTestCase {
 
     private JMSOperations jmsOperations;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         jmsOperations = JMSOperationsProvider.getInstance(managementClient);
     }
@@ -109,7 +109,7 @@ public class DeployedXmlJMSManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("entries");
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals("java:/queue1", result.get(RESULT).asList().get(0).asString());
+        Assertions.assertEquals("java:/queue1", result.get(RESULT).asList().get(0).asString());
     }
 
     @Test
@@ -124,7 +124,7 @@ public class DeployedXmlJMSManagementTestCase {
         //System.out.println("operation = " + operation);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         //System.out.println("result = " + result);
-        Assert.assertEquals("java:/topic1", result.get(RESULT).asList().get(0).asString());
+        Assertions.assertEquals("java:/topic1", result.get(RESULT).asList().get(0).asString());
     }
 
     private ModelNode getDeployedResourceAddress(String type, String name) {

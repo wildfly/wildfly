@@ -8,20 +8,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the EJB is not constructed if the chain does not complete
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AroundConstructNoCreateTestCase {
 
     @Deployment
@@ -36,8 +36,8 @@ public class AroundConstructNoCreateTestCase {
     public void testAroundConstructNoCreate() throws NamingException {
         InitialContext ctx = new InitialContext();
         AroundConstructSLSB bean = (AroundConstructSLSB) ctx.lookup("java:module/" + AroundConstructSLSB.class.getSimpleName());
-        Assert.assertEquals("Intercepted", bean.getMessage());
-        Assert.assertFalse(AroundConstructSLSB.constructed);
+        Assertions.assertEquals("Intercepted", bean.getMessage());
+        Assertions.assertFalse(AroundConstructSLSB.constructed);
     }
 
 }

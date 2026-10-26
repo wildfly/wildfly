@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,8 +26,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
@@ -102,7 +102,7 @@ public class RunAsEjbMdbTestCase {
         Hello helloBean = (Hello) initialContext.lookup("runasmdbejb-ejb3/Hello!org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.Hello");
         String hellomsg = helloBean.sayHello();
         // EE11: HelloBean sees client (anonymous), MDB chain sees INTERNAL_ROLE
-        Assert.assertEquals(String.format("%s %s, %s %s, %s %s! %s.",
+        Assertions.assertEquals(String.format("%s %s, %s %s, %s %s! %s.",
             HelloBean.SAYING, HELLO_PRINCIPAL, HowdyBean.SAYING, MDB_PRINCIPAL, HolaBean.SAYING, MDB_PRINCIPAL, GoodByeBean.SAYING), hellomsg);
     }
 
@@ -120,7 +120,7 @@ public class RunAsEjbMdbTestCase {
         String replyMessage =  HelloBean.sendMessage(cf);
 
         // EE11: MDB has @RunAs("INTERNAL_ROLE"), so HowdyBean and HolaBean see INTERNAL_ROLE
-        Assert.assertEquals(String.format("%s %s, %s %s! %s.",
+        Assertions.assertEquals(String.format("%s %s, %s %s! %s.",
             HowdyBean.SAYING, MDB_PRINCIPAL, HolaBean.SAYING, MDB_PRINCIPAL, GoodByeBean.SAYING), replyMessage);
     }
 }

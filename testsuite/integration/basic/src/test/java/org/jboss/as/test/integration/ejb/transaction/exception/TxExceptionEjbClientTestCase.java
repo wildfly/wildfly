@@ -13,7 +13,7 @@ import java.rmi.RemoteException;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.TestBean;
@@ -24,8 +24,9 @@ import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb3.BmtEjb3
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb3.CmtEjb3;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that EJB client propagates appropriate exceptions.
@@ -33,12 +34,12 @@ import org.junit.runner.RunWith;
  * @author dsimko@redhat.com
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TxExceptionEjbClientTestCase extends TxExceptionBaseTestCase {
 
     private static String nodeName;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         nodeName = EJBManagementUtil.getNodeName();
     }

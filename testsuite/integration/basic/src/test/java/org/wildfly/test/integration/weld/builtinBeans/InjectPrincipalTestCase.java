@@ -7,14 +7,15 @@ package org.wildfly.test.integration.weld.builtinBeans;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
@@ -22,7 +23,7 @@ import org.wildfly.security.permission.ElytronPermission;
 /**
  * See <a href="https://issues.jboss.org/browse/WFLY-11587">WFLY-11587</a>.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InjectPrincipalTestCase {
 
     public static final String ANONYMOUS_PRINCIPAL = "anonymous";
@@ -43,10 +44,10 @@ public class InjectPrincipalTestCase {
     @Test
     public void testAnonymousPrincipalInjected(BeanWithInjectedPrincipal beanA, BeanWithPrincipalFromEJBContext beanB) {
         try {
-            Assert.assertEquals(ANONYMOUS_PRINCIPAL, beanA.getPrincipalName());
-            Assert.assertEquals(ANONYMOUS_PRINCIPAL, beanB.getPrincipalName());
+            Assertions.assertEquals(ANONYMOUS_PRINCIPAL, beanA.getPrincipalName());
+            Assertions.assertEquals(ANONYMOUS_PRINCIPAL, beanB.getPrincipalName());
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -54,10 +55,10 @@ public class InjectPrincipalTestCase {
     public void testNonAnonymousPrincipalInjected(CallerWithIdentity callerWithIdentity) throws Exception {
         try {
             // Assert.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalInjected()); TODO see issue WFLY-12538
-            Assert.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalFromEJBContext());
-            Assert.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalFromEJBContextSecuredBean());
+            Assertions.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalFromEJBContext());
+            Assertions.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalFromEJBContextSecuredBean());
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 }

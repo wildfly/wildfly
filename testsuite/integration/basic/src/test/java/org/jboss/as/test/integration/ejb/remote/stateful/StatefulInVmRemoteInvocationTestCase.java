@@ -10,21 +10,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests cross deployment remote EJB invocation, when the deployments cannot see each others classes
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StatefulInVmRemoteInvocationTestCase {
 
 
@@ -48,11 +48,11 @@ public class StatefulInVmRemoteInvocationTestCase {
         RemoteInterface bean = lookup(StatefulAddingBean.class.getSimpleName(), RemoteInterface.class);
         bean.add(10);
         bean.add(10);
-        Assert.assertEquals(20, bean.get());
+        Assertions.assertEquals(20, bean.get());
         bean.remove();
         try {
             bean.add(10);
-            Assert.fail("Expected EJB to be removed");
+            Assertions.fail("Expected EJB to be removed");
         } catch (NoSuchEJBException expected) {
 
         }
@@ -68,8 +68,8 @@ public class StatefulInVmRemoteInvocationTestCase {
     @Test
     public void testValueObjectWithTransientField() throws Exception {
         RemoteInterface bean = lookup(StatefulAddingBean.class.getSimpleName(), RemoteInterface.class);
-        Assert.assertNull("transient field should be serialized as null but was '" + bean.getValue().getShouldBeNilAfterUnmarshalling() +"'",
-                bean.getValue().getShouldBeNilAfterUnmarshalling());
+        Assertions.assertNull(bean.getValue().getShouldBeNilAfterUnmarshalling(),
+                "transient field should be serialized as null but was '" + bean.getValue().getShouldBeNilAfterUnmarshalling() +"'");
         bean.remove();
     }
 

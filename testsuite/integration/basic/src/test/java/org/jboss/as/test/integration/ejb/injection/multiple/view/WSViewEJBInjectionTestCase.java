@@ -6,20 +6,20 @@
 package org.jboss.as.test.integration.ejb.injection.multiple.view;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
 /**
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WSViewEJBInjectionTestCase {
 
     @Deployment
@@ -32,7 +32,7 @@ public class WSViewEJBInjectionTestCase {
     @Test
     public void testInjection() throws Exception {
         final InjectingBean injectingBean = InitialContext.doLookup("java:module/" + InjectingBean.class.getSimpleName() + "!" + InjectingBean.class.getName());
-        Assert.assertTrue("@EJB injection did not happen in bean", injectingBean.isBeanInjected());
+        Assertions.assertTrue(injectingBean.isBeanInjected(), "@EJB injection did not happen in bean");
         // try an invocation on the bean
         injectingBean.invokeInjectedBean();
     }

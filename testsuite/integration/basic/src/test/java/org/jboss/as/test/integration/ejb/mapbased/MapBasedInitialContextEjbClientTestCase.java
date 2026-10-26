@@ -12,20 +12,20 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for EJBCLIENT-34: properties-based JNDI InitialContext for EJB clients.
  *
  * @author Jan Martiska / jmartisk@redhat.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class MapBasedInitialContextEjbClientTestCase {
 
@@ -51,10 +51,10 @@ public class MapBasedInitialContextEjbClientTestCase {
         try {
             String lookupName = "ejb:/" + BASE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
             StatelessIface beanStateless = (StatelessIface) ctx.lookup(lookupName);
-            Assert.assertEquals("Unexpected EJB client context used for invoking stateless bean", CustomCallbackHandler.USER_NAME, beanStateless.getCallerPrincipalName());
+            Assertions.assertEquals(CustomCallbackHandler.USER_NAME, beanStateless.getCallerPrincipalName(), "Unexpected EJB client context used for invoking stateless bean");
             lookupName = "ejb:/" + BASE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulIface.class.getCanonicalName() + "?stateful";
             StatefulIface beanStateful = (StatefulIface) ctx.lookup(lookupName);
-            Assert.assertEquals("Unexpected EJB client context used for invoking stateful bean", CustomCallbackHandler.USER_NAME, beanStateful.getCallerPrincipalName());
+            Assertions.assertEquals(CustomCallbackHandler.USER_NAME, beanStateful.getCallerPrincipalName(), "Unexpected EJB client context used for invoking stateful bean");
             ctx.close();
         } finally {
             ctx.close();

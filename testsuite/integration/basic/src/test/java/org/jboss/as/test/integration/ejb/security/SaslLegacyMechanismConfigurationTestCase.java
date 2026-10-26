@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ejb.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -26,12 +26,13 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.EJBException;
 import javax.naming.Context;
@@ -51,7 +52,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  *  @author Jiri Ondrusek (jondruse@redhat.com)
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(SaslLegacyMechanismConfigurationTestCase.LegacyMechanismConfigurationSetupTask.class)
 public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBase {
@@ -81,17 +82,17 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
       }
    }
 
-   @BeforeClass
+   @BeforeAll
    public static void before() throws Exception {
       initCLI();
    }
 
-   @Before
+   @BeforeEach
    public void beforeMethod() {
-      org.junit.Assume.assumeTrue(!ignoreTest);
+      Assumptions.assumeTrue(!ignoreTest);
    }
 
-   @AfterClass
+   @AfterAll
    public static void after() throws Exception {
       closeCLI();
    }
@@ -100,13 +101,13 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
    @Test
    public void testAnonymous() throws Exception {
       String echoValue = getBean(log, null, null, true).getPrincipal();
-      Assert.assertEquals("anonymous", echoValue);
+      Assertions.assertEquals("anonymous", echoValue);
    }
 
    @Test
    public void testAuthorized() throws Exception {
       String echoValue = getBean(log, "user1", "password1", true).getPrincipal();
-      Assert.assertEquals("user1", echoValue);
+      Assertions.assertEquals("user1", echoValue);
    }
 
    @Test
@@ -115,7 +116,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
 
       try {
          String echoValue = getBean(log, "user1", "password1", true).getPrincipal();
-         Assert.assertEquals("user1", echoValue);
+         Assertions.assertEquals("user1", echoValue);
       } finally {
          tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
       }
@@ -134,7 +135,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
       }
 
-      Assert.assertNotNull("Call to ejb should fail, because http-connector is not valid", ex);
+      Assertions.assertNotNull(ex, "Call to ejb should fail, because http-connector is not valid");
    }
 
    @Test
@@ -151,7 +152,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
       }
 
-      Assert.assertNotNull("Call to ejb should fail, because http-connector is not valid", ex);
+      Assertions.assertNotNull(ex, "Call to ejb should fail, because http-connector is not valid");
    }
 
    @Test
@@ -159,7 +160,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
         try {
             tryReloadWithSaslMechanism("DIGEST-MD5");
             String echoValue = getBean(log, "user1", "password1", false).getPrincipal();
-            Assert.assertEquals("user1", echoValue);
+            Assertions.assertEquals("user1", echoValue);
         } finally {
             tryReloadWithSaslMechanism(ANONYMOUS_PLAIN_SASL_MECHANISMS);
         }
@@ -172,7 +173,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
                  + "property=SASL_MECHANISMS:write-attribute(name=\"value\", value=\""
                  + mechanismName + "\")");
          CLIOpResult opResult = cli.readAllAsOpResult();
-         Assert.assertTrue(opResult.isIsOutcomeSuccess());
+         Assertions.assertTrue(opResult.isIsOutcomeSuccess());
       } finally {
          ServerReload.executeReloadAndWaitForCompletion(managementClient);
       }
@@ -265,7 +266,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          ignoreTest = securityRealm == null;
 
          //if security-realm on htt-remoting-connector is emoty,it means that legacy security is not allowed and this test should be ignored
-         org.junit.Assume.assumeTrue(securityRealm != null);
+         Assumptions.assumeTrue(securityRealm != null);
 
 
          authentication = execute(Operations.createReadResourceOperation(LOCAL_AUTHENTICATION.append().toModelNode()), mcc);
@@ -303,7 +304,7 @@ public class SaslLegacyMechanismConfigurationTestCase extends AbstractCliTestBas
          }
 
          ModelNode response = execute(compositeOperation, mcc);
-         Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+         Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
 
          ServerReload.reloadIfRequired(managementClient);
       }

@@ -4,14 +4,15 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.serverside.multiple;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.List;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.InterceptorModule;
@@ -20,9 +21,9 @@ import org.jboss.as.test.integration.ejb.interceptor.serverside.ServerIntercepto
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test case verifying:
@@ -32,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(MultipleInterceptorsTestCase.SetupTask.class)
 public class MultipleInterceptorsTestCase {
 
@@ -58,7 +59,7 @@ public class MultipleInterceptorsTestCase {
             assertTrue(iae instanceof IllegalArgumentException);
         }
 
-        Assert.assertEquals(0, ServerInterceptor.latch.getCount());
+        Assertions.assertEquals(0, ServerInterceptor.latch.getCount());
     }
 
     static class SetupTask extends AbstractServerInterceptorsSetupTask.SetupTask {

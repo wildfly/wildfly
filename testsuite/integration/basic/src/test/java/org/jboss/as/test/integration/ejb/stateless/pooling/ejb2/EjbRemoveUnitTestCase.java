@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -25,9 +25,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that bean is pooled and ejbRemove is correctly called.
@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
  *
  * Dimitris Andreadis, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(EjbRemoveUnitTestCase.EjbRemoveUnitTestCaseSetup.class)
 public class EjbRemoveUnitTestCase {
     private static final Logger log = Logger.getLogger(EjbRemoveUnitTestCase.class.getName());
@@ -104,11 +104,11 @@ public class EjbRemoveUnitTestCase {
 
         CountedSession counted = countedHome.create();
         counted.doSomething(2);
-        Assert.assertEquals("createCounter", 1, CounterSingleton.createCounter2.get());
-        Assert.assertEquals("removeCounter", 0, CounterSingleton.removeCounter2.get());
+        Assertions.assertEquals(1, CounterSingleton.createCounter2.get(), "createCounter");
+        Assertions.assertEquals(0, CounterSingleton.removeCounter2.get(), "removeCounter");
         counted.remove();
-        Assert.assertEquals("createCounter", 1, CounterSingleton.createCounter2.get());
-        Assert.assertEquals("removeCounter", 0, CounterSingleton.removeCounter2.get());
+        Assertions.assertEquals(1, CounterSingleton.createCounter2.get(), "createCounter");
+        Assertions.assertEquals(0, CounterSingleton.removeCounter2.get(), "removeCounter");
     }
 
     @Test
@@ -136,6 +136,6 @@ public class EjbRemoveUnitTestCase {
 
         // wait for all 10 threads to finish
         CDL.await(5, TimeUnit.SECONDS);
-        Assert.assertTrue("createCounter has to be == 5 but was " + CounterSingleton.createCounter3.get(), CounterSingleton.createCounter3.get() == 5);
+        Assertions.assertTrue(CounterSingleton.createCounter3.get() == 5, "createCounter has to be == 5 but was " + CounterSingleton.createCounter3.get());
     }
 }

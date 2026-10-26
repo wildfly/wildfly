@@ -7,9 +7,9 @@ package org.jboss.as.test.integration.messaging.jms.context;
 
 import static jakarta.jms.DeliveryMode.NON_PERSISTENT;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.PropertyPermission;
 import java.util.UUID;
@@ -23,20 +23,21 @@ import jakarta.jms.Queue;
 import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.BeanManagedMessageConsumer;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.RequestScopedMDB;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ScopedInjectedJMSContextTestCase {
 
     public static final String QUEUE_NAME_FOR_REQUEST_SCOPE = "java:global/env/ScopedInjectedJMSContextTestCaseQueue-requestScoped";

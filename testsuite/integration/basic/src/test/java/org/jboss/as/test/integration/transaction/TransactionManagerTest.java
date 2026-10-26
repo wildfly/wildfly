@@ -10,18 +10,18 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the TransactionManager is bound to JNDI
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TransactionManagerTest {
 
     @Deployment
@@ -34,12 +34,12 @@ public class TransactionManagerTest {
     @Test
     public void testTransactionManagerBoundToJndi() throws NamingException {
         TransactionManager tm = (TransactionManager)new InitialContext().lookup("java:jboss/TransactionManager");
-        Assert.assertNotNull(tm);
+        Assertions.assertNotNull(tm);
     }
 
     @Test
     public void testTransactionSynchronizationRegistryBoundToJndi() throws NamingException {
         TransactionSynchronizationRegistry tm = (TransactionSynchronizationRegistry)new InitialContext().lookup("java:jboss/TransactionSynchronizationRegistry");
-        Assert.assertNotNull(tm);
+        Assertions.assertNotNull(tm);
     }
 }

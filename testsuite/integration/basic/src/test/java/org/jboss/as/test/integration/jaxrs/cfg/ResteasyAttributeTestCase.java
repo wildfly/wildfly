@@ -18,7 +18,7 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -41,18 +41,18 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for setting RESTEasy context parameters using the Wildfly management model.
  *
  * @author <a href="rsigal@redhat.com">Ron Sigal</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ResteasyAttributeTestCase.AttributeTestCaseDeploymentSetup.class)
 public class ResteasyAttributeTestCase {
@@ -141,7 +141,7 @@ public class ResteasyAttributeTestCase {
             setAttributeValue(builder, JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, VALUE_EXPRESSION_BOOLEAN_TRUE);
 
             final ModelNode result = client.getControllerClient().execute(builder.build());
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+            Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         }
 
         static void setAttributeValue(final CompositeOperationBuilder builder, AttributeDefinition attribute, ModelNode value) throws IOException {
@@ -214,12 +214,12 @@ public class ResteasyAttributeTestCase {
         return war;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws IOException {
         jaxrsClient = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         jaxrsClient.close();
     }
@@ -250,23 +250,23 @@ public class ResteasyAttributeTestCase {
         WebTarget base = jaxrsClient.target(url.toString() + "myjaxrs/attribute");
         Builder builder = base.path(changeHyphensToDots(JaxrsAttribute.RESTEASY_ADD_CHARSET.getName())).request();
         Response response = builder.get();
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         boolean oldValue = response.readEntity(boolean.class);
 
         // Update "resteasy.add.charset" value to a new value.
         ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, JaxrsAttribute.RESTEASY_ADD_CHARSET.getName(), !oldValue);
         ModelNode result = client.getControllerClient().execute(op);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
 
         // Verify that value of "resteasy.add.charset" hasn't changed in existing deployment.
         response = builder.get();
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(oldValue, response.readEntity(boolean.class));
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(oldValue, response.readEntity(boolean.class));
 
         // Reset "resteasy.add.charset" to original value.
         op = Operations.createWriteAttributeOperation(ADDRESS, JaxrsAttribute.RESTEASY_ADD_CHARSET.getName(), oldValue);
         result = client.getControllerClient().execute(op);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
     }
 
     private void testAttribute(WebTarget target, AttributeDefinition attribute) {
@@ -277,34 +277,34 @@ public class ResteasyAttributeTestCase {
             resteasyName = changeHyphensToDots(resteasyName);
         }
         Response response = target.path(resteasyName).request().get();
-        Assert.assertEquals("Failed to get value for " + resteasyName,200, response.getStatus());
+        Assertions.assertEquals(200,response.getStatus(), "Failed to get value for " + resteasyName);
         Object result = response.readEntity(modelTypeMap.get(attribute.getType()));
 
         final String msg = "Invalid value found for " + resteasyName;
         switch (attribute.getType()) {
 
             case BOOLEAN:
-                Assert.assertEquals(msg, expectedValues.get(attribute).asBoolean(), result);
+                Assertions.assertEquals(expectedValues.get(attribute).asBoolean(), result, msg);
                 return;
 
             case INT:
-                Assert.assertEquals(msg, expectedValues.get(attribute).asInt(), result);
+                Assertions.assertEquals(expectedValues.get(attribute).asInt(), result, msg);
                 return;
 
             case STRING:
-                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
+                Assertions.assertEquals(expectedValues.get(attribute).asString(), result, msg);
                 return;
 
             case LIST:
-                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
+                Assertions.assertEquals(expectedValues.get(attribute).asString(), result, msg);
                 return;
 
             case OBJECT:
-                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
+                Assertions.assertEquals(expectedValues.get(attribute).asString(), result, msg);
                 return;
 
             default:
-                Assert.fail("Unexpected ModelNode type for " + resteasyName);
+                Assertions.fail("Unexpected ModelNode type for " + resteasyName);
         }
     }
 

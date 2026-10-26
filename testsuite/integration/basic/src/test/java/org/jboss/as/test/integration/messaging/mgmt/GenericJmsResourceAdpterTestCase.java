@@ -6,15 +6,15 @@ package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Simple test trying to deploy the Generic JMS Resource Adapter
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  * @author Emmanuel Hugonnet (c) 2022 Red Hat, Inc.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GenericJmsResourceAdpterTestCase {
     private static final Logger LOGGER = Logger.getLogger(GenericJmsResourceAdpterTestCase.class);
 
@@ -51,13 +51,13 @@ public class GenericJmsResourceAdpterTestCase {
             if (!"success".equals(outcome)) {
                 LOGGER.trace(response);
             }
-            Assert.assertEquals("success", outcome);
+            Assertions.assertEquals("success", outcome);
             return response.get("result");
         } else {
             if ("success".equals(outcome)) {
                 LOGGER.trace(response);
             }
-            Assert.assertEquals("failed", outcome);
+            Assertions.assertEquals("failed", outcome);
             return response.get("failure-description");
         }
     }

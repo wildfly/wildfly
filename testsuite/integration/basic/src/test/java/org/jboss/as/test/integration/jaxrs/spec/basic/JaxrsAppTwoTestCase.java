@@ -8,7 +8,7 @@ import java.net.URL;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppResourceTwo;
 import org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppTwo;
@@ -16,9 +16,9 @@ import org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -26,7 +26,7 @@ import jakarta.ws.rs.client.WebTarget;
 
 /**
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JaxrsAppTwoTestCase {
     @ArquillianResource
@@ -59,7 +59,7 @@ public class JaxrsAppTwoTestCase {
             String url = baseUrl.toString() + "resources";
             WebTarget base = client.target(url);
             String value = base.path("example").request().get(String.class);
-            Assert.assertEquals(CONTENT_ERROR_MESSAGE, "Hello world!", value);
+            Assertions.assertEquals("Hello world!", value, CONTENT_ERROR_MESSAGE);
         } finally {
             client.close();
         }
@@ -70,7 +70,7 @@ public class JaxrsAppTwoTestCase {
             String url = baseUrl.toString() + "resources";
             WebTarget base = client.target(url);
             Response r = base.path("exampleTwo").request().get();
-            Assert.assertEquals("404 error not received", 404, r.getStatus());
+            Assertions.assertEquals(404, r.getStatus(), "404 error not received");
         } finally {
             client.close();
         }

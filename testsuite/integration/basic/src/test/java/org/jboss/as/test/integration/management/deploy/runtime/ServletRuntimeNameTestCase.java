@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -32,12 +32,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
@@ -52,7 +53,7 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".war";
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SUB_DEPLOYMENT_NAME);
         war.addClass(SERVLET_CLASS);
@@ -81,17 +82,17 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         ModelNode result = controllerClient.execute(composite(
                 undeploy(DEPLOYMENT_NAME),
                 remove(DEPLOYMENT_NAME)
         ));
         // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to undeploy: " + result);
     }
 
     @Test
@@ -104,22 +105,22 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBDEPLOYMENT, SUB_DEPLOYMENT_NAME);
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add("servlet", SERVLET_CLASS.getName());
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
@@ -133,14 +134,14 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
     public void testServletCall() throws Exception {
         String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/"+SUB_DEPLOYMENT_MODULE_NAME+Servlet.URL_PATTERN;
         String res = HttpRequest.get(url, 2, TimeUnit.SECONDS);
-        Assert.assertEquals(Servlet.SUCCESS, res);
+        Assertions.assertEquals(Servlet.SUCCESS, res);
     }
 
     /** WFLY-2061 test */
@@ -151,8 +152,8 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
         operation.get(NAME).set("status");
 
         final ModelNode outcome = controllerClient.execute(operation);
-        Assert.assertEquals(SUCCESS, outcome.get(OUTCOME).asString());
-        Assert.assertEquals("OK", outcome.get(RESULT).asString());
+        Assertions.assertEquals(SUCCESS, outcome.get(OUTCOME).asString());
+        Assertions.assertEquals("OK", outcome.get(RESULT).asString());
     }
 
 

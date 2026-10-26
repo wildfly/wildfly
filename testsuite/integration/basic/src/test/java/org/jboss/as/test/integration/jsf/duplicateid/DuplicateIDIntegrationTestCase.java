@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.jsf.duplicateid;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -26,7 +26,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jsf.duplicateid.deployment.IncludeBean;
@@ -36,8 +36,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jan Kasik <jkasik@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DuplicateIDIntegrationTestCase {
 
@@ -119,10 +121,10 @@ public class DuplicateIDIntegrationTestCase {
             final HttpResponse afterSecondClickResponse = simulateClickingOnButton(httpClient, formAfterFirstClick, "Show 2");
             assertEquals(HttpURLConnection.HTTP_OK, afterSecondClickResponse.getStatusLine().getStatusCode());
             final String responseString = new BasicResponseHandler().handleResponse(afterSecondClickResponse);
-            assertTrue("There should be text which appears after clicking on second button in response!",
-                    responseString.contains(">OutputText 2</span>"));
-            assertTrue("There should be text which appears after clicking on first button in response!",
-                    responseString.contains(">OutputText 3</span>"));
+            assertTrue(responseString.contains(">OutputText 2</span>"),
+                    "There should be text which appears after clicking on second button in response!");
+            assertTrue(responseString.contains(">OutputText 3</span>"),
+                    "There should be text which appears after clicking on first button in response!");
         }
     }
 

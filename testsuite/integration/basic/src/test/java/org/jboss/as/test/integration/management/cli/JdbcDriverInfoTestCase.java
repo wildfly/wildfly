@@ -9,27 +9,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for high level cli command jdbc-driver-info and jdbc-driver-info [driver-name]
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JdbcDriverInfoTestCase extends AbstractCliTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         closeCLI();
     }
@@ -38,15 +38,15 @@ public class JdbcDriverInfoTestCase extends AbstractCliTestBase {
     public void testJdbcDriverInfo() throws Exception {
         cli.sendLine("jdbc-driver-info");
         String[] lines = cli.readOutput().split("\\n");
-        Assert.assertEquals(2, lines.length);
+        Assertions.assertEquals(2, lines.length);
 
         String[] header = lines[0].split("\\s+");
-        Assert.assertEquals("NAME", header[0]);
-        Assert.assertEquals("SOURCE", header[1]);
+        Assertions.assertEquals("NAME", header[0]);
+        Assertions.assertEquals("SOURCE", header[1]);
 
         String[] driver = lines[1].split("\\s+");
-        Assert.assertEquals("h2", driver[0]);
-        Assert.assertEquals("com.h2database.h2/main", driver[1]);
+        Assertions.assertEquals("h2", driver[0]);
+        Assertions.assertEquals("com.h2database.h2/main", driver[1]);
     }
 
     @Test
@@ -59,15 +59,15 @@ public class JdbcDriverInfoTestCase extends AbstractCliTestBase {
             driverInformation.put(info[0], info.length == 2 ? info[1] : null);
         }
 
-        Assert.assertTrue(driverInformation.containsKey("driver-name"));
-        Assert.assertEquals("h2", driverInformation.get("driver-name"));
+        Assertions.assertTrue(driverInformation.containsKey("driver-name"));
+        Assertions.assertEquals("h2", driverInformation.get("driver-name"));
 
-        Assert.assertTrue(driverInformation.containsKey("deployment-name"));
-        Assert.assertTrue(driverInformation.containsKey("driver-module-name"));
-        Assert.assertTrue(driverInformation.containsKey("datasource-class-info"));
-        Assert.assertTrue(driverInformation.containsKey("driver-class-name"));
-        Assert.assertTrue(driverInformation.containsKey("driver-major-version"));
-        Assert.assertTrue(driverInformation.containsKey("driver-minor-version"));
+        Assertions.assertTrue(driverInformation.containsKey("deployment-name"));
+        Assertions.assertTrue(driverInformation.containsKey("driver-module-name"));
+        Assertions.assertTrue(driverInformation.containsKey("datasource-class-info"));
+        Assertions.assertTrue(driverInformation.containsKey("driver-class-name"));
+        Assertions.assertTrue(driverInformation.containsKey("driver-major-version"));
+        Assertions.assertTrue(driverInformation.containsKey("driver-minor-version"));
     }
 
 }

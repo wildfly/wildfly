@@ -4,24 +4,26 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
-import static org.junit.Assert.assertEquals;
-
 import javax.naming.InitialContext;
+
 import jakarta.transaction.TransactionManager;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TransactionTimeoutTestCase {
 
     @Deployment
@@ -48,13 +50,13 @@ public class TransactionTimeoutTestCase {
 
         long timeoutValue = -1;
         timeoutValue = (long) remoteView.getBeanTimeout();
-        Assert.assertEquals("Bean-level timeout failed", 5L, timeoutValue);
+        Assertions.assertEquals(5L, timeoutValue, "Bean-level timeout failed");
         timeoutValue = (long) remoteView.getBeanMethodTimeout();
-        Assert.assertEquals("Bean-method timeout failed", 6L, timeoutValue);
+        Assertions.assertEquals(6L, timeoutValue, "Bean-method timeout failed");
         timeoutValue = (long) remoteView.getRemoteMethodTimeout();
-        Assert.assertEquals("Remote-method timeout failed", 7L, timeoutValue);
+        Assertions.assertEquals(7L, timeoutValue, "Remote-method timeout failed");
         timeoutValue = (long) localView.getLocalViewTimeout();
-        Assert.assertEquals("Local-view timeout failed", 5L, timeoutValue);
+        Assertions.assertEquals(5L, timeoutValue, "Local-view timeout failed");
     }
 
     @Test
@@ -80,13 +82,13 @@ public class TransactionTimeoutTestCase {
 
         int transactionTimeoutToSet = 42;
         tm.setTransactionTimeout(transactionTimeoutToSet);
-        Assert.assertEquals("Expecting transaction timeout has to be the same as it was written by setter",
-                transactionTimeoutToSet, getTransactionTimeout(tm));
+        Assertions.assertEquals(transactionTimeoutToSet,
+                getTransactionTimeout(tm), "Expecting transaction timeout has to be the same as it was written by setter");
 
         localView.getLocalViewTimeout();
 
-        Assert.assertEquals("The transaction timeout has to be the same as before CMT call",
-            transactionTimeoutToSet, getTransactionTimeout(tm));
+        Assertions.assertEquals(transactionTimeoutToSet,
+            getTransactionTimeout(tm), "The transaction timeout has to be the same as before CMT call");
     }
 
     private int getTransactionTimeout(TransactionManager tmTimeout) {

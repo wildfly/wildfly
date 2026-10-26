@@ -9,22 +9,22 @@ import java.util.List;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that <initialize-in-order> works as expected.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InitializeInOrderTestCase {
 
     private static final List<String> initOrder = new ArrayList<String>();
@@ -47,9 +47,9 @@ public class InitializeInOrderTestCase {
 
     @Test
     public void testPostConstruct() throws NamingException {
-        Assert.assertEquals(2, initOrder.size());
-        Assert.assertEquals("MyServlet", initOrder.get(0));
-        Assert.assertEquals("MyEjb", initOrder.get(1));
+        Assertions.assertEquals(2, initOrder.size());
+        Assertions.assertEquals("MyServlet", initOrder.get(0));
+        Assertions.assertEquals("MyEjb", initOrder.get(1));
     }
 
     public static void recordInit(final String clazz) {

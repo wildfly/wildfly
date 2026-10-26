@@ -8,13 +8,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that lifecycle interceptors are handed correctly,
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PreDestroyInterceptorTestCase {
 
     @Deployment
@@ -38,17 +38,17 @@ public class PreDestroyInterceptorTestCase {
 
         InitialContext ctx = new InitialContext();
         PreDestroySFSB bean = (PreDestroySFSB)ctx.lookup("java:module/" + PreDestroySFSB.class.getSimpleName());
-        Assert.assertTrue(PreDestroySFSB.postConstructCalled);
-        Assert.assertTrue(PreDestroyInterceptor.postConstruct);
-        Assert.assertFalse("InvocationContext.getTarget() was null for post-construct interceptor", PreDestroyInterceptor.postConstructInvocationTargetNull);
-        Assert.assertTrue(PreDestroyInterceptorDescriptor.postConstruct);
-        Assert.assertFalse("InvocationContext.getTarget() was null for post-construct interceptor", PreDestroyInterceptorDescriptor.postConstructInvocationTargetNull);
+        Assertions.assertTrue(PreDestroySFSB.postConstructCalled);
+        Assertions.assertTrue(PreDestroyInterceptor.postConstruct);
+        Assertions.assertFalse(PreDestroyInterceptor.postConstructInvocationTargetNull, "InvocationContext.getTarget() was null for post-construct interceptor");
+        Assertions.assertTrue(PreDestroyInterceptorDescriptor.postConstruct);
+        Assertions.assertFalse(PreDestroyInterceptorDescriptor.postConstructInvocationTargetNull, "InvocationContext.getTarget() was null for post-construct interceptor");
 
         bean.remove();
-        Assert.assertTrue(PreDestroySFSB.preDestroyCalled);
-        Assert.assertTrue(PreDestroyInterceptor.preDestroy);
-        Assert.assertFalse("InvocationContext.getTarget() was null for pre-destroy interceptor", PreDestroyInterceptor.preDestroyInvocationTargetNull);
-        Assert.assertTrue(PreDestroyInterceptorDescriptor.preDestroy);
-        Assert.assertFalse("InvocationContext.getTarget() was null for pre-destroy interceptor", PreDestroyInterceptorDescriptor.preDestroyInvocationTargetNull);
+        Assertions.assertTrue(PreDestroySFSB.preDestroyCalled);
+        Assertions.assertTrue(PreDestroyInterceptor.preDestroy);
+        Assertions.assertFalse(PreDestroyInterceptor.preDestroyInvocationTargetNull, "InvocationContext.getTarget() was null for pre-destroy interceptor");
+        Assertions.assertTrue(PreDestroyInterceptorDescriptor.preDestroy);
+        Assertions.assertFalse(PreDestroyInterceptorDescriptor.preDestroyInvocationTargetNull, "InvocationContext.getTarget() was null for pre-destroy interceptor");
     }
 }

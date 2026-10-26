@@ -23,7 +23,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 public class Ejb3ThreadPoolBase {
 
@@ -56,7 +57,7 @@ public class Ejb3ThreadPoolBase {
         int actualTaskCount;
         while ((actualTaskCount = executeOperation(readTasks).asInt()) < tasks) {
             if (System.currentTimeMillis() - startTime > timeoutInMillis) {
-                Assert.fail("There are not enough tasks (expected: " + tasks + ", actual: " + actualTaskCount + ") processed by thread pool in timeout " + timeoutInMillis);
+                Assertions.fail("There are not enough tasks (expected: " + tasks + ", actual: " + actualTaskCount + ") processed by thread pool in timeout " + timeoutInMillis);
             }
             Thread.sleep(500);
         }

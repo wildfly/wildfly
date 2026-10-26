@@ -20,7 +20,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -28,16 +28,16 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test of read-feature-description handling.
  *
  * @author Brian Stansberry
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ReadFeatureDescriptionTestCase extends ContainerResourceMgmtTestBase {
 
@@ -47,18 +47,18 @@ public class ReadFeatureDescriptionTestCase extends ContainerResourceMgmtTestBas
         op.get(RECURSIVE).set(true);
         ModelNode result = executeForResult(op);
         int maxDepth = validateBaseFeature(result, Integer.MAX_VALUE);
-        Assert.assertTrue(result.toString(), maxDepth > 3); // >3 is a good sign we're recursing all the way
+        Assertions.assertTrue(maxDepth > 3, result.toString()); // >3 is a good sign we're recursing all the way
     }
 
     private ModelNode executeForResult(ModelNode op) throws IOException, MgmtOperationException {
         ModelNode result = executeOperation(op);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         return result;
     }
 
     private static int validateBaseFeature(ModelNode base, int maxChildDepth) {
-        Assert.assertTrue(base.toString(), base.hasDefined(FEATURE));
-        Assert.assertEquals(base.toString(), 1, base.asInt());
+        Assertions.assertTrue(base.hasDefined(FEATURE), base.toString());
+        Assertions.assertEquals(1, base.asInt(), base.toString());
         return validateFeature(base.get(FEATURE), null, maxChildDepth, 0);
     }
 
@@ -68,12 +68,12 @@ public class ReadFeatureDescriptionTestCase extends ContainerResourceMgmtTestBas
             switch (prop.getName()) {
                 case NAME:
                     if (expectedName != null) {
-                        Assert.assertEquals(feature.toString(), expectedName, prop.getValue().asString());
+                        Assertions.assertEquals(expectedName, prop.getValue().asString(), feature.toString());
                     }
                     break;
                 case CHILDREN:
                     if (prop.getValue().isDefined()) {
-                        Assert.assertTrue(feature.toString(), maxChildDepth > 0);
+                        Assertions.assertTrue(maxChildDepth > 0, feature.toString());
                         for (Property child : prop.getValue().asPropertyList()) {
                             int treeDepth = validateFeature(child.getValue(), child.getName(),
                                     +maxChildDepth - 1, featureDepth + 1);
@@ -94,7 +94,7 @@ public class ReadFeatureDescriptionTestCase extends ContainerResourceMgmtTestBas
                     // all ok; no other validation right now
                     break;
                 default:
-                    Assert.fail("Unknown key " + prop.getName() + " in " + feature.toString());
+                    Assertions.fail("Unknown key " + prop.getName() + " in " + feature.toString());
             }
         }
         return highestDepth;

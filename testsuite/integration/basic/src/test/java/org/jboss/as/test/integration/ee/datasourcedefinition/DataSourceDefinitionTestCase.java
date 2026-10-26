@@ -4,6 +4,10 @@
  */
 package org.jboss.as.test.integration.ee.datasourcedefinition;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,29 +16,24 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that @DataSourceDefinition works, and that the datasource is automatically enlisted in the transaction
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DataSourceDefinitionTestCase {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Deployment
     public static Archive<?> deploy() {
@@ -48,7 +47,7 @@ public class DataSourceDefinitionTestCase {
     @ArquillianResource
     private InitialContext ctx;
 
-    @Before
+    @BeforeEach
     public void createTables() throws NamingException, SQLException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         bean.createTable();
@@ -60,7 +59,7 @@ public class DataSourceDefinitionTestCase {
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select 1");
-        Assert.assertTrue(result.next());
+        Assertions.assertTrue(result.next());
         c.close();
     }
 
@@ -69,13 +68,13 @@ public class DataSourceDefinitionTestCase {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         try {
             bean.insert1RolledBack();
-            Assert.fail("expect exception");
+            Assertions.fail("expect exception");
         } catch (RuntimeException expected) {
         }
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select id from coffee where id=1;");
-        Assert.assertFalse(result.next());
+        Assertions.assertFalse(result.next());
         c.close();
     }
 
@@ -86,16 +85,16 @@ public class DataSourceDefinitionTestCase {
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select id from coffee where id=2;");
-        Assert.assertTrue(result.next());
+        Assertions.assertTrue(result.next());
         c.close();
     }
 
     @Test
     public void testResourceInjectionWithSameName() throws NamingException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
-        Assert.assertNotNull(bean.getDataSource2());
-        Assert.assertNotNull(bean.getDataSource3());
-        Assert.assertNotNull(bean.getDataSource4());
+        Assertions.assertNotNull(bean.getDataSource2());
+        Assertions.assertNotNull(bean.getDataSource3());
+        Assertions.assertNotNull(bean.getDataSource4());
     }
 
     /**
@@ -106,7 +105,7 @@ public class DataSourceDefinitionTestCase {
     @Test
     public void testEmbeddedDatasource() throws NamingException, SQLException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
-        Assert.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
+        Assertions.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
     }
 
     /**
@@ -114,18 +113,19 @@ public class DataSourceDefinitionTestCase {
      * See https://issues.jboss.org/browse/JBJCA-1389
      */
     @Test
-    public void testCloseConnectionWrapperFor() throws NamingException, SQLException {
-        expectedException.expect(SQLException.class);
-        expectedException.expectMessage("IJ031041");
+    public void testCloseConnectionWrapperFor() {
+        Throwable exception = assertThrows(SQLException.class, () -> {
 
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
-        DataSource ds = bean.getDataSource();
-        Connection c = ds.getConnection();
-        c.close();
-        try {
-            c.isWrapperFor(ResultSet.class);
-        } catch (NullPointerException e) {
-            Assert.fail("Wrong exception is raised. The exception should be Connection is not associated with a managed connection: ... See JBJCA-1389.");
-        }
+            DataSourceBean bean = (DataSourceBean) ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+            DataSource ds = bean.getDataSource();
+            Connection c = ds.getConnection();
+            c.close();
+            try {
+                c.isWrapperFor(ResultSet.class);
+            } catch (NullPointerException e) {
+                Assertions.fail("Wrong exception is raised. The exception should be Connection is not associated with a managed connection: ... See JBJCA-1389.");
+            }
+        });
+        assertThat(exception.getMessage(), containsString("IJ031041"));
     }
 }

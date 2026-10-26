@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.extensions.buildcompatible.subsystem;
 
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -18,14 +18,14 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
 import java.net.URL;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SubsystemBceRegistrationTest.SetupTask.class)
 public class SubsystemBceRegistrationTest {
 
@@ -45,10 +45,10 @@ public class SubsystemBceRegistrationTest {
     @Test
     public void testBceRegisteredAndExecuted() {
         // check plain WAR deployment
-        Assert.assertNotNull(dummyBean);
+        Assertions.assertNotNull(dummyBean);
 
         // verify BCE was executed; if so, RegisteredBean would now be resolvable
-        Assert.assertNotNull(registeredBean);
+        Assertions.assertNotNull(registeredBean);
     }
 
     public static class SetupTask implements ServerSetupTask {

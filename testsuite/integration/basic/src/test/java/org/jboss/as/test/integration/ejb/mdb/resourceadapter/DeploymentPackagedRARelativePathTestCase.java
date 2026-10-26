@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a resource adapter packaged in a .ear can be used by a MDB as its resource adapter. Resource name is specified
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  * @author <a href="mailto:jmartisk@redhat.com">Jan Martiska</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DeploymentPackagedRARelativePathTestCase {
 
     private static final String EAR_NAME = "ear-containing-rar";
@@ -87,8 +87,8 @@ public class DeploymentPackagedRARelativePathTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT_ANNOTATED)
     public void testRADeploymentAnnotated() throws Exception {
-        Assert.assertTrue("Resource adapter deployed in the .ear was not started", ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointStartCalled());
-        Assert.assertTrue("Resource adapter's endpoint was not activated", ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointActivationCalled());
+        Assertions.assertTrue(ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointStartCalled(), "Resource adapter deployed in the .ear was not started");
+        Assertions.assertTrue(ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointActivationCalled(), "Resource adapter's endpoint was not activated");
     }
 
     /**
@@ -97,7 +97,7 @@ public class DeploymentPackagedRARelativePathTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT_WITH_DEPLOYMENT_DESCRIPTOR)
     public void testRADeploymentWithDeploymentDescriptor() throws Exception {
-        Assert.assertTrue("Resource adapter deployed in the .ear was not started", ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointStartCalled());
-        Assert.assertTrue("Resource adapter's endpoint was not activated", ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointActivationCalled());
+        Assertions.assertTrue(ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointStartCalled(), "Resource adapter deployed in the .ear was not started");
+        Assertions.assertTrue(ResourceAdapterDeploymentTracker.INSTANCE.wasEndpointActivationCalled(), "Resource adapter's endpoint was not activated");
     }
 }

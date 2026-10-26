@@ -9,29 +9,29 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test @AuditJoinTable over Uni-directional One-to-Many Relationship
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AuditJoinTableoverOnetoManyJoinColumnTest {
     private static final String ARCHIVE_NAME = "jpa_AuditMappedByoverOnetoManyJoinColumnTest";
 
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
 
         iniCtx = new InitialContext();
@@ -70,7 +70,7 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
         c1.getPhones().remove(p1);
         slsbAudit.updateCustomer(c1);
         slsbAudit.deletePhone(p1);
-        Assert.assertEquals(1, c1.getPhones().size());
+        Assertions.assertEquals(1, c1.getPhones().size());
         testRevisionDatafromAuditJoinTable(c1, slsbAudit);
         testRevisionTypefromAuditJoinTable(c1, slsbAudit);
         testOtherFieldslikeForeignKeysfromAuditJoinTable(c1, slsbAudit);
@@ -83,21 +83,21 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
         List<Object> custHistory = sb.verifyRevision(c1.getId());
 
         // verify size
-        Assert.assertEquals(2, custHistory.size());
+        Assertions.assertEquals(2, custHistory.size());
 
         int counter = 0;
 
         for (Object revisionEntity : custHistory) {
 
             counter++;
-            Assert.assertNotNull(revisionEntity);
+            Assertions.assertNotNull(revisionEntity);
             Customer rev = (Customer) (((List<Object>) (revisionEntity)).toArray()[0]);
-            Assert.assertNotNull(rev); // check if revision obtained is not null
+            Assertions.assertNotNull(rev); // check if revision obtained is not null
 
-            Assert.assertEquals("MADHUMITA", rev.getFirstname());
+            Assertions.assertEquals("MADHUMITA", rev.getFirstname());
 
-            if (counter == 1) { Assert.assertEquals("SADHUKHAN", rev.getSurname()); }
-            if (counter == 2) { Assert.assertEquals("Mondal", rev.getSurname()); }
+            if (counter == 1) { Assertions.assertEquals("SADHUKHAN", rev.getSurname()); }
+            if (counter == 2) { Assertions.assertEquals("Mondal", rev.getSurname()); }
 
         }
 
@@ -112,10 +112,10 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
         for (Object revisionTypeEntity : custRevision) {
 
             counter++;
-            Assert.assertNotNull(revisionTypeEntity);
+            Assertions.assertNotNull(revisionTypeEntity);
             Customer rev = (Customer) (((List<Object>) (revisionTypeEntity)).toArray()[0]);
-            Assert.assertNotNull(rev); // check if revision obtained is not null
-            Assert.assertNotNull(rev.getFirstname());
+            Assertions.assertNotNull(rev); // check if revision obtained is not null
+            Assertions.assertNotNull(rev.getFirstname());
 
         }
 
@@ -124,12 +124,12 @@ public class AuditJoinTableoverOnetoManyJoinColumnTest {
     private void testOtherFieldslikeForeignKeysfromAuditJoinTable(Customer c1, SLSBAudit sb) throws Exception {
 
         List<Object> phHistory = sb.verifyOtherFields(c1.getId());
-        Assert.assertNotNull(phHistory);
+        Assertions.assertNotNull(phHistory);
 
         // just to check correct values are returned
         for (Object phoneIdEntity : phHistory) {
 
-            Assert.assertNotNull(phoneIdEntity);
+            Assertions.assertNotNull(phoneIdEntity);
             //System.out.println("revendPhoneID::--" + phoneIdEntity.toString());
 
         }

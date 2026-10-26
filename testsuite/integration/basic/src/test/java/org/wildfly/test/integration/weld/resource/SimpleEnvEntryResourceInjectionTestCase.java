@@ -6,19 +6,19 @@
 package org.wildfly.test.integration.weld.resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test of behavior of {@code SimpleEnvEntryCdiResourceInjectionProcessor}.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SimpleEnvEntryResourceInjectionTestCase {
 
     @Deployment
@@ -36,93 +36,93 @@ public class SimpleEnvEntryResourceInjectionTestCase {
     }
 
     EnvEntryInjectionBean getBean() {
-        Assert.assertNotNull(EnvEntryInjectionBean.class.getSimpleName() + " was not initialized", bean);
+        Assertions.assertNotNull(bean, EnvEntryInjectionBean.class.getSimpleName() + " was not initialized");
         return bean;
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         bean = null;
     }
 
     @Test
     public void testUnmapped() {
-        org.junit.Assert.assertNotNull("Null should not be injected into unmappedEnvEntry", getBean().getUnmappedEnvEntry());
-        org.junit.Assert.assertEquals("unmappedEnvEntry should have its initial value",1, getBean().getUnmappedEnvEntry().intValue());
+        Assertions.assertNotNull(getBean().getUnmappedEnvEntry(), "Null should not be injected into unmappedEnvEntry");
+        Assertions.assertEquals(1,getBean().getUnmappedEnvEntry().intValue(), "unmappedEnvEntry should have its initial value");
     }
 
     @Test
     public void testMapped() {
-        org.junit.Assert.assertEquals("mappedEnvEntry should have its deployment descriptor value",1, getBean().getMappedEnvEntry().intValue());
+        Assertions.assertEquals(1,getBean().getMappedEnvEntry().intValue(), "mappedEnvEntry should have its deployment descriptor value");
     }
 
     @Test
     public void testUnnamedMapped() {
-        org.junit.Assert.assertEquals("unnamedMappedEnvEntry should have its deployment descriptor value",1, getBean().getUnnamedMappedEnvEntry().intValue());
+        Assertions.assertEquals(1,getBean().getUnnamedMappedEnvEntry().intValue(), "unnamedMappedEnvEntry should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedString() {
-        org.junit.Assert.assertEquals("unannotatedString should have its deployment descriptor value","injected", getBean().getUnannotatedString());
+        Assertions.assertEquals("injected",getBean().getUnannotatedString(), "unannotatedString should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedBoolean() {
-        org.junit.Assert.assertTrue("unannotatedBoolean should have its deployment descriptor value", getBean().isUnannotatedBoolean());
+        Assertions.assertTrue(getBean().isUnannotatedBoolean(), "unannotatedBoolean should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedChar() {
-        org.junit.Assert.assertEquals("unannotatedChar should have its deployment descriptor value", Character.valueOf('b'), Character.valueOf(getBean().getUnannotatedChar()));
+        Assertions.assertEquals(Character.valueOf('b'), Character.valueOf(getBean().getUnannotatedChar()), "unannotatedChar should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedByte() {
-        org.junit.Assert.assertEquals("unannotatedByte should have its deployment descriptor value", Byte.valueOf((byte)1), Byte.valueOf(getBean().getUnannotatedByte()));
+        Assertions.assertEquals(Byte.valueOf((byte)1), Byte.valueOf(getBean().getUnannotatedByte()), "unannotatedByte should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedShort() {
-        org.junit.Assert.assertEquals("unannotatedShort should have its deployment descriptor value", 1, getBean().getUnannotatedShort());
+        Assertions.assertEquals(1, getBean().getUnannotatedShort(), "unannotatedShort should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedInt() {
-        org.junit.Assert.assertEquals("unannotatedInt should have its deployment descriptor value", 1, getBean().getUnannotatedInt());
+        Assertions.assertEquals(1, getBean().getUnannotatedInt(), "unannotatedInt should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedLong() {
-        org.junit.Assert.assertEquals("unannotatedLong should have its deployment descriptor value", 1L, getBean().getUnannotatedLong());
+        Assertions.assertEquals(1L, getBean().getUnannotatedLong(), "unannotatedLong should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedFloat() {
-        org.junit.Assert.assertEquals("unannotatedFloat should have its deployment descriptor value", (float) 1, getBean().getUnannotatedFloat(), 0.1);
+        Assertions.assertEquals((float) 1, getBean().getUnannotatedFloat(), 0.1, "unannotatedFloat should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedDouble() {
-        org.junit.Assert.assertEquals("unannotatedDouble should have its deployment descriptor value", (double) 1, getBean().getUnannotatedDouble(), 0.1);
+        Assertions.assertEquals((double) 1, getBean().getUnannotatedDouble(), 0.1, "unannotatedDouble should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedStringProperty() {
-        org.junit.Assert.assertEquals("unannotatedStringProperty should have its deployment descriptor value","injected", getBean().getUnannotatedStringProperty());
+        Assertions.assertEquals("injected",getBean().getUnannotatedStringProperty(), "unannotatedStringProperty should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedBooleanProperty() {
-        org.junit.Assert.assertTrue("unannotatedBooleanProperty should have its deployment descriptor value", getBean().isUnannotatedBooleanProperty());
+        Assertions.assertTrue(getBean().isUnannotatedBooleanProperty(), "unannotatedBooleanProperty should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedIntProperty() {
-        org.junit.Assert.assertEquals("unannotatedIntProperty should have its deployment descriptor value", 1, getBean().getUnannotatedIntProperty());
+        Assertions.assertEquals(1, getBean().getUnannotatedIntProperty(), "unannotatedIntProperty should have its deployment descriptor value");
     }
 
     @Test
     public void testUnannotatedIntLookup() {
-        org.junit.Assert.assertEquals("unannotatedIntLookup should have its deployment descriptor value", 1, getBean().getUnannotatedIntLookup());
+        Assertions.assertEquals(1, getBean().getUnannotatedIntLookup(), "unannotatedIntLookup should have its deployment descriptor value");
     }
 }

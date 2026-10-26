@@ -6,15 +6,15 @@
 package org.jboss.as.test.integration.ejb.remote.async;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -30,7 +30,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteAsyncInvocationTestCase {
 
     private static final String ARCHIVE_NAME = "RemoteInvocationTest";
@@ -64,7 +64,7 @@ public class RemoteAsyncInvocationTestCase {
         if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
             throw new RuntimeException("Invocation was not asynchronous");
         }
-        Assert.assertEquals("hello", array[0]);
+        Assertions.assertEquals("hello", array[0]);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class RemoteAsyncInvocationTestCase {
         if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
             throw new RuntimeException("Invocation was not asynchronous");
         }
-        Assert.assertEquals("hello", array[0]);
+        Assertions.assertEquals("hello", array[0]);
     }
 
     @Test
@@ -92,14 +92,14 @@ public class RemoteAsyncInvocationTestCase {
         if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
             throw new RuntimeException("Invocation was not asynchronous");
         }
-        Assert.assertEquals("goodbye", array[0]);
+        Assertions.assertEquals("goodbye", array[0]);
     }
 
     @Test
     public void testReturnAsyncInvocationReturningValue() throws Exception {
         RemoteInterface remote = lookup(StatelessRemoteBean.class.getSimpleName(), RemoteInterface.class);
         Future<String> value = remote.hello();
-        Assert.assertEquals("hello", value.get(5, TimeUnit.SECONDS));
+        Assertions.assertEquals("hello", value.get(5, TimeUnit.SECONDS));
     }
 
     /**
@@ -122,13 +122,13 @@ public class RemoteAsyncInvocationTestCase {
             // wait for a while
             Thread.sleep(TimeoutUtil.adjust(500));
         }
-        Assert.assertTrue("Async invocation which was expected to fail immediately, wasn't considered \"done\"", future.isDone());
+        Assertions.assertTrue(future.isDone(), "Async invocation which was expected to fail immediately, wasn't considered \"done\"");
         try {
             // once the future is marked as done, the get should immediately return, but we
             // do send the timeouts here, just so that we don't end up blocking in this testcase
             // due to any bugs in the implementation of the returned future
             future.get(1, TimeUnit.SECONDS);
-            Assert.fail("Async invocation was expected to throw an application exception, but it didn't");
+            Assertions.fail("Async invocation was expected to throw an application exception, but it didn't");
         } catch (ExecutionException ee) {
             // we expect a AppException
             if (!(ee.getCause() instanceof AppException)) {

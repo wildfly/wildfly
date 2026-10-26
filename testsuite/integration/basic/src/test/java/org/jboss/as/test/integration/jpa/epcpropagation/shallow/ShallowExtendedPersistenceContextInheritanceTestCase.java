@@ -5,20 +5,21 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.shallow;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test JPA 2.0 section 7.6.2.1
@@ -38,7 +39,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ShallowExtendedPersistenceContextInheritanceTestCase {
     private static final String ARCHIVE_NAME = "jpa_ShallowExtendedPersistenceContextInheritanceTestCase";
 
@@ -90,8 +91,8 @@ public class ShallowExtendedPersistenceContextInheritanceTestCase {
             error = caught;
         }
 
-        assertNotNull("with shallow inheritance, sibling beans do not inherit extended persistence " +
-                "context from each other (unless ExtendedPersistenceInheritance.DEEP is specified)", error);
+        assertNotNull(error, "with shallow inheritance, sibling beans do not inherit extended persistence " +
+                "context from each other (unless ExtendedPersistenceInheritance.DEEP is specified)");
 
     }
 

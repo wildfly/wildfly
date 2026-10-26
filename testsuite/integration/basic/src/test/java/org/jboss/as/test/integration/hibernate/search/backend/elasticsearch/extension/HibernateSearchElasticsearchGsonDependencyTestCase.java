@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.extension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.gson.JsonObject;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
@@ -12,7 +14,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.core.api.annotation.Observer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.util.ElasticsearchServerSetupObserver;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -24,9 +26,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.Entity;
@@ -37,8 +39,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Test the ability for applications to use native Gson classes,
  * provided they add a dependency to the Gson module.
@@ -46,16 +46,16 @@ import static org.junit.Assert.assertEquals;
  * That's necessary because that module, while public, may be unsupported by product vendors
  * (because its APIs could change without prior notice).
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @Observer(ElasticsearchServerSetupObserver.class)
 public class HibernateSearchElasticsearchGsonDependencyTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void testRequiresDocker() {
         AssumeTestGroupUtil.assumeDockerAvailable();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void securityManagerNotSupportedInHibernateSearch() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }

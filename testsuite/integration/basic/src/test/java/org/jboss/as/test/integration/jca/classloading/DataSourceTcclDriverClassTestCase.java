@@ -5,11 +5,12 @@
 
 package org.jboss.as.test.integration.jca.classloading;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DataSourceTcclDriverClassTestCase.Setup.class)
 public class DataSourceTcclDriverClassTestCase extends AbstractDataSourceClassloadingTestCase {
 

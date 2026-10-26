@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.security.jacc;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -15,11 +15,10 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
@@ -27,10 +26,10 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test based on a section 3.1.3 "Translating Servlet Deployment Descriptors" of the JACC 1.1 specification. This tests works
@@ -38,11 +37,11 @@ import org.junit.runner.RunWith;
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JACCTranslateServletDDTestCase.SecurityDomainsSetup.class})
 @RunAsClient
-@Category(CommonCriteria.class)
-@Ignore("WFLY-4991")
+@Tag("CommonCriteria")
+@Disabled("WFLY-4991")
 public class JACCTranslateServletDDTestCase {
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
     private static final String WEBAPP_NAME = "jacc-test.war";
@@ -74,17 +73,17 @@ public class JACCTranslateServletDDTestCase {
     @Test
     public void testHTTPMethodCanonical(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
-        assertTrue("HTTP Method names should be sorted alphabetically", node.selectNodes("*/Permission[@actions='PUT,DELETE']")
-                .isEmpty());
-        assertFalse("HTTP Method names should be sorted alphabetically", node
-                .selectNodes("*/Permission[@actions='DELETE,PUT']").isEmpty());
+        assertTrue(node.selectNodes("*/Permission[@actions='PUT,DELETE']")
+                .isEmpty(), "HTTP Method names should be sorted alphabetically");
+        assertFalse(node
+                .selectNodes("*/Permission[@actions='DELETE,PUT']").isEmpty(), "HTTP Method names should be sorted alphabetically");
 
-        assertFalse("HTTP Method names should be sorted alphabetically",
-                node.selectNodes("RolePermissions/Role/Permission[@actions='GET,POST']").isEmpty());
-        assertTrue("HTTP Method names should be sorted alphabetically",
-                node.selectNodes("RolePermissions/Role/Permission[@actions='POST,GET']").isEmpty());
-        assertFalse("HTTP Method names should be sorted alphabetically, followed by colon-separated transport guarantee", node
-                .selectNodes("UncheckedPermissions/Permission[@actions='GET,POST:CONFIDENTIAL']").isEmpty());
+        assertFalse(node.selectNodes("RolePermissions/Role/Permission[@actions='GET,POST']").isEmpty(),
+                "HTTP Method names should be sorted alphabetically");
+        assertTrue(node.selectNodes("RolePermissions/Role/Permission[@actions='POST,GET']").isEmpty(),
+                "HTTP Method names should be sorted alphabetically");
+        assertFalse(node
+                .selectNodes("UncheckedPermissions/Permission[@actions='GET,POST:CONFIDENTIAL']").isEmpty(), "HTTP Method names should be sorted alphabetically, followed by colon-separated transport guarantee");
     }
 
     /**
@@ -94,44 +93,44 @@ public class JACCTranslateServletDDTestCase {
     public void testConnectionType(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
         assertFalse(
-                "WebUserDataPermission with the connection type :CONFIDENTIAL should be present in unchecked permissions ",
                 node.selectNodes(
                         "UncheckedPermissions/Permission[ends-with(@type,'WebUserDataPermission') and @actions='GET:CONFIDENTIAL']")
-                        .isEmpty());
+                        .isEmpty(),
+                "WebUserDataPermission with the connection type :CONFIDENTIAL should be present in unchecked permissions ");
         assertFalse(
-                "WebUserDataPermission with the connection type :CONFIDENTIAL should be present in unchecked permissions ",
                 node.selectNodes(
                         "UncheckedPermissions/Permission[ends-with(@type,'WebUserDataPermission') and @actions='GET,POST:CONFIDENTIAL']")
-                        .isEmpty());
+                        .isEmpty(),
+                "WebUserDataPermission with the connection type :CONFIDENTIAL should be present in unchecked permissions ");
     }
 
     /**
      * Test canonical form of HTTP Method list.
      */
     @Test
-    @Ignore("JBPAPP-9405 JACC 1.1 implementation must use exception list instead of missing method list for HTTP methods in the unchecked permissions")
+    @Disabled("JBPAPP-9405 JACC 1.1 implementation must use exception list instead of missing method list for HTTP methods in the unchecked permissions")
     public void testHTTPMethodSubtraction(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
-        assertTrue("HTTP Method exception list must be used instead of method subtraction from 'big 7'.",
-                node.selectNodes("UncheckedPermissions/Permission[@actions='GET,HEAD,OPTIONS,POST,TRACE']").isEmpty());
+        assertTrue(node.selectNodes("UncheckedPermissions/Permission[@actions='GET,HEAD,OPTIONS,POST,TRACE']").isEmpty(),
+                "HTTP Method exception list must be used instead of method subtraction from 'big 7'.");
     }
 
     /**
      * Test handling of HTTP Method Exception list.
      */
     @Test
-    @Ignore("JBPAPP-9400 - JACC permissions with HTTP method exception list are not correctly implemented")
+    @Disabled("JBPAPP-9400 - JACC permissions with HTTP method exception list are not correctly implemented")
     public void testHTTPMethodExceptionList(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
-        assertFalse("Can't find permissions with a HTTP Method exception list",
-                node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,GET,PUT']").isEmpty());
-        assertFalse("Can't find permissions with a HTTP Method exception list",
-                node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,GET,POST,PUT']").isEmpty());
-        assertFalse("Can't find permissions with a HTTP Method exception list",
-                node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,PUT']").isEmpty());
+        assertFalse(node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,GET,PUT']").isEmpty(),
+                "Can't find permissions with a HTTP Method exception list");
+        assertFalse(node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,GET,POST,PUT']").isEmpty(),
+                "Can't find permissions with a HTTP Method exception list");
+        assertFalse(node.selectNodes("UncheckedPermissions/Permission[@actions='!DELETE,PUT']").isEmpty(),
+                "Can't find permissions with a HTTP Method exception list");
 
-        assertTrue("HTTP Method exception list should be constructed by using exclamation mark",
-                node.selectNodes("UncheckedPermissions/Permission[@actions='GET,HEAD,OPTIONS,POST,TRACE']").isEmpty());
+        assertTrue(node.selectNodes("UncheckedPermissions/Permission[@actions='GET,HEAD,OPTIONS,POST,TRACE']").isEmpty(),
+                "HTTP Method exception list should be constructed by using exclamation mark");
     }
 
     /**
@@ -140,14 +139,14 @@ public class JACCTranslateServletDDTestCase {
     @Test
     public void testQualifiedPatterns(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
-        assertTrue("Default pattern '/' must be qualified.", node.selectNodes("*/Permission[@name='/']").isEmpty());
-        assertTrue("Qualified default pattern should not be present in ExcludedPermissions.",
-                node.selectNodes("ExcludedPermissions/Permission[starts-with(@name,'/:')]").isEmpty());
-        assertFalse("Qualified default pattern should be present in UncheckedPermissions.",
-                node.selectNodes("UncheckedPermissions/Permission[starts-with(@name,'/:')]").isEmpty());
-        assertTrue("Path prefix pattern must be qualified.", node.selectNodes("*/Permission[@name='/b/*']").isEmpty());
-        assertTrue("Path prefix pattern must be qualified.", node.selectNodes("*/Permission[@name='/a/*']").isEmpty());
-        assertTrue("Extension pattern must be qualified.", node.selectNodes("*/Permission[@name='*.asp']").isEmpty());
+        assertTrue(node.selectNodes("*/Permission[@name='/']").isEmpty(), "Default pattern '/' must be qualified.");
+        assertTrue(node.selectNodes("ExcludedPermissions/Permission[starts-with(@name,'/:')]").isEmpty(),
+                "Qualified default pattern should not be present in ExcludedPermissions.");
+        assertFalse(node.selectNodes("UncheckedPermissions/Permission[starts-with(@name,'/:')]").isEmpty(),
+                "Qualified default pattern should be present in UncheckedPermissions.");
+        assertTrue(node.selectNodes("*/Permission[@name='/b/*']").isEmpty(), "Path prefix pattern must be qualified.");
+        assertTrue(node.selectNodes("*/Permission[@name='/a/*']").isEmpty(), "Path prefix pattern must be qualified.");
+        assertTrue(node.selectNodes("*/Permission[@name='*.asp']").isEmpty(), "Extension pattern must be qualified.");
     }
 
     // Private methods -------------------------------------------------------

@@ -5,10 +5,13 @@
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import jakarta.jms.Connection;
+
+import static org.junit.jupiter.api.Assertions.fail;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
@@ -18,8 +21,6 @@ import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 import javax.naming.InitialContext;
-
-import static org.junit.Assert.fail;
 
 /**
  * Common class for EJB 2.x MDB deployment tests.
@@ -33,7 +34,7 @@ public abstract class AbstractMDB2xTestCase {
     protected Connection connection;
     protected Session session;
 
-    @Before
+    @BeforeEach
     public void initCommon() {
         try {
             final InitialContext ic = new InitialContext();
@@ -46,7 +47,7 @@ public abstract class AbstractMDB2xTestCase {
         }
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         try {
             if (session != null) {

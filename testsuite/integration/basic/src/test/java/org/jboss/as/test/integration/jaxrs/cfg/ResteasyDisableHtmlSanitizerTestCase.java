@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -23,8 +22,11 @@ import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-disable-html-sanitizer} attribute works as expected.
@@ -37,6 +39,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyDisableHtmlSanitizerTestCase extends AbstractResteasyAttributeTest {
     private static final String HTML = "<html><body><h1>Error: Failed on purpose</h1></body></html>";
     private static final String ESCAPED_HTML = "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Error: Failed on purpose&lt;&#x2F;h1&gt;&lt;&#x2F;body&gt;&lt;&#x2F;html&gt;";
@@ -55,26 +58,26 @@ public class ResteasyDisableHtmlSanitizerTestCase extends AbstractResteasyAttrib
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.html(HTML))) {
-                Assert.assertEquals(400, response.getStatus());
+                Assertions.assertEquals(400, response.getStatus());
                 final String errorHtml = response.readEntity(String.class);
-                Assert.assertEquals(ESCAPED_HTML, errorHtml);
+                Assertions.assertEquals(ESCAPED_HTML, errorHtml);
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkTrue() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.html(HTML))) {
-                Assert.assertEquals(400, response.getStatus());
+                Assertions.assertEquals(400, response.getStatus());
                 final String errorHtml = response.readEntity(String.class);
-                Assert.assertEquals(HTML, errorHtml);
+                Assertions.assertEquals(HTML, errorHtml);
             }
         }
     }

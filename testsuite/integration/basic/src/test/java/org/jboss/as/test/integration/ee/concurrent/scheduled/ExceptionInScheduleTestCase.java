@@ -8,20 +8,20 @@ package org.jboss.as.test.integration.ee.concurrent.scheduled;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for managed executor's hung tasks termination feature.
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExceptionInScheduleTestCase {
 
     @EJB(lookup = "java:module/ExecFlawedTaskBean!org.jboss.as.test.integration.ee.concurrent.scheduled.ExecNumber")
@@ -38,7 +38,7 @@ public class ExceptionInScheduleTestCase {
         execNumber.start();
         Thread.currentThread().sleep(2000);
         execNumber.cease();
-        Assert.assertEquals(execNumber.expected(), execNumber.actual());
+        Assertions.assertEquals(execNumber.expected(), execNumber.actual());
     }
 
 }

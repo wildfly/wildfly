@@ -16,23 +16,24 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.jmx.model.ModelControllerMBeanHelper;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ModelControllerMBeanTestCase {
 
@@ -48,12 +49,12 @@ public class ModelControllerMBeanTestCase {
     private ManagementClient managementClient;
 
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         connection = setupAndGetConnection();
     }
 
-    @After
+    @AfterEach
     public void closeConnection() throws Exception {
         IoUtils.safeClose(connector);
     }
@@ -68,7 +69,7 @@ public class ModelControllerMBeanTestCase {
 
         for (ObjectName name : names) {
             try {
-                Assert.assertNotNull(connection.getMBeanInfo(name));
+                Assertions.assertNotNull(connection.getMBeanInfo(name));
             } catch (Exception e) {
                 failedInfos.put(name, e);
             }
@@ -86,7 +87,7 @@ public class ModelControllerMBeanTestCase {
             }
         }
 
-        Assert.assertTrue(failedInfos.toString(), failedInfos.isEmpty());
+        Assertions.assertTrue(failedInfos.isEmpty(), failedInfos.toString());
     }
 
     private static ObjectName createObjectName(String name) {

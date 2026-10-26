@@ -8,20 +8,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that transaction annotations are applied to timeout method regardless of it's access modifier.
  *
  * @author Tomasz Adamski
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TxTimeoutTimerServiceTestCase {
 
     @Deployment
@@ -37,8 +37,8 @@ public class TxTimeoutTimerServiceTestCase {
         TimeoutBeanRemoteView bean = (TimeoutBeanRemoteView) ctx.lookup("java:module/"
                 + PublicTxTimoutBean.class.getSimpleName());
         bean.startTimer();
-        Assert.assertTrue(PublicTxTimoutBean.awaitTimerCall());
-        Assert.assertEquals(5, PublicTxTimoutBean.getTimeout());
+        Assertions.assertTrue(PublicTxTimoutBean.awaitTimerCall());
+        Assertions.assertEquals(5, PublicTxTimoutBean.getTimeout());
     }
 
     @Test
@@ -47,20 +47,20 @@ public class TxTimeoutTimerServiceTestCase {
         TimeoutBeanRemoteView bean = (TimeoutBeanRemoteView) ctx.lookup("java:module/"
                 + PrivateTxTimeoutBean.class.getSimpleName());
         bean.startTimer();
-        Assert.assertTrue(PrivateTxTimeoutBean.awaitTimerCall());
-        Assert.assertEquals(5, PrivateTxTimeoutBean.getTimeout());
+        Assertions.assertTrue(PrivateTxTimeoutBean.awaitTimerCall());
+        Assertions.assertEquals(5, PrivateTxTimeoutBean.getTimeout());
     }
 
     @Test
     public void testPublicScheduleMethod() throws NamingException {
-        Assert.assertTrue(PublicTxScheduleBean.awaitTimerCall());
-        Assert.assertEquals(5, PublicTxScheduleBean.getTimeout());
+        Assertions.assertTrue(PublicTxScheduleBean.awaitTimerCall());
+        Assertions.assertEquals(5, PublicTxScheduleBean.getTimeout());
     }
 
     @Test
     public void testPrivateScheduleMethod() throws NamingException {
-        Assert.assertTrue(PrivateTxScheduleBean.awaitTimerCall());
-        Assert.assertEquals(5, PrivateTxScheduleBean.getTimeout());
+        Assertions.assertTrue(PrivateTxScheduleBean.awaitTimerCall());
+        Assertions.assertEquals(5, PrivateTxScheduleBean.getTimeout());
     }
 
 }

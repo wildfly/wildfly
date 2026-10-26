@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -24,9 +24,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This is a simple test that deploys an application then checks the logs for ActiveMQ audit logs.
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NoAuditLogTestCase {
 
     @ArquillianResource
@@ -53,7 +53,7 @@ public class NoAuditLogTestCase {
         try (BufferedReader reader = Files.newBufferedReader(getLogFile(), Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
-                Assert.assertFalse(String.format("Log contains ActiveMQ audit log messages: %n%s", line), line.contains("org.apache.activemq.audit"));
+                Assertions.assertFalse(line.contains("org.apache.activemq.audit"), String.format("Log contains ActiveMQ audit log messages: %n%s", line));
             }
         }
     }
@@ -63,7 +63,7 @@ public class NoAuditLogTestCase {
         final ModelNode op = Operations.createOperation("resolve-path", address);
         final ModelNode result = managementClient.getControllerClient().execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail("Failed to locate the log file: " + Operations.getFailureDescription(result).asString());
+            Assertions.fail("Failed to locate the log file: " + Operations.getFailureDescription(result).asString());
         }
         return Paths.get(Operations.readResult(result).asString());
     }

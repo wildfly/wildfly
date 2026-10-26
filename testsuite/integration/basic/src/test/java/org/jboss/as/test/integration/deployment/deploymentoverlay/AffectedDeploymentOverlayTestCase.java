@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 
@@ -12,11 +13,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -29,17 +28,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTestBase {
 
@@ -49,7 +48,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
     private static final PathAddress TEST_OVERLAY_ADDRESS = PathAddress.pathAddress(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
     private static final PathAddress TEST_WILDCARD_ADDRESS = PathAddress.pathAddress(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         getModelControllerClient().execute(Operations.createAddOperation(TEST_OVERLAY_ADDRESS.toModelNode()));
 
@@ -80,7 +79,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
         getModelControllerClient().execute(builder.build());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         getModelControllerClient().execute(Operations.createRemoveOperation(TEST_OVERLAY_ADDRESS.append(CONTENT, "WEB-INF/web.xml").toModelNode()));
         getModelControllerClient().execute(Operations.createRemoveOperation(TEST_OVERLAY_ADDRESS.append(DEPLOYMENT, DEPLOYMENT_NAME).toModelNode()));
@@ -102,34 +101,34 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
     @Test
     public void testContentOverridden(@ArquillianResource URL url) throws Exception {
         String response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlay doesn't contain valid output", "UPDATED", response.trim());
+        Assertions.assertEquals("UPDATED", response.trim(), "Overlay doesn't contain valid output");
         try {
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
-            Assert.fail("Overlay servlet shouldn't be up and working properly");
+            Assertions.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            MatcherAssert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
         }
         getModelControllerClient().execute(Operations.createOperation("redeploy-links", TEST_OVERLAY_ADDRESS.toModelNode()));
         response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlay doesn't contain valid output", "OVERRIDDEN", response.trim());
+        Assertions.assertEquals("OVERRIDDEN", response.trim(), "Overlay doesn't contain valid output");
         try {
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
-            Assert.fail("Overlay servlet shouldn't be up and working properly");
+            Assertions.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            MatcherAssert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
         }
         //add the wildcard link
         getModelControllerClient().execute(Operations.createAddOperation(TEST_WILDCARD_ADDRESS.append(ModelDescriptionConstants.DEPLOYMENT, "*.war").toModelNode()));
         getModelControllerClient().execute(Operations.createOperation("redeploy-links", TEST_OVERLAY_ADDRESS.toModelNode()));//This will redeploy the deployment
         response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlay doesn't contain valid output", "OVERRIDDEN", response.trim());
+        Assertions.assertEquals("OVERRIDDEN", response.trim(), "Overlay doesn't contain valid output");
         response = HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlay doesn't contain valid output", "test", response.trim());
+        Assertions.assertEquals("test", response.trim(), "Overlay doesn't contain valid output");
         getModelControllerClient().execute(Operations.createOperation("redeploy-links", TEST_WILDCARD_ADDRESS.toModelNode()));//This will redeploy the deployment
         response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlaydoesn't contain valid output", "OVERRIDDEN", response.trim());
+        Assertions.assertEquals("OVERRIDDEN", response.trim(), "Overlaydoesn't contain valid output");
         response = HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("Overlay doesn't contain valid output", "test", response.trim());
+        Assertions.assertEquals("test", response.trim(), "Overlay doesn't contain valid output");
     }
 
 }

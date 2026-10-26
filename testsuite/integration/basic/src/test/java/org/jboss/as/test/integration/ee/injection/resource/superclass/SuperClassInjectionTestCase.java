@@ -8,13 +8,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that @Resource bindings on interceptors that are applied to multiple
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SuperClassInjectionTestCase {
 
     @Deployment
@@ -38,7 +38,7 @@ public class SuperClassInjectionTestCase {
     public void testCorrectBinding() throws NamingException {
         InitialContext context = new InitialContext();
         Object result = context.lookup("java:module/env/" + SuperBean.class.getName() + "/simpleStatelessBean");
-        Assert.assertTrue(result instanceof SimpleStatelessBean);
+        Assertions.assertTrue(result instanceof SimpleStatelessBean);
     }
 
 
@@ -46,14 +46,14 @@ public class SuperClassInjectionTestCase {
     public void testSubClass1Injected() throws NamingException {
         InitialContext context = new InitialContext();
         Bean1 result = (Bean1) context.lookup("java:module/bean1");
-        Assert.assertTrue(result.getBean() instanceof SimpleStatelessBean);
+        Assertions.assertTrue(result.getBean() instanceof SimpleStatelessBean);
     }
 
     @Test
     public void testSubClass2Injected() throws NamingException {
         InitialContext context = new InitialContext();
         Bean2 result = (Bean2) context.lookup("java:module/bean2");
-        Assert.assertTrue(result.getBean() instanceof SimpleStatelessBean);
+        Assertions.assertTrue(result.getBean() instanceof SimpleStatelessBean);
     }
 
     //AS7-6500
@@ -61,8 +61,8 @@ public class SuperClassInjectionTestCase {
     public void testOverridenInjectionIsNotInjected() throws NamingException {
         InitialContext context = new InitialContext();
         Bean2 result = (Bean2) context.lookup("java:module/bean2");
-        Assert.assertEquals("string2", result.getSimpleString());
-        Assert.assertEquals(1, result.getSetCount());
+        Assertions.assertEquals("string2", result.getSimpleString());
+        Assertions.assertEquals(1, result.getSetCount());
 
     }
 
@@ -70,6 +70,6 @@ public class SuperClassInjectionTestCase {
     public void testNoInjectionOnOverride() throws NamingException {
         InitialContext context = new InitialContext();
         Bean1 result = (Bean1) context.lookup("java:module/bean1");
-        Assert.assertNull(result.getSimpleString());
+        Assertions.assertNull(result.getSimpleString());
     }
 }

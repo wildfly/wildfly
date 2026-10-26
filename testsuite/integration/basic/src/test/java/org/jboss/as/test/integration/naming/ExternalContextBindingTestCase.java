@@ -45,7 +45,7 @@ import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.ldap.LdapServer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -57,10 +57,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.java.permission.JndiPermission;
 
 /**
@@ -68,11 +69,11 @@ import org.wildfly.naming.java.permission.JndiPermission;
  * as an external context and tests which connect to an actual external LDAP server.
  * @author Stuart Douglas, Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ExternalContextBindingTestCase.ObjectFactoryWithEnvironmentBindingTestCaseServerSetup.class,
         ExternalContextBindingTestCase.PrepareExternalLDAPServerSetup.class})
 public class ExternalContextBindingTestCase {
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         // https://issues.redhat.com/browse/WFLY-17383
         AssumeTestGroupUtil.assumeJDKVersionBefore(20);
@@ -101,8 +102,8 @@ public class ExternalContextBindingTestCase {
             bindingAdd.get(MODULE).set(MODULE_NAME);
             bindingAdd.get(CLASS).set(InitialContext.class.getName());
             ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
-                    addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(),
+                    addResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory bound.");
 
             address = createAddress("cache");
@@ -114,8 +115,8 @@ public class ExternalContextBindingTestCase {
             bindingAdd.get(CACHE).set(true);
             bindingAdd.get(CLASS).set(InitialContext.class.getName());
             addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
-                    addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(),
+                    addResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory bound.");
 
             address = createAddress("ldap");
@@ -133,8 +134,8 @@ public class ExternalContextBindingTestCase {
                     .add(Context.SECURITY_PRINCIPAL, "uid=jduke,ou=People,dc=jboss,dc=org");
             bindingAdd.get(ENVIRONMENT).add(Context.SECURITY_CREDENTIALS, "theduke");
             addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
-                    addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(),
+                    addResult.get(FAILURE_DESCRIPTION).toString());
 
             address = createAddress("ldap-cache");
             bindingAdd = new ModelNode();
@@ -152,8 +153,8 @@ public class ExternalContextBindingTestCase {
                     .add(Context.SECURITY_PRINCIPAL, "uid=jduke,ou=People,dc=jboss,dc=org");
             bindingAdd.get(ENVIRONMENT).add(Context.SECURITY_CREDENTIALS, "theduke");
             addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(),
-                    addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(),
+                    addResult.get(FAILURE_DESCRIPTION).toString());
 
         }
 
@@ -173,9 +174,9 @@ public class ExternalContextBindingTestCase {
             bindingRemove.get(OP_ADDR).set(createAddress("nocache"));
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
-                    removeResult.get(FAILURE_DESCRIPTION)
-                            .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                            .isDefined(),
+                    removeResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory with uncached InitialContext unbound.");
 
             bindingRemove = new ModelNode();
@@ -183,9 +184,9 @@ public class ExternalContextBindingTestCase {
             bindingRemove.get(OP_ADDR).set(createAddress("cache"));
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
-                    removeResult.get(FAILURE_DESCRIPTION)
-                            .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                            .isDefined(),
+                    removeResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory with cached InitialContext unbound.");
 
             bindingRemove = new ModelNode();
@@ -193,9 +194,9 @@ public class ExternalContextBindingTestCase {
             bindingRemove.get(OP_ADDR).set(createAddress("ldap"));
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
-                    removeResult.get(FAILURE_DESCRIPTION)
-                            .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                            .isDefined(),
+                    removeResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory with uncached InitialDirContext unbound.");
 
             bindingRemove = new ModelNode();
@@ -203,9 +204,9 @@ public class ExternalContextBindingTestCase {
             bindingRemove.get(OP_ADDR).set(createAddress("ldap-cache"));
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(),
-                    removeResult.get(FAILURE_DESCRIPTION)
-                            .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                            .isDefined(),
+                    removeResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory with cached InitialDirContext unbound.");
         }
     }
@@ -314,29 +315,29 @@ public class ExternalContextBindingTestCase {
     public void testBasicWithoutCache() throws Exception {
         InitialContext context = new InitialContext();
         InitialContext lookupContext = (InitialContext) context.lookup("java:global/nocache");
-        Assert.assertNotNull(lookupContext);
+        Assertions.assertNotNull(lookupContext);
         LookupEjb ejb = (LookupEjb) lookupContext.lookup("java:module/LookupEjb");
-        Assert.assertNotNull(ejb);
+        Assertions.assertNotNull(ejb);
         InitialContext newLookupContext = (InitialContext) context.lookup("java:global/nocache");
-        Assert.assertNotSame(lookupContext, newLookupContext);
-        Assert.assertEquals(InitialContext.class, lookupContext.getClass());
+        Assertions.assertNotSame(lookupContext, newLookupContext);
+        Assertions.assertEquals(InitialContext.class, lookupContext.getClass());
     }
 
     @Test
     public void testBasicWithCache() throws Exception {
         InitialContext context = new InitialContext();
         InitialContext lookupContext = (InitialContext) context.lookup("java:global/cache");
-        Assert.assertNotNull(lookupContext);
+        Assertions.assertNotNull(lookupContext);
         LookupEjb ejb = (LookupEjb) lookupContext.lookup("java:module/LookupEjb");
-        Assert.assertNotNull(ejb);
+        Assertions.assertNotNull(ejb);
         InitialContext newLookupContext = (InitialContext) context.lookup("java:global/cache");
-        Assert.assertSame(lookupContext, newLookupContext);
+        Assertions.assertSame(lookupContext, newLookupContext);
 
         //close should have no effect
         lookupContext.close();
         ejb = (LookupEjb) lookupContext.lookup("java:module/LookupEjb");
-        Assert.assertNotNull(ejb);
-        Assert.assertNotSame(InitialContext.class, lookupContext.getClass());
+        Assertions.assertNotNull(ejb);
+        Assertions.assertNotSame(InitialContext.class, lookupContext.getClass());
     }
 
     @Test
@@ -359,26 +360,26 @@ public class ExternalContextBindingTestCase {
             LOGGER.debug("looking up "+initialDirContext+" ....");
             ldapContext1 = (InitialDirContext)ctx.lookup(initialDirContext);
             ldapContext2 = (InitialDirContext)ctx.lookup(initialDirContext);
-            Assert.assertNotNull(ldapContext1);
-            Assert.assertNotNull(ldapContext2);
+            Assertions.assertNotNull(ldapContext1);
+            Assertions.assertNotNull(ldapContext2);
             if(withCache) {
-                Assert.assertSame(ldapContext1, ldapContext2);
+                Assertions.assertSame(ldapContext1, ldapContext2);
             } else {
-                Assert.assertNotSame(ldapContext1, ldapContext2);
+                Assertions.assertNotSame(ldapContext1, ldapContext2);
             }
             LOGGER.debug("acquired external LDAP context: " + ldapContext1.toString());
             LdapContext c = (LdapContext)ldapContext1.lookup("dc=jboss,dc=org");
             c = (LdapContext)c.lookup("ou=People");
             Attributes attributes = c.getAttributes("uid=jduke");
-            Assert.assertTrue(attributes.get("description").contains("awesome"));
+            Assertions.assertTrue(attributes.get("description").contains("awesome"));
             // resource injection
             LookupEjb ejb = (LookupEjb) ctx.lookup("java:module/LookupEjb");
-            Assert.assertNotNull(ejb);
+            Assertions.assertNotNull(ejb);
             c = ejb.getLdapCtx();
-            Assert.assertNotNull(c);
+            Assertions.assertNotNull(c);
             c = (LdapContext)c.lookup("ou=People");
             attributes = c.getAttributes("uid=jduke");
-            Assert.assertTrue(attributes.get("description").contains("awesome"));
+            Assertions.assertTrue(attributes.get("description").contains("awesome"));
         } finally {
             if (ctx != null) {
                 ctx.close();

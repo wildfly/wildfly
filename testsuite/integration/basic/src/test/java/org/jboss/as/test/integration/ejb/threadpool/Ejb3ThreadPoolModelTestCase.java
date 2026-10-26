@@ -6,28 +6,31 @@
 package org.jboss.as.test.integration.ejb.threadpool;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Miroslav Novak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(SnapshotRestoreSetupTask.class)
 public class Ejb3ThreadPoolModelTestCase extends Ejb3ThreadPoolBase {
@@ -46,12 +49,12 @@ public class Ejb3ThreadPoolModelTestCase extends Ejb3ThreadPoolBase {
         // first make sure there is no such thread pool
         final MBeanServerConnection mbs = getMBeanServerConnection();
         Set<ObjectName> objs = mbs.queryNames(new ObjectName("jboss.threads:name=*,type=thread-pool"), null);
-        Assert.assertEquals("There is already thread pool with given params but it shouldn't be.", 0,
-                objs.stream()
+        Assertions.assertEquals(0, objs.stream()
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs, o, "MaximumPoolSize")) == maxThreads)
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs, o, "CorePoolSize")) == coreThreads)
                         .filter((o) -> ((long) readAttributeValueFromMBeanObject(mbs, o, "KeepAliveTimeSeconds")) == keepAliveTime)
-                        .count());
+                        .count(),
+                "There is already thread pool with given params but it shouldn't be.");
 
         // create one
         ModelNode addThreadPool = Util.createAddOperation(myPoolPathAddress);
@@ -63,12 +66,12 @@ public class Ejb3ThreadPoolModelTestCase extends Ejb3ThreadPoolBase {
 
         final MBeanServerConnection mbs2 = getMBeanServerConnection();
         objs = mbs2.queryNames(new ObjectName("jboss.threads:name=*,type=thread-pool"), null);
-        Assert.assertEquals("Thread pool was not created or does not have given params.", 1,
-                objs.stream()
+        Assertions.assertEquals(1, objs.stream()
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs2, o, "MaximumPoolSize")) == maxThreads)
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs2, o, "CorePoolSize")) == coreThreads)
                         .filter((o) -> ((long) readAttributeValueFromMBeanObject(mbs2, o, "KeepAliveTimeSeconds")) == keepAliveTime)
-                        .count());
+                        .count(),
+                "Thread pool was not created or does not have given params.");
         ModelNode removeThreadPool = Util.createRemoveOperation(myPoolPathAddress);
         executeOperation(removeThreadPool);
 
@@ -95,50 +98,58 @@ public class Ejb3ThreadPoolModelTestCase extends Ejb3ThreadPoolBase {
         // read from mbean
         final MBeanServerConnection mbs2 = getMBeanServerConnection();
         Set<ObjectName> objs = mbs2.queryNames(new ObjectName("jboss.threads:name=*,type=thread-pool"), null);
-        Assert.assertEquals("Parameters were not applied into thread-pool " + DEFAULT_THREAD_POOL_ADDRESS, 1,
-                objs.stream()
+        Assertions.assertEquals(1, objs.stream()
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs2, o, "MaximumPoolSize")) == maxThreads)
                         .filter((o) -> ((int) readAttributeValueFromMBeanObject(mbs2, o, "CorePoolSize")) == coreThreads)
                         .filter((o) -> ((long) readAttributeValueFromMBeanObject(mbs2, o, "KeepAliveTimeSeconds")) == keepAliveTime)
-                        .count());
+                        .count(),
+                "Parameters were not applied into thread-pool " + DEFAULT_THREAD_POOL_ADDRESS);
 
         // read from CLI
         ModelNode readMaxThreadsOp = Util.getReadAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "max-threads");
         ModelNode readCoreThreadsOp = Util.getReadAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "core-threads");
         ModelNode readKeepAliveOp = Util.getReadAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "keepalive-time");
-        Assert.assertEquals(maxThreads, executeOperation(readMaxThreadsOp).asInt());
-        Assert.assertEquals(coreThreads, executeOperation(readCoreThreadsOp).asInt());
+        Assertions.assertEquals(maxThreads, executeOperation(readMaxThreadsOp).asInt());
+        Assertions.assertEquals(coreThreads, executeOperation(readCoreThreadsOp).asInt());
         ModelNode readKeepAliveTime = executeOperation(readKeepAliveOp);
-        Assert.assertEquals(readKeepAliveTime.get("time").asLong(), keepAliveTime);
-        Assert.assertEquals(readKeepAliveTime.get("unit").asString(), keepAliveTimeUnit);
+        Assertions.assertEquals(readKeepAliveTime.get("time").asLong(), keepAliveTime);
+        Assertions.assertEquals(readKeepAliveTime.get("unit").asString(), keepAliveTimeUnit);
     }
 
-    @Test(expected = Exception.class)
-    public void testNegativeMaxThreadValue() throws Exception {
-        ModelNode writeMaxThreadsOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "max-threads", -12);
-        executeOperation(writeMaxThreadsOp);
+    @Test
+    public void testNegativeMaxThreadValue() {
+        assertThrows(Exception.class, () -> {
+            ModelNode writeMaxThreadsOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "max-threads", -12);
+            executeOperation(writeMaxThreadsOp);
+        });
     }
 
-    @Test(expected = Exception.class)
-    public void testNegativeCoreThreadValue() throws Exception {
-        ModelNode writeCoreThreadsOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "core-threads", -12);
-        executeOperation(writeCoreThreadsOp);
+    @Test
+    public void testNegativeCoreThreadValue() {
+        assertThrows(Exception.class, () -> {
+            ModelNode writeCoreThreadsOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "core-threads", -12);
+            executeOperation(writeCoreThreadsOp);
+        });
     }
 
-    @Test(expected = Exception.class)
-    public void testNegativeKeepAliveTimeoutValue() throws Exception {
-        ModelNode writeKeepAliveTimeOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "keepalive-time",
-                new ModelNode().get("keepalive-time").set(new ModelNode().add("unit", "SECONDS")
-                        .add("time", -12)));
-        executeOperation(writeKeepAliveTimeOp);
+    @Test
+    public void testNegativeKeepAliveTimeoutValue() {
+        assertThrows(Exception.class, () -> {
+            ModelNode writeKeepAliveTimeOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "keepalive-time",
+                    new ModelNode().get("keepalive-time").set(new ModelNode().add("unit", "SECONDS")
+                            .add("time", -12)));
+            executeOperation(writeKeepAliveTimeOp);
+        });
     }
 
-    @Test(expected = Exception.class)
-    public void testIllegalTimeUnitValue() throws Exception {
-        ModelNode writeKeepAliveTimeOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "keepalive-time",
-                new ModelNode().get("keepalive-time").set(new ModelNode().add("unit", "BADUNIT")
-                        .add("time", 12)));
-        executeOperation(writeKeepAliveTimeOp);
+    @Test
+    public void testIllegalTimeUnitValue() {
+        assertThrows(Exception.class, () -> {
+            ModelNode writeKeepAliveTimeOp = Util.getWriteAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "keepalive-time",
+                    new ModelNode().get("keepalive-time").set(new ModelNode().add("unit", "BADUNIT")
+                            .add("time", 12)));
+            executeOperation(writeKeepAliveTimeOp);
+        });
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws Exception {

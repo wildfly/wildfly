@@ -8,12 +8,11 @@ package org.jboss.as.test.integration.ejb.packaging.war;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.logging.Logger;
@@ -21,15 +20,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testing packaging ejb in war.
  *
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WarPackagingTestCase {
     private static final Logger log = Logger.getLogger(WarPackagingTestCase.class);
     private static final String ARCHIVE_NAME = "ejbinwar";
@@ -63,15 +63,15 @@ public class WarPackagingTestCase {
     @Test
     public void test() throws Exception {
         JarBean jarBean = (JarBean) ctx.lookup("java:module/" + JarBean.class.getSimpleName() + "!" + JarBean.class.getName());
-        Assert.assertEquals(JAR_SUCCESS_STRING, jarBean.checkMe());
+        Assertions.assertEquals(JAR_SUCCESS_STRING, jarBean.checkMe());
         jarBean = (JarBean) ctx.lookup("java:global/" + ARCHIVE_NAME + "/" + JarBean.class.getSimpleName() + "!"
                 + JarBean.class.getName());
-        Assert.assertEquals(JAR_SUCCESS_STRING, jarBean.checkMe());
+        Assertions.assertEquals(JAR_SUCCESS_STRING, jarBean.checkMe());
 
         WarBean warBean = (WarBean) ctx.lookup("java:module/" + WarBean.class.getSimpleName() + "!" + WarBean.class.getName());
-        Assert.assertEquals(WAR_SUCCESS_STRING, warBean.checkMe());
+        Assertions.assertEquals(WAR_SUCCESS_STRING, warBean.checkMe());
         warBean = (WarBean) ctx.lookup("java:module/" + WarBean.class.getSimpleName() + "!" + WarBean.class.getName());
-        Assert.assertEquals(WAR_SUCCESS_STRING, warBean.checkMe());
+        Assertions.assertEquals(WAR_SUCCESS_STRING, warBean.checkMe());
     }
 
     @Test
@@ -80,6 +80,6 @@ public class WarPackagingTestCase {
         String url = "http://" + baseUrl.getHost() + ":" + baseUrl.getPort() + "/ejbinwar/servlet?archive=jar";
         log.trace(url);
         String res = HttpRequest.get(url, 2, TimeUnit.SECONDS);
-        Assert.assertEquals(JAR_SUCCESS_STRING, res);
+        Assertions.assertEquals(JAR_SUCCESS_STRING, res);
     }
 }

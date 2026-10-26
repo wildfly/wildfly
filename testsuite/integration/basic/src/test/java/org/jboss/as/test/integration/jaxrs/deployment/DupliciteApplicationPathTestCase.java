@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.jaxrs.deployment;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DupliciteApplicationPathTestCase {
 
@@ -47,8 +47,8 @@ public class DupliciteApplicationPathTestCase {
     @Test
     public void testDuplicationTwoAppTwoResourceSameMethodPath() throws Exception {
         int resultWarningsCount = getWarningCount("WFLYUT0101");
-        Assert.assertEquals("Expected warning 'WFLYUT0101' not found.",
-                1, resultWarningsCount - initWarningsCount);
+        Assertions.assertEquals(1,
+                resultWarningsCount - initWarningsCount, "Expected warning 'WFLYUT0101' not found.");
     }
 
     /**

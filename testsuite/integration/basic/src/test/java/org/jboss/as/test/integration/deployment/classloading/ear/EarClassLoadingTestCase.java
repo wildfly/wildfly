@@ -4,17 +4,20 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 public class EarClassLoadingTestCase {
 
     @Deployment
@@ -33,9 +36,10 @@ public class EarClassLoadingTestCase {
         return ear;
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void testWebInfLibNotAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA");
+    @Test
+    public void testWebInfLibNotAccessible() {
+        assertThrows(ClassNotFoundException.class, () ->
+            loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA"));
     }
 
     @Test

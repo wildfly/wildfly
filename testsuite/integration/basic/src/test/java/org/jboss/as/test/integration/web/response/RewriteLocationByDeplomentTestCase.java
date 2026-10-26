@@ -14,7 +14,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -26,14 +26,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Tomas Hofman (thofman@redhat.com)
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RewriteLocationByDeplomentTestCase extends ContainerResourceMgmtTestBase {
 
@@ -58,7 +58,7 @@ public class RewriteLocationByDeplomentTestCase extends ContainerResourceMgmtTes
         try(AutoCloseable snapshot = ServerSnapshot.takeSnapshot(managementClient)) {
             // check that "/test" path returns 404
             HttpResponse response = getResponse("/test");
-            Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(404, response.getStatusLine().getStatusCode());
 
             // create location "/test" serving welcome-content
             ModelNode op = ModelUtil.createOpNode("subsystem=undertow/server=default-server/host=default-host", "add");
@@ -68,23 +68,23 @@ public class RewriteLocationByDeplomentTestCase extends ContainerResourceMgmtTes
 
             ServerReload.executeReloadAndWaitForCompletion(getManagementClient());
             response = getResponse("/test");
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            Assert.assertTrue("Expected to receive welcome page, but content length is 0",
-                    response.getEntity().getContentLength() > 0);
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertTrue(response.getEntity().getContentLength() > 0,
+                    "Expected to receive welcome page, but content length is 0");
 
             // deploy an app at the same location and check it's accessible
             deployer.deploy("app");
             response = getResponse("/test");
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            Assert.assertTrue("Expected to receive servlet response without any content",
-                    response.getEntity().getContentLength() == 0);
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertTrue(response.getEntity().getContentLength() == 0,
+                    "Expected to receive servlet response without any content");
 
             // undeploy app and check that welcome-content is accessible again
             deployer.undeploy("app");
             response = getResponse("/test");
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            Assert.assertTrue("Expected to receive welcome page, but content length is 0",
-                    response.getEntity().getContentLength() > 0);
+            Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+            Assertions.assertTrue(response.getEntity().getContentLength() > 0,
+                    "Expected to receive welcome page, but content length is 0");
         }
     }
 

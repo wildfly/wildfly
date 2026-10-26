@@ -8,13 +8,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that {@link jakarta.ejb.EJBContext#getCallerPrincipal()} returns the unauthenticated identity in a timeout method.
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServiceCallerPrincipleTestCase {
 
     @Deployment
@@ -39,7 +39,7 @@ public class TimerServiceCallerPrincipleTestCase {
         InitialContext ctx = new InitialContext();
         TimerGetCallerPrincipleBean bean = (TimerGetCallerPrincipleBean) ctx.lookup("java:module/" + TimerGetCallerPrincipleBean.class.getSimpleName());
         bean.createTimer();
-        Assert.assertEquals("anonymous", TimerGetCallerPrincipleBean.awaitTimerCall());
+        Assertions.assertEquals("anonymous", TimerGetCallerPrincipleBean.awaitTimerCall());
     }
 
 

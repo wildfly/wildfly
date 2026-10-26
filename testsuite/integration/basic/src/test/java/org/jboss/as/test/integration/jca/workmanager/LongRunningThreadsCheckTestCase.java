@@ -8,15 +8,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
@@ -36,8 +36,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.reflect.ReflectPermission;
 
@@ -48,7 +49,7 @@ import java.lang.reflect.ReflectPermission;
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(LongRunningThreadsCheckTestCase.TestCaseSetup.class)
 public class LongRunningThreadsCheckTestCase {
 
@@ -160,7 +161,7 @@ public class LongRunningThreadsCheckTestCase {
     @Test
     public void testWmWithoutLongRunningThreads() throws Throwable {
 
-        assertNotNull("A1 not found", adminObject1);
+        assertNotNull(adminObject1, "A1 not found");
 
         MultipleAdminObject1Impl impl = (MultipleAdminObject1Impl) adminObject1;
         MultipleResourceAdapter3 adapter = (MultipleResourceAdapter3) impl.getResourceAdapter();
@@ -180,7 +181,7 @@ public class LongRunningThreadsCheckTestCase {
      */
     @Test
     public void testWmWithLongRunningThreads() throws Throwable {
-        assertNotNull("A2 not found", adminObject2);
+        assertNotNull(adminObject2, "A2 not found");
 
         MultipleAdminObject1Impl impl = (MultipleAdminObject1Impl) adminObject2;
         MultipleResourceAdapter3 adapter = (MultipleResourceAdapter3) impl.getResourceAdapter();

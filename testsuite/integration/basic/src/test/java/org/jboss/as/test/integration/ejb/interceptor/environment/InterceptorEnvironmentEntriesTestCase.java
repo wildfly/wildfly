@@ -7,21 +7,21 @@ package org.jboss.as.test.integration.ejb.interceptor.environment;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that interceptor environment entries defined in ejb-jar are processed
  * <p/>
  * AS7-2776
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InterceptorEnvironmentEntriesTestCase {
 
     @ArquillianResource
@@ -39,13 +39,13 @@ public class InterceptorEnvironmentEntriesTestCase {
     public void testInjection() throws Exception {
         MySession2RemoteB test = (MySession2RemoteB) ctx.lookup("java:module/MySession2BeanB");
         boolean a = test.doit();
-        Assert.assertEquals(false, a);
+        Assertions.assertEquals(false, a);
     }
 
     @Test
     public void testInjection2() throws Exception {
         MyTestRemoteB test = (MyTestRemoteB) ctx.lookup("java:module/MyTestB");
         boolean a = test.doit();
-        Assert.assertEquals(true, a);
+        Assertions.assertEquals(true, a);
     }
 }

@@ -19,7 +19,8 @@ import jakarta.enterprise.concurrent.ManagedThreadFactory;
 
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Eduardo Martins
@@ -57,7 +58,7 @@ public class DefaultManagedThreadFactoryTestEJB {
         };
         managedThreadFactory.newThread(r).start();
         if (! latch.await(TimeoutUtil.adjust(5000), TimeUnit.MILLISECONDS)) {
-            Assert.fail("Thread not finished correctly");
+            Assertions.fail("Thread not finished correctly");
         }
     }
 

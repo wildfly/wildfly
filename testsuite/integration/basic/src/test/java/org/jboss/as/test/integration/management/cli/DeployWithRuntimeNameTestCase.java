@@ -15,7 +15,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
@@ -30,21 +30,21 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.After;
-import org.junit.AfterClass;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeployWithRuntimeNameTestCase {
 
@@ -66,12 +66,12 @@ public class DeployWithRuntimeNameTestCase {
         return ShrinkWrap.create(JavaArchive.class, "dummy.jar").addClass(DeployWithRuntimeNameTestCase.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setupCli() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ctx = CLITestUtil.getCommandContext();
         ctx.connectController();
@@ -88,12 +88,12 @@ public class DeployWithRuntimeNameTestCase {
         return tempFile;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
 
-    @After
+    @AfterEach
     public void undeployAll() {
         assertThat(warFile.delete(), is(true));
         if(ctx != null) {

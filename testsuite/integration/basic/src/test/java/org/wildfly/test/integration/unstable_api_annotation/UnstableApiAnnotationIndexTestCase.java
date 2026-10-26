@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -41,9 +41,10 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.integration.unstable_api_annotation.dummy.Dummy;
 import org.wildfly.test.integration.unstable_api_annotation.jar.JarClassA;
 import org.wildfly.test.integration.unstable_api_annotation.jar2.Jar2ClassA;
@@ -56,7 +57,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  *
  * Also, there is some verification that in various types of archives, the classes are only scanned once.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({UnstableApiAnnotationIndexTestCase.AddUnstableApiAnnotationResourceSetupTask.class, UnstableApiAnnotationIndexTestCase.SystemPropertyServerSetupTask.class})
 public class UnstableApiAnnotationIndexTestCase {
@@ -248,8 +249,8 @@ public class UnstableApiAnnotationIndexTestCase {
             String count = logEntry.substring(index + 1).trim();
             classCount += Integer.parseInt(count);
         }
-        Assert.assertFalse(newLogEntries.isEmpty());
-        Assert.assertEquals(numberClasses, classCount);
+        Assertions.assertFalse(newLogEntries.isEmpty());
+        Assertions.assertEquals(numberClasses, classCount);
     }
 
     private static class LogDiffer {
@@ -261,9 +262,9 @@ public class UnstableApiAnnotationIndexTestCase {
         public LogDiffer() {
             String jbossHomeProp = System.getProperty("jboss.home");
             Path jbossHome = Paths.get(jbossHomeProp);
-            Assert.assertTrue(Files.exists(jbossHome));
+            Assertions.assertTrue(Files.exists(jbossHome));
             this.logFile = jbossHome.resolve("standalone/log/server.log");
-            Assert.assertTrue(Files.exists(logFile));
+            Assertions.assertTrue(Files.exists(logFile));
         }
 
         public void takeSnapshot() {

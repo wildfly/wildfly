@@ -12,7 +12,7 @@ import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.WebSocketContainer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
 import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor;
@@ -23,20 +23,20 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author Matus Abaffy
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WebSocketInjectionSupportTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         // TODO WFLY-16551
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
@@ -73,21 +73,21 @@ public class WebSocketInjectionSupportTestCase {
         final WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         serverContainer.connectToServer(AnnotatedClient.class, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket/cruel", "", ""));
 
-        Assert.assertEquals("Hello cruel World", AnnotatedClient.getMessage());
+        Assertions.assertEquals("Hello cruel World", AnnotatedClient.getMessage());
 
-        Assert.assertTrue("Client endpoint's injection not correct.", AnnotatedClient.injectionOK);
-        Assert.assertTrue("Server endpoint's injection not correct.", AnnotatedEndpoint.injectionOK);
+        Assertions.assertTrue(AnnotatedClient.injectionOK, "Client endpoint's injection not correct.");
+        Assertions.assertTrue(AnnotatedEndpoint.injectionOK, "Server endpoint's injection not correct.");
 
-        Assert.assertTrue("PostConstruct method on client endpoint instance not called.", AnnotatedClient.postConstructCalled);
-        Assert.assertTrue("PostConstruct method on server endpoint instance not called.", AnnotatedEndpoint.postConstructCalled);
+        Assertions.assertTrue(AnnotatedClient.postConstructCalled, "PostConstruct method on client endpoint instance not called.");
+        Assertions.assertTrue(AnnotatedEndpoint.postConstructCalled, "PostConstruct method on server endpoint instance not called.");
 
-        Assert.assertEquals("AroundConstruct interceptor method not invoked for client endpoint.",
-                "AroundConstructInterceptor#Joe#AnnotatedClient", AnnotatedClient.getName());
-        Assert.assertEquals("AroundConstruct interceptor method not invoked for server endpoint.",
-                "AroundConstructInterceptor#Joe#AnnotatedEndpoint", AnnotatedEndpoint.getName());
+        Assertions.assertEquals("AroundConstructInterceptor#Joe#AnnotatedClient",
+                AnnotatedClient.getName(), "AroundConstruct interceptor method not invoked for client endpoint.");
+        Assertions.assertEquals("AroundConstructInterceptor#Joe#AnnotatedEndpoint",
+                AnnotatedEndpoint.getName(), "AroundConstruct interceptor method not invoked for server endpoint.");
 
-        Assert.assertEquals(2, ComponentInterceptor.getInterceptions().size());
-        Assert.assertEquals("open", ComponentInterceptor.getInterceptions().get(0).getMethodName());
-        Assert.assertEquals("message", ComponentInterceptor.getInterceptions().get(1).getMethodName());
+        Assertions.assertEquals(2, ComponentInterceptor.getInterceptions().size());
+        Assertions.assertEquals("open", ComponentInterceptor.getInterceptions().get(0).getMethodName());
+        Assertions.assertEquals("message", ComponentInterceptor.getInterceptions().get(1).getMethodName());
     }
 }

@@ -5,23 +5,26 @@
 
 package org.jboss.as.test.integration.ejb.descriptor.ejbnamewildcard;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for wildcard (*) in ejb-name element of jboss-ejb3.xml
  * @author Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EJBNameWildcardTestCase {
 
     @Deployment
@@ -37,14 +40,16 @@ public class EJBNameWildcardTestCase {
      * as defined in jboss-ejb3.xml using ejb-name=*,method-name=restrictedMethod.
      * It shouldn't be allowed.
      */
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testWildcardRestrictedMethodOnBeanOne() throws Exception {
-        getRestrictedBean(BeanOne.class).wildcardRestrictedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanOne.class).wildcardRestrictedMethod());
     }
 
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testWildcardRestrictedMethodOnBeanTwo() throws Exception {
-        getRestrictedBean(BeanTwo.class).wildcardRestrictedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanTwo.class).wildcardRestrictedMethod());
     }
 
     /*
@@ -52,14 +57,16 @@ public class EJBNameWildcardTestCase {
      * by jboss-ejb3.xml using ejb-name=*,method-name=excludedMethod
      * and shouldn't be callable at all.
      */
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testWildcardExcludedMethodOnBeanOne() throws Exception {
-        getRestrictedBean(BeanOne.class).wildcardExcludedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanOne.class).wildcardExcludedMethod());
     }
 
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testWildcardExcludedMethodOnBeanTwo() throws Exception {
-        getRestrictedBean(BeanTwo.class).wildcardExcludedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanTwo.class).wildcardExcludedMethod());
     }
 
     /*
@@ -67,14 +74,16 @@ public class EJBNameWildcardTestCase {
      * by jboss-ejb3.xml using ejb-name=*,method-name=excludedMethod
      * and shouldn't be callable at all.
      */
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testLocalRestrictedMethodOnBeanTwo() throws Exception {
-        getRestrictedBean(BeanTwo.class).localRestrictedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanTwo.class).localRestrictedMethod());
     }
 
-    @Test(expected = EJBAccessException.class)
+    @Test
     public void testLocalExcludedMethodOnBeanTwo() throws Exception {
-        getRestrictedBean(BeanTwo.class).localExcludedMethod();
+        assertThrows(EJBAccessException.class, () ->
+            getRestrictedBean(BeanTwo.class).localExcludedMethod());
     }
 
     /*

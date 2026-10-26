@@ -19,7 +19,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -46,18 +46,18 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the CDI request scope is active in MDB invocations.
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ MDBRAScopeCdiIntegrationTestCase.JmsQueueSetup.class })
 public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestBase {
 
@@ -89,7 +89,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         setupStandaloneRA();
         setupSubdeployedRA();
@@ -151,7 +151,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             remove(raAddress_subdeployment);
@@ -219,7 +219,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
 
     @Test
     public void testMe() throws Exception {
-        Assert.assertNotNull(getModelControllerClient());
+        Assertions.assertNotNull(getModelControllerClient());
         try {
             // deployer.deploy(deploymentName);
 

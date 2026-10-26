@@ -30,7 +30,7 @@ import javax.management.MBeanServerPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -46,16 +46,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that an accepted request properly blocks server suspension for the complete duration of a request,
  * i.e. from {@link jakarta.servlet.ServletRequestListener#requestInitialized(jakarta.servlet.ServletRequestEvent)} to {@link jakarta.servlet.ServletRequestListener#requestDestroyed(jakarta.servlet.ServletRequestEvent)},
  * and that requests fail with the expected status code once suspended.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class WebSuspendTestCase {
 
@@ -88,7 +88,7 @@ Dependencies: org.jboss.as.controller
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    @After
+    @AfterEach
     public void close() {
         this.executor.shutdown();
     }

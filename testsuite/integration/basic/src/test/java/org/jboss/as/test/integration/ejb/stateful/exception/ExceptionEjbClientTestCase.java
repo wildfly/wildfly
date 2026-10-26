@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.ejb.stateful.exception;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
 
@@ -15,13 +15,14 @@ import javax.naming.NamingException;
 
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.ejb.client.RequestSendFailedException;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 
 /**
@@ -31,11 +32,11 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
  *  @author Ondrej Chaloupka
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExceptionEjbClientTestCase extends ExceptionTestCase {
     private static Context context;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Properties props = new Properties();
         props.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
@@ -71,9 +72,9 @@ public class ExceptionEjbClientTestCase extends ExceptionTestCase {
 
             DestroyMarkerBeanInterface destroyM = (DestroyMarkerBeanInterface) ctx.lookup(String.format("ejb:/%s/%s!%s", ARCHIVE_NAME, DestroyMarkerBean.class.getSimpleName(), DestroyMarkerBeanInterface.class.getName()));
             destroyM.is();
-            Assert.fail("It was expected a RequestSendFailedException being thrown");
+            Assertions.fail("It was expected a RequestSendFailedException being thrown");
         } catch (RequestSendFailedException e) {
-            assertTrue("Destination should be displayed", ExceptionUtils.getFullStackTrace(e).contains("remote+http://localhost:1000"));
+            assertTrue(ExceptionUtils.getFullStackTrace(e).contains("remote+http://localhost:1000"), "Destination should be displayed");
         }
     }
 

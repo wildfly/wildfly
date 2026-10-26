@@ -10,22 +10,22 @@ import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Martin Kouba
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BeanDiscoveryTest {
 
     @Deployment
@@ -78,14 +78,14 @@ public class BeanDiscoveryTest {
         assertDiscoveredAndAvailable(alpha, Alpha.class);
     }
 
-    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
+    @Disabled("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
     public void testImplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
         assertDiscoveredAndAvailable(bravo, Bravo.class);
         assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
-    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
+    @Disabled("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
     public void testImplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
         assertDiscoveredAndAvailable(charlie, Charlie.class);
@@ -115,15 +115,15 @@ public class BeanDiscoveryTest {
     }
 
     private <T extends Ping> void assertDiscoveredAndAvailable(T reference, Class<T> clazz) {
-        Assert.assertTrue(extension.getObservedAnnotatedTypes().contains(clazz));
-        Assert.assertNotNull(reference);
+        Assertions.assertTrue(extension.getObservedAnnotatedTypes().contains(clazz));
+        Assertions.assertNotNull(reference);
         reference.pong();
         manager.resolve(manager.getBeans(clazz));
     }
 
     private <T> void assertNotDiscoveredAndNotAvailable(Class<T> clazz) {
-        Assert.assertFalse(extension.getObservedAnnotatedTypes().contains(clazz));
-        Assert.assertTrue(manager.getBeans(clazz).isEmpty());
+        Assertions.assertFalse(extension.getObservedAnnotatedTypes().contains(clazz));
+        Assertions.assertTrue(manager.getBeans(clazz).isEmpty());
     }
 
     private static StringAsset newBeans11Descriptor(String mode) {

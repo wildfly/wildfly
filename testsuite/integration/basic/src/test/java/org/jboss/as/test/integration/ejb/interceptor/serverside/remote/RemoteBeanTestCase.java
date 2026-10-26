@@ -11,31 +11,31 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.InterceptorModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test case verifying server-side interceptor execution while accessing a stateful EJB implementing @Remote interface.
  *
  * @author Sultan Zhantemirov
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RemoteBeanTestCase.SetupTask.class)
 public class RemoteBeanTestCase {
 
     private static Context ctx;
     private static final String MODULE_NAME = "remote-stateful-ejb";
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -55,14 +55,14 @@ public class RemoteBeanTestCase {
     public void remoteBeanCheck() throws Exception {
         final SimpleCounter bean = (SimpleCounter) ctx.lookup("ejb:" + "" + "/" + MODULE_NAME + "/" + ""
                 + "/" + StatefulCounterBean.class.getSimpleName() + "!" + SimpleCounter.class.getName() + "?stateful");
-        Assert.assertNotNull("Null bean proxy has been returned by context lookup", bean);
+        Assertions.assertNotNull(bean, "Null bean proxy has been returned by context lookup");
 
         for (int i = 0; i < 5; i++) {
             bean.increment();
         }
 
-        Assert.assertEquals(5, bean.getCount());
-        Assert.assertEquals(LoggingInterceptor.PREFIX + StatefulCounterBean.class.getSimpleName(), bean.getSimpleName());
+        Assertions.assertEquals(5, bean.getCount());
+        Assertions.assertEquals(LoggingInterceptor.PREFIX + StatefulCounterBean.class.getSimpleName(), bean.getSimpleName());
     }
 
     static class SetupTask extends AbstractServerInterceptorsSetupTask.SetupTask {

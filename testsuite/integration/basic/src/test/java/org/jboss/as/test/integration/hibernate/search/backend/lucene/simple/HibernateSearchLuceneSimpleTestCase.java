@@ -4,34 +4,34 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.lucene.simple;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verify deployed applications can use the default Hibernate Search module via Jakarta Persistence APIs.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateSearchLuceneSimpleTestCase {
 
     private static final String NAME = HibernateSearchLuceneSimpleTestCase.class.getSimpleName();
     private static final String JAR_ARCHIVE_NAME = NAME + ".jar";
 
-    @BeforeClass
+    @BeforeAll
     public static void securityManagerNotSupportedInHibernateSearch() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
@@ -39,8 +39,8 @@ public class HibernateSearchLuceneSimpleTestCase {
     @Inject
     private SearchBean searchBean;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void cleanupDatabase() {
         searchBean.deleteAll();
     }

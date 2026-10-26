@@ -8,8 +8,8 @@ package org.jboss.as.test.integration.management.console;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -43,11 +43,11 @@ import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case to test custom / constant headers are applied to /console.
@@ -55,7 +55,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:tterem@redhat.com">Tomas Terem</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class HttpManagementConstantHeadersTestCase {
 
@@ -78,7 +78,7 @@ public class HttpManagementConstantHeadersTestCase {
    private URL metricsUrl;
    private HttpClient httpClient;
 
-   @Before
+   @BeforeEach
    public void createClient() throws Exception {
       String address = managementClient.getMgmtAddress();
       this.managementConsoleUrl = new URL("http", address, MGMT_PORT, CONSOLE_CTX);
@@ -93,7 +93,7 @@ public class HttpManagementConstantHeadersTestCase {
             .build();
    }
 
-   @After
+   @AfterEach
    public void closeClient() {
       if (httpClient instanceof Closeable) {
          try {
@@ -150,7 +150,7 @@ public class HttpManagementConstantHeadersTestCase {
       return headerMapping;
    }
 
-   @After
+   @AfterEach
    public void removeHeaders() throws Exception {
       ModelNode undefineAttribute = new ModelNode();
       undefineAttribute.get("address").set(INTERFACE_ADDRESS.toModelNode());
@@ -180,7 +180,7 @@ public class HttpManagementConstantHeadersTestCase {
       assertEquals("Management", header.getValue());
 
       header = response.getFirstHeader("X-Error");
-      assertNull("Header X-Error Unexpected", header);
+      assertNull(header, "Header X-Error Unexpected");
    }
 
    /**
@@ -201,7 +201,7 @@ public class HttpManagementConstantHeadersTestCase {
       assertEquals("Error", header.getValue());
 
       header = response.getFirstHeader("X-Management");
-      assertNull("Header X-Management Unexpected", header);
+      assertNull(header, "Header X-Management Unexpected");
    }
 
    /**
@@ -286,7 +286,7 @@ public class HttpManagementConstantHeadersTestCase {
     */
    @Test
    public void testHeadersOverrideNonManagementEndpoint() throws Exception {
-      Assume.assumeTrue(checkIfMetricsUsable());
+      Assumptions.assumeTrue(checkIfMetricsUsable());
       HttpGet get = new HttpGet(metricsUrl.toURI().toString());
       HttpResponse response = httpClient.execute(get);
       assertEquals(200, response.getStatusLine().getStatusCode());

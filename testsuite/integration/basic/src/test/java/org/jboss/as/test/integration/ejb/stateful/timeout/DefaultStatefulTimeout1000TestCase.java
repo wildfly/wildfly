@@ -7,21 +7,21 @@ package org.jboss.as.test.integration.ejb.stateful.timeout;
 
 import jakarta.ejb.NoSuchEJBException;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the default stateful timeout value 1000 configured in the server works.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DefaultStatefulTimeout1000TestCase.ServerSetup.class)
 public class DefaultStatefulTimeout1000TestCase extends StatefulTimeoutTestBase2 {
 
@@ -76,10 +76,10 @@ public class DefaultStatefulTimeout1000TestCase extends StatefulTimeoutTestBase2
      */
     @Test
     public void testNoTimeoutByApplication() throws Exception {
-        Assert.assertEquals(1000, readAttribute().asLong());
+        Assertions.assertEquals(1000, readAttribute().asLong());
 
         TimeoutNotConfiguredBean timeoutNotConfiguredBean = lookup(TimeoutNotConfiguredBean.class);
-        Assert.assertFalse(TimeoutNotConfiguredBean.preDestroy);
+        Assertions.assertFalse(TimeoutNotConfiguredBean.preDestroy);
         timeoutNotConfiguredBean.doStuff();
         Thread.sleep(2000);
         try {
@@ -88,7 +88,7 @@ public class DefaultStatefulTimeout1000TestCase extends StatefulTimeoutTestBase2
         } catch (NoSuchEJBException expected) {
             //ignore
         }
-        Assert.assertTrue(TimeoutNotConfiguredBean.preDestroy);
+        Assertions.assertTrue(TimeoutNotConfiguredBean.preDestroy);
     }
 
     /**

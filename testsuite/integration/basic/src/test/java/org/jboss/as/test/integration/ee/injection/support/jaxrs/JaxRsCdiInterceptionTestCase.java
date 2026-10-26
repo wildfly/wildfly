@@ -4,14 +4,14 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.jaxrs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
@@ -23,11 +23,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JaxRsCdiInterceptionTestCase {
 
@@ -59,13 +59,13 @@ public class JaxRsCdiInterceptionTestCase {
         assertEquals("Hello World", result);
 
         String firstInterceptedMethod = performCall("rest/interception/resource/componentInterceptor/firstInterception");
-        Assert.assertEquals("getMessage", firstInterceptedMethod);
+        Assertions.assertEquals("getMessage", firstInterceptedMethod);
 
         Boolean injectionBool = Boolean.valueOf(performCall("rest/interception/resource/injectionOk"));
-        Assert.assertTrue("Jax Rs field injection not correct.", injectionBool);
+        Assertions.assertTrue(injectionBool, "Jax Rs field injection not correct.");
 
         Integer intercepts = Integer.valueOf(performCall("rest/interception/resource/componentInterceptor/numberOfInterceptions"));
-        Assert.assertEquals(Integer.valueOf(4), intercepts);
+        Assertions.assertEquals(Integer.valueOf(4), intercepts);
     }
 
 

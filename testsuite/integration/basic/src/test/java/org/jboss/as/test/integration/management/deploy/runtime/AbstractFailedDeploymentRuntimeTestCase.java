@@ -31,8 +31,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -82,10 +82,10 @@ public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRu
 
         ModelNode result = controllerClient.execute(ob.build());
 
-        Assert.assertTrue("deploy did not fail: " + result, Operations.isSuccessfulOutcome(result));
-        Assert.assertTrue(result.toString(), result.hasDefined(RESULT, "step-2", ROLLED_BACK));
-        Assert.assertFalse(result.toString(), result.get(RESULT, "step-2", ROLLED_BACK).asBoolean());
-        Assert.assertEquals(result.toString(), FAILED, result.get(RESULT, "step-2", OUTCOME).asString());
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "deploy did not fail: " + result);
+        Assertions.assertTrue(result.hasDefined(RESULT, "step-2", ROLLED_BACK), result.toString());
+        Assertions.assertFalse(result.get(RESULT, "step-2", ROLLED_BACK).asBoolean(), result.toString());
+        Assertions.assertEquals(FAILED, result.get(RESULT, "step-2", OUTCOME).asString(), result.toString());
 
     }
 
@@ -94,7 +94,7 @@ public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRu
                 undeploy(deploymentName),
                 remove(deploymentName)
         ));
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to undeploy: " + result);
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRu
 
         ModelNode response = controllerClient.execute(op);
 
-        Assert.assertTrue("Failed to read: " + response, Operations.isSuccessfulOutcome(response));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(response), "Failed to read: " + response);
         validateReadResourceResponse(response);
     }
 

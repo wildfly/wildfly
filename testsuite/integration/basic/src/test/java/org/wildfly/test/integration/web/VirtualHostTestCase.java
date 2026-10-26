@@ -21,7 +21,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -36,10 +36,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that default-web-module works as it should for scenarios:
@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
  * @author Tomaz Cerar (c) 2015 Red Hat Inc.
  */
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(VirtualHostTestCase.VirtualHostSetupTask.class)
 //todo this test could probably be done in manual mode test with wildfly runner
@@ -89,7 +89,7 @@ public class VirtualHostTestCase {
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ModelNode response = client.execute(op);
             if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
-                Assert.fail("Could not execute op: '" + op + "', result: " + response);
+                Assertions.fail("Could not execute op: '" + op + "', result: " + response);
             }
         }
     }
@@ -131,9 +131,9 @@ public class VirtualHostTestCase {
         HttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(uri);
         HttpResponse response = client.execute(get);
-        Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
         String result = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals("Got response from wrong deployment", expectedResult, result);
+        Assertions.assertEquals(expectedResult, result, "Got response from wrong deployment");
     }
 
     private void checkUndertowInfo(String app, String server, String host, String context) throws IOException, MgmtOperationException {
@@ -143,16 +143,16 @@ public class VirtualHostTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set("true");
         ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertTrue("Undertow info OK for " + app, Operations.isSuccessfulOutcome(result));
-        Assert.assertEquals("context-root is set to " + context + " for " + app, context, result.get("result").get("context-root").asString());
-        Assert.assertEquals("virtual-host is set to " + host + " for " + app, host, result.get("result").get("virtual-host").asString());
-        Assert.assertEquals("server is set to " + server + " for " + app, server, result.get("result").get("server").asString());
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Undertow info OK for " + app);
+        Assertions.assertEquals(context, result.get("result").get("context-root").asString(), "context-root is set to " + context + " for " + app);
+        Assertions.assertEquals(host, result.get("result").get("virtual-host").asString(), "virtual-host is set to " + host + " for " + app);
+        Assertions.assertEquals(server, result.get("result").get("server").asString(), "server is set to " + server + " for " + app);
     }
 
     @Test
     public void testDefaultHost() throws IOException, MgmtOperationException {
-        Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
-                InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
+        Assumptions.assumeTrue(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress(),
+                "This needs to be localhost, as it is by host mapping");
         callAndTest("http://localhost:8080/", "ROOT");
         checkUndertowInfo("ROOT.war", "default-server", "default-host", "/");
     }
@@ -171,8 +171,8 @@ public class VirtualHostTestCase {
 
     @Test
     public void testDefaultHostCommonAplication() throws IOException, MgmtOperationException {
-        Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
-                InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
+        Assumptions.assumeTrue(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress(),
+                "This needs to be localhost, as it is by host mapping");
         callAndTest("http://localhost:8080/default-common/", "default-common");
         checkUndertowInfo("default-common.war", "default-server", "default-host", "/default-common");
     }

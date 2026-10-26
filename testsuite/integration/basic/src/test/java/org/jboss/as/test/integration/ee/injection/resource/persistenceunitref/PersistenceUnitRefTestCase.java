@@ -4,26 +4,26 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.persistenceunitref;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PersistenceUnitRefTestCase {
     private static final String ARCHIVE_NAME = "persistence-unit-ref";
 
@@ -75,7 +75,7 @@ public class PersistenceUnitRefTestCase {
             //all is fine!
             return;
         }
-        Assert.fail("IllegalArgumentException should occur but didn't!");
+        Assertions.fail("IllegalArgumentException should occur but didn't!");
     }
 
     @Test
@@ -87,7 +87,7 @@ public class PersistenceUnitRefTestCase {
             //all is fine!
             return;
         }
-        Assert.fail("IllegalArgumentException should occur but didn't!");
+        Assertions.fail("IllegalArgumentException should occur but didn't!");
     }
 
     @Test
@@ -111,7 +111,7 @@ public class PersistenceUnitRefTestCase {
             //all is fine!
             return;
         }
-        Assert.fail("IllegalArgumentException should occur but didn't!");
+        Assertions.fail("IllegalArgumentException should occur but didn't!");
     }
 
 

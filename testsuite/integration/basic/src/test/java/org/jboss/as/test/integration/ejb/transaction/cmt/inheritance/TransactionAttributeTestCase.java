@@ -13,14 +13,14 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * <p>
@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TransactionAttributeTestCase {
 
     @Resource(lookup = "java:/TransactionManager")
@@ -80,7 +80,7 @@ public class TransactionAttributeTestCase {
         try {
             // active transaction
             superClass.neverMethod();
-            Assert.fail("TransactionAttribute.NEVER expects failure when running"
+            Assertions.fail("TransactionAttribute.NEVER expects failure when running"
                     + " within a transactional context of txn: '" + tm.getTransaction() + "'");
         } catch (EJBException ignoreAsExpected) {
         } finally {
@@ -104,17 +104,17 @@ public class TransactionAttributeTestCase {
         try {
             // active transaction
             Transaction beanTxn = childClass.aMethod();
-            Assert.assertNotNull("There has to be started a transaction in the bean", beanTxn);
-            Assert.assertEquals("Child method default REQUIRED TransactionAttribute"
-                + " has to override the settings of SUPPORTS from super class", testTxn, beanTxn);
+            Assertions.assertNotNull(beanTxn, "There has to be started a transaction in the bean");
+            Assertions.assertEquals(testTxn, beanTxn, "Child method default REQUIRED TransactionAttribute"
+                + " has to override the settings of SUPPORTS from super class");
         } finally {
             tm.rollback();
         }
 
         // no active transaction
         Transaction beanTxn = childClass.aMethod();
-        Assert.assertNotNull("There has to be started transaction in bean as TransactionAttribute"
-            + " should be REQUIRED", beanTxn);
+        Assertions.assertNotNull(beanTxn, "There has to be started transaction in bean as TransactionAttribute"
+            + " should be REQUIRED");
     }
 
     /**
@@ -131,7 +131,7 @@ public class TransactionAttributeTestCase {
         }
 
         // no active transaction
-        Assert.assertNull("There can't be active transaction here", tm.getTransaction());
+        Assertions.assertNull(tm.getTransaction(), "There can't be active transaction here");
         childClass.bMethod();
     }
 
@@ -150,9 +150,9 @@ public class TransactionAttributeTestCase {
 
         try {
             // no active transaction
-            Assert.assertNull("There can't be active transaction here", tm.getTransaction());
+            Assertions.assertNull(tm.getTransaction(), "There can't be active transaction here");
             childClass.cMethod();
-            Assert.fail("Method called with no active transaction but MANDATORY requires it");
+            Assertions.fail("Method called with no active transaction but MANDATORY requires it");
         } catch (EJBException ignoreAsExpected) {
         }
     }
@@ -167,18 +167,18 @@ public class TransactionAttributeTestCase {
         try {
             // active transaction
             Transaction beanTxn = childClass.neverMethod();
-            Assert.assertNotNull("There has to be started a transaction in the bean", beanTxn);
-            Assert.assertEquals("Child method default REQUIRED TransactionAttribute"
-                + " has to override the settings of SUPPORTS from super class", testTxn, beanTxn);
+            Assertions.assertNotNull(beanTxn, "There has to be started a transaction in the bean");
+            Assertions.assertEquals(testTxn, beanTxn, "Child method default REQUIRED TransactionAttribute"
+                + " has to override the settings of SUPPORTS from super class");
         } finally {
             tm.rollback();
         }
 
         // no active transaction
-        Assert.assertNull("There can't be active transaction here", tm.getTransaction());
+        Assertions.assertNull(tm.getTransaction(), "There can't be active transaction here");
         Transaction beanTxn = childClass.neverMethod();
-        Assert.assertNotNull("There has to be started a transaction in the bean "
-            + "as TransactionAttribute is REQUIRED", beanTxn);
+        Assertions.assertNotNull(beanTxn, "There has to be started a transaction in the bean "
+            + "as TransactionAttribute is REQUIRED");
     }
 
     /**
@@ -190,7 +190,7 @@ public class TransactionAttributeTestCase {
         try {
             // active transaction
             childWithClassAnnotation.aMethod();
-            Assert.fail("TransactionAttribute.NEVER expects failure when running"
+            Assertions.fail("TransactionAttribute.NEVER expects failure when running"
                 + " within a transactional context of txn: '" + tm.getTransaction() + "'");
         } catch (EJBException ignoreAsExpected) {
         } finally {
@@ -198,7 +198,7 @@ public class TransactionAttributeTestCase {
         }
 
         // no active transaction
-        Assert.assertNull("There can't be active transaction here", tm.getTransaction());
+        Assertions.assertNull(tm.getTransaction(), "There can't be active transaction here");
         childWithClassAnnotation.aMethod();
     }
 
@@ -216,7 +216,7 @@ public class TransactionAttributeTestCase {
         }
 
         // no active transaction
-        Assert.assertNull("There can't be active transaction here", tm.getTransaction());
+        Assertions.assertNull(tm.getTransaction(), "There can't be active transaction here");
         childClass.bMethod();
     }
 }

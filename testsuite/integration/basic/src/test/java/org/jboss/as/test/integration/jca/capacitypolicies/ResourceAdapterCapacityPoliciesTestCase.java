@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.jca.capacitypolicies;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.reflect.ReflectPermission;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -51,9 +51,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Integration test for Jakarta Connectors capacity policies JBJCA-986 using resource adapter
@@ -61,7 +61,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ResourceAdapterCapacityPoliciesTestCase.ResourceAdapterCapacityPoliciesServerSetupTask.class)
 public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
     private static final String RA_NAME = "capacity-policies-test.rar";
@@ -181,10 +181,10 @@ public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
         int activeCount = readStatisticsAttribute("ActiveCount");
         int destroyedCount = readStatisticsAttribute("DestroyedCount");
 
-        Assert.assertEquals("Unexpected AvailableCount", expectedAvailableCount, availableCount);
-        Assert.assertEquals("Unexpected InUseCount", expectedInUseCount, inUseCount);
-        Assert.assertEquals("Unexpected ActiveCount", expectedActiveCount, activeCount);
-        Assert.assertEquals("Unexpected DestroyedCount", expectedDestroyedCount, destroyedCount);
+        Assertions.assertEquals(expectedAvailableCount, availableCount, "Unexpected AvailableCount");
+        Assertions.assertEquals(expectedInUseCount, inUseCount, "Unexpected InUseCount");
+        Assertions.assertEquals(expectedActiveCount, activeCount, "Unexpected ActiveCount");
+        Assertions.assertEquals(expectedDestroyedCount, destroyedCount, "Unexpected DestroyedCount");
     }
 
     private int readStatisticsAttribute(final String attributeName) throws Exception {

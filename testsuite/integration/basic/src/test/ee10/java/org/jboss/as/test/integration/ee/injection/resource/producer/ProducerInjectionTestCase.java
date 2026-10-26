@@ -8,12 +8,10 @@ package org.jboss.as.test.integration.ee.injection.resource.producer;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
@@ -22,7 +20,8 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -59,7 +58,7 @@ public class ProducerInjectionTestCase {
     @Test
     @OperateOnDeployment(SIMPLE_EAR)
     public void testSimpleEar() throws Exception {
-        Assert.assertEquals("H2 JDBC Driver", performCall("simple", null));
+        Assertions.assertEquals("H2 JDBC Driver", performCall("simple", null));
     }
 
     private String performCall(String pattern, String param) throws Exception {

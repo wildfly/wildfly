@@ -31,8 +31,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Base class for testing whether client gets exceptions according to the
@@ -145,7 +145,7 @@ public abstract class TxExceptionBaseTestCase {
 
                 userTransaction.commit();
             }
-            Assert.fail("An exception was expected.");
+            Assertions.fail("An exception was expected.");
         } catch (Exception e) {
             LOG.debugf(e, "Received exception: %s. Test type %s", e.getClass(), testType);
             checkReceivedException(testType, e);

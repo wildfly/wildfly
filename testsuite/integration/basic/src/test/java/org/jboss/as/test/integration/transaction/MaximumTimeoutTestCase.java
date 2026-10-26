@@ -8,7 +8,7 @@ package org.jboss.as.test.integration.transaction;
 import java.io.FilePermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -24,9 +24,9 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.annotation.Resource;
 import jakarta.transaction.HeuristicMixedException;
@@ -48,7 +48,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author istraka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MaximumTimeoutTestCase.TimeoutSetup.class})
 public class MaximumTimeoutTestCase {
 
@@ -134,7 +134,7 @@ public class MaximumTimeoutTestCase {
         txm.begin();
         txm.getTransaction().enlistResource(xaer);
         int timeout = xaer.getTransactionTimeout();
-        Assert.assertEquals(MAX_TIMEOUT1, timeout);
+        Assertions.assertEquals(MAX_TIMEOUT1, timeout);
         txm.commit();
 
         setMaximumTimeout(managementClient.getControllerClient(), MAX_TIMEOUT2);
@@ -142,7 +142,7 @@ public class MaximumTimeoutTestCase {
         txm.begin();
         txm.getTransaction().enlistResource(xaer);
         timeout = xaer.getTransactionTimeout();
-        Assert.assertEquals(MAX_TIMEOUT2, timeout);
+        Assertions.assertEquals(MAX_TIMEOUT2, timeout);
         txm.commit();
     }
 
@@ -156,7 +156,7 @@ public class MaximumTimeoutTestCase {
         txm.begin();
         txm.getTransaction().enlistResource(xaer);
         int timeout = xaer.getTransactionTimeout();
-        Assert.assertEquals(DEFAULT_TIMEOUT, timeout);
+        Assertions.assertEquals(DEFAULT_TIMEOUT, timeout);
         txm.commit();
 
         xaer = new TestXAResource();
@@ -164,7 +164,7 @@ public class MaximumTimeoutTestCase {
         txm.begin();
         txm.getTransaction().enlistResource(xaer);
         timeout = xaer.getTransactionTimeout();
-        Assert.assertEquals(20, timeout);
+        Assertions.assertEquals(20, timeout);
         txm.commit();
 
         xaer = new TestXAResource();
@@ -172,7 +172,7 @@ public class MaximumTimeoutTestCase {
         txm.begin();
         txm.getTransaction().enlistResource(xaer);
         timeout = xaer.getTransactionTimeout();
-        Assert.assertEquals(DEFAULT_TIMEOUT, timeout);
+        Assertions.assertEquals(DEFAULT_TIMEOUT, timeout);
         txm.commit();
     }
 
@@ -198,7 +198,7 @@ public class MaximumTimeoutTestCase {
             }
         }
 
-        Assert.assertTrue(firstMessageFound && secondMessageFound);
+        Assertions.assertTrue(firstMessageFound && secondMessageFound);
     }
 
     static class TimeoutSetup implements ServerSetupTask {

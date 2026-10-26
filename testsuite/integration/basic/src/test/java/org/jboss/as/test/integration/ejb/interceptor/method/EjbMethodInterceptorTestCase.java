@@ -8,18 +8,18 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EjbMethodInterceptorTestCase {
 
     @Deployment
@@ -38,17 +38,17 @@ public class EjbMethodInterceptorTestCase {
         TopSecretInterceptor.called = false;
         SecretInterceptor.called = false;
         final String secret = bean.secretMethod();
-        Assert.assertEquals("Secret", secret);
-        Assert.assertTrue(SecretInterceptor.called);
-        Assert.assertFalse(TopSecretInterceptor.called);
+        Assertions.assertEquals("Secret", secret);
+        Assertions.assertTrue(SecretInterceptor.called);
+        Assertions.assertFalse(TopSecretInterceptor.called);
 
-        Assert.assertTrue(SecretInterceptor.postConstructCalled);
-        Assert.assertFalse(TopSecretInterceptor.postConstructCalled);
+        Assertions.assertTrue(SecretInterceptor.postConstructCalled);
+        Assertions.assertFalse(TopSecretInterceptor.postConstructCalled);
 
         String topSecret = bean.topSecretMethod();
-        Assert.assertEquals("TopSecret", topSecret);
-        Assert.assertTrue(TopSecretInterceptor.called);
-        Assert.assertFalse(TopSecretInterceptor.postConstructCalled);
+        Assertions.assertEquals("TopSecret", topSecret);
+        Assertions.assertTrue(TopSecretInterceptor.called);
+        Assertions.assertFalse(TopSecretInterceptor.postConstructCalled);
     }
 
     @Test
@@ -59,16 +59,16 @@ public class EjbMethodInterceptorTestCase {
         TopSecretInterceptor.called = false;
         SecretInterceptor.called = false;
         final String ret1 = bean.overloadedMethod(1);
-        Assert.assertEquals("ArgInt:1", ret1);
-        Assert.assertTrue(SecretInterceptor.called);
-        Assert.assertFalse(TopSecretInterceptor.called);
+        Assertions.assertEquals("ArgInt:1", ret1);
+        Assertions.assertTrue(SecretInterceptor.called);
+        Assertions.assertFalse(TopSecretInterceptor.called);
 
         TopSecretInterceptor.called = false;
         SecretInterceptor.called = false;
         final String ret2 = bean.overloadedMethod("1");
-        Assert.assertEquals("ArgStr:1", ret2);
-        Assert.assertTrue(SecretInterceptor.called);
-        Assert.assertTrue(TopSecretInterceptor.called);
+        Assertions.assertEquals("ArgStr:1", ret2);
+        Assertions.assertTrue(SecretInterceptor.called);
+        Assertions.assertTrue(TopSecretInterceptor.called);
     }
 
     @Test
@@ -76,6 +76,6 @@ public class EjbMethodInterceptorTestCase {
         InitialContext ctx = new InitialContext();
         AroundInvokeBean bean = (AroundInvokeBean) ctx.lookup("java:module/" + AroundInvokeBean.class.getSimpleName());
         final String message = bean.call();
-        Assert.assertEquals("InterceptedDD:Hi", message);
+        Assertions.assertEquals("InterceptedDD:Hi", message);
     }
 }

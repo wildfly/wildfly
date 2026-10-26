@@ -13,7 +13,7 @@ import jakarta.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -28,9 +28,9 @@ import org.jboss.as.test.integration.deployment.xml.datasource.DeployedXmlDataSo
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DeployedXmlJMSTestCase.DeployedXmlJMSTestCaseSetup.class)
 public class DeployedXmlJMSTestCase {
 
@@ -90,13 +90,13 @@ public class DeployedXmlJMSTestCase {
     @Test
     public void testDeployedQueue() throws Throwable {
         final Queue queue = (Queue) initialContext.lookup("java:/queue1");
-        Assert.assertNotNull(queue);
+        Assertions.assertNotNull(queue);
     }
 
     @Test
     public void testDeployedTopic() throws Throwable {
         final Topic topic = (Topic) initialContext.lookup("java:/topic1");
-        Assert.assertNotNull(topic);
+        Assertions.assertNotNull(topic);
     }
 
 

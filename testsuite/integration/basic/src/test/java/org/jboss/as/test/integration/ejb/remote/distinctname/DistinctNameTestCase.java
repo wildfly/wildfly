@@ -5,9 +5,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.distinctname;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -22,7 +22,7 @@ public abstract class DistinctNameTestCase {
 
     private static Context context;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -38,10 +38,10 @@ public abstract class DistinctNameTestCase {
     public void testRemoteSLSBInvocation() throws Exception {
         final Echo bean = (Echo) context.lookup("ejb:" + getAppName() + "/" + getModuleName() + "/" + getDistinctName()
                 + "/" + StatelessEcho.class.getSimpleName() + "!" + Echo.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", bean);
+        Assertions.assertNotNull(bean, "Lookup returned a null bean proxy");
         final String msg = "Hello world from a really remote client!!!";
         final String echo = bean.echo(msg);
-        Assert.assertEquals("Unexpected echo returned from remote stateless bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote stateless bean");
     }
 
     /**
@@ -53,10 +53,10 @@ public abstract class DistinctNameTestCase {
     public void testRemoteSFSBInvocation() throws Exception {
         final Echo bean = (Echo) context.lookup("ejb:" + getAppName() + "/" + getModuleName() + "/" + getDistinctName()
                 + "/" + StatefulEcho.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
-        Assert.assertNotNull("Lookup returned a null bean proxy", bean);
+        Assertions.assertNotNull(bean, "Lookup returned a null bean proxy");
         final String msg = "Hello world from a really remote client!!!";
         final String echo = bean.echo(msg);
-        Assert.assertEquals("Unexpected echo returned from remote stateful bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote stateful bean");
 
     }
 
@@ -69,10 +69,10 @@ public abstract class DistinctNameTestCase {
     public void testRemoteSingletonInvocation() throws Exception {
         final Echo bean = (Echo) context.lookup("ejb:" + getAppName() + "/" + getModuleName() + "/" + getDistinctName()
                 + "/" + SingletonEcho.class.getSimpleName() + "!" + Echo.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", bean);
+        Assertions.assertNotNull(bean, "Lookup returned a null bean proxy");
         final String msg = "Hello world from a really remote client!!!";
         final String echo = bean.echo(msg);
-        Assert.assertEquals("Unexpected echo returned from remote singleton bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote singleton bean");
 
     }
 
