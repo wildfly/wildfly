@@ -585,6 +585,8 @@ final class DeploymentsAssociationImpl implements Association, AutoCloseable {
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         interceptorContext.putPrivateData(InvocationType.class, InvocationType.REMOTE);
+        // Expose the incoming request so interceptors can read peer/local address and protocol (E3).
+        interceptorContext.putPrivateData(Request.class, incomingInvocation);
         interceptorContext.setBlockingCaller(false);
         // setup the contextData on the (spec specified) InvocationContext
         final Map<String, Object> invocationContextData = new HashMap<String, Object>();

@@ -315,6 +315,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
                 final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                final boolean accessLogEnabled = AccessLogViewConfigurator.isEnabled(deploymentUnit);
                 String contextID = deploymentUnit.getName();
                 if (deploymentUnit.getParent() != null) {
                     contextID = deploymentUnit.getParent().getName() + "!" + contextID;
@@ -353,6 +354,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if(serverInterceptorCache != null) {
                         configuration.addTimeoutViewInterceptor(weaved(serverInterceptorCache.getServerInterceptorsAroundTimeout()), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
                     }
+                    // access-log interceptor on the timeout (timer) view, only when the feature is enabled
+                    if (accessLogEnabled) {
+                        configuration.addTimeoutViewInterceptor(EjbAccessLogInterceptor.FACTORY, InterceptorOrder.View.ACCESS_LOG_INTERCEPTOR);
+                    }
                 }
                 if (!ejbSetupActions.isEmpty()) {
                     configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -372,6 +377,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     @Override
                     public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) throws DeploymentUnitProcessingException {
                         serviceBuilder.addDependency(LoggingInterceptor.LOGGING_ENABLED_SERVICE_NAME, AtomicBoolean.class, service.getExceptionLoggingEnabledInjector());
+                        if (accessLogEnabled) {
+                            serviceBuilder.addDependency(AccessLogHolder.ACCESS_LOG_HOLDER_SERVICE_NAME, AccessLogHolder.class, service.getAccessLogHolderInjector());
+                        }
                     }
                 });
             }
