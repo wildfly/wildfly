@@ -48,7 +48,7 @@ public class CustomProvidersTestCase {
     @Deployment(name = WEBAPP_TEST_EXCEPTION_MAPPER)
     public static WebArchive deployMapperApp() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEBAPP_TEST_EXCEPTION_MAPPER + ".war");
-        war.addClasses(MyApplication.class, ExceptionMapperProvider.class);
+        war.addClasses(MyApplication.class, ExceptionMapperProvider.class, ExceptionResource.class);
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
@@ -75,7 +75,7 @@ public class CustomProvidersTestCase {
     @Test
     @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER)
     public void testProvidersInTwoWars(@ArquillianResource URL webAppURL) throws Exception {
-        final String path = webAppURL.toExternalForm() + ExceptionMapperProvider.PATH_EXCEPTION.substring(1);
+        final String path = webAppURL.toExternalForm() + ExceptionResource.PATH_EXCEPTION.substring(1);
         LOGGER.trace("Requested path: " + path);
         assertEquals(ExceptionMapperProvider.ERROR_MESSAGE, HttpRequest.get(path, 10, TimeUnit.SECONDS));
 

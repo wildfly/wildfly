@@ -6,11 +6,13 @@
 package org.wildfly.test.integration.microprofile.openapi.service.multimodule;
 
 import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.Dependent;
 
 /**
  * @author Joachim Grimm
  */
 @Stateless
+@Dependent
 public class TestEjb {
 
     public TestResponse hello(TestRequest request) {
