@@ -151,6 +151,7 @@ import org.wildfly.common.function.Functions;
 import org.wildfly.discovery.spi.DiscoveryProvider;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 import org.wildfly.transaction.client.LocalTransactionContext;
@@ -175,11 +176,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final Iterable<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
+    private final Iterable<ResourceOperationRuntimeHandler> serviceHandlers;
 
     EJB3SubsystemAdd(AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex,
                      AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName,
                      Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains,
-                     Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+                     Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault,
+                     Iterable<ResourceOperationRuntimeHandler> referenceHandlers) {
         this.defaultDistinctName = defaultDistinctName;
         this.defaultAllowEjbRegex = defaultAllowEjbRegex;
         this.defaultResourceAdapterName = defaultResourceAdapterName;
@@ -187,6 +190,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
         this.denyAccessByDefault = denyAccessByDefault;
+        this.serviceHandlers = referenceHandlers;
     }
 
     @Override
@@ -433,9 +437,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model);
         }
 
-        EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.resolveModelAttribute(context, model).asStringOrNull());
-
-        EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE.updateCacheService(context, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.resolveModelAttribute(context, model).asStringOrNull());
+        for (ResourceOperationRuntimeHandler handler : this.serviceHandlers) {
+            handler.addRuntime(context, model);
+        }
 
         this.defaultResourceAdapterName.set(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.resolveModelAttribute(context, model).asStringOrNull());
 
