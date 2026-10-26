@@ -4,8 +4,7 @@
  */
 
 package org.jboss.as.test.integration.security.securitycontext;
-
-
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -16,7 +15,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.CommandContext;
@@ -27,14 +25,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -47,15 +45,15 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
  * For more information visit <a href="https://issues.redhat.com/browse/ELYWEB-133">https://issues.redhat.com/browse/ELYWEB-133</a>
  * @author Petr Adamec
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SnapshotRestoreSetupTask.class, SecurityContextImplLoginTestCase.SecurityContextImplLoginTestCaseServerSetup.class})
 public class SecurityContextImplLoginTestCase {
     @ArquillianResource(SecuredServlet.class)
     URL deploymentURL;
     private static CommandContext ctx;
-    @ClassRule
-    public static final TemporaryFolder temporaryUserHome = new TemporaryFolder();
+    @TempDir
+    public static File temporaryUserHome;
 
     private static final ByteArrayOutputStream consoleOutput = new ByteArrayOutputStream();
 
@@ -98,7 +96,7 @@ public class SecurityContextImplLoginTestCase {
     public void accessProtectedPageDirectlyTest() throws Exception{
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(getURL()));
-            Assert.assertEquals("For more info see ELYWEB-133. " ,200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200,response.getStatusLine().getStatusCode(), "For more info see ELYWEB-133. ");
         }
     }
 
@@ -111,7 +109,7 @@ public class SecurityContextImplLoginTestCase {
     public void accessProtectedPageWithCustomHttpHandlerLoginTest() throws Exception{
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(getURL()+"?login=true"));
-            Assert.assertEquals("For more info see ELYWEB-133. " ,200, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(200,response.getStatusLine().getStatusCode(), "For more info see ELYWEB-133. ");
         }
     }
 

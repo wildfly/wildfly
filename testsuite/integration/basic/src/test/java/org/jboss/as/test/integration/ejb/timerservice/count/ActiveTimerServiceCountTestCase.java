@@ -13,21 +13,21 @@ import jakarta.ejb.Timer;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testcase for the {@link jakarta.ejb.TimerService#getAllTimers()} API introduced in EJB 3.2 spec
  *
  * @author: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ActiveTimerServiceCountTestCase {
 
     private static final String APP_NAME = "ejb-3.2-active-timers";
@@ -72,40 +72,40 @@ public class ActiveTimerServiceCountTestCase {
         final Collection<Timer> activeTimers = new ArrayList<>(timerBean.getAllActiveTimersInEJBModule());
 
         // now start testing
-        Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME, activeTimers.isEmpty());
+        Assertions.assertFalse(activeTimers.isEmpty(), "No active timers found in EJB module " + MODULE_ONE_NAME);
 
         // now make sure that the active timers are indeed the one we expected
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeScheduleOneTimerOfSimpleTimerBean(activeTimers));
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimers));
-        Assert.assertTrue("@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers", this.removeSheduleOneTimerOfOtherTimerBean(activeTimers));
-        Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeProgramaticTimer(activeTimers, infoOne, false));
-        Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers", this.removeProgramaticTimer(activeTimers, infoTwo, true));
-        Assert.assertTrue("Programmatic timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers", this.removeProgramaticTimer(activeTimers, infoThree, false));
+        Assertions.assertTrue(this.removeScheduleOneTimerOfSimpleTimerBean(activeTimers), "@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers");
+        Assertions.assertTrue(this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimers), "@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers");
+        Assertions.assertTrue(this.removeSheduleOneTimerOfOtherTimerBean(activeTimers), "@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimers, infoOne, false), "Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimers, infoTwo, true), "Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimers, infoThree, false), "Programmatic timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers");
 
         // make sure there isn't an unexpected timer in the active timers
         for (final Timer remainingTimer : activeTimers) {
-            Assert.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME, TimerBeanInOtherModule.SCHEDULE_ONE_INFO.equals(remainingTimer.getInfo()));
-            Assert.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME, infoForTimerBeanInOtherModule.equals(remainingTimer.getInfo()));
+            Assertions.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME, TimerBeanInOtherModule.SCHEDULE_ONE_INFO.equals(remainingTimer.getInfo()));
+            Assertions.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME, infoForTimerBeanInOtherModule.equals(remainingTimer.getInfo()));
         }
 
         // Now fetch the same info, this time from the SFSB. We expect the same number of active timers in the module.
         final StatefulBean statefulBean = InitialContext.doLookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulBean.class.getName());
         final Collection<Timer> activeTimersReturnedFromSFSB = new ArrayList<>(statefulBean.getAllActiveTimersInEJBModule());
 
-        Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME + " when queried from a stateful bean", activeTimersReturnedFromSFSB.isEmpty());
+        Assertions.assertFalse(activeTimersReturnedFromSFSB.isEmpty(), "No active timers found in EJB module " + MODULE_ONE_NAME + " when queried from a stateful bean");
 
         // now make sure that the active timers are indeed the one we expected
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeScheduleOneTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
-        Assert.assertTrue("@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB));
-        Assert.assertTrue("@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeSheduleOneTimerOfOtherTimerBean(activeTimersReturnedFromSFSB));
-        Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoOne, false));
-        Assert.assertTrue("Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoTwo, true));
-        Assert.assertTrue("Programmatic timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers when queried from a stateful bean", this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoThree, false));
+        Assertions.assertTrue(this.removeScheduleOneTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB), "@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
+        Assertions.assertTrue(this.removeScheduleTwoTimerOfSimpleTimerBean(activeTimersReturnedFromSFSB), "@Schedule timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
+        Assertions.assertTrue(this.removeSheduleOneTimerOfOtherTimerBean(activeTimersReturnedFromSFSB), "@Schedule timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoOne, false), "Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoTwo, true), "Programmatic timer on " + SimpleTimerBean.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
+        Assertions.assertTrue(this.removeProgramaticTimer(activeTimersReturnedFromSFSB, infoThree, false), "Programmatic timer on " + OtherTimerBeanInSameModule.class.getSimpleName() + " not found in active timers when queried from a stateful bean");
 
         // make sure there isn't an unexpected timer in the active timers
         for (final Timer remainingTimer : activeTimersReturnedFromSFSB) {
-            Assert.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME + " when queried from a stateful bean", TimerBeanInOtherModule.SCHEDULE_ONE_INFO.equals(remainingTimer.getInfo()));
-            Assert.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME + " when queried from a stateful bean", infoForTimerBeanInOtherModule.equals(remainingTimer.getInfo()));
+            Assertions.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME + " when queried from a stateful bean", TimerBeanInOtherModule.SCHEDULE_ONE_INFO.equals(remainingTimer.getInfo()));
+            Assertions.assertNotEquals("Unexpectedly found a timer from other EJB module " + MODULE_TWO_NAME + " when queried from a stateful bean", infoForTimerBeanInOtherModule.equals(remainingTimer.getInfo()));
         }
 
     }
@@ -117,8 +117,8 @@ public class ActiveTimerServiceCountTestCase {
             // see if it's @Schedule one in SimpleTimerBean
             final Serializable info = activeTimer.getInfo();
             if (SimpleTimerBean.SCHEDULE_ONE_INFO.equals(info)) {
-                Assert.assertTrue("Unexpected timer type of timer on " + SimpleTimerBean.class.getSimpleName(), activeTimer.isCalendarTimer());
-                Assert.assertFalse("Unexpected persistence type of timer on " + SimpleTimerBean.class.getSimpleName(), activeTimer.isPersistent());
+                Assertions.assertTrue(activeTimer.isCalendarTimer(), "Unexpected timer type of timer on " + SimpleTimerBean.class.getSimpleName());
+                Assertions.assertFalse(activeTimer.isPersistent(), "Unexpected persistence type of timer on " + SimpleTimerBean.class.getSimpleName());
                 // remove this matched timer from the collection
                 return timers.remove(activeTimer);
             }
@@ -131,8 +131,8 @@ public class ActiveTimerServiceCountTestCase {
             // see if it's @Schedule two in SimpleTimerBean
             final Serializable info = activeTimer.getInfo();
             if (SimpleTimerBean.SCHEDULE_TWO_INFO.equals(info)) {
-                Assert.assertTrue("Unexpected timer type of timer on " + SimpleTimerBean.class.getSimpleName(), activeTimer.isCalendarTimer());
-                Assert.assertTrue("Unexpected persistence type of timer on " + SimpleTimerBean.class.getSimpleName(), activeTimer.isPersistent());
+                Assertions.assertTrue(activeTimer.isCalendarTimer(), "Unexpected timer type of timer on " + SimpleTimerBean.class.getSimpleName());
+                Assertions.assertTrue(activeTimer.isPersistent(), "Unexpected persistence type of timer on " + SimpleTimerBean.class.getSimpleName());
                 // remove this matched timer from the collection
                 return timers.remove(activeTimer);
             }
@@ -145,8 +145,8 @@ public class ActiveTimerServiceCountTestCase {
             // see if it's @Schedule one in OtherTimerBeanInSameModule
             final Serializable info = activeTimer.getInfo();
             if (OtherTimerBeanInSameModule.SCHEDULE_ONE_INFO.equals(info)) {
-                Assert.assertTrue("Unexpected timer type of timer on " + OtherTimerBeanInSameModule.class.getSimpleName(), activeTimer.isCalendarTimer());
-                Assert.assertFalse("Unexpected persistence type of timer on " + OtherTimerBeanInSameModule.class.getSimpleName(), activeTimer.isPersistent());
+                Assertions.assertTrue(activeTimer.isCalendarTimer(), "Unexpected timer type of timer on " + OtherTimerBeanInSameModule.class.getSimpleName());
+                Assertions.assertFalse(activeTimer.isPersistent(), "Unexpected persistence type of timer on " + OtherTimerBeanInSameModule.class.getSimpleName());
                 // remove this matched timer from the collection
                 return timers.remove(activeTimer);
             }
@@ -159,8 +159,8 @@ public class ActiveTimerServiceCountTestCase {
             // see if it's the programatic timer we are looking for
             final Serializable info = activeTimer.getInfo();
             if (timerInfo.equals(info)) {
-                Assert.assertFalse("Unexpected timer type of timer", activeTimer.isCalendarTimer());
-                Assert.assertEquals("Unexpected persistence type of timer", persistent, activeTimer.isPersistent());
+                Assertions.assertFalse(activeTimer.isCalendarTimer(), "Unexpected timer type of timer");
+                Assertions.assertEquals(persistent, activeTimer.isPersistent(), "Unexpected persistence type of timer");
                 // remove this matched timer from the collection
                 return timers.remove(activeTimer);
             }

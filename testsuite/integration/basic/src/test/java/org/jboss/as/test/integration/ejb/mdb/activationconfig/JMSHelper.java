@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
 import static jakarta.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;

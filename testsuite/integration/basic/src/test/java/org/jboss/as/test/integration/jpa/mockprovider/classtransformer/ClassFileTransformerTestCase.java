@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,15 +15,17 @@ import java.util.zip.ZipEntry;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -32,7 +34,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ClassFileTransformerTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_classTransformerTestWithMockProvider";
@@ -87,7 +89,7 @@ public class ClassFileTransformerTestCase {
     @Test
     public void test_use_class_enhancer() throws Exception {
         try {
-            assertTrue("entity classes are enhanced", TestClassTransformer.getTransformedClasses().size() > 0);
+            assertTrue(TestClassTransformer.getTransformedClasses().size() > 0, "entity classes are enhanced");
         } finally {
             TestClassTransformer.clearTransformedClasses();
         }
@@ -110,13 +112,13 @@ public class ClassFileTransformerTestCase {
                                 TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
                         "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
                 InputStream inputStream = TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream();
-                assertNotNull("getPersistenceUnitRootUrl().openStream() returned non-null value", inputStream);
+                assertNotNull(inputStream, "getPersistenceUnitRootUrl().openStream() returned non-null value");
 
-                assertTrue("getPersistenceUnitRootUrl returned a JarInputStream", inputStream instanceof JarInputStream);
+                assertTrue(inputStream instanceof JarInputStream, "getPersistenceUnitRootUrl returned a JarInputStream");
 
                 JarInputStream jarInputStream = (JarInputStream) inputStream;
                 ZipEntry entry = jarInputStream.getNextEntry();
-                assertNotNull("got zip entry from getPersistenceUnitRootUrl", entry);
+                assertNotNull(entry, "got zip entry from getPersistenceUnitRootUrl");
 
                 while (entry != null && !entry.getName().contains("persistence.xml")) {
                     entry = jarInputStream.getNextEntry();
@@ -133,7 +135,7 @@ public class ClassFileTransformerTestCase {
     @Test
     public void test_persistenceProviderAdapterInitialized() {
         try {
-            assertTrue("persistence unit adapter was initialized", TestAdapter.wasInitialized());
+            assertTrue(TestAdapter.wasInitialized(), "persistence unit adapter was initialized");
         } finally {
             TestAdapter.clearInitialized();
         }

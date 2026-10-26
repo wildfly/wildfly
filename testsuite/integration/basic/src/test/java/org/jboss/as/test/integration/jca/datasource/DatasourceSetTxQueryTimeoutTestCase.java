@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
@@ -31,9 +31,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that query timeout is set to the remaining transaction timeout, when the set-tx-query-timeout attribute
@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:thofman@redhat.com>Tomas Hofman</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DatasourceSetTxQueryTimeoutTestCase.DatasourceServerSetupTask.class)
 public class DatasourceSetTxQueryTimeoutTestCase {
 
@@ -119,13 +119,13 @@ public class DatasourceSetTxQueryTimeoutTestCase {
 
         try (Connection connection = txDS.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("select 1")) {
-                Assert.assertEquals(0, statement.getQueryTimeout());
+                Assertions.assertEquals(0, statement.getQueryTimeout());
                 statement.execute();
                 int queryTimeout = statement.getQueryTimeout();
 
                 // during statement execution the query timeout was supposed to be set to default transaction timeout,
                 // which is set to 300 seconds, but lets give it some allowance
-                Assert.assertTrue(queryTimeout > 290 && queryTimeout <= 300);
+                Assertions.assertTrue(queryTimeout > 290 && queryTimeout <= 300);
             }
             transaction.commit();
         } catch (Exception e) {

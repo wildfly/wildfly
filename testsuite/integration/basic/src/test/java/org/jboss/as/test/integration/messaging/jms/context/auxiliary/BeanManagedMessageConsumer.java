@@ -8,8 +8,8 @@ package org.jboss.as.test.integration.messaging.jms.context.auxiliary;
 import static jakarta.ejb.TransactionManagementType.BEAN;
 import static org.jboss.as.test.integration.messaging.jms.context.ScopedInjectedJMSContextTestCase.QUEUE_NAME_FOR_REQUEST_SCOPE;
 import static org.jboss.as.test.integration.messaging.jms.context.ScopedInjectedJMSContextTestCase.QUEUE_NAME_FOR_TRANSACTION_SCOPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
@@ -24,7 +24,8 @@ import jakarta.jms.JMSRuntimeException;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -64,7 +65,7 @@ public class BeanManagedMessageConsumer {
 
         try {
             consumer.receiveBody(String.class, TimeoutUtil.adjust(1000));
-            Assert.fail("call must fail as the injected JMSContext is closed when the transaction is committed");
+            Assertions.fail("call must fail as the injected JMSContext is closed when the transaction is committed");
         } catch (JMSRuntimeException e) {
             // exception is expected
         } catch (Exception e) {

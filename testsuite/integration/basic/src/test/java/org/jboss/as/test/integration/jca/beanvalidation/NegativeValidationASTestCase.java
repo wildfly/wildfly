@@ -4,15 +4,16 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Set;
 import jakarta.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidActivationSpec;
@@ -29,13 +30,14 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5906
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NegativeValidationASTestCase {
 
     @ArquillianResource
@@ -64,40 +66,42 @@ public class NegativeValidationASTestCase {
     }
 
 
-    @Test(expected = Exception.class)
+    @Test
     public void testRegistryConfiguration() throws Throwable {
-        ServiceController<?> controller = serviceContainer.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
-        assertNotNull(controller);
-        ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
-        assertNotNull(repository);
-        Set<String> ids = repository.getResourceAdapters(jakarta.jms.MessageListener.class);
+        assertThrows(Exception.class, () -> {
+            ServiceController<?> controller = serviceContainer.getService(ConnectorServices.RA_REPOSITORY_SERVICE);
+            assertNotNull(controller);
+            ResourceAdapterRepository repository = (ResourceAdapterRepository) controller.getValue();
+            assertNotNull(repository);
+            Set<String> ids = repository.getResourceAdapters(jakarta.jms.MessageListener.class);
 
-        assertNotNull(ids);
-        //assertEquals(1, ids.size());
+            assertNotNull(ids);
+            //assertEquals(1, ids.size());
 
-        String piId = ids.iterator().next();
-        assertNotNull(piId);
+            String piId = ids.iterator().next();
+            assertNotNull(piId);
 
-        Endpoint endpoint = repository.getEndpoint(piId);
-        assertNotNull(endpoint);
+            Endpoint endpoint = repository.getEndpoint(piId);
+            assertNotNull(endpoint);
 
-        List<MessageListener> listeners = repository.getMessageListeners(piId);
-        assertNotNull(listeners);
-        assertEquals(1, listeners.size());
+            List<MessageListener> listeners = repository.getMessageListeners(piId);
+            assertNotNull(listeners);
+            assertEquals(1, listeners.size());
 
-        MessageListener listener = listeners.get(0);
+            MessageListener listener = listeners.get(0);
 
-        ActivationSpec as = listener.getActivation().createInstance();
-        assertNotNull(as);
-        assertNotNull(as.getResourceAdapter());
+            ActivationSpec as = listener.getActivation().createInstance();
+            assertNotNull(as);
+            assertNotNull(as.getResourceAdapter());
 
-        ValidActivationSpec vas = (ValidActivationSpec) as;
+            ValidActivationSpec vas = (ValidActivationSpec) as;
 
-        ValidMessageEndpoint me = new ValidMessageEndpoint();
-        ValidMessageEndpointFactory mef = new ValidMessageEndpointFactory(me);
+            ValidMessageEndpoint me = new ValidMessageEndpoint();
+            ValidMessageEndpointFactory mef = new ValidMessageEndpointFactory(me);
 
-        endpoint.activate(mef, vas);
-        endpoint.deactivate(mef, vas);
+            endpoint.activate(mef, vas);
+            endpoint.deactivate(mef, vas);
+        });
     }
 
     @Test

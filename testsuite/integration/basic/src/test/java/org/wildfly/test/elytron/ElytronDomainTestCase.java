@@ -5,13 +5,13 @@
 
 package org.wildfly.test.elytron;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -20,8 +20,10 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -35,7 +37,7 @@ import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ ElytronDomainTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 public class ElytronDomainTestCase {
@@ -64,8 +66,8 @@ public class ElytronDomainTestCase {
         final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
 
         // successful authentication and authorization
-        assertEquals("Response body is not correct.", SimpleSecuredServlet.RESPONSE_BODY,
-                Utils.makeCallWithBasicAuthn(servletUrl, "elytron1", "password", 200));
+        assertEquals(SimpleSecuredServlet.RESPONSE_BODY, Utils.makeCallWithBasicAuthn(servletUrl, "elytron1", "password", 200),
+                "Response body is not correct.");
     }
 
     /**
@@ -76,8 +78,8 @@ public class ElytronDomainTestCase {
         final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
 
         // successful authentication and authorization
-        assertEquals("Response body is not correct.", SimpleSecuredServlet.RESPONSE_BODY,
-                Utils.makeCallWithBasicAuthn(servletUrl, "elytron1", "password", 200));
+        assertEquals(SimpleSecuredServlet.RESPONSE_BODY, Utils.makeCallWithBasicAuthn(servletUrl, "elytron1", "password", 200),
+                "Response body is not correct.");
         // successful authentication and unsuccessful authorization
         Utils.makeCallWithBasicAuthn(servletUrl, "elytron2", "password", 403);
         // wrong password

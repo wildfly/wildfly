@@ -9,7 +9,7 @@ import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
 import jakarta.mail.Session;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 
 /**
@@ -24,8 +24,8 @@ public class StatelessMail {
     private Session session;
 
     public void testMailInjection() {
-        Assert.assertNotNull(mailSession);
-        Assert.assertNotNull(session);
+        Assertions.assertNotNull(mailSession);
+        Assertions.assertNotNull(session);
     }
 
 }

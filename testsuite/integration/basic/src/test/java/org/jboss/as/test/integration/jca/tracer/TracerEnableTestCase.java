@@ -20,7 +20,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
@@ -29,14 +29,14 @@ import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({
     TracerEnableTestCase.TracerEnableSetup.class,
@@ -63,12 +63,12 @@ public class TracerEnableTestCase {
         bean.insertToDB();
 
         File logFile = new File(LogHandlerCreationSetup.SERVER_LOG_DIR_VALUE, LogHandlerCreationSetup.JCA_LOG_FILE_PARAM);
-        Assert.assertTrue("Log file " + logFile + " should exist", logFile.exists());
+        Assertions.assertTrue(logFile.exists(), "Log file " + logFile + " should exist");
         String logContent = new String(Files.readAllBytes(Paths.get(logFile.getPath())), StandardCharsets.UTF_8);
-        Assert.assertTrue("Log file " + logFile + " has to contain org.jboss.jca.core.tracer.Tracer",
-            logContent.contains("org.jboss.jca.core.tracer.Tracer"));
-        Assert.assertTrue("Log file " + logFile + " has to contain IJTRACER-ExampleDS",
-                logContent.contains("IJTRACER-ExampleDS"));
+        Assertions.assertTrue(logContent.contains("org.jboss.jca.core.tracer.Tracer"),
+            "Log file " + logFile + " has to contain org.jboss.jca.core.tracer.Tracer");
+        Assertions.assertTrue(logContent.contains("IJTRACER-ExampleDS"),
+                "Log file " + logFile + " has to contain IJTRACER-ExampleDS");
     }
 
     static final class TracerEnableSetup extends SnapshotRestoreSetupTask {

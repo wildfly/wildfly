@@ -8,16 +8,16 @@ package org.jboss.as.test.integration.weld.jpa.subdeployment;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * WFLY-6485
@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldSubdeploymentScopeTestCase {
 
     @Deployment
@@ -47,8 +47,8 @@ public class WeldSubdeploymentScopeTestCase {
 
     @Test
     public void testInjectedPersistenceContext() throws Exception {
-        Assert.assertNotNull("WFLY-6485 regression, injected EntityManagerFactory should not be null but is",
-                bean.entityManagerFactory());
+        Assertions.assertNotNull(bean.entityManagerFactory(),
+                "WFLY-6485 regression, injected EntityManagerFactory should not be null but is");
     }
 }
 

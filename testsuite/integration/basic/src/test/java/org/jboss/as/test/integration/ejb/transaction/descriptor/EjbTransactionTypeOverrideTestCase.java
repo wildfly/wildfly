@@ -11,14 +11,14 @@ import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  * @author Hynek Svabek
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EjbTransactionTypeOverrideTestCase {
 
     @ArquillianResource
@@ -44,7 +44,7 @@ public class EjbTransactionTypeOverrideTestCase {
     @Test
     public void testOverrideSupportToRequiredThroughtEjbJarXml() throws SystemException, NotSupportedException, NamingException {
         final TransactionLocal bean = (TransactionLocal) initialContext.lookup("java:module/" + DescriptorBean.class.getSimpleName() + "!" + TransactionLocal.class.getName());
-        Assert.assertEquals(Status.STATUS_NO_TRANSACTION, bean.transactionStatus());
-        Assert.assertEquals(Status.STATUS_ACTIVE, bean.transactionStatus2());
+        Assertions.assertEquals(Status.STATUS_NO_TRANSACTION, bean.transactionStatus());
+        Assertions.assertEquals(Status.STATUS_ACTIVE, bean.transactionStatus2());
     }
 }

@@ -11,7 +11,8 @@ import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  *
@@ -31,7 +32,7 @@ public class SingletonStartupBean implements WhoAmI {
     @PostConstruct
     public void init() {
         principal = beanB.getCallerPrincipal();
-        Assert.fail("beanB requires role Admin");
+        Assertions.fail("beanB requires role Admin");
     }
 
     public String getCallerPrincipal() {

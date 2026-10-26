@@ -25,7 +25,7 @@ import java.net.URL;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.naming.subsystem.NamingExtension;
@@ -36,16 +36,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for binding of {@link URL} (see AS7-5140). Uses AS controller to do the bind, lookup is through an EJB.
  *
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class URLBindingTestCase {
 
     @ArquillianResource
@@ -86,8 +86,8 @@ public class URLBindingTestCase {
         bindingAdd.get(TYPE).set(URL.class.getName());
         try {
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-            Assert.assertEquals("http://localhost", bean.lookupBind(name).toString());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
+            Assertions.assertEquals("http://localhost", bean.lookupBind(name).toString());
         } finally {
             // unbind it
             final ModelNode bindingRemove = new ModelNode();
@@ -95,8 +95,8 @@ public class URLBindingTestCase {
             bindingRemove.get(OP_ADDR).set(address);
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 

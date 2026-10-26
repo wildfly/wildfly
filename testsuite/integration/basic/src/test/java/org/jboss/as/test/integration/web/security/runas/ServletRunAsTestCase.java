@@ -11,7 +11,7 @@ import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbS
 import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.DOGET_METHOD_PASS;
 import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_NOT_PASS;
 import static org.jboss.as.test.integration.web.security.runas.CallProtectedEjbServlet.INIT_METHOD_PASS;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,8 +26,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -35,16 +34,21 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for RunAs in Servlet. It tests secured EJB invocation in HttpServlet init(), doGet() and destroy() methods.
  *
  * @author olukas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServletRunAsTestCase {
 
     private static final String DEPLOYMENT = "deployment";
@@ -65,7 +69,7 @@ public class ServletRunAsTestCase {
     Deployer deployer;
 
     @Test
-    @InSequence(Integer.MIN_VALUE)
+    @Order(Integer.MIN_VALUE)
     public void initialize() throws Exception {
         deployer.deploy(DEPLOYMENT);
         WORK_DIR.mkdirs();
@@ -80,7 +84,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(1)
+    @Order(1)
     @OperateOnDeployment(DEPLOYMENT)
     public void runServletWithCorrectRole(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + RunAsAdminServlet.SERVLET_PATH.substring(1) + "?"
@@ -95,10 +99,10 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkInitMethodWithCorrectRole() throws Exception {
-        assertTrue("EJB invocation failed in init() method of Servlet which uses RunAs with correct role.",
-                correctRoleResult.contains(INIT_METHOD_PASS + HelloBean.HELLO));
+        assertTrue(correctRoleResult.contains(INIT_METHOD_PASS + HelloBean.HELLO),
+                "EJB invocation failed in init() method of Servlet which uses RunAs with correct role.");
     }
 
     /**
@@ -108,10 +112,10 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkDoGetMethodWithCorrectRole() throws Exception {
-        assertTrue("EJB invocation failed in doGet() method of Servlet which uses RunAs with correct role.",
-                correctRoleResult.contains(DOGET_METHOD_PASS + HelloBean.HELLO));
+        assertTrue(correctRoleResult.contains(DOGET_METHOD_PASS + HelloBean.HELLO),
+                "EJB invocation failed in doGet() method of Servlet which uses RunAs with correct role.");
     }
 
     /**
@@ -123,7 +127,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     @OperateOnDeployment(DEPLOYMENT)
     public void runServletWithIncorrectRole(@ArquillianResource URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + RunAsUserServlet.SERVLET_PATH.substring(1) + "?"
@@ -138,10 +142,10 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(5)
+    @Order(5)
     public void checkInitMethodWithIncorrectRole() throws Exception {
-        assertTrue("EJB invocation did not failed in init() method of Servlet which uses RunAs with incorrect role.",
-                incorrectRoleResult.contains(INIT_METHOD_NOT_PASS));
+        assertTrue(incorrectRoleResult.contains(INIT_METHOD_NOT_PASS),
+                "EJB invocation did not failed in init() method of Servlet which uses RunAs with incorrect role.");
     }
 
     /**
@@ -151,10 +155,10 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(6)
+    @Order(6)
     public void checkDoGetMethodWithIncorrectRole() throws Exception {
-        assertTrue("EJB invocation did not failed in doGet() method of Servlet which uses RunAs with incorrect role.",
-                incorrectRoleResult.contains(DOGET_METHOD_NOT_PASS));
+        assertTrue(incorrectRoleResult.contains(DOGET_METHOD_NOT_PASS),
+                "EJB invocation did not failed in doGet() method of Servlet which uses RunAs with incorrect role.");
     }
 
     /**
@@ -163,7 +167,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(7)
+    @Order(7)
     public void runDestroyMethodInUndeploying() throws Exception {
         deployer.undeploy(DEPLOYMENT);
     }
@@ -175,10 +179,10 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(8)
+    @Order(8)
     public void checkDestroyInUndeployingMethodWithCorrectRole() throws Exception {
-        assertTrue("EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during undeploying.",
-                readFirstLineOfFile(CORRECT_ROLE_AND_UNDEPLOY).contains(DESTROY_METHOD_PASS + HelloBean.HELLO));
+        assertTrue(readFirstLineOfFile(CORRECT_ROLE_AND_UNDEPLOY).contains(DESTROY_METHOD_PASS + HelloBean.HELLO),
+                "EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during undeploying.");
     }
 
     /**
@@ -188,11 +192,11 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(9)
+    @Order(9)
     public void checkDestroyInUndeployingMethodWithIncorrectRole() throws Exception {
-        assertTrue("EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role during "
-                        + "undeploying.",
-                readFirstLineOfFile(INCORRECT_ROLE_AND_UNDEPLOY).contains(DESTROY_METHOD_NOT_PASS));
+        assertTrue(readFirstLineOfFile(INCORRECT_ROLE_AND_UNDEPLOY).contains(DESTROY_METHOD_NOT_PASS),
+                "EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role during "
+                        + "undeploying.");
     }
 
     /**
@@ -201,7 +205,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(10)
+    @Order(10)
     public void redeployForStopServer() throws Exception {
         deployer.deploy(DEPLOYMENT);
     }
@@ -213,7 +217,7 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(11)
+    @Order(11)
     @OperateOnDeployment(DEPLOYMENT)
     public void runDestroyMethodInStopServer(@ArquillianResource URL url) throws Exception {
         URL servletUrl = new URL(url.toExternalForm() + RunAsAdminServlet.SERVLET_PATH.substring(1) + "?"
@@ -233,11 +237,11 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(12)
+    @Order(12)
     public void checkDestroyMethodInStopServerWithCorrectRole() throws Exception {
-        assertTrue("EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during stopping "
-                        + "server.",
-                readFirstLineOfFile(CORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_PASS + HelloBean.HELLO));
+        assertTrue(readFirstLineOfFile(CORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_PASS + HelloBean.HELLO),
+                "EJB invocation failed in destroy() method of Servlet which uses RunAs with correct role during stopping "
+                        + "server.");
     }
 
     /**
@@ -247,15 +251,15 @@ public class ServletRunAsTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(13)
+    @Order(13)
     public void checkDestroyMethodInStopServerWithIncorrectRole() throws Exception {
-        assertTrue("EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role "
-                        + "during stopping server.",
-                readFirstLineOfFile(INCORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_NOT_PASS));
+        assertTrue(readFirstLineOfFile(INCORRECT_ROLE_AND_STOP_SERVER).contains(DESTROY_METHOD_NOT_PASS),
+                "EJB invocation did not failed in destroy() method of Servlet which uses RunAs with incorrect role "
+                        + "during stopping server.");
     }
 
     @Test
-    @InSequence(Integer.MAX_VALUE)
+    @Order(Integer.MAX_VALUE)
     public void finish() throws Exception {
         deployer.undeploy(DEPLOYMENT);
         FileUtils.deleteQuietly(WORK_DIR);

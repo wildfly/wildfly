@@ -20,7 +20,7 @@ import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -31,14 +31,14 @@ import org.jboss.as.test.integration.batch.common.StartBatchServlet;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ChunkPartitionTestCase extends AbstractBatchTestCase {
 
 
@@ -75,7 +75,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             final JobExecution jobExecution = JobExecutionMarshaller.unmarshall(result);
 
 
-            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+            Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
             // final String exitStatus = stepExecution0.getExitStatus();
             // Assert.assertTrue(exitStatus.startsWith("PASS"));
         }
@@ -87,7 +87,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
         builder.addParameter("writer.sleep.time", 0);
         final String result = performCall(builder.build());
         final JobExecution jobExecution = JobExecutionMarshaller.unmarshall(result);
-        Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
     }
 
     @Test
@@ -104,10 +104,10 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
 
             // Wait until the job is complete for a maximum of 5 seconds
             waitForTermination(jobExecution, 5);
-            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+            Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
             // Check that count
-            Assert.assertEquals(10, countingItemWriter.getWrittenItemSize());
+            Assertions.assertEquals(10, countingItemWriter.getWrittenItemSize());
 
             // Suspend the server
             managementClient.getControllerClient().execute(Operations.createOperation("suspend"));
@@ -119,7 +119,7 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             try {
                 jobOperator.getJobExecution(executionId);
             } catch (NoSuchJobExecutionException expected) {
-                Assert.fail("Job should not exist as the server is suspended: " + executionId);
+                Assertions.fail("Job should not exist as the server is suspended: " + executionId);
             }
 
             // Resume the server which should kick of queued jobs
@@ -130,10 +130,10 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
 
             // Wait until the job is complete for a maximum of 5 seconds
             waitForTermination(jobExecution, 5);
-            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+            Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
             // Check that count
-            Assert.assertEquals(20, countingItemWriter.getWrittenItemSize());
+            Assertions.assertEquals(20, countingItemWriter.getWrittenItemSize());
         } finally {
             managementClient.getControllerClient().execute(Operations.createOperation("resume"));
         }

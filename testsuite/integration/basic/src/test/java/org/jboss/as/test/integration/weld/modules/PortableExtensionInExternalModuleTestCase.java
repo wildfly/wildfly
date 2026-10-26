@@ -12,7 +12,7 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
 import org.jboss.logging.Logger;
@@ -23,10 +23,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the deployment of simple enterprise application depending on some external WFLY module. The external WFLY module
@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author Petr Andreev
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PortableExtensionInExternalModuleTestCase {
 
     private static final Logger log = Logger.getLogger(PortableExtensionInExternalModuleTestCase.class.getName());
@@ -74,7 +74,7 @@ public class PortableExtensionInExternalModuleTestCase {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModule.remove();
     }
@@ -128,17 +128,17 @@ public class PortableExtensionInExternalModuleTestCase {
 
     @Test
     public void testInWarSubdeployment() {
-        Assert.assertNotNull(extension);
+        Assertions.assertNotNull(extension);
         BeanManager beanManager = extension.getBeanManager();
-        Assert.assertNotNull(beanManager);
+        Assertions.assertNotNull(beanManager);
     }
 
     private void assertPortableExtensionInjection(PortableExtensionLookup injectionTarget) {
-        Assert.assertNotNull(injectionTarget);
+        Assertions.assertNotNull(injectionTarget);
         PortableExtension extension = injectionTarget.getPortableExtension();
-        Assert.assertNotNull(extension);
+        Assertions.assertNotNull(extension);
         BeanManager beanManager = extension.getBeanManager();
-        Assert.assertNotNull(beanManager);
+        Assertions.assertNotNull(beanManager);
     }
 
     private static StringAsset newBeans11Descriptor(String mode) {

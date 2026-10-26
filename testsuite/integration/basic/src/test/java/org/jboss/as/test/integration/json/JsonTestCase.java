@@ -14,20 +14,20 @@ import jakarta.json.stream.JsonParser.Event;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JsonTestCase {
 
@@ -58,7 +58,7 @@ public class JsonTestCase {
             }
         }
         parser.close();
-        Assert.assertEquals("Key should be \"name\"", "name", key);
-        Assert.assertEquals("Value should be \"value\"", "value", value);
+        Assertions.assertEquals("name", key, "Key should be \"name\"");
+        Assertions.assertEquals("value", value, "Value should be \"value\"");
     }
 }

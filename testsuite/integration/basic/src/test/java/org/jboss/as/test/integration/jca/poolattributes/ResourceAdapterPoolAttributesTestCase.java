@@ -15,7 +15,7 @@ import java.util.List;
 import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -50,16 +50,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Checks that pool attributes can be set and do not require a reload.
  *
  * @author <a href="mailto:thofman@redhat.com">Tomas Hofman</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ResourceAdapterPoolAttributesTestCase.ResourceAdapterCapacityPoliciesServerSetupTask.class)
 public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
     private static final String RA_NAME = "pool-attributes-test.rar";
@@ -133,13 +133,13 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         PoolConfiguration poolConfiguration = JcaTestsUtil.exctractPoolConfiguration(lcf);
 
         // check initial values
-        Assert.assertNotNull(poolConfiguration);
-        Assert.assertEquals(2, poolConfiguration.getMinSize());
-        Assert.assertEquals(5, poolConfiguration.getMaxSize());
-        Assert.assertEquals(2, poolConfiguration.getInitialSize());
-        Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(true, poolConfiguration.isFair());
-        Assert.assertEquals(false, poolConfiguration.isStrictMin());
+        Assertions.assertNotNull(poolConfiguration);
+        Assertions.assertEquals(2, poolConfiguration.getMinSize());
+        Assertions.assertEquals(5, poolConfiguration.getMaxSize());
+        Assertions.assertEquals(2, poolConfiguration.getInitialSize());
+        Assertions.assertEquals(30000, poolConfiguration.getBlockingTimeout());
+        Assertions.assertEquals(true, poolConfiguration.isFair());
+        Assertions.assertEquals(false, poolConfiguration.isStrictMin());
 
         // modify values
         writeAttribute(CONNECTION_ADDRESS, Constants.INITIAL_POOL_SIZE.getName(), "4");
@@ -149,25 +149,25 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
 
         // check that server is not in reload-required state
         ModelNode serverState = readAttribute(new ModelNode(), "server-state");
-        Assert.assertEquals("running", serverState.asString());
+        Assertions.assertEquals("running", serverState.asString());
         // check that runtime was updated
-        Assert.assertEquals(4, poolConfiguration.getInitialSize());
-        Assert.assertEquals(10000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(false, poolConfiguration.isFair());
-        Assert.assertEquals(true, poolConfiguration.isStrictMin());
+        Assertions.assertEquals(4, poolConfiguration.getInitialSize());
+        Assertions.assertEquals(10000, poolConfiguration.getBlockingTimeout());
+        Assertions.assertEquals(false, poolConfiguration.isFair());
+        Assertions.assertEquals(true, poolConfiguration.isStrictMin());
 
         writeAttribute(CONNECTION_ADDRESS, Constants.MIN_POOL_SIZE.getName(), "4");
         writeAttribute(CONNECTION_ADDRESS, Constants.MAX_POOL_SIZE.getName(), "10");
 
         // check that server is in reload-required state
         serverState = readAttribute(new ModelNode(), "server-state");
-        Assert.assertEquals("reload-required", serverState.asString());
+        Assertions.assertEquals("reload-required", serverState.asString());
 
         ModelNode result = readAttribute(CONNECTION_ADDRESS, Constants.MIN_POOL_SIZE.getName());
-        Assert.assertEquals(4, result.asInt());
+        Assertions.assertEquals(4, result.asInt());
 
         result = readAttribute(CONNECTION_ADDRESS, Constants.MAX_POOL_SIZE.getName());
-        Assert.assertEquals(10, result.asInt());
+        Assertions.assertEquals(10, result.asInt());
     }
 
     static class ResourceAdapterCapacityPoliciesServerSetupTask extends JcaMgmtServerSetupTask {

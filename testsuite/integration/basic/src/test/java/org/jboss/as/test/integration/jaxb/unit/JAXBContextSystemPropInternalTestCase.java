@@ -7,12 +7,13 @@ package org.jboss.as.test.integration.jaxb.unit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * <p>Test for JAXB using a System Property. The test will try using the
@@ -20,7 +21,7 @@ import org.junit.runner.RunWith;
  *
  * @author rmartinc
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JAXBContextSystemPropInternalTestCase.SystemPropertiesSetup.class})
 @RunAsClient
 public class JAXBContextSystemPropInternalTestCase extends JAXBContextTestBase {

@@ -8,8 +8,8 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.SocketPermission;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -37,8 +37,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that invoking a management operation that removes a JMS resource that is used by a deployed archive must fail:
@@ -47,7 +48,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ExternalMessagingDeploymentRemoteTestCase.SetupTask.class)
 public class ExternalMessagingDeploymentRemoteTestCase {
@@ -118,7 +119,7 @@ public class ExternalMessagingDeploymentRemoteTestCase {
             ModelNode response = managementClient.getControllerClient().execute(op);
             final String outcome = response.get("outcome").asString();
             if (expectSuccess) {
-                assertEquals(response.toString(), "success", outcome);
+                assertEquals("success", outcome, response.toString());
                 return response.get("result");
             } else {
                 assertEquals("failed", outcome);
@@ -234,6 +235,6 @@ public class ExternalMessagingDeploymentRemoteTestCase {
         op.get("recursive").set(true);
         op.get("include-runtime").set(true);
         ModelNode response = managementClient.getControllerClient().execute(op);
-        assertEquals(response.toString(), "success", response.get("outcome").asString());
+        assertEquals("success", response.get("outcome").asString(), response.toString());
     }
 }

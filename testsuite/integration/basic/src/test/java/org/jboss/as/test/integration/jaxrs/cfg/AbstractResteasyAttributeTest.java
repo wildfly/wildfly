@@ -7,12 +7,13 @@ package org.jboss.as.test.integration.jaxrs.cfg;
 
 import java.io.IOException;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
-import org.junit.runner.RunWith;
 import org.wildfly.plugin.tools.server.ServerManager;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * An abstract test used to update an attribute in the {@code jaxrs} subsystem.
@@ -22,7 +23,7 @@ import org.wildfly.plugin.tools.server.ServerManager;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 abstract class AbstractResteasyAttributeTest {
     private static final ModelNode ADDRESS = Operations.createAddress("subsystem", "jaxrs");
 

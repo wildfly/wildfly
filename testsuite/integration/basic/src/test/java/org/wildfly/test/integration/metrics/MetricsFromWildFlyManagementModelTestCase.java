@@ -7,9 +7,9 @@ package org.wildfly.test.integration.metrics;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.wildfly.test.integration.metrics.MetricsHelper.getPrometheusMetrics;
 
 import java.io.IOException;
@@ -20,8 +20,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -35,15 +34,20 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.integration.metrics.application.TestApplication;
 import org.wildfly.test.integration.metrics.application.TestResource;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({MetricsFromWildFlyManagementModelTestCase.EnablesUndertowStatistics.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MetricsFromWildFlyManagementModelTestCase {
 
     static class EnablesUndertowStatistics implements ServerSetupTask {
@@ -81,18 +85,18 @@ public class MetricsFromWildFlyManagementModelTestCase {
         return war;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void skipSecurityManager() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void skipNonPreview() {
         AssumeTestGroupUtil.assumeNotWildFlyPreview();
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testMetricsBeforeDeployment() throws Exception {
         // the request-count from the deployment must not exist
         checkMetricExistence("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"", false);
@@ -106,7 +110,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase")
     public void testMetricsAfterDeployment(@ArquillianResource URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources
@@ -122,7 +126,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testMetricsAfterUndeployment() throws Exception {
         deployer.undeploy("MetricsFromWildFlyManagementModelTestCase");
 
@@ -176,7 +180,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
                         assertTrue(labels.contains("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\""));
                         assertTrue(labels.contains("subdeployment=\"MetricsFromWildFlyManagementModelTestCase.war\""));
                         assertTrue(labels.contains("servlet=\"" + TestApplication.class.getName() + "\""));
-                        assertEquals(metrics, Integer.valueOf(expectedCount).doubleValue(), value, 0);
+                        assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0, metrics);
 
                         return;
                     }
@@ -185,7 +189,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
                     if (labels.contains("http_listener=\"default\"")) {
                         Double value = Double.valueOf(split[1]);
                         assertTrue(labels.contains("server=\"default-server\""));
-                        assertEquals(metrics, Integer.valueOf(expectedCount).doubleValue(), value, 0);
+                        assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0, metrics);
                         return;
 
                     }

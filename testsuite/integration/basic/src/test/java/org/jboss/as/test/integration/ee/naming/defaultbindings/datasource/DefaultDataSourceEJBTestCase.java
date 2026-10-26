@@ -6,12 +6,13 @@
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
@@ -20,7 +21,7 @@ import javax.naming.InitialContext;
  *
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DefaultDataSourceEJBTestCase {
 
     @Deployment

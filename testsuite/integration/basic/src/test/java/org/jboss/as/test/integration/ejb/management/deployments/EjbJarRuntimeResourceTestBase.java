@@ -14,10 +14,10 @@ import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +36,8 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Base class for tests of management resources exposed by runtime EJB components.
@@ -351,7 +352,7 @@ public class EjbJarRuntimeResourceTestBase {
             assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, attr, DESCRIPTION).getType());
             assertEquals(expectedType, resourceDescription.get(ATTRIBUTES, attr, TYPE).asType());
 
-            assertTrue(attr + " is not defined", resource.get(attr).isDefined());
+            assertTrue(resource.get(attr).isDefined(), attr + " is not defined");
             assertEquals(expectedType, resource.get(attr).getType());
         }
     }
@@ -378,11 +379,11 @@ public class EjbJarRuntimeResourceTestBase {
             assertTrue(timer.get("info").isDefined());
             assertEquals("timer1", timer.get("info").asString());
             for (String field : TIMER_ATTRIBUTES) {
-                assertTrue(field, timer.has(field));
+                assertTrue(timer.has(field), field);
             }
 
             for (String field : SCHEDULE_ATTRIBUTES) {
-                assertTrue(field, timer.get("schedule").has(field));
+                assertTrue(timer.get("schedule").has(field), field);
             }
         }
         if (expectTimer) {

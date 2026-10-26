@@ -14,16 +14,16 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a simple async annotation works.
@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AsyncMethodTestCase {
     private static final String ARCHIVE_NAME = "AsyncTestCase";
     private static final Integer WAIT_TIME_S = 10;
@@ -63,13 +63,13 @@ public class AsyncMethodTestCase {
     public void testVoidAsyncStatelessMethod() throws Exception {
         AsyncBean.voidMethodCalled = false;
         AsyncBean bean = lookup(AsyncBean.class);
-        Assert.assertFalse(AsyncBean.voidMethodCalled);
+        Assertions.assertFalse(AsyncBean.voidMethodCalled);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
         bean.asyncMethod(latch, latch2);
         latch.countDown();
         latch2.await();
-        Assert.assertTrue(AsyncBean.voidMethodCalled);
+        Assertions.assertTrue(AsyncBean.voidMethodCalled);
     }
 
     /**
@@ -83,8 +83,8 @@ public class AsyncMethodTestCase {
         final Future<Boolean> future = bean.futureMethod(latch);
         latch.countDown();
         boolean result = future.get();
-        Assert.assertTrue(AsyncBean.futureMethodCalled);
-        Assert.assertTrue(result);
+        Assertions.assertTrue(AsyncBean.futureMethodCalled);
+        Assertions.assertTrue(result);
     }
 
     /**
@@ -98,7 +98,7 @@ public class AsyncMethodTestCase {
         final Future<Integer> future = bean.testRequestScopeActive(latch);
         latch.countDown();
         int result = future.get();
-        Assert.assertEquals(20, result);
+        Assertions.assertEquals(20, result);
     }
 
     /**
@@ -107,13 +107,13 @@ public class AsyncMethodTestCase {
     @Test
     public void testVoidAsyncStatefulMethod() throws Exception {
         AsyncStateful bean = lookup(AsyncStateful.class);
-        Assert.assertFalse(AsyncStateful.voidMethodCalled);
+        Assertions.assertFalse(AsyncStateful.voidMethodCalled);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
         bean.asyncMethod(latch, latch2);
         latch.countDown();
         latch2.await();
-        Assert.assertTrue(AsyncStateful.voidMethodCalled);
+        Assertions.assertTrue(AsyncStateful.voidMethodCalled);
     }
 
     /**
@@ -126,8 +126,8 @@ public class AsyncMethodTestCase {
         final Future<Boolean> future = bean.futureMethod(latch);
         latch.countDown();
         boolean result = future.get();
-        Assert.assertTrue(AsyncStateful.futureMethodCalled);
-        Assert.assertTrue(result);
+        Assertions.assertTrue(AsyncStateful.futureMethodCalled);
+        Assertions.assertTrue(result);
     }
 
     /**
@@ -136,13 +136,13 @@ public class AsyncMethodTestCase {
     @Test
     public void testVoidAsyncSingletonMethod() throws Exception {
         AsyncSingleton singleton = lookup(AsyncSingleton.class);
-        Assert.assertFalse(AsyncSingleton.voidMethodCalled);
+        Assertions.assertFalse(AsyncSingleton.voidMethodCalled);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
         singleton.asyncMethod(latch, latch2);
         latch.countDown();
         latch2.await();
-        Assert.assertTrue(AsyncSingleton.voidMethodCalled);
+        Assertions.assertTrue(AsyncSingleton.voidMethodCalled);
     }
 
     /**
@@ -155,8 +155,8 @@ public class AsyncMethodTestCase {
         final Future<Boolean> future = singleton.futureMethod(latch);
         latch.countDown();
         boolean result = future.get();
-        Assert.assertTrue(AsyncSingleton.futureMethodCalled);
-        Assert.assertTrue(result);
+        Assertions.assertTrue(AsyncSingleton.futureMethodCalled);
+        Assertions.assertTrue(result);
     }
 
     /**
@@ -169,17 +169,17 @@ public class AsyncMethodTestCase {
         final CountDownLatch latch2 = new CountDownLatch(1);
         final Future<String> future = bean.asyncCancelMethod(latch, latch2);
         latch.await(WAIT_TIME_S, TimeUnit.SECONDS);
-        Assert.assertFalse(future.isDone()); // we are in async method
-        Assert.assertFalse(future.isCancelled());
+        Assertions.assertFalse(future.isDone()); // we are in async method
+        Assertions.assertFalse(future.isCancelled());
         boolean wasCanceled = future.cancel(true); // we are running - task can't be canceled
         if (wasCanceled) {
-            Assert.assertTrue("isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true", future.isDone());
-            Assert.assertTrue("isCancelled() was expected to return true after a call to cancel() returned true", future.isCancelled());
+            Assertions.assertTrue(future.isDone(), "isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true");
+            Assertions.assertTrue(future.isCancelled(), "isCancelled() was expected to return true after a call to cancel() returned true");
         }
         latch2.countDown();
         String result = future.get();
-        Assert.assertFalse(wasCanceled); // this should be false because task was not cancelled
-        Assert.assertEquals("false;true", result); // the bean knows that it was cancelled
+        Assertions.assertFalse(wasCanceled); // this should be false because task was not cancelled
+        Assertions.assertEquals("false;true", result); // the bean knows that it was cancelled
     }
 
     @Test
@@ -193,16 +193,16 @@ public class AsyncMethodTestCase {
         singleton.reset();
         final Future<String> future = bean.asyncRemoteCancelMethod();
         singleton.latchAwaitSeconds(WAIT_TIME_S); // waiting for the bean method was already invocated
-        Assert.assertFalse("isDone() was expected to return false because the method is still active", future.isDone()); // we are in async method
-        Assert.assertFalse("isCancelled() was expected to return false because the method is still active", future.isCancelled());
+        Assertions.assertFalse(future.isDone(), "isDone() was expected to return false because the method is still active"); // we are in async method
+        Assertions.assertFalse(future.isCancelled(), "isCancelled() was expected to return false because the method is still active");
         boolean wasCanceled = future.cancel(true); // we are running - task can't be canceled
         if (wasCanceled) {
-            Assert.assertTrue("isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true", future.isDone());
-            Assert.assertTrue("isCancelled() was expected to return true after a call to cancel() returned true", future.isCancelled());
+            Assertions.assertTrue(future.isDone(), "isDone() was expected to return true after a call to cancel() with mayBeInterrupting = true, returned true");
+            Assertions.assertTrue(future.isCancelled(), "isCancelled() was expected to return true after a call to cancel() returned true");
         }
         String result = future.get();
-        Assert.assertFalse(wasCanceled); // this should be false because task was not cancelled
-        Assert.assertEquals("false;true", result); // the bean knows that it was cancelled
+        Assertions.assertFalse(wasCanceled); // this should be false because task was not cancelled
+        Assertions.assertEquals("false;true", result); // the bean knows that it was cancelled
     }
 
     /**
@@ -214,12 +214,12 @@ public class AsyncMethodTestCase {
         Future<String> future = bean.asyncMethodWithException(true);
         try {
             future.get();
-            Assert.fail("ExecutionException was expected");
+            Assertions.fail("ExecutionException was expected");
         } catch (ExecutionException ee) {
             // expecting this and we are able to get caused exception
-            Assert.assertNotNull(ee.getCause());
+            Assertions.assertNotNull(ee.getCause());
         } catch (Exception e) {
-            Assert.fail("ExecutionException was expected and not " + e.getClass());
+            Assertions.fail("ExecutionException was expected and not " + e.getClass());
         }
     }
 
@@ -229,13 +229,13 @@ public class AsyncMethodTestCase {
     @Test
     public void testVoidParentAsyncMethod() throws Exception {
         AsyncChildBean bean = lookup(AsyncChildBean.class);
-        Assert.assertFalse(AsyncParentClass.voidMethodCalled);
+        Assertions.assertFalse(AsyncParentClass.voidMethodCalled);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
         bean.asyncMethod(latch, latch2);
         latch.countDown();
         latch2.await();
-        Assert.assertTrue(AsyncParentClass.voidMethodCalled);
+        Assertions.assertTrue(AsyncParentClass.voidMethodCalled);
     }
 
     /**
@@ -244,11 +244,11 @@ public class AsyncMethodTestCase {
     @Test
     public void testAsyncDescriptor() throws Exception {
         AsyncBeanDescriptor bean = lookup(AsyncBeanDescriptor.class);
-        Assert.assertFalse(AsyncBeanDescriptor.futureMethodCalled);
+        Assertions.assertFalse(AsyncBeanDescriptor.futureMethodCalled);
         final CountDownLatch latch = new CountDownLatch(1);
         bean.futureMethod(latch);
         latch.await(WAIT_TIME_S, TimeUnit.SECONDS);
-        Assert.assertTrue(AsyncBeanDescriptor.futureMethodCalled);
+        Assertions.assertTrue(AsyncBeanDescriptor.futureMethodCalled);
     }
 
     /**
@@ -271,6 +271,6 @@ public class AsyncMethodTestCase {
         AsyncBeanRemoteInterface bean = (AsyncBeanRemoteInterface) remoteContext.lookup(
                 ARCHIVE_NAME + "/" + AsyncBeanRemote.class.getSimpleName() + "!" + AsyncBeanRemoteInterface.class.getName());
         Future<Boolean> future = bean.futureMethod();
-        Assert.assertTrue("Supposing that future.get() method returns TRUE but it returned FALSE", future.get());
+        Assertions.assertTrue(future.get(), "Supposing that future.get() method returns TRUE but it returned FALSE");
     }
 }

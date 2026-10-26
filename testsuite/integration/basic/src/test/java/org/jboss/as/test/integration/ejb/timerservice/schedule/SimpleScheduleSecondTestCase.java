@@ -6,11 +6,11 @@
 package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -20,7 +20,7 @@ import javax.naming.NamingException;
  *
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SimpleScheduleSecondTestCase {
 
     @Deployment
@@ -35,10 +35,10 @@ public class SimpleScheduleSecondTestCase {
     public void testScheduleMethodTimeout() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
-        Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
+        Assertions.assertTrue(SimpleScheduleBean.awaitTimerCall());
 
         final SingletonScheduleBean singletonBean = (SingletonScheduleBean) ctx.lookup("java:module/" + SingletonScheduleBean.class.getSimpleName());
-        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
+        Assertions.assertTrue(SingletonScheduleBean.awaitTimerCall());
 
     }
 }

@@ -5,32 +5,36 @@
 
 package org.jboss.as.test.integration.jpa.datasourcedefinition;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.persistence.TransactionRequiredException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Transaction tests
  *
  * @author Scott Marlow and Zbynek Roubalik
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DataSourceDefinitionJPATestCase {
 
     private static final String ARCHIVE_NAME = "jpa_datasourcedefinition";
@@ -58,7 +62,7 @@ public class DataSourceDefinitionJPATestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
@@ -69,18 +73,18 @@ public class DataSourceDefinitionJPATestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
-        assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
+        assertEquals("success", name, "Query should of thrown NoResultException, which we indicate by returning 'success'");
     }
 
     // Test that the queried Employee is detached as required by JPA 2.0 section 3.8.6
     // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
     // must be detached.
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testQueryNonTXTransactionalDetach() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Jill", "54 Country Lane", 2);
@@ -88,7 +92,7 @@ public class DataSourceDefinitionJPATestCase {
         assertNotNull(employee);
 
         boolean detached = sfsb1.isQueryEmployeeDetached(2);
-        assertTrue("JPA 2.0 section 3.8.6 violated, query returned entity in non-tx that wasn't detached ", detached);
+        assertTrue(detached, "JPA 2.0 section 3.8.6 violated, query returned entity in non-tx that wasn't detached ");
     }
 
     /**
@@ -97,7 +101,7 @@ public class DataSourceDefinitionJPATestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testTransactionRequiredException() throws Exception {
         Throwable error = null;
         try {
@@ -113,8 +117,8 @@ public class DataSourceDefinitionJPATestCase {
             error = error.getCause();
         }
         assertTrue(
-                "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
-                        + " but we instead got a " + error, error instanceof TransactionRequiredException);
+                error instanceof TransactionRequiredException, "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
+                        + " but we instead got a " + error);
     }
 
 
@@ -126,44 +130,44 @@ public class DataSourceDefinitionJPATestCase {
      * 3) The transaction fails after the DAO calls and the Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testFailInDAOCalls() throws Exception {
         SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
         slsb1.addEmployee();
 
         String message = slsb1.failInFirstCall();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
 
         message = slsb1.failInSecondCall();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
 
         message = slsb1.failAfterCalls();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
     }
 
     @Test
-    @InSequence(6)
+    @Order(6)
     public void testUserTxRollbackDiscardsChanges() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
         Employee employee = sfsbxpc.lookup(10);
-        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (not yet saved to db)");
 
         // rollback any changes that haven't been saved yet
         sfsbxpc.forceRollbackAndLosePendingChanges(10, false);
 
         employee = sfsbxpc.lookup(10);
-        assertNull("employee record should not be found in db after rollback", employee);
+        assertNull(employee, "employee record should not be found in db after rollback");
 
     }
 
     @Test
-    @InSequence(7)
+    @Order(7)
     public void testEnlistXPCInUserTx() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 20);  // create the employee but leave in xpc
         Employee employee = sfsbxpc.lookup(20);
-        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (not yet saved to db)");
 
         // start/end a user transaction without invoking the (extended) entity manager, which should cause the
         // pending changes to be saved to db
@@ -172,7 +176,7 @@ public class DataSourceDefinitionJPATestCase {
         sfsbxpc.forceRollbackAndLosePendingChanges(20, true);
 
         employee = sfsbxpc.lookup(20);
-        assertNotNull("could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())");
 
     }
 }

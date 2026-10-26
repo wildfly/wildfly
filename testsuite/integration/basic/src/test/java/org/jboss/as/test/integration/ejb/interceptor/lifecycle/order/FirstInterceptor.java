@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ejb.interceptor.lifecycle.order;
 import jakarta.annotation.PostConstruct;
 import jakarta.interceptor.InvocationContext;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -19,11 +19,11 @@ public class FirstInterceptor {
     @PostConstruct
     public void child(InvocationContext ctx) throws Exception {
         postConstructCalled = true;
-        Assert.assertFalse(InterceptorParent.parentPostConstructCalled);
-        Assert.assertFalse(InterceptorChild.childPostConstructCalled);
-        Assert.assertFalse(LastInterceptor.postConstructCalled);
-        Assert.assertFalse(SFSBParent.parentPostConstructCalled);
-        Assert.assertFalse(SFSBChild.childPostConstructCalled);
+        Assertions.assertFalse(InterceptorParent.parentPostConstructCalled);
+        Assertions.assertFalse(InterceptorChild.childPostConstructCalled);
+        Assertions.assertFalse(LastInterceptor.postConstructCalled);
+        Assertions.assertFalse(SFSBParent.parentPostConstructCalled);
+        Assertions.assertFalse(SFSBChild.childPostConstructCalled);
         ctx.proceed();
     }
 

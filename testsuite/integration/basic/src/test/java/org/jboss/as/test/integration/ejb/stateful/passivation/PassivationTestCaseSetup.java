@@ -16,7 +16,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Setup for passivation test case.
@@ -43,7 +44,7 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
         ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 1);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.trace("modelnode operation write-attribute max-active-beans=1: " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         ServerReload.reloadIfRequired(managementClient);
     }
 
@@ -55,7 +56,7 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
         ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 10000);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         ServerReload.reloadIfRequired(managementClient);
     }
 }

@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.jsf.beanvalidation.cdi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -27,14 +27,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for the integration of Jakarta Server Faces, CDI, and Jakarta Bean Validation.
@@ -46,7 +47,7 @@ import org.junit.runner.RunWith;
  *
  * @author Farah Juma
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class BeanValidationCdiIntegrationTestCase {
     @ArquillianResource
@@ -72,10 +73,10 @@ public class BeanValidationCdiIntegrationTestCase {
         String responseString = registerTeam("Team1", 6);
 
         Matcher errorMatcher = nameErrorPattern.matcher(responseString);
-        assertTrue(responseString, !errorMatcher.find());
+        assertTrue(!errorMatcher.find(), responseString);
 
         errorMatcher = numberErrorPattern.matcher(responseString);
-        assertTrue(responseString, !errorMatcher.find());
+        assertTrue(!errorMatcher.find(), responseString);
     }
 
     @Test
@@ -94,8 +95,8 @@ public class BeanValidationCdiIntegrationTestCase {
             numberError = errorMatcher.group(1).trim();
         }
 
-        assertEquals(responseString,"Team name must be at least 3 characters.", nameError);
-        assertEquals(responseString, "Not enough people for a team.", numberError);
+        assertEquals("Team name must be at least 3 characters.",nameError, responseString);
+        assertEquals("Not enough people for a team.", numberError, responseString);
     }
 
     private String registerTeam(String name, int numberOfPeople) throws Exception {
@@ -109,7 +110,7 @@ public class BeanValidationCdiIntegrationTestCase {
             HttpResponse response = client.execute(getRequest);
             try {
                 String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                assertEquals(responseString, 200, response.getStatusLine().getStatusCode());
+                assertEquals(200, response.getStatusLine().getStatusCode(), responseString);
 
                 // Get the Jakarta Server Faces view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
@@ -136,7 +137,7 @@ public class BeanValidationCdiIntegrationTestCase {
 
             try {
                 String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-                assertEquals(responseString, 200, response.getStatusLine().getStatusCode());
+                assertEquals(200, response.getStatusLine().getStatusCode(), responseString);
                 return responseString;
             } finally {
                 HttpClientUtils.closeQuietly(response);

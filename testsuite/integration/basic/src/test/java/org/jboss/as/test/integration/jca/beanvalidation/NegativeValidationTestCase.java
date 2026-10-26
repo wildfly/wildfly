@@ -4,21 +4,24 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5905
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NegativeValidationTestCase {
 
     @ArquillianResource
@@ -49,9 +52,10 @@ public class NegativeValidationTestCase {
         return createDeployment("wrong-ao");
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testWrongAO() {
-        deployer.deploy("wrong-ao");
+        assertThrows(Exception.class, () ->
+            deployer.deploy("wrong-ao"));
     }
 
     @Deployment(name = "wrong-cf", managed = false)
@@ -59,9 +63,10 @@ public class NegativeValidationTestCase {
         return createDeployment("wrong-cf");
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testWrongCf() {
-        deployer.deploy("wrong-cf");
+        assertThrows(Exception.class, () ->
+            deployer.deploy("wrong-cf"));
     }
 
     @Deployment(name = "wrong-ra", managed = false)
@@ -69,9 +74,10 @@ public class NegativeValidationTestCase {
         return createDeployment("wrong-ra");
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testWrongRA() {
-        deployer.deploy("wrong-ra");
+        assertThrows(Exception.class, () ->
+            deployer.deploy("wrong-ra"));
     }
 
 }

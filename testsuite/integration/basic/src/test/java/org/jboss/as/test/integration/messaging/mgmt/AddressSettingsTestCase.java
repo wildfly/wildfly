@@ -10,14 +10,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -26,14 +26,14 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
     private static final String ACTIVEMQ_ADDRESS = "activemq-address";
@@ -49,7 +49,7 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
 
     private JMSOperations jmsOperations;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException, MgmtOperationException {
         jmsOperations = JMSOperationsProvider.getInstance(managementClient);
 
@@ -110,13 +110,13 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         for (String attributeName : attributeNames) {
             switch (attributeName) {
                 case "max-read-page-bytes":
-                    assertEquals("unexpected value for " + attributeName, 2*result.get("page-size-bytes").asInt(), result.get(attributeName).asInt());
+                    assertEquals(2*result.get("page-size-bytes").asInt(), result.get(attributeName).asInt(), "unexpected value for " + attributeName);
                     break;
                 case "max-redelivery-delay":
-                    assertEquals("unexpected value for " + attributeName, 10*result.get("redelivery-delay").asLong(), result.get(attributeName).asLong());
+                    assertEquals(10*result.get("redelivery-delay").asLong(), result.get(attributeName).asLong(), "unexpected value for " + attributeName);
                     break;
                 default:
-                    assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+                    assertEquals(defaultAddressSetting.get(attributeName), result.get(attributeName), "unexpected value for " + attributeName);
             }
 
         }
@@ -154,19 +154,19 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         for (String attributeName : attributeNames) {
             switch (attributeName) {
                 case "page-size-bytes":
-                    assertEquals("unexpected value for " + attributeName, 1024*1024, result.get(attributeName).asInt());
+                    assertEquals(1024*1024, result.get(attributeName).asInt(), "unexpected value for " + attributeName);
                     break;
                 case "max-read-page-bytes":
-                    assertEquals("unexpected value for " + attributeName, 2*1024*1024, result.get(attributeName).asInt());
+                    assertEquals(2*1024*1024, result.get(attributeName).asInt(), "unexpected value for " + attributeName);
                     break;
                 case "redelivery-delay":
-                    assertEquals("unexpected value for " + attributeName, 8000L, result.get(attributeName).asLong());
+                    assertEquals(8000L, result.get(attributeName).asLong(), "unexpected value for " + attributeName);
                     break;
                 case "max-redelivery-delay":
-                    assertEquals("unexpected value for " + attributeName, 10*8000L, result.get(attributeName).asLong());
+                    assertEquals(10*8000L, result.get(attributeName).asLong(), "unexpected value for " + attributeName);
                     break;
                 default:
-                    assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+                    assertEquals(defaultAddressSetting.get(attributeName), result.get(attributeName), "unexpected value for " + attributeName);
             }
         }
     }

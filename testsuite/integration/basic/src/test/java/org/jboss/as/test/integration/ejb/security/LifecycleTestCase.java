@@ -4,16 +4,17 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
-import static org.junit.Assert.fail;
-
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.jboss.logging.Logger;
+
 import jakarta.ejb.EJB;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.lifecycle.BaseBean;
@@ -24,9 +25,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * EJB 3.1 Section 17.2.5 - This test case is to test the programmatic access to the callers's security context for the various
@@ -34,9 +35,9 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class LifecycleTestCase  {
 
     private static final Logger log = Logger.getLogger(LifecycleTestCase.class.getName());

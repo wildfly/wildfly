@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.transaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -21,10 +21,10 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.annotation.Resource;
 import jakarta.transaction.HeuristicMixedException;
@@ -40,7 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({TransactionStatisticsTestCase.TransactionEnabledSetup.class})
 public class TransactionStatisticsTestCase {
     private static final PathAddress TX_SUBSYSTEM_ADDRESS = PathAddress.pathAddress().append(SUBSYSTEM, "transactions");
@@ -112,7 +112,7 @@ public class TransactionStatisticsTestCase {
                 ), "permissions.xml");
     }
 
-    @Before
+    @BeforeEach
     public void readStatisticsBeforeTest() {
         numberBefore = readInt(NUMBER_OF_TRANSACTIONS_ATTR);
         numberCommittedBefore = readInt(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR);
@@ -137,61 +137,61 @@ public class TransactionStatisticsTestCase {
         tm.getTransaction().enlistResource(xaer);
         tm.rollback();
 
-        Assert.assertEquals("Two more transactions in statistics are expected",
-                numberBefore + 2, readInt(NUMBER_OF_TRANSACTIONS_ATTR));
-        Assert.assertEquals("One more committed transaction in statistics is expected",
-                numberCommittedBefore + 1, readInt(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR));
-        Assert.assertEquals("One more aborted transaction in statistics is expected",
-                numberAbortedBefore + 1, readInt(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR));
-        Assert.assertEquals("One more application aborted transaction in statistics is expected",
-                numberAppAbortedBefore + 1, readInt(NUMBER_OF_APP_ABORTED_TRANSACTIONS_ATTR));
-        Assert.assertEquals("No additional nested transaction is expected",
-                numberNestedBefore, readInt(NUMBER_OF_NESTED_TRANSACTIONS_ATTR));
-        Assert.assertEquals("No additional heuristic transaction is expected",
-                numberHeuristicsBefore, readInt(NUMBER_OF_HEURISTICS_ATTR));
-        Assert.assertEquals("No additional inflight transaction is expected",
-                numberInflightBefore, readInt(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR));
-        Assert.assertEquals("No additional timed out transaction is expected",
-                numberTimedOutBefore, readInt(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR));
-        Assert.assertEquals("No additional resource rollback transaction is expected",
-                numberResourceRollbackBefore, readInt(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR));
-        Assert.assertEquals("No additional system rollback transaction is expected",
-                numberSystemRollbackBefore, readInt(NUMBER_OF_SYSTEM_ROLLBACKS_ATTR));
-        Assert.assertTrue("Expected the commit time was non zero value", readAverage() > 0L);
+        Assertions.assertEquals(numberBefore + 2,
+                readInt(NUMBER_OF_TRANSACTIONS_ATTR), "Two more transactions in statistics are expected");
+        Assertions.assertEquals(numberCommittedBefore + 1,
+                readInt(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR), "One more committed transaction in statistics is expected");
+        Assertions.assertEquals(numberAbortedBefore + 1,
+                readInt(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR), "One more aborted transaction in statistics is expected");
+        Assertions.assertEquals(numberAppAbortedBefore + 1,
+                readInt(NUMBER_OF_APP_ABORTED_TRANSACTIONS_ATTR), "One more application aborted transaction in statistics is expected");
+        Assertions.assertEquals(numberNestedBefore,
+                readInt(NUMBER_OF_NESTED_TRANSACTIONS_ATTR), "No additional nested transaction is expected");
+        Assertions.assertEquals(numberHeuristicsBefore,
+                readInt(NUMBER_OF_HEURISTICS_ATTR), "No additional heuristic transaction is expected");
+        Assertions.assertEquals(numberInflightBefore,
+                readInt(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR), "No additional inflight transaction is expected");
+        Assertions.assertEquals(numberTimedOutBefore,
+                readInt(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR), "No additional timed out transaction is expected");
+        Assertions.assertEquals(numberResourceRollbackBefore,
+                readInt(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR), "No additional resource rollback transaction is expected");
+        Assertions.assertEquals(numberSystemRollbackBefore,
+                readInt(NUMBER_OF_SYSTEM_ROLLBACKS_ATTR), "No additional system rollback transaction is expected");
+        Assertions.assertTrue(readAverage() > 0L, "Expected the commit time was non zero value");
 
         ModelNode grouped = readGrouped();
-        Assert.assertEquals("Two more transactions listed in grouped statistics are expected",
-                numberBefore + 2, grouped.get(NUMBER_OF_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("One more committed transaction listed in grouped statistics is expected",
-                numberCommittedBefore + 1, grouped.get(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("One more aborted transaction listed in grouped statistics is expected",
-                numberAbortedBefore + 1, grouped.get(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("One more application aborted transaction listed in grouped statistics is expected",
-                numberAppAbortedBefore + 1, grouped.get(NUMBER_OF_APP_ABORTED_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("No additional nested transaction is expected in grouped statistics",
-                numberNestedBefore, grouped.get(NUMBER_OF_NESTED_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("No additional heuristic transaction is expected in grouped statistics",
-                numberHeuristicsBefore, grouped.get(NUMBER_OF_HEURISTICS_ATTR).asInt());
-        Assert.assertEquals("No additional inflight transaction is expected in grouped statistics",
-                numberInflightBefore, grouped.get(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("No additional timed out transaction is expected in grouped statistics",
-                numberTimedOutBefore, grouped.get(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR).asInt());
-        Assert.assertEquals("No additional resource rollback transaction is expected in grouped statistics",
-                numberResourceRollbackBefore, grouped.get(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR).asInt());
-        Assert.assertEquals("No additional system rollback transaction is expected in grouped statistics",
-                numberSystemRollbackBefore, grouped.get(NUMBER_OF_SYSTEM_ROLLBACKS_ATTR).asInt());
-        Assert.assertTrue("Expected the commit time was non zero value and is listed in grouped statistics",
-                grouped.get(AVERAGE_COMMIT_TIME_ATTR).asLong() > 0L);
+        Assertions.assertEquals(numberBefore + 2,
+                grouped.get(NUMBER_OF_TRANSACTIONS_ATTR).asInt(), "Two more transactions listed in grouped statistics are expected");
+        Assertions.assertEquals(numberCommittedBefore + 1,
+                grouped.get(NUMBER_OF_COMMITTED_TRANSACTIONS_ATTR).asInt(), "One more committed transaction listed in grouped statistics is expected");
+        Assertions.assertEquals(numberAbortedBefore + 1,
+                grouped.get(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR).asInt(), "One more aborted transaction listed in grouped statistics is expected");
+        Assertions.assertEquals(numberAppAbortedBefore + 1,
+                grouped.get(NUMBER_OF_APP_ABORTED_TRANSACTIONS_ATTR).asInt(), "One more application aborted transaction listed in grouped statistics is expected");
+        Assertions.assertEquals(numberNestedBefore,
+                grouped.get(NUMBER_OF_NESTED_TRANSACTIONS_ATTR).asInt(), "No additional nested transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberHeuristicsBefore,
+                grouped.get(NUMBER_OF_HEURISTICS_ATTR).asInt(), "No additional heuristic transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberInflightBefore,
+                grouped.get(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR).asInt(), "No additional inflight transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberTimedOutBefore,
+                grouped.get(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR).asInt(), "No additional timed out transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberResourceRollbackBefore,
+                grouped.get(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR).asInt(), "No additional resource rollback transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberSystemRollbackBefore,
+                grouped.get(NUMBER_OF_SYSTEM_ROLLBACKS_ATTR).asInt(), "No additional system rollback transaction is expected in grouped statistics");
+        Assertions.assertTrue(grouped.get(AVERAGE_COMMIT_TIME_ATTR).asLong() > 0L,
+                "Expected the commit time was non zero value and is listed in grouped statistics");
     }
 
     @Test
     public void transactionStatisticsInflight() throws Exception {
         tm.begin();
-        Assert.assertEquals("One more inflight transaction is expected being in progress",
-                numberInflightBefore + 1, readInt(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR));
+        Assertions.assertEquals(numberInflightBefore + 1,
+                readInt(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR), "One more inflight transaction is expected being in progress");
         ModelNode grouped = readGrouped();
-        Assert.assertEquals("One more inflight transaction is expected in grouped statistics",
-                numberInflightBefore + 1, grouped.get(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR).asInt());
+        Assertions.assertEquals(numberInflightBefore + 1,
+                grouped.get(NUMBER_OF_INFLIGHT_TRANSACTIONS_ATTR).asInt(), "One more inflight transaction is expected in grouped statistics");
         tm.commit();
     }
 
@@ -202,16 +202,16 @@ public class TransactionStatisticsTestCase {
             tm.begin();
             Thread.sleep(TimeoutUtil.adjust(1100));
             tm.commit();
-            Assert.fail("Expected the transaction commit fails as transaction was rolled-back with timeout");
+            Assertions.fail("Expected the transaction commit fails as transaction was rolled-back with timeout");
         } catch (RollbackException expected) {
         } finally {
             tm.setTransactionTimeout(0);
         }
-        Assert.assertEquals("One more timed out transaction is expected",
-                numberTimedOutBefore + 1, readInt(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR));
+        Assertions.assertEquals(numberTimedOutBefore + 1,
+                readInt(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR), "One more timed out transaction is expected");
         ModelNode grouped = readGrouped();
-        Assert.assertEquals("One more timed out transaction is expected in grouped statistics",
-                numberTimedOutBefore + 1, grouped.get(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR).asInt());
+        Assertions.assertEquals(numberTimedOutBefore + 1,
+                grouped.get(NUMBER_OF_TIMED_OUT_TRANSACTIONS_ATTR).asInt(), "One more timed out transaction is expected in grouped statistics");
     }
 
     @Test
@@ -223,15 +223,15 @@ public class TransactionStatisticsTestCase {
             tm.getTransaction().enlistResource(xaer);
             tm.getTransaction().enlistResource(xaerHeur);
             tm.commit();
-            Assert.fail("Expected the transaction commit fails as transaction was marked as heuristics by XAException");
+            Assertions.fail("Expected the transaction commit fails as transaction was marked as heuristics by XAException");
         } catch (HeuristicMixedException expected) {
         }
 
-        Assert.assertEquals("One more heuristic transaction is expected",
-                numberHeuristicsBefore + 1, readInt(NUMBER_OF_HEURISTICS_ATTR));
+        Assertions.assertEquals(numberHeuristicsBefore + 1,
+                readInt(NUMBER_OF_HEURISTICS_ATTR), "One more heuristic transaction is expected");
         ModelNode grouped = readGrouped();
-        Assert.assertEquals("One more heuristic transaction is expected in grouped statistics",
-                numberHeuristicsBefore + 1, grouped.get(NUMBER_OF_HEURISTICS_ATTR).asInt());
+        Assertions.assertEquals(numberHeuristicsBefore + 1,
+                grouped.get(NUMBER_OF_HEURISTICS_ATTR).asInt(), "One more heuristic transaction is expected in grouped statistics");
     }
 
     @Test
@@ -243,19 +243,19 @@ public class TransactionStatisticsTestCase {
             tm.getTransaction().enlistResource(xaerHeur);
             tm.getTransaction().enlistResource(xaer);
             tm.commit();
-            Assert.fail("Expected the transaction commit fails as transaction commit failed with XAException");
+            Assertions.fail("Expected the transaction commit fails as transaction commit failed with XAException");
         } catch (RollbackException expected) {
         }
 
-        Assert.assertEquals("One more resource rollback transaction is expected",
-                numberResourceRollbackBefore + 1, readInt(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR));
-        Assert.assertEquals("One more aborted transaction is expected",
-                numberAbortedBefore + 1, readInt(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR));
+        Assertions.assertEquals(numberResourceRollbackBefore + 1,
+                readInt(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR), "One more resource rollback transaction is expected");
+        Assertions.assertEquals(numberAbortedBefore + 1,
+                readInt(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR), "One more aborted transaction is expected");
         ModelNode grouped = readGrouped();
-        Assert.assertEquals("One more resource rollback transaction is expected in grouped statistics",
-                numberResourceRollbackBefore + 1, grouped.get(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR).asInt());
-        Assert.assertEquals("One more aborted transaction is expected in grouped statistics",
-                numberAbortedBefore + 1, grouped.get(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR).asInt());
+        Assertions.assertEquals(numberResourceRollbackBefore + 1,
+                grouped.get(NUMBER_OF_RESOURCE_ROLLBACKS_ATTR).asInt(), "One more resource rollback transaction is expected in grouped statistics");
+        Assertions.assertEquals(numberAbortedBefore + 1,
+                grouped.get(NUMBER_OF_ABORTED_TRANSACTIONS_ATTR).asInt(), "One more aborted transaction is expected in grouped statistics");
     }
 
     private int readInt(String attributeName) {

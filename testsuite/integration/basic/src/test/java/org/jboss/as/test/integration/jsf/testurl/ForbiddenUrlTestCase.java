@@ -20,19 +20,19 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test if 404 is returned for url address which isn't allowed
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ForbiddenUrlTestCase {
     private static final String ALLOWED_URL = "faces/jakarta.faces.resource/lala.js?con=lala";
@@ -70,8 +70,8 @@ public class ForbiddenUrlTestCase {
             HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + ALLOWED_URL);
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
-                Assert.assertEquals("Status code should be " + ALLOWED_STATUS_CODE + ", but is " + statusCode +
-                        ". For more information see JBEAP-18842. ", ALLOWED_STATUS_CODE, statusCode);
+                Assertions.assertEquals(ALLOWED_STATUS_CODE, statusCode, "Status code should be " + ALLOWED_STATUS_CODE + ", but is " + statusCode +
+                        ". For more information see JBEAP-18842. ");
             }
         }
     }
@@ -91,8 +91,8 @@ public class ForbiddenUrlTestCase {
             HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + FORBIDDEN_URL);
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 int statusCode = getVarResponse.getStatusLine().getStatusCode();
-                Assert.assertEquals("Status code should be " + FORBIDDEN_STATUS_CODE + ", but is " + statusCode +
-                        ". For more information see JBEAP-18842. ", FORBIDDEN_STATUS_CODE, statusCode);
+                Assertions.assertEquals(FORBIDDEN_STATUS_CODE, statusCode, "Status code should be " + FORBIDDEN_STATUS_CODE + ", but is " + statusCode +
+                        ". For more information see JBEAP-18842. ");
             }
         }
     }

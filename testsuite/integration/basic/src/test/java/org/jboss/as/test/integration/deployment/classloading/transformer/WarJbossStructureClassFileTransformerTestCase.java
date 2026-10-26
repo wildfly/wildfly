@@ -6,21 +6,21 @@
 package org.jboss.as.test.integration.deployment.classloading.transformer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.deployment.classloading.ear.TestAA;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Marius Bogoevici
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WarJbossStructureClassFileTransformerTestCase {
 
     public static final String CLASS_NAME = "org.jboss.as.test.integration.deployment.classloading.ear.TestAA";
@@ -49,13 +49,13 @@ public class WarJbossStructureClassFileTransformerTestCase {
     @Test
     public void testTransformerApplied() throws ClassNotFoundException {
         loadClass(CLASS_NAME, getClass().getClassLoader());
-        Assert.assertTrue(DummyClassFileTransformer1.wasActive);
-        Assert.assertTrue(DummyClassFileTransformer2.wasActive);
+        Assertions.assertTrue(DummyClassFileTransformer1.wasActive);
+        Assertions.assertTrue(DummyClassFileTransformer2.wasActive);
         String canonicalClassName = CLASS_NAME.replace(".", "/");
-        Assert.assertTrue(DummyClassFileTransformer1.transformedClassNames.contains(canonicalClassName));
-        Assert.assertTrue(DummyClassFileTransformer2.transformedClassNames.contains(canonicalClassName));
-        Assert.assertFalse(DummyClassFileTransformer1.transformedClassNames.contains(TRANSFORMER2_CLASS_NAME_CANONICAL));
-        Assert.assertFalse(DummyClassFileTransformer2.transformedClassNames.contains(TRANSFORMER1_CLASS_NAME_CANONICAL));
+        Assertions.assertTrue(DummyClassFileTransformer1.transformedClassNames.contains(canonicalClassName));
+        Assertions.assertTrue(DummyClassFileTransformer2.transformedClassNames.contains(canonicalClassName));
+        Assertions.assertFalse(DummyClassFileTransformer1.transformedClassNames.contains(TRANSFORMER2_CLASS_NAME_CANONICAL));
+        Assertions.assertFalse(DummyClassFileTransformer2.transformedClassNames.contains(TRANSFORMER1_CLASS_NAME_CANONICAL));
     }
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {

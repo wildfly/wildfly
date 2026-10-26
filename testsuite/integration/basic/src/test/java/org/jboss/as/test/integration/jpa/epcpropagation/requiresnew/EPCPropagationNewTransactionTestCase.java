@@ -8,14 +8,17 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the propagation rules for Extended Persistence Contexts respect nestled transactions.
@@ -25,7 +28,8 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class EPCPropagationNewTransactionTestCase {
     private static final String ARCHIVE_NAME = "epc-hierarchy-propagation";
 
@@ -46,14 +50,14 @@ public class EPCPropagationNewTransactionTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testRequiresNewXPCPropagation() throws Exception {
         BikeManagerBean stateful = lookup(BikeManagerBean.class.getSimpleName(), BikeManagerBean.class);
         stateful.runTest();
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testXPCIsAssociatedWithTX() throws Exception {
         BikeManagerBean stateful = lookup(BikeManagerBean.class.getSimpleName(), BikeManagerBean.class);
         stateful.runTest2();

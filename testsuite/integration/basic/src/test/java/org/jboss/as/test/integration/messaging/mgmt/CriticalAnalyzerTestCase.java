@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.Util;
@@ -20,15 +20,15 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Emmanuel Hugonnet (c) 2020 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class CriticalAnalyzerTestCase extends ContainerResourceMgmtTestBase {
 
@@ -42,14 +42,14 @@ public class CriticalAnalyzerTestCase extends ContainerResourceMgmtTestBase {
         op.get("include-defaults").set(true);
         op.get("attributes-only").set(true);
         ModelNode server = executeOperation(op, true);
-        Assert.assertTrue(server.hasDefined("critical-analyzer-enabled"));
-        Assert.assertTrue(server.get("critical-analyzer-enabled").asBoolean());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-policy"));
-        Assert.assertEquals("LOG", server.get("critical-analyzer-policy").asString());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-timeout"));
-        Assert.assertEquals(120000L, server.get("critical-analyzer-timeout").asLong());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-check-period"));
-        Assert.assertEquals(0L, server.get("critical-analyzer-check-period").asLong());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-enabled"));
+        Assertions.assertTrue(server.get("critical-analyzer-enabled").asBoolean());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-policy"));
+        Assertions.assertEquals("LOG", server.get("critical-analyzer-policy").asString());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-timeout"));
+        Assertions.assertEquals(120000L, server.get("critical-analyzer-timeout").asLong());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-check-period"));
+        Assertions.assertEquals(0L, server.get("critical-analyzer-check-period").asLong());
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "critical-analyzer-enabled", ModelNode.FALSE);
         executeOperationForSuccess(op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "critical-analyzer-policy", new ModelNode("HALT"));
@@ -64,14 +64,14 @@ public class CriticalAnalyzerTestCase extends ContainerResourceMgmtTestBase {
         op.get("include-defaults").set(true);
         op.get("attributes-only").set(true);
         server = executeOperation(op, true);
-        Assert.assertTrue(server.hasDefined("critical-analyzer-enabled"));
-        Assert.assertFalse(server.get("critical-analyzer-enabled").asBoolean());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-policy"));
-        Assert.assertEquals("HALT", server.get("critical-analyzer-policy").asString());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-timeout"));
-        Assert.assertEquals(240000L, server.get("critical-analyzer-timeout").asLong());
-        Assert.assertTrue(server.hasDefined("critical-analyzer-check-period"));
-        Assert.assertEquals(120000L, server.get("critical-analyzer-check-period").asLong());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-enabled"));
+        Assertions.assertFalse(server.get("critical-analyzer-enabled").asBoolean());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-policy"));
+        Assertions.assertEquals("HALT", server.get("critical-analyzer-policy").asString());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-timeout"));
+        Assertions.assertEquals(240000L, server.get("critical-analyzer-timeout").asLong());
+        Assertions.assertTrue(server.hasDefined("critical-analyzer-check-period"));
+        Assertions.assertEquals(120000L, server.get("critical-analyzer-check-period").asLong());
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "critical-analyzer-enabled");
         executeOperationForSuccess(op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "critical-analyzer-policy");
@@ -85,6 +85,6 @@ public class CriticalAnalyzerTestCase extends ContainerResourceMgmtTestBase {
 
     private void executeOperationForSuccess(ModelNode operation) throws IOException, MgmtOperationException {
         ModelNode result = executeOperation(operation, false);
-        Assert.assertTrue(Util.getFailureDescription(result), isSuccessfulOutcome(result));
+        Assertions.assertTrue(isSuccessfulOutcome(result), Util.getFailureDescription(result));
     }
 }

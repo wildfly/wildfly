@@ -9,15 +9,15 @@ import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Weld cross deployment injection test case. Verifies that weld can read beans.xml and scan classes outside the
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldCrossDeploymentTestCase {
 
 
@@ -53,6 +53,6 @@ public class WeldCrossDeploymentTestCase {
     @Test
     @OperateOnDeployment("d2")
     public void testSimpleBeanInjected() throws Exception {
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
     }
 }

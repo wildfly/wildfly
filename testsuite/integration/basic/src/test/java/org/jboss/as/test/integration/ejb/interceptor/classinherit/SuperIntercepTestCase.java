@@ -7,23 +7,23 @@ package org.jboss.as.test.integration.ejb.interceptor.classinherit;
 
 import javax.naming.InitialContext;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
 
 /**
  * Interceptor must also apply to super-methods. Migrated from EJB3 testsuite [JBQA-5451] from ejbthree471
  *
  * @author Carlo de Wolf, Bill Burke, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SuperIntercepTestCase {
 
     @ArquillianResource
@@ -41,7 +41,7 @@ public class SuperIntercepTestCase {
         B b = (B) ctx.lookup("java:module/" + BBean.class.getSimpleName());
 
         String result = b.getOtherMessage();
-        Assert.assertEquals("InterceptedA: InterceptedB: The Other Message", result);
+        Assertions.assertEquals("InterceptedA: InterceptedB: The Other Message", result);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class SuperIntercepTestCase {
         B b = (B) ctx.lookup("java:module/" + BBean.class.getSimpleName());
 
         String result = b.getMessage();
-        Assert.assertEquals("InterceptedA: InterceptedB: The Message", result);
+        Assertions.assertEquals("InterceptedA: InterceptedB: The Message", result);
     }
 
     @Test
@@ -59,10 +59,10 @@ public class SuperIntercepTestCase {
         // supposing this chain fo interceptions
         String supposedResult = TestInterceptor.class.getSimpleName() + ":" + StatelessBean.class.getSimpleName();
         String result = slWithInterceptor.method();
-        Assert.assertEquals(supposedResult + ".method()", result);
+        Assertions.assertEquals(supposedResult + ".method()", result);
 
         result = slWithInterceptor.superMethod();
-        Assert.assertEquals(supposedResult + ".superMethod()", result);
+        Assertions.assertEquals(supposedResult + ".superMethod()", result);
     }
 
     @Test
@@ -75,9 +75,9 @@ public class SuperIntercepTestCase {
                 + AbstractBaseClassWithInterceptor.class.getSimpleName() + ":"
                 + StatelessWithBeanInterceptorBean.class.getSimpleName();
         String result = slWithInterceptorAndBean.method();
-        Assert.assertEquals(supposedResult + ".method()", result);
+        Assertions.assertEquals(supposedResult + ".method()", result);
 
         result = slWithInterceptorAndBean.superMethod();
-        Assert.assertEquals(supposedResult + ".superMethod()", result);
+        Assertions.assertEquals(supposedResult + ".superMethod()", result);
     }
 }

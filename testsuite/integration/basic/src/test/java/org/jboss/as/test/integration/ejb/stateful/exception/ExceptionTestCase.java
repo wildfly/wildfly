@@ -11,15 +11,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that post construct callbacks are not called on system exception,
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExceptionTestCase {
 
     protected static final String ARCHIVE_NAME = "ExceptionTestCase";
@@ -57,7 +57,7 @@ public class ExceptionTestCase {
         return lookup(DestroyMarkerBean.class);
     }
 
-    @Before
+    @BeforeEach
     public void before() throws NamingException {
         isPreDestroy = getMarker();
     }
@@ -69,17 +69,17 @@ public class ExceptionTestCase {
     public void testSystemExceptionDestroysBean() throws Exception {
 
         SFSB1Interface sfsb1 = getBean();
-        Assert.assertFalse(isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is());
         try {
             sfsb1.systemException();
-            Assert.fail("It was expected a RuntimeException being thrown");
+            Assertions.fail("It was expected a RuntimeException being thrown");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+            Assertions.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
         }
-        Assert.assertFalse(isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is());
         try {
             sfsb1.systemException();
-            Assert.fail("Expecting NoSuchEjbException");
+            Assertions.fail("Expecting NoSuchEjbException");
         } catch (NoSuchEJBException expected) {
         }
     }
@@ -92,19 +92,19 @@ public class ExceptionTestCase {
     public void testEjbExceptionDestroysBean() throws Exception {
 
         SFSB1Interface sfsb1 = getBean();
-        Assert.assertFalse(isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is());
         try {
             sfsb1.ejbException();
-            Assert.fail("It was expected a EJBException being thrown");
+            Assertions.fail("It was expected a EJBException being thrown");
         } catch (EJBException e) {
-            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+            Assertions.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
         }
-        Assert.assertFalse("Thrown exception removes SFS but does not call any callback",
-                isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is(),
+                "Thrown exception removes SFS but does not call any callback");
 
         try {
             sfsb1.ejbException();
-            Assert.fail("Expecting NoSuchEjbException");
+            Assertions.fail("Expecting NoSuchEjbException");
         } catch (NoSuchEJBException expected) {
         }
     }
@@ -117,22 +117,22 @@ public class ExceptionTestCase {
     public void testUserExceptionDoesNothing() throws Exception {
 
         SFSB1Interface sfsb1 = getBean();
-        Assert.assertFalse(isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is());
         try {
             sfsb1.userException();
-            Assert.fail("It was expected a user exception being thrown");
+            Assertions.fail("It was expected a user exception being thrown");
         } catch (TestException e) {
-            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+            Assertions.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
         }
-        Assert.assertFalse(isPreDestroy.is());
+        Assertions.assertFalse(isPreDestroy.is());
 
         try {
             sfsb1.userException();
-            Assert.fail("It was expected a user exception being thrown");
+            Assertions.fail("It was expected a user exception being thrown");
         } catch (TestException e) {
-            Assert.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
+            Assertions.assertTrue(e.getMessage().contains(SFSB1.MESSAGE));
         }
         sfsb1.remove();
-        Assert.assertTrue("As remove was called preDestroy callback is expected", isPreDestroy.is());
+        Assertions.assertTrue(isPreDestroy.is(), "As remove was called preDestroy callback is expected");
     }
 }

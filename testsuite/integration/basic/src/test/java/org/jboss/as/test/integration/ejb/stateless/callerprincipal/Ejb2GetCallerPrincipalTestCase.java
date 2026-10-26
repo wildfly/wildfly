@@ -6,22 +6,24 @@ package org.jboss.as.test.integration.ejb.stateless.callerprincipal;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import java.util.Hashtable;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests if EJB2 application shows the correct user when getCallerPrincipal method is used inside the EJB.
@@ -29,7 +31,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(Ejb2GetCallerPrincipalServerSetupTask.class)
 public class Ejb2GetCallerPrincipalTestCase {
@@ -58,14 +60,14 @@ public class Ejb2GetCallerPrincipalTestCase {
         Context ctx = getInitialContext();
 
         TestEJB3Remote ejb3 = (TestEJB3Remote) ctx.lookup("ejb:DEPLOYMENT/ejb3/TestEJB3!org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB3Remote");
-        assertTrue("Caller must be user1 and must be in the role Users.", ejb3.isCallerInRole(ROLE1));
+        assertTrue(ejb3.isCallerInRole(ROLE1), "Caller must be user1 and must be in the role Users.");
 
         TestEJB2 ejb2X = (TestEJB2) ctx.lookup("ejb:DEPLOYMENT/ejb2/TestEJB2Bean!org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB2");
-        assertTrue("Caller must be user1 and must be in the role Users.", ejb2X.isCallerInRole(ROLE1));
+        assertTrue(ejb2X.isCallerInRole(ROLE1), "Caller must be user1 and must be in the role Users.");
 
         TestEJB2Home ejb2Home = (TestEJB2Home) ctx.lookup("ejb:DEPLOYMENT/ejb2/TestEJB2Bean!org.jboss.as.test.integration.ejb.stateless.callerprincipal.TestEJB2Home");
         TestEJB2 ejb2 = ejb2Home.create();
-        assertTrue("Caller must be user1 and must be in the role Users.", ejb2.isCallerInRole(ROLE1));
+        assertTrue(ejb2.isCallerInRole(ROLE1), "Caller must be user1 and must be in the role Users.");
     }
 
     private InitialContext getInitialContext() throws NamingException {

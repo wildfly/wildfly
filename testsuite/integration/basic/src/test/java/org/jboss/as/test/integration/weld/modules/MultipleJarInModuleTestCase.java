@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.weld.modules;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -14,10 +14,10 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 import java.io.File;
@@ -32,7 +32,7 @@ import java.util.List;
  * see WFLY-3419
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MultipleJarInModuleTestCase {
 
     private static final List<TestModule> testModules = new ArrayList<>();
@@ -51,7 +51,7 @@ public class MultipleJarInModuleTestCase {
         testModule.create(true);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         for (TestModule testModule : testModules) {
             testModule.remove();
@@ -78,7 +78,7 @@ public class MultipleJarInModuleTestCase {
 
     @Test
     public void testMultipleJarsInModule() {
-        Assert.assertEquals("hello", multiple2.getMessage());
+        Assertions.assertEquals("hello", multiple2.getMessage());
 
     }
 }

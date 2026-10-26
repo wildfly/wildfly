@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
@@ -20,9 +20,9 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a rar deployments transitive deps are made available to a deployment that references the rar
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RarTransientDependenciesTestCase {
 
@@ -102,7 +102,7 @@ public class RarTransientDependenciesTestCase {
     public void testTransitiveDependencyAccessViaRar(@ArquillianResource URL baseUrl) throws Exception {
         final String url = "http://" + baseUrl.getHost() + ":" + baseUrl.getPort() + "/referenceingwebapp/servlet?className=" + JarClass.class.getName();
         final String res = HttpRequest.get(url, 2, TimeUnit.SECONDS);
-        Assert.assertEquals(Servlet.SUCCESS, res);
+        Assertions.assertEquals(Servlet.SUCCESS, res);
 
     }
 

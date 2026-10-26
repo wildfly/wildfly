@@ -12,7 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -27,14 +27,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DeploymentOverlayTestCase.DeploymentOverlayTestCaseServerSetup.class)
 public class DeploymentOverlayTestCase {
 
@@ -170,13 +170,13 @@ public class DeploymentOverlayTestCase {
 
     @Test
     public void testContentOverridden() throws NamingException {
-        Assert.assertEquals("OVERRIDDEN", initialContext.lookup("java:module/env/simpleString"));
+        Assertions.assertEquals("OVERRIDDEN", initialContext.lookup("java:module/env/simpleString"));
 
     }
 
     @Test
     public void testAddingNewFile() {
-        Assert.assertNotNull(getClass().getClassLoader().getResource("wildcard-new-file"));
+        Assertions.assertNotNull(getClass().getClassLoader().getResource("wildcard-new-file"));
     }
 
 }

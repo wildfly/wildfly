@@ -10,7 +10,7 @@ import com.arjuna.ats.arjuna.tools.osb.api.proxy.RecoveryStoreProxy;
 import com.arjuna.ats.arjuna.tools.osb.api.proxy.StoreManagerProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -18,19 +18,19 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Ivo Studensky <istudens@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
 
@@ -48,12 +48,12 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
         return jar;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
@@ -82,7 +82,7 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
             cli.sendLine("cd /subsystem=transactions/log-store=log-store/transactions");
             cli.sendLine("ls");
             String ls = cli.readOutput();
-            assertFalse("Unexpected uid in the log.", ls != null && ls.contains(uid.toString()));
+            assertFalse(ls != null && ls.contains(uid.toString()), "Unexpected uid in the log.");
 
             // probe the log store again for all records
             cli.sendLine("/subsystem=transactions/log-store=log-store:write-attribute(name=expose-all-logs,value=true)");
@@ -92,7 +92,7 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
             cli.sendLine("cd /subsystem=transactions/log-store=log-store/transactions");
             cli.sendLine("ls");
             ls = cli.readOutput();
-            assertTrue("Could not find the expected uid in the log.", ls != null && ls.contains(uid.toString()));
+            assertTrue(ls != null && ls.contains(uid.toString()), "Could not find the expected uid in the log.");
 
             // remove the log record
             cli.sendLine("/subsystem=transactions/log-store=log-store/transactions=" + escapeColons(uid.toString()) + ":delete()");
@@ -104,7 +104,7 @@ public class TransactionObjectStoreTestCase extends AbstractCliTestBase {
             cli.sendLine("cd /subsystem=transactions/log-store=log-store/transactions");
             cli.sendLine("ls");
             ls = cli.readOutput();
-            assertFalse("Unexpected uid in the log after its remove.", ls != null && ls.contains(uid.toString()));
+            assertFalse(ls != null && ls.contains(uid.toString()), "Unexpected uid in the log after its remove.");
 
             // set back the expose-all-logs attribute
             cli.sendLine("/subsystem=transactions/log-store=log-store:write-attribute(name=expose-all-logs,value=false)");

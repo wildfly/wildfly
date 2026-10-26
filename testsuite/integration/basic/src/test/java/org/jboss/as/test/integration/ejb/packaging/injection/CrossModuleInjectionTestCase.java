@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,15 +18,15 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that lifecycle methods defined on classes in a different module to the component class
  * are called.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CrossModuleInjectionTestCase {
 
     private static final String ARCHIVE_NAME = "CrossModuleInjectionTestCase";
@@ -74,6 +74,6 @@ public class CrossModuleInjectionTestCase {
 
     @Test
     public void testPostConstructCalled() throws Exception {
-        Assert.assertEquals("Hello World", HttpRequest.get( url.toExternalForm() + "SimpleServlet", 2, TimeUnit.SECONDS));
+        Assertions.assertEquals("Hello World", HttpRequest.get( url.toExternalForm() + "SimpleServlet", 2, TimeUnit.SECONDS));
     }
 }

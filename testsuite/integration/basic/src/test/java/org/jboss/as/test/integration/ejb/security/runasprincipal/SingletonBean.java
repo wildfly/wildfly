@@ -14,7 +14,8 @@ import jakarta.ejb.Startup;
 
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.ejb3.annotation.SecurityDomain;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
@@ -35,7 +36,7 @@ public class SingletonBean implements WhoAmI {
     @PostConstruct
     public void init() {
         principal = beanB.getCallerPrincipal();
-        Assert.assertEquals("Helloween", principal);
+        Assertions.assertEquals("Helloween", principal);
     }
 
     public String getCallerPrincipal() {

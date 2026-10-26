@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -42,9 +42,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
@@ -54,7 +54,7 @@ import java.lang.reflect.ReflectPermission;
  *
  * @author <a href="mailto:thofman@redhat.com">Tomas Hofman</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DatasourceMaxPoolAttributeTestCase.DatasourceServerSetupTask.class)
 public class DatasourceMaxPoolAttributeTestCase extends JcaMgmtBase {
 
@@ -128,18 +128,18 @@ public class DatasourceMaxPoolAttributeTestCase extends JcaMgmtBase {
         PoolConfiguration poolConfiguration = JcaTestsUtil.exctractPoolConfiguration(wrapperDataSource);
 
         // check initial values
-        Assert.assertNotNull(poolConfiguration);
-        Assert.assertEquals(20, poolConfiguration.getMaxSize());
+        Assertions.assertNotNull(poolConfiguration);
+        Assertions.assertEquals(20, poolConfiguration.getMaxSize());
 
         // modify values
         writeAttribute(DS_ADDRESS, Constants.MAX_POOL_SIZE.getName(), "10");
 
         // check that server is reload-required state
         ModelNode serverState = readAttribute(new ModelNode(), "server-state");
-        Assert.assertEquals("reload-required", serverState.asString());
+        Assertions.assertEquals("reload-required", serverState.asString());
 
         // check that runtime was updated
-        Assert.assertEquals(10, poolConfiguration.getMaxSize());
+        Assertions.assertEquals(10, poolConfiguration.getMaxSize());
 
     }
 

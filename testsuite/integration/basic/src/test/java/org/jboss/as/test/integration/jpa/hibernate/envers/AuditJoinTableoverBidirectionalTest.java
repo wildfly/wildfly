@@ -8,29 +8,29 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test @AuditJoinTable over Bidirectional Relationship
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AuditJoinTableoverBidirectionalTest {
     private static final String ARCHIVE_NAME = "jpa_AuditJoinTableoverBidirectionalTest";
 
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
 
         iniCtx = new InitialContext();
@@ -64,12 +64,12 @@ public class AuditJoinTableoverBidirectionalTest {
 
         int c = slsbAudit.retrieveOldPhoneListSizeFromCustomer(c1.getId());
 
-        Assert.assertEquals(2, c);
+        Assertions.assertEquals(2, c);
 
         String phoneType = slsbAudit.retrieveOldPhoneListVersionFromCustomer(c1.getId());
 
         // check that updating Phone updates audit information fetched from Customer
-        Assert.assertEquals("WORK", phoneType);
+        Assertions.assertEquals("WORK", phoneType);
 
         PhoneMO p3 = slsbAudit.createPhone("WORK", "+420", "543789654");
         p3.setCustomer(c1);
@@ -85,7 +85,7 @@ public class AuditJoinTableoverBidirectionalTest {
         slsbAudit.updateCustomer(c1);
 
         int check = slsbAudit.retrieveOldPhoneListSizeFromCustomer(c1.getId());
-        Assert.assertEquals(4, check);
+        Assertions.assertEquals(4, check);
 
     }
 

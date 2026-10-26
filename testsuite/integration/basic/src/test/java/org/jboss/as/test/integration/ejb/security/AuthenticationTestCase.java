@@ -7,12 +7,12 @@ package org.jboss.as.test.integration.ejb.security;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import jakarta.ejb.EJB;
 import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -48,9 +48,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.permission.ElytronPermission;
 
@@ -61,9 +62,9 @@ import org.wildfly.security.permission.ElytronPermission;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class AuthenticationTestCase {
 
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
@@ -169,8 +170,8 @@ public class AuthenticationTestCase {
         final Callable<Void> callable = () -> {
             try {
                 final Principal principal = whoAmIBean.getCallerPrincipal();
-                assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
-                        principal);
+                assertNotNull(principal,
+                        "EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.");
                 assertEquals("user1", principal.getName());
             } catch (RuntimeException e) {
                 e.printStackTrace();
@@ -186,8 +187,8 @@ public class AuthenticationTestCase {
     public void testUnauthenticated() throws Exception {
         try {
             final Principal principal = whoAmIBean.getCallerPrincipal();
-            assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
-                    principal);
+            assertNotNull(principal,
+                    "EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.");
             // TODO: where is 'anonymous' configured?
             assertEquals("anonymous", principal.getName());
         } catch (RuntimeException e) {

@@ -5,11 +5,12 @@
 
 package org.jboss.as.test.integration.messaging.jms.external;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.SocketPermission;
+
 import jakarta.annotation.Resource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Message;
@@ -20,7 +21,7 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -37,16 +38,16 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Basic JMS test using a customly created JMS topic
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SendToExternalJMSQueueTestCase.SetupTask.class)
 public class SendToExternalJMSQueueTestCase {
 
@@ -100,7 +101,7 @@ public class SendToExternalJMSQueueTestCase {
             ModelNode response = managementClient.getControllerClient().execute(op);
             final String outcome = response.get("outcome").asString();
             if (expectSuccess) {
-                assertEquals(response.toString(), "success", outcome);
+                assertEquals("success", outcome, response.toString());
                 return response.get("result");
             } else {
                 assertEquals("failed", outcome);
@@ -200,10 +201,10 @@ public class SendToExternalJMSQueueTestCase {
             logger.trace("Received: " + ((TextMessage) receivedMessage).getText());
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         } finally {
             if (receivedMessage == null) {
-                Assert.fail("received null instead of a TextMessage");
+                Assertions.fail("received null instead of a TextMessage");
             }
             if (consumerSession != null) {
                 consumerSession.close();
@@ -213,8 +214,8 @@ public class SendToExternalJMSQueueTestCase {
             }
         }
 
-        Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
-        Assert.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
+        Assertions.assertTrue(receivedMessage instanceof TextMessage, "received a " + receivedMessage.getClass().getName() + " instead of a TextMessage");
+        Assertions.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
     }
 
 

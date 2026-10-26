@@ -13,7 +13,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.transaction.UserTransaction;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.TestBean;
@@ -22,7 +22,8 @@ import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb2.CmtEjb2
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb2.TestBean2Local;
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb3.BmtEjb3;
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.ejb3.CmtEjb3;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that container behaves according to the specification when exception is
@@ -30,7 +31,7 @@ import org.junit.runner.RunWith;
  *
  * @author dsimko@redhat.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TxExceptionTestCase extends TxExceptionBaseTestCase {
 
     @ArquillianResource

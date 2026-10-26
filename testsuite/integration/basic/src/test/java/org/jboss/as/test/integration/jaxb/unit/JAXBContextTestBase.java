@@ -8,7 +8,10 @@ import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
 import java.net.URL;
+
 import jakarta.xml.bind.JAXBContextFactory;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -17,7 +20,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.FakeJAXBContextFactory;
 import org.jboss.as.test.integration.jaxb.JAXBContextServlet;
@@ -29,7 +31,7 @@ import org.jboss.as.test.integration.jaxb.bindings.USAddress;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * <p>Base class for all the JAXB loading tests</p>
@@ -77,13 +79,13 @@ public abstract class JAXBContextTestBase {
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
-            Assert.assertEquals("Unexpected status code", 200, statusCode);
+            Assertions.assertEquals(200, statusCode, "Unexpected status code");
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
             Matcher matcher1 = CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl");
             Matcher matcher2 = CoreMatchers.containsString("/org/glassfish/jaxb/runtime/v2/runtime/JAXBContextImpl");
-            MatcherAssert.assertThat(responseMessage, CoreMatchers.either(matcher1).or(matcher2));
+            assertThat(responseMessage, CoreMatchers.either(matcher1).or(matcher2));
         }
         // test it works
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
@@ -91,11 +93,11 @@ public abstract class JAXBContextTestBase {
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
-            Assert.assertEquals("Unexpected status code", 200, statusCode);
+            Assertions.assertEquals(200, statusCode, "Unexpected status code");
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Wrong return value", "Mill Valley", responseMessage.trim());
+            Assertions.assertEquals("Mill Valley", responseMessage.trim(), "Wrong return value");
         }
     }
 
@@ -106,11 +108,11 @@ public abstract class JAXBContextTestBase {
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
-            Assert.assertEquals("Unexpected status code", 200, statusCode);
+            Assertions.assertEquals(200, statusCode, "Unexpected status code");
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Fake context is returned", "FakeJAXBContext", responseMessage);
+            Assertions.assertEquals("FakeJAXBContext", responseMessage, "Fake context is returned");
         }
     }
 }

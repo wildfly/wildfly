@@ -12,32 +12,35 @@ import javax.naming.NamingException;
 
 import org.hibernate.envers.DefaultRevisionEntity;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBValidityStrategyOrg;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This testcase verifies whether Envers/Auditing functions properly when implemented with Validity Audit Strategy
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImplementValidityAuditStrategyTestCase {
     private static final String ARCHIVE_NAME = "jpa_ImplementValidityAuditStrategyTestCase";
 
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
 
         iniCtx = new InitialContext();
@@ -57,7 +60,7 @@ public class ImplementValidityAuditStrategyTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testEnversforValidityStrategy() throws Exception {
 
         SLSBValidityStrategyOrg slsbvalidityOrg = lookup("SLSBValidityStrategyOrg", SLSBValidityStrategyOrg.class);
@@ -71,15 +74,15 @@ public class ImplementValidityAuditStrategyTestCase {
 
         Organization ret1 = slsbvalidityOrg.retrieveOldOrgbyId(o2.getId());
         // check that property startDate is audited
-        Assert.assertEquals("10/10/1974", ret1.getStartDate());
-        Assert.assertEquals("HALDIRAMS", ret1.getName());
+        Assertions.assertEquals("10/10/1974", ret1.getStartDate());
+        Assertions.assertEquals("HALDIRAMS", ret1.getName());
         // check that property location is notaudited
-        Assert.assertNull(ret1.getLocation());
+        Assertions.assertNull(ret1.getLocation());
 
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testValidityStrategyActivationforEnvers() throws Exception {
         SLSBValidityStrategyOrg slsbvalidityOrg = lookup("SLSBValidityStrategyOrg", SLSBValidityStrategyOrg.class);
 
@@ -96,13 +99,13 @@ public class ImplementValidityAuditStrategyTestCase {
 
         for (Map<String, Object> revisionEntity : orgHistory) {
 
-            Assert.assertNotNull(revisionEntity);
+            Assertions.assertNotNull(revisionEntity);
 
             Date revendTimestamp = (Date) revisionEntity.get("REVEND_VALIDITY");
             DefaultRevisionEntity revEnd = (DefaultRevisionEntity) revisionEntity.get("REVEND");
 
             if (revendTimestamp != null) {
-                Assert.assertEquals(revendTimestamp.getTime(), revEnd.getTimestamp());
+                Assertions.assertEquals(revendTimestamp.getTime(), revEnd.getTimestamp());
             }
 
         }

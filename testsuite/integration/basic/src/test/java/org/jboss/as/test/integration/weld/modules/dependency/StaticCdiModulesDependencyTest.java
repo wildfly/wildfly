@@ -9,7 +9,7 @@ import java.io.File;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
@@ -17,16 +17,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author <a href="mailto:manovotn@redhat.com">Matej Novotny</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StaticCdiModulesDependencyTest {
 
     private static final String MODULE_NAME_A = "weld-module-A";
@@ -50,7 +50,7 @@ public class StaticCdiModulesDependencyTest {
         testModuleA.create();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModuleA.remove();
         testModuleB.remove();
@@ -75,9 +75,9 @@ public class StaticCdiModulesDependencyTest {
     @Test
     public void testBeanAccessibilities() {
         // test that WAR can use Module A bean
-        Assert.assertEquals(ModuleABean.class.getSimpleName(), warBean.getModuleABean().ping());
+        Assertions.assertEquals(ModuleABean.class.getSimpleName(), warBean.getModuleABean().ping());
         // verify that you can do WAR -> Module A -> Module B
         // this way we verify that module a can see and use beans from module B
-        Assert.assertEquals(ModuleBBean.class.getSimpleName(), warBean.getModuleABean().pingModuleBBean());
+        Assertions.assertEquals(ModuleBBean.class.getSimpleName(), warBean.getModuleABean().pingModuleBBean());
     }
 }

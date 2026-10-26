@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,13 +20,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that Jakarta Server Faces managed properties are injected before @PostConstruct methods
@@ -35,7 +36,7 @@ import org.junit.runner.RunWith;
  * @author Farah Juma
  * @author Brian Stansberry
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ManagedPropertyInjectionTestCase {
 
@@ -104,7 +105,7 @@ public class ManagedPropertyInjectionTestCase {
         HttpResponse response = client.execute(getRequest);
         try {
             String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-            assertEquals(requestUrl + "\n" + responseString, expectedStatus, response.getStatusLine().getStatusCode());
+            assertEquals(expectedStatus, response.getStatusLine().getStatusCode(), requestUrl + "\n" + responseString);
             return responseString;
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -112,6 +113,6 @@ public class ManagedPropertyInjectionTestCase {
     }
 
     private static void checkKeyValue(String responseString, String key, String value) {
-        assertTrue(key + " must be " + value + " in " + responseString, responseString.contains(key+":"+value));
+        assertTrue(responseString.contains(key+":"+value), key + " must be " + value + " in " + responseString);
     }
 }

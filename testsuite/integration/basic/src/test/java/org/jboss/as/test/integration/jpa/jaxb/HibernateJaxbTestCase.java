@@ -5,21 +5,21 @@
 
 package org.jboss.as.test.integration.jpa.jaxb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.testing.tools.deployments.DeploymentDescriptors.createPermissionsXmlAsset;
 
 import java.lang.reflect.ReflectPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
@@ -29,7 +29,7 @@ import jakarta.inject.Inject;
  * @author Scott Marlow
  * @author Yoann Rodiere
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateJaxbTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_jaxbtest";
@@ -74,8 +74,8 @@ public class HibernateJaxbTestCase {
 
     private static void assertStartsWith(String expectedStart, String actual) {
         String message = "'" + actual + "' should start with '" + expectedStart + "'";
-        assertNotNull(message, actual);
-        assertTrue(message, actual.startsWith(expectedStart));
+        assertNotNull(actual, message);
+        assertTrue(actual.startsWith(expectedStart), message);
     }
 
 }

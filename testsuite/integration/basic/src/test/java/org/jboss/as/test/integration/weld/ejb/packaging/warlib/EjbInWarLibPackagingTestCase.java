@@ -5,15 +5,15 @@
 package org.jboss.as.test.integration.weld.ejb.packaging.warlib;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -25,7 +25,7 @@ import javax.naming.NamingException;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EjbInWarLibPackagingTestCase {
 
     @Deployment
@@ -46,7 +46,7 @@ public class EjbInWarLibPackagingTestCase {
     @Test
     public void testEjbInWarLibResolvedCorrectly() throws NamingException {
         WarLibInterface cdiEjb = (WarLibInterface) new InitialContext().lookup("java:module/WarLibEjb");
-        Assert.assertEquals("Hello", cdiEjb.getEjb().sayHello());
+        Assertions.assertEquals("Hello", cdiEjb.getEjb().sayHello());
     }
 
 }

@@ -5,26 +5,27 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.serialization;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * simple serialization of an extended persistence context test
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SerializationTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_SerializationTestCase";
@@ -58,6 +59,6 @@ public class SerializationTestCase {
         sfsb1.createEmployeeNoTx("name", "address", 100);
         byte[] serialized = sfsb1.getSerializedXPC();
 
-        assertNotNull("could serialize JPA extended persistence context", serialized);
+        assertNotNull(serialized, "could serialize JPA extended persistence context");
     }
 }

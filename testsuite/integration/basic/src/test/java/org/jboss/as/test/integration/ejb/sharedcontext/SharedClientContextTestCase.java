@@ -12,27 +12,27 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Cihak
@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
  *
  * Tests if deployments can share client context if static interceptors are used.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SharedClientContextTestCase extends AbstractCliTestBase {
 
@@ -73,7 +73,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
      * Creates list of 50 clients trying to lookup remote bean from the other deployment
      *
      */
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         File clientWarFile = null;
         for (int i = 0; i < CLIENTS_NUMBER; i++){
@@ -95,7 +95,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
         return warFile;
     }
 
-    @Before
+    @BeforeEach
     public void before() throws MalformedURLException {
         for (int i = 0; i < clientWarFiles.size(); i++) {
             String clientWarFileName = String.format(CLIENT_NAME_BASE, i);
@@ -103,7 +103,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeCli() throws Exception {
         for (int i = 0; i < clientWarFiles.size(); i++) {
             String clientWarFileName = String.format(CLIENT_NAME_BASE, i);
@@ -119,7 +119,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
             String url = frontendUrl.toExternalForm() + "frontend";
             HttpGet httpget = new HttpGet(url);
             HttpResponse response = httpClient.execute(httpget);
-            assertEquals("FrontEndServlet could not process the shared client context or EJB lookup failed.", FrontendServlet.FRONTEND_SERVLET_OK, EntityUtils.toString(response.getEntity()));
+            assertEquals(FrontendServlet.FRONTEND_SERVLET_OK, EntityUtils.toString(response.getEntity()), "FrontEndServlet could not process the shared client context or EJB lookup failed.");
         }
     }
 }

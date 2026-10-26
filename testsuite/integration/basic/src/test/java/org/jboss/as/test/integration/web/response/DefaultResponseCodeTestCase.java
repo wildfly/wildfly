@@ -18,17 +18,17 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Simple test to check if server will return default code if no app is registered under path.
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  * @author baranowb
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
     private static final String URL_PATTERN = "simple";
@@ -51,7 +51,7 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
         return war;
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.httpclient = HttpClientBuilder.create().build();
     }
@@ -60,10 +60,10 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
     public void testNormalOpMode() throws Exception {
         HttpGet httpget = new HttpGet(url.toString() + URL_PATTERN);
         HttpResponse response = this.httpclient.execute(httpget);
-        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
         httpget = new HttpGet(url.toString() + URL_PATTERN+"/xxx");
         response = this.httpclient.execute(httpget);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -80,12 +80,12 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
             executeReloadAndWaitForCompletion(getManagementClient());
             HttpGet httpget = new HttpGet(url.toString() + URL_PATTERN);
             HttpResponse response = this.httpclient.execute(httpget);
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             String badUrl = url.toString();
             badUrl = badUrl.substring(0,badUrl.length()-1);
             httpget = new HttpGet(badUrl + "xxx/xxx");
             response = this.httpclient.execute(httpget);
-            Assert.assertEquals(506, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(506, response.getStatusLine().getStatusCode());
         }
     }
 

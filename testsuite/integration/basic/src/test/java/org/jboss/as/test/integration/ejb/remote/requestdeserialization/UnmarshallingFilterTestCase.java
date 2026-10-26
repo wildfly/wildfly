@@ -11,7 +11,7 @@ import jakarta.ejb.EJBException;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -22,11 +22,11 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(UnmarshallingFilterTestCase.ServerSetup.class)
 public class UnmarshallingFilterTestCase extends AbstactUnmarshallingFilterTestCase {
 
@@ -78,7 +78,7 @@ public class UnmarshallingFilterTestCase extends AbstactUnmarshallingFilterTestC
         Serializable blocklisted = getTemplatesImpl();
         try {
             Response response = bean.sayHello(new Request(blocklisted));
-            Assert.fail(response.getGreeting());
+            Assertions.fail(response.getGreeting());
         } catch (EJBException good) {
             //
         }
@@ -86,7 +86,7 @@ public class UnmarshallingFilterTestCase extends AbstactUnmarshallingFilterTestC
             HashSet<Serializable> set = new HashSet<>();
             set.add(blocklisted);
             Response response = bean.sayHello(new Request(set));
-            Assert.fail(response.getGreeting());
+            Assertions.fail(response.getGreeting());
         } catch (EJBException good) {
             //
         }

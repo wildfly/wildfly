@@ -4,9 +4,7 @@
  */
 package org.wildfly.test.integration.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +19,7 @@ import org.apache.commons.io.input.Tailer;
 import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -44,8 +42,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.plugin.tools.server.ServerManager;
 
@@ -108,7 +106,7 @@ public class MetricsResourceAddRemoveTestCase {
     }
 
     /** Skips this embedded-broker test for WildFly Preview distributions. */
-    @BeforeClass
+    @BeforeAll
     public static void skipPreview() {
         // Needs embedded test broker which is not available in WildFly Preview
         AssumeTestGroupUtil.assumeNotWildFlyPreview();
@@ -219,7 +217,7 @@ public class MetricsResourceAddRemoveTestCase {
         try (Client client = ClientBuilder.newClient()) {
             for (int i = 0; i < MESSAGE_COUNT; i++) {
                 try (Response response = client.target(requestUrl).request().get()) {
-                    assertEquals("Message producer returned an unexpected status", 200, response.getStatus());
+                    assertEquals(200, response.getStatus(), "Message producer returned an unexpected status");
                 }
             }
         }
@@ -233,9 +231,9 @@ public class MetricsResourceAddRemoveTestCase {
     /** Asserts that the probe recorded the requested lifecycle notification. */
     private void assertNotification(String type) throws Exception {
         List<String> notifications = fetchNotifications(false);
-        assertTrue(String.format("Notifications did not contain %s for %s: %s", type, QUEUE_NAME, notifications),
-                notifications.stream().anyMatch(notification -> notification.startsWith(type + "|")
-                        && notification.contains("jms-queue=" + QUEUE_NAME)));
+        assertTrue(notifications.stream().anyMatch(notification -> notification.startsWith(type + "|")
+                        && notification.contains("jms-queue=" + QUEUE_NAME)),
+                String.format("Notifications did not contain %s for %s: %s", type, QUEUE_NAME, notifications));
     }
 
     /** Fetches notifications from the probe deployment. */
@@ -245,7 +243,7 @@ public class MetricsResourceAddRemoveTestCase {
             requestUrl += "?clear=true";
         }
         try (Client client = ClientBuilder.newClient(); Response response = client.target(requestUrl).request().get()) {
-            assertEquals("Notification probe returned an unexpected status", 200, response.getStatus());
+            assertEquals(200, response.getStatus(), "Notification probe returned an unexpected status");
             String body = response.readEntity(String.class);
             return body.isEmpty() ? List.of() : List.of(body.split("\\R"));
         }
@@ -256,14 +254,14 @@ public class MetricsResourceAddRemoveTestCase {
         boolean found = metrics.stream().anyMatch(metric -> METRIC_NAME.equals(metric.getKey())
                 && "default".equals(metric.getTags().get("server"))
                 && QUEUE_NAME.equals(metric.getTags().get("jms_queue")));
-        assertEquals("Unexpected JMS queue metric state: " + metrics, expected, found);
+        assertEquals(expected, found, "Unexpected JMS queue metric state: " + metrics);
     }
 
     /** Asserts that collection did not log a read or operation failure for the queue. */
     private static void assertNoQueueReadErrors(ServerLogTailerListener listener) {
-        assertFalse("Queue metric collection logged a read failure: " + listener.logs,
-                listener.logs.stream().anyMatch(line -> line.contains(QUEUE_NAME)
-                        && (line.contains(FAILED_READ) || line.contains(FAILED_OPERATION))));
+        assertFalse(listener.logs.stream().anyMatch(line -> line.contains(QUEUE_NAME)
+                        && (line.contains(FAILED_READ) || line.contains(FAILED_OPERATION))),
+                "Queue metric collection logged a read failure: " + listener.logs);
     }
 
     /** Resolves the server log path from the management model. */

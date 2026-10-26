@@ -6,8 +6,8 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -116,8 +116,8 @@ public abstract class AbstractModuleDeploymentTestCase extends
         Object o = new InitialContext().lookup(jndiName);
         assertNotNull(o);
         for (String c : contains) {
-            assertTrue(o.toString() + " should contain " + c, o.toString()
-                    .contains(c));
+            assertTrue(o.toString()
+                    .contains(c), o.toString() + " should contain " + c);
         }
 
     }

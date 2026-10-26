@@ -8,7 +8,7 @@ package org.jboss.as.test.integration.ejb.security.missingmethodpermission;
 import java.util.concurrent.Callable;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -17,9 +17,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
@@ -30,7 +30,7 @@ import javax.naming.InitialContext;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MissingMethodPermissionsTestCase {
 
     private static final Logger logger = Logger.getLogger(MissingMethodPermissionsTestCase.class);
@@ -82,12 +82,12 @@ public class MissingMethodPermissionsTestCase {
             final SecurityTestRemoteView allowAccessBean = InitialContext.doLookup("java:global/" + APP_NAME + "/" + MODULE_ONE_NAME + "/" + SecuredBeanOne.class.getSimpleName() + "!" + SecurityTestRemoteView.class.getName());
             // first invoke on a method which has a specific role and that invocation should pass
             final String callerPrincipalName = allowAccessBean.methodWithSpecificRole();
-            Assert.assertEquals("Unexpected caller prinicpal", "user1", callerPrincipalName);
+            Assertions.assertEquals("user1", callerPrincipalName, "Unexpected caller prinicpal");
             // now invoke on a method which doesn't have an explicit security configuration. The SecuredBeanOne (deployment) is configured for
             // <missing-method-permissions-deny-access>false</missing-method-permissions-deny-access>
             // so the invocation on such a method is expected to fail
             final String callerPrincipalForMethodWithNoRole = allowAccessBean.methodWithNoRole();
-            Assert.assertEquals("Unexpected caller prinicpal when invoking method with no role", "user1", callerPrincipalForMethodWithNoRole);
+            Assertions.assertEquals("user1", callerPrincipalForMethodWithNoRole, "Unexpected caller prinicpal when invoking method with no role");
             return null;
         };
         // establish an identity using the security domain associated with the beans in the JARs in the EAR deployment
@@ -106,13 +106,13 @@ public class MissingMethodPermissionsTestCase {
             final SecurityTestRemoteView denyAccessBean = InitialContext.doLookup("java:global/" + APP_NAME + "/" + MODULE_TWO_NAME + "/" + SecuredBeanTwo.class.getSimpleName() + "!" + SecurityTestRemoteView.class.getName());
             // first invoke on a method which has a specific role and that invocation should pass
             final String callerPrincipalName = denyAccessBean.methodWithSpecificRole();
-            Assert.assertEquals("Unexpected caller prinicpal", "user1", callerPrincipalName);
+            Assertions.assertEquals("user1", callerPrincipalName, "Unexpected caller prinicpal");
             // now invoke on a method which doesn't have an explicit security configuration. The SecuredBeanTwo (deployment) is configured for
             // <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access>
             // so the invocation on such a method is expected to fail
             try {
                 denyAccessBean.methodWithNoRole();
-                Assert.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
+                Assertions.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
             } catch (EJBAccessException eae) {
                 logger.trace("Got the expected exception", eae);
             }
@@ -133,13 +133,13 @@ public class MissingMethodPermissionsTestCase {
             final SecurityTestRemoteView denyAccessBean = InitialContext.doLookup("java:global/" + APP_NAME + "/" + MODULE_THREE_NAME + "/" + SecuredBeanThree.class.getSimpleName() + "!" + SecurityTestRemoteView.class.getName());
             // first invoke on a method which has a specific role and that invocation should pass
             final String callerPrincipalName = denyAccessBean.methodWithSpecificRole();
-            Assert.assertEquals("Unexpected caller prinicpal", "user1", callerPrincipalName);
+            Assertions.assertEquals("user1", callerPrincipalName, "Unexpected caller prinicpal");
             // now invoke on a method which doesn't have an explicit security configuration. The SecuredBeanTwo (deployment) is configured for
             // <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access>
             // so the invocation on such a method is expected to fail
             try {
                 denyAccessBean.methodWithNoRole();
-                Assert.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
+                Assertions.fail("Invocation on a method with no specific security configurations was expected to fail due to <missing-method-permissions-deny-access>true</missing-method-permissions-deny-access> configuration, but it didn't");
             } catch (EJBAccessException eae) {
                 logger.trace("Got the expected exception", eae);
             }

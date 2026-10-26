@@ -11,7 +11,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
+
+import org.junit.jupiter.api.AfterAll;
 
 public abstract class AbstractBundledLibraryDeploymentTestCase {
 
@@ -28,7 +29,7 @@ public abstract class AbstractBundledLibraryDeploymentTestCase {
         createTestModule(bundledLibraryFile);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         deleteFile(bundledLibraryFile);
     }

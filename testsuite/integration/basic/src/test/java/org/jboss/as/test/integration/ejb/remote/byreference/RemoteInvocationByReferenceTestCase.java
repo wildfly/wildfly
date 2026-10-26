@@ -9,7 +9,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -18,9 +18,9 @@ import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the EJB subsystem can be configured for pass-by-reference semantics for in-vm invocations on
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RemoteInvocationByReferenceTestCase.RemoteInvocationByReferenceTestCaseSetup.class)
 public class RemoteInvocationByReferenceTestCase {
 
@@ -78,7 +78,7 @@ public class RemoteInvocationByReferenceTestCase {
         final String newValue = "foo";
         // invoke on the remote interface
         remote.modifyFirstElementOfArray(array, newValue);
-        Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference semantics", newValue, array[0]);
+        Assertions.assertEquals(newValue, array[0], "Invocation on remote interface of an EJB did *not* use pass-by-reference semantics");
     }
 
     /**
@@ -90,12 +90,12 @@ public class RemoteInvocationByReferenceTestCase {
         final HelloRemote remote = lookup(HelloBean.class.getSimpleName(), HelloRemote.class);
         // invoke on the remote interface
         TransferReturnValue ret = remote.hello(new TransferParameter(this.getClass().getSimpleName()));
-        Assert.assertEquals("Invocation on remote interface of Hello did *not* use pass-by-reference semantics", ret.getValue(), "Hello " + this.getClass().getSimpleName());
+        Assertions.assertEquals(ret.getValue(), "Hello " + this.getClass().getSimpleName(), "Invocation on remote interface of Hello did *not* use pass-by-reference semantics");
 
         try {
             remote.hello(null);
         } catch(RemoteByReferenceException he) {
-            Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference in exception", he.getMessage(), "Param was null");
+            Assertions.assertEquals(he.getMessage(), "Param was null", "Invocation on remote interface of an EJB did *not* use pass-by-reference in exception");
         }
     }
 
@@ -104,12 +104,12 @@ public class RemoteInvocationByReferenceTestCase {
         final HelloRemote remote = lookup(HelloBean.class.getSimpleName(), HelloRemote.class);
         // invoke on the remote interface
         NonSerializableObject ret = remote.helloNonSerializable(new NonSerializableObject("Hello"));
-        Assert.assertEquals("Invocation on remote interface of Hello did *not* use pass-by-reference semantics", ret.getValue(), "Bye");
+        Assertions.assertEquals(ret.getValue(), "Bye", "Invocation on remote interface of Hello did *not* use pass-by-reference semantics");
 
         try {
             remote.helloNonSerializable(null);
         } catch(RemoteByReferenceException he) {
-            Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference in exception", he.getMessage(), "Param was null");
+            Assertions.assertEquals(he.getMessage(), "Param was null", "Invocation on remote interface of an EJB did *not* use pass-by-reference in exception");
         }
     }
 
@@ -118,12 +118,12 @@ public class RemoteInvocationByReferenceTestCase {
         final HelloRemote remote = lookup(HelloBean.class.getSimpleName(), HelloRemote.class);
         // invoke on the remote interface
         SerializableObject ret = remote.helloSerializable(new SerializableObject("Hello"));
-        Assert.assertEquals("Invocation on remote interface of Hello did *not* use pass-by-reference semantics", ret.getValue(), "Bye");
+        Assertions.assertEquals(ret.getValue(), "Bye", "Invocation on remote interface of Hello did *not* use pass-by-reference semantics");
 
         try {
             remote.helloSerializable(null);
         } catch(RemoteByReferenceException he) {
-            Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference in exception", he.getMessage(), "Param was null");
+            Assertions.assertEquals(he.getMessage(), "Param was null", "Invocation on remote interface of an EJB did *not* use pass-by-reference in exception");
         }
     }
 
@@ -132,12 +132,12 @@ public class RemoteInvocationByReferenceTestCase {
         final HelloRemote remote = lookup(HelloBean.class.getSimpleName(), HelloRemote.class);
         // invoke on the remote interface
         NonSerializableObject ret = remote.helloSerializableToNonSerializable(new SerializableObject("Hello"));
-        Assert.assertEquals("Invocation on remote interface of Hello did *not* use pass-by-reference semantics", ret.getValue(), "Bye");
+        Assertions.assertEquals(ret.getValue(), "Bye", "Invocation on remote interface of Hello did *not* use pass-by-reference semantics");
 
         try {
             remote.helloSerializableToNonSerializable(null);
         } catch(RemoteByReferenceException he) {
-            Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference in exception", he.getMessage(), "Param was null");
+            Assertions.assertEquals(he.getMessage(), "Param was null", "Invocation on remote interface of an EJB did *not* use pass-by-reference in exception");
         }
     }
 
@@ -146,12 +146,12 @@ public class RemoteInvocationByReferenceTestCase {
         final HelloRemote remote = lookup(HelloBean.class.getSimpleName(), HelloRemote.class);
         // invoke on the remote interface
         SerializableObject ret = remote.helloNonSerializableToSerializable(new NonSerializableObject("Hello"));
-        Assert.assertEquals("Invocation on remote interface of Hello did *not* use pass-by-reference semantics", ret.getValue(), "Bye");
+        Assertions.assertEquals(ret.getValue(), "Bye", "Invocation on remote interface of Hello did *not* use pass-by-reference semantics");
 
         try {
             remote.helloNonSerializableToSerializable(null);
         } catch(RemoteByReferenceException he) {
-            Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference in exception", he.getMessage(), "Param was null");
+            Assertions.assertEquals(he.getMessage(), "Param was null", "Invocation on remote interface of an EJB did *not* use pass-by-reference in exception");
         }
     }
 }

@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ee.jmx.property;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
@@ -16,11 +16,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 import javax.management.MBeanServerConnection;
@@ -52,7 +53,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 /**
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JMXPropertyEditorsTestCase {
 
@@ -65,13 +66,13 @@ public class JMXPropertyEditorsTestCase {
     private MBeanServerConnection connection;
     private JMXConnector connector;
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         connection = getMBeanServerConnection();
-        Assert.assertNotNull(connection);
+        Assertions.assertNotNull(connection);
     }
 
-    @After
+    @AfterEach
     public void closeConnection() throws Exception {
         connection = null;
         IoUtils.safeClose(connector);

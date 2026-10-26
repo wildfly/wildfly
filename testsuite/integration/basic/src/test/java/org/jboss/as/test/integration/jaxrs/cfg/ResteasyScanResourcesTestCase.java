@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.cfg;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +13,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.cfg.applicationclasses.HelloWorldApplication;
@@ -22,16 +22,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for RESTEasy configuration parameter 'resteasy.scan.resources'
  *
  * @author Pavel Janousek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ResteasyScanResourcesTestCase {
 
@@ -115,9 +115,9 @@ public class ResteasyScanResourcesTestCase {
         try {
             @SuppressWarnings("unused")
             String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
-            Assert.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
+            Assertions.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
         } catch (Exception e) {
-            Assert.assertTrue(e.toString().contains("HTTP Status 404"));
+            Assertions.assertTrue(e.toString().contains("HTTP Status 404"));
         }
     }
 
@@ -125,7 +125,7 @@ public class ResteasyScanResourcesTestCase {
     public void testDeployInvalid() throws Exception {
         try {
             deployer.deploy(depNameInvalid);
-            Assert.fail("Test should not go here - invalid deployment (invalid value of resteasy.scan.resources)!");
+            Assertions.fail("Test should not go here - invalid deployment (invalid value of resteasy.scan.resources)!");
         } catch (Exception e) {
         }
     }
@@ -143,9 +143,9 @@ public class ResteasyScanResourcesTestCase {
         try {
             @SuppressWarnings("unused")
             String result = HttpRequest.get(url.toExternalForm() + "app1/helloworld", 10, TimeUnit.SECONDS);
-            Assert.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
+            Assertions.fail("Scan of Resources is disabled so we should not pass to there - HTTP 404 must occur!");
         } catch (Exception e) {
-            Assert.assertTrue(e.toString().contains("HTTP Status 404"));
+            Assertions.assertTrue(e.toString().contains("HTTP Status 404"));
         }
     }
 
@@ -153,7 +153,7 @@ public class ResteasyScanResourcesTestCase {
     public void testDeployInvalidApp() throws Exception {
         try {
             deployer.deploy(depNameInvalidApp);
-            Assert.fail("Test should not go here - invalid deployment (invalid value of resteasy.scan.resources)!");
+            Assertions.fail("Test should not go here - invalid deployment (invalid value of resteasy.scan.resources)!");
         } catch (Exception e) {
         }
     }

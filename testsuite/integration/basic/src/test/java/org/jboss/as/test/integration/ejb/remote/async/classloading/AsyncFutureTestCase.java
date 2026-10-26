@@ -6,7 +6,6 @@ package org.jboss.as.test.integration.ejb.remote.async.classloading;
 
 import java.io.IOException;
 
-import org.junit.Assert;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,7 +14,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
@@ -23,17 +22,18 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test if Future can be returned as Async call
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class AsyncFutureTestCase {
 
@@ -49,12 +49,12 @@ public class AsyncFutureTestCase {
 
     private static HttpClient HTTP_CLIENT;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         HTTP_CLIENT = new DefaultHttpClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         HTTP_CLIENT = null;
     }
@@ -94,7 +94,7 @@ public class AsyncFutureTestCase {
         final HttpResponse response = HTTP_CLIENT.execute(get);
         // consume!!
         consume(response);
-        Assert.assertEquals(requestURL + ">" + response.getStatusLine().getReasonPhrase(), 200, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, response.getStatusLine().getStatusCode(), requestURL + ">" + response.getStatusLine().getReasonPhrase());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class AsyncFutureTestCase {
         final HttpResponse response = HTTP_CLIENT.execute(get);
         // consume!!
         consume(response);
-        Assert.assertEquals(requestURL + ">" + response.getStatusLine().getReasonPhrase(), 200, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, response.getStatusLine().getStatusCode(), requestURL + ">" + response.getStatusLine().getReasonPhrase());
     }
 
     private void consume(final HttpResponse httpResponse) {

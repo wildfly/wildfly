@@ -10,7 +10,7 @@ import java.net.URL;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,12 +18,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BuiltInBeanWithPackagePrivateConstructorTest {
 
     @Inject
@@ -43,7 +43,7 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         if (testModule != null) {
             testModule.remove();
@@ -67,6 +67,6 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
     public void testBeanInjectable() throws IllegalArgumentException, IllegalAccessException {
         BuiltInBeanWithPackagePrivateConstructor bean = injectedBean.getBean();
         bean.setValue("foo");
-        Assert.assertEquals("foo", bean.getValue());
+        Assertions.assertEquals("foo", bean.getValue());
     }
 }

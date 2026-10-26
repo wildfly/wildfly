@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
@@ -20,19 +20,19 @@ import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the security role linking via the ejb-jar.xml and the jboss-ejb3.xml works as expected
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SecurityRoleLinkTestCase.SecurityRoleLinkTestCaseSetup.class)
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class SecurityRoleLinkTestCase {
 
     private static final String MODULE_NAME = "security-role-link-test";
@@ -86,21 +86,21 @@ public class SecurityRoleLinkTestCase {
         final Callable<Void> callable = () -> {
             final String realRoleName = "RealRole";
             final boolean callerInRealRole = callerRoleCheckerBean.isCallerInRole(realRoleName);
-            Assert.assertTrue("Caller was expected to be in " + realRoleName + " but wasn't", callerInRealRole);
+            Assertions.assertTrue(callerInRealRole, "Caller was expected to be in " + realRoleName + " but wasn't");
 
             final String aliasRoleName = "AliasRole";
             final boolean callerInAliasRole = callerRoleCheckerBean.isCallerInRole(aliasRoleName);
-            Assert.assertTrue("Caller was expected to be in " + aliasRoleName + " but wasn't", callerInAliasRole);
+            Assertions.assertTrue(callerInAliasRole, "Caller was expected to be in " + aliasRoleName + " but wasn't");
 
             final String invalidRole = "UselessRole";
             final boolean callerInUselessRole = callerRoleCheckerBean.isCallerInRole(invalidRole);
-            Assert.assertFalse("Caller wasn't expected to be in " + invalidRole + " but was", callerInUselessRole);
+            Assertions.assertFalse(callerInUselessRole, "Caller wasn't expected to be in " + invalidRole + " but was");
             return null;
         };
         try {
             Util.switchIdentity("phantom", "pass", callable);
         } catch (Exception e) {
-            Assert.fail(e.toString());
+            Assertions.fail(e.toString());
             throw e;
         }
     }

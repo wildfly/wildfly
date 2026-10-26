@@ -19,12 +19,12 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.transaction.UserTransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -75,8 +75,8 @@ public class RequiredInjectionTestCase {
         // The default scope is TransactionScoped which means we need to being a transaction before injection will work
         userTransaction.begin();
         try {
-            Assert.assertNotNull(entityManager);
-            Assert.assertEquals(DEPLOYMENT_NAME + "#default", entityManager.getEntityManagerFactory().getName());
+            Assertions.assertNotNull(entityManager);
+            Assertions.assertEquals(DEPLOYMENT_NAME + "#default", entityManager.getEntityManagerFactory().getName());
         } finally {
             if (userTransaction.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                 userTransaction.commit();
@@ -93,9 +93,9 @@ public class RequiredInjectionTestCase {
         try {
             final Set<Bean<?>> beans = beanManager.getBeans(EntityManager.class);
             // We should only have one bean which is a producer method
-            Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+            Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
             final Bean<?> bean = beans.iterator().next();
-            Assert.assertEquals(EntityManager.class, bean.getBeanClass());
+            Assertions.assertEquals(EntityManager.class, bean.getBeanClass());
         } finally {
             if (userTransaction.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                 userTransaction.commit();
@@ -107,72 +107,72 @@ public class RequiredInjectionTestCase {
 
     @Test
     public void checkEntityManagerFactory() {
-        Assert.assertNotNull(entityManagerFactory);
-        Assert.assertEquals(DEPLOYMENT_NAME + "#default", entityManagerFactory.getName());
+        Assertions.assertNotNull(entityManagerFactory);
+        Assertions.assertEquals(DEPLOYMENT_NAME + "#default", entityManagerFactory.getName());
     }
 
     @Test
     public void checkEntityManagerFactoryProducer() {
         final Set<Bean<?>> beans = beanManager.getBeans(EntityManagerFactory.class);
         // We should only have one bean which is a producer method
-        Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+        Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
         final Bean<?> bean = beans.iterator().next();
-        Assert.assertEquals(EntityManagerFactory.class, bean.getBeanClass());
+        Assertions.assertEquals(EntityManagerFactory.class, bean.getBeanClass());
     }
 
     @Test
     public void checkCriteriaBuilder() {
-        Assert.assertNotNull(criteriaBuilder);
+        Assertions.assertNotNull(criteriaBuilder);
     }
 
     @Test
     public void checkCriteriaBuilderProducer() {
         final Set<Bean<?>> beans = beanManager.getBeans(CriteriaBuilder.class);
         // We should only have one bean which is a producer method
-        Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+        Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
         final Bean<?> bean = beans.iterator().next();
-        Assert.assertEquals(CriteriaBuilder.class, bean.getBeanClass());
+        Assertions.assertEquals(CriteriaBuilder.class, bean.getBeanClass());
     }
 
     @Test
     public void checkPersistenceUnitUtil() {
-        Assert.assertNotNull(persistenceUnitUtil);
+        Assertions.assertNotNull(persistenceUnitUtil);
     }
 
     @Test
     public void checkPersistenceUnitUtilProducer() {
         final Set<Bean<?>> beans = beanManager.getBeans(PersistenceUnitUtil.class);
         // We should only have one bean which is a producer method
-        Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+        Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
         final Bean<?> bean = beans.iterator().next();
-        Assert.assertEquals(PersistenceUnitUtil.class, bean.getBeanClass());
+        Assertions.assertEquals(PersistenceUnitUtil.class, bean.getBeanClass());
     }
 
     @Test
     public void checkMetamodel() {
-        Assert.assertNotNull(metamodel);
+        Assertions.assertNotNull(metamodel);
     }
 
     @Test
     public void checkMetamodelProducer() {
         final Set<Bean<?>> beans = beanManager.getBeans(Metamodel.class);
         // We should only have one bean which is a producer method
-        Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+        Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
         final Bean<?> bean = beans.iterator().next();
-        Assert.assertEquals(Metamodel.class, bean.getBeanClass());
+        Assertions.assertEquals(Metamodel.class, bean.getBeanClass());
     }
 
     @Test
     public void checkSchemaManager() {
-        Assert.assertNotNull(schemaManager);
+        Assertions.assertNotNull(schemaManager);
     }
 
     @Test
     public void checkSchemaManagerProducer() {
         final Set<Bean<?>> beans = beanManager.getBeans(SchemaManager.class);
         // We should only have one bean which is a producer method
-        Assert.assertEquals(String.format("Expected 1 bean, but got %s", beans), 1, beans.size());
+        Assertions.assertEquals(1, beans.size(), String.format("Expected 1 bean, but got %s", beans));
         final Bean<?> bean = beans.iterator().next();
-        Assert.assertEquals(SchemaManager.class, bean.getBeanClass());
+        Assertions.assertEquals(SchemaManager.class, bean.getBeanClass());
     }
 }

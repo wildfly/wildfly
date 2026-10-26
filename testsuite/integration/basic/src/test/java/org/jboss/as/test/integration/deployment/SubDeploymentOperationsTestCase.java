@@ -12,7 +12,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.Operation;
@@ -30,11 +30,11 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import java.util.List;
  * the explode operation.
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2016 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SubDeploymentOperationsTestCase {
 
@@ -59,7 +59,7 @@ public class SubDeploymentOperationsTestCase {
     @ContainerResource
     ManagementClient managementClient;
 
-    @Before
+    @BeforeEach
     public void setUpDeployment() throws Exception {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
@@ -71,15 +71,15 @@ public class SubDeploymentOperationsTestCase {
         }
 
         result = initialDeploy();
-        Assert.assertTrue("Failure to set the initial development up: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to set the initial development up: " + result.toString());
 
         result = undeploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to undeploy the initial development: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to undeploy the initial development: " + result.toString());
     }
 
-    @After
+    @AfterEach
     public void cleanUpDeployment() throws Exception {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
@@ -94,73 +94,73 @@ public class SubDeploymentOperationsTestCase {
     @Test
     public void testExplodeJarSubDeployment() throws Exception {
         ModelNode result = explode(TEST_DEPLOYMENT_NAME, "");
-        Assert.assertTrue("Failure to explode the initial deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode the initial deployment: " + result.toString());
         result = explode(TEST_DEPLOYMENT_NAME, JAR_SUBDEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to explode JAR subdeployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode JAR subdeployment: " + result.toString());
         result = deploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to redeploy the deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to redeploy the deployment: " + result.toString());
         testEjbClassAvailableInServlet();
     }
 
     @Test
     public void testExplodeWarSubDeployment() throws Exception {
         ModelNode result = explode(TEST_DEPLOYMENT_NAME, "");
-        Assert.assertTrue("Failure to explode the initial deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode the initial deployment: " + result.toString());
         result = explode(TEST_DEPLOYMENT_NAME, WAR_SUBDEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to explode WAR subdeployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode WAR subdeployment: " + result.toString());
         result = deploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to redeploy the deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to redeploy the deployment: " + result.toString());
         testEjbClassAvailableInServlet();
     }
 
     @Test
     public void testExplodeJarAndWarSubDeployment() throws Exception {
         ModelNode result = explode(TEST_DEPLOYMENT_NAME, "");
-        Assert.assertTrue("Failure to explode the initial deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode the initial deployment: " + result.toString());
         result = explode(TEST_DEPLOYMENT_NAME, JAR_SUBDEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to explode JAR subdeployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode JAR subdeployment: " + result.toString());
         result = explode(TEST_DEPLOYMENT_NAME, WAR_SUBDEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to explode WAR subdeployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to explode WAR subdeployment: " + result.toString());
         result = deploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to redeploy the deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to redeploy the deployment: " + result.toString());
         testEjbClassAvailableInServlet();
     }
 
     @Test
     public void testExplodeJarSubDeploymentArchiveDeployment() throws Exception {
         ModelNode result = explode(TEST_DEPLOYMENT_NAME, JAR_SUBDEPLOYMENT_NAME);
-        Assert.assertFalse("Exploding JAR subdeployment of archived deployment should fail, but outcome was " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertFalse(Operations.isSuccessfulOutcome(result),
+                "Exploding JAR subdeployment of archived deployment should fail, but outcome was " + result.toString());
         String failure = Operations.getFailureDescription(result).asString();
-        Assert.assertTrue("Exploding JAR subdeployment of archived deployment failed with wrong reason: " + failure,
-                failure.contains(ARCHIVED_DEPLOYMENT_ERROR_CODE));
+        Assertions.assertTrue(failure.contains(ARCHIVED_DEPLOYMENT_ERROR_CODE),
+                "Exploding JAR subdeployment of archived deployment failed with wrong reason: " + failure);
         result = deploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to redeploy the deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to redeploy the deployment: " + result.toString());
         testEjbClassAvailableInServlet();
     }
 
     @Test
     public void testExplodeWarSubDeploymentArchiveDeployment() throws Exception {
         ModelNode result = explode(TEST_DEPLOYMENT_NAME, WAR_SUBDEPLOYMENT_NAME);
-        Assert.assertFalse("Exploding WAR subdeployment of archived deployment should fail, but outcome was " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertFalse(Operations.isSuccessfulOutcome(result),
+                "Exploding WAR subdeployment of archived deployment should fail, but outcome was " + result.toString());
         String failure = Operations.getFailureDescription(result).asString();
-        Assert.assertTrue("Exploding WAR subdeployment of archived deployment failed with wrong reason: " + failure,
-                failure.contains(ARCHIVED_DEPLOYMENT_ERROR_CODE));
+        Assertions.assertTrue(failure.contains(ARCHIVED_DEPLOYMENT_ERROR_CODE),
+                "Exploding WAR subdeployment of archived deployment failed with wrong reason: " + failure);
         result = deploy(TEST_DEPLOYMENT_NAME);
-        Assert.assertTrue("Failure to redeploy the deployment: " + result.toString(),
-                Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                "Failure to redeploy the deployment: " + result.toString());
         testEjbClassAvailableInServlet();
     }
 
@@ -238,9 +238,9 @@ public class SubDeploymentOperationsTestCase {
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         final HttpEntity entity = response.getEntity();
-        Assert.assertNotNull("Response message from servlet was null", entity);
+        Assertions.assertNotNull(entity, "Response message from servlet was null");
         final String responseMessage = EntityUtils.toString(entity);
-        Assert.assertEquals("Unexpected echo message from servlet at " + requestURL, message, responseMessage);
+        Assertions.assertEquals(message, responseMessage, "Unexpected echo message from servlet at " + requestURL);
     }
 
 }

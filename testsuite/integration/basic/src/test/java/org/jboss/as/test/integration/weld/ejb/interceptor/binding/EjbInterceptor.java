@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.ejb.interceptor.binding;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.InvocationContext;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * A normal non-cdi interceptor. This must be called before CDI interceptors
@@ -22,10 +22,10 @@ public class EjbInterceptor {
     public Object invoke(InvocationContext context) throws Exception {
         try {
             invoked = true;
-            Assert.assertFalse(CdiInterceptor.invoked);
+            Assertions.assertFalse(CdiInterceptor.invoked);
             return context.proceed() +" Ejb";
         } finally {
-            Assert.assertTrue(CdiInterceptor.invoked);
+            Assertions.assertTrue(CdiInterceptor.invoked);
         }
     }
 }

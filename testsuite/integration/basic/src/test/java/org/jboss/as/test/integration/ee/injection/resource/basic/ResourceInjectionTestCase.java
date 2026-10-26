@@ -4,34 +4,33 @@
  */
 
 package org.jboss.as.test.integration.ee.injection.resource.basic;
-
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the Resource injection as specified by Jakarta EE spec works as expected
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ResourceInjectionTestCase {
 
     private static final Logger logger = Logger.getLogger(ResourceInjectionTestCase.class.getName());
 
     private SimpleSLSB slsb;
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         Context ctx = new InitialContext();
         this.slsb = (SimpleSLSB) ctx.lookup("java:module/" + SimpleSLSB.class.getSimpleName() + "!"
@@ -53,11 +52,11 @@ public class ResourceInjectionTestCase {
     public void testResourceInjectionInEJB() {
         final String user = "Charlie Sheen";
         final String greeting = this.slsb.sayHello(user);
-        Assert.assertEquals("Unepxected greeting received from bean", CommonBean.HELLO_GREETING_PREFIX + user, greeting);
+        Assertions.assertEquals(CommonBean.HELLO_GREETING_PREFIX + user, greeting, "Unepxected greeting received from bean");
 
         Class<?> invokedBusinessInterface = this.slsb.getInvokedBusinessInterface();
-        Assert.assertEquals("Unexpected invoked business interface returned by bean", SimpleSLSB.class,
-                invokedBusinessInterface);
+        Assertions.assertEquals(SimpleSLSB.class, invokedBusinessInterface,
+                "Unexpected invoked business interface returned by bean");
     }
 
     /**
@@ -66,7 +65,7 @@ public class ResourceInjectionTestCase {
     @Test
     public void testEnvEntryInjection() {
         final String envEntryString = this.slsb.getInjectedString();
-        Assert.assertEquals("Unexpected value injected for env-entry of type String", "It's Friday!!!", envEntryString);
+        Assertions.assertEquals("It's Friday!!!", envEntryString, "Unexpected value injected for env-entry of type String");
     }
 
     /**
@@ -78,12 +77,12 @@ public class ResourceInjectionTestCase {
     @Test
     public void testOptionalEnvEntryInjection() {
         int defaultInt = this.slsb.getUnInjectedInt();
-        Assert.assertEquals("env-entry of type int without a value was *not* expected to be injected", defaultInt,
-                SimpleSLSB.DEFAULT_UNINJECTED_INT_VAL);
+        Assertions.assertEquals(defaultInt, SimpleSLSB.DEFAULT_UNINJECTED_INT_VAL,
+                "env-entry of type int without a value was *not* expected to be injected");
 
         String defaultString = this.slsb.getUnInjectedString();
-        Assert.assertEquals("env-entry of type String without a value was *not* expected to be injected", defaultString,
-                SimpleSLSB.DEFAULT_UNINJECTED_STRING_VAL);
+        Assertions.assertEquals(defaultString, SimpleSLSB.DEFAULT_UNINJECTED_STRING_VAL,
+                "env-entry of type String without a value was *not* expected to be injected");
     }
 
     /**
@@ -96,12 +95,12 @@ public class ResourceInjectionTestCase {
     @Test
     public void testOptionalEnvEntryEncAvailability() {
         boolean intEnvEntryAvailableInEnc = this.slsb.isUnInjectedIntEnvEntryPresentInEnc();
-        Assert.assertFalse("env-entry of type int, without an env-entry-value was *not* expected to be available in ENC",
-                intEnvEntryAvailableInEnc);
+        Assertions.assertFalse(intEnvEntryAvailableInEnc,
+                "env-entry of type int, without an env-entry-value was *not* expected to be available in ENC");
 
         boolean stringEnvEntryAvailableInEnc = this.slsb.isUnInjectedStringEnvEntryPresentInEnc();
-        Assert.assertFalse("env-entry of type String, without an env-entry-value was *not* expected to be available in ENC",
-                stringEnvEntryAvailableInEnc);
+        Assertions.assertFalse(stringEnvEntryAvailableInEnc,
+                "env-entry of type String, without an env-entry-value was *not* expected to be available in ENC");
 
     }
 
@@ -111,7 +110,7 @@ public class ResourceInjectionTestCase {
      */
     @Test
     public void testTimerServiceInjection() {
-        Assert.assertTrue("Timerservice was not injected in bean", this.slsb.isTimerServiceInjected());
+        Assertions.assertTrue(this.slsb.isTimerServiceInjected(), "Timerservice was not injected in bean");
     }
 
     /**
@@ -146,7 +145,7 @@ public class ResourceInjectionTestCase {
      */
     @Test
     public void testURLInjection() {
-        Assert.assertTrue("URL injection not valid", this.slsb.validURLInjections());
+        Assertions.assertTrue(this.slsb.validURLInjections(), "URL injection not valid");
     }
 
     /**
@@ -154,6 +153,6 @@ public class ResourceInjectionTestCase {
      */
     @Test
     public void testContextInjection() {
-        Assert.assertTrue("Context injection not valid", this.slsb.validContextInjections());
+        Assertions.assertTrue(this.slsb.validContextInjections(), "Context injection not valid");
     }
 }

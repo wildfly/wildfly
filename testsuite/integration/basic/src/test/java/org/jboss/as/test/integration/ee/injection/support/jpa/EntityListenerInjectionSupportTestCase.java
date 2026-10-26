@@ -5,15 +5,15 @@
 
 package org.jboss.as.test.integration.ee.injection.support.jpa;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
 import org.jboss.as.test.integration.ee.injection.support.Bravo;
@@ -22,13 +22,14 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Matus Abaffy
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EntityListenerInjectionSupportTestCase {
 
     private static final String ARCHIVE_NAME = "test";
@@ -69,11 +70,11 @@ public class EntityListenerInjectionSupportTestCase {
         int id = 1;
         MyBean bean = lookup("MyBean", MyBean.class);
         bean.createEmployee("Joe Black", "Brno 2", id);
-        assertEquals("EntityListener was not called.", 1, MyListener.getInvocationCount());
-        assertTrue("Interceptor was not called.", MyListenerInterceptor.wasCalled);
+        assertEquals(1, MyListener.getInvocationCount(), "EntityListener was not called.");
+        assertTrue(MyListenerInterceptor.wasCalled, "Interceptor was not called.");
         // ID should be increased by 1 in MyListenerInterceptor
         // id++;
         Employee emp = bean.getEmployeeById(id);
-        assertNotNull("Could not load added employee.", emp);
+        assertNotNull(emp, "Could not load added employee.");
     }
 }
