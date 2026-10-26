@@ -5,6 +5,9 @@
 
 package org.jboss.as.weld;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
@@ -108,5 +111,45 @@ public interface WeldCapability {
      * a call to this method, calls to {@code isWeldDeployment(DeploymentUnit unit)} will return true.
      */
     void markAsWeldDeployment(DeploymentUnit unit);
+
+    /**
+     * Adds a bean defining annotation for every deployment on the server, treating it as inherited if it is annotated
+     * with {@link Inherited}.
+     *
+     * @param annotation the annotation type, must not be {@code null}
+     *
+     * @return this capability
+     *
+     * @see #addBeanDefiningAnnotation(Class, boolean)
+     */
+    default WeldCapability addBeanDefiningAnnotation(final Class<? extends Annotation> annotation) {
+        return addBeanDefiningAnnotation(annotation, annotation.isAnnotationPresent(Inherited.class));
+    }
+
+    /**
+     * Adds a bean defining annotation for every deployment on the server.
+     * <p>
+     * The annotation is global, not scoped to the calling subsystem or to a deployment. A deployment reads the set of
+     * annotations when it is deployed, so a deployment that is already deployed does not see an annotation added later
+     * until it is redeployed. The annotations are cleared when the server reloads. Call this method from a subsystem add
+     * operation so that the annotation is in place before any deployment is processed.
+     * </p>
+     *
+     * @param annotation the annotation type, must not be {@code null}
+     * @param inherited  {@code true} if the annotation is treated as {@linkplain Inherited inherited}
+     *
+     * @return this capability
+     */
+    WeldCapability addBeanDefiningAnnotation(Class<? extends Annotation> annotation, boolean inherited);
+
+    /**
+     * Returns a copy of the bean defining annotations added with {@link #addBeanDefiningAnnotation(Class, boolean)}.
+     * <p>
+     * The copy does not include the bean defining annotations that the CDI specification defines.
+     * </p>
+     *
+     * @return an unmodifiable map from the annotation's fully qualified class name to whether it is treated as inherited
+     */
+    Map<String, Boolean> getBeanDefiningAnnotations();
 
 }
