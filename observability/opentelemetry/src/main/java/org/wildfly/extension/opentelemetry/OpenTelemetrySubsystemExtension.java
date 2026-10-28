@@ -5,7 +5,10 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import io.vertx.core.logging.LoggerFactory;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.subsystem.SubsystemConfiguration;
 import org.wildfly.subsystem.SubsystemExtension;
 import org.wildfly.subsystem.SubsystemPersistence;
@@ -20,7 +23,25 @@ public class OpenTelemetrySubsystemExtension extends SubsystemExtension<OpenTele
                 OpenTelemetrySubsystemRegistrar::new),
                 SubsystemPersistence.of(OpenTelemetrySubsystemSchema.CURRENT));
         // Initialize the Vert.x logger factory
-        //noinspection deprecation
-        LoggerFactory.initialise();
+        initializeVertxLogger();
+    }
+
+    private static void initializeVertxLogger() {
+        final ClassLoader classLoader = WildFlySecurityManager.getClassLoaderPrivileged(OpenTelemetrySubsystemExtension.class);
+        if (classLoader instanceof ModuleClassLoader cl) {
+            final ModuleLoader loader = cl.getModule().getModuleLoader();
+            try {
+                // Attempt to load the LoggerFactory for Vert.x 4
+                final Module module = loader.loadModule("io.vertx.core");
+                Class.forName("io.vertx.core.logging.LoggerFactory", true, module.getClassLoader());
+            } catch (Throwable ignore) {
+                try {
+                    // Attempt to load the LoggerFactory for Vert.x 5
+                    final Module module = loader.loadModule("io.vertx.core.logging");
+                    Class.forName("io.vertx.core.internal.logging.LoggerFactory", true, module.getClassLoader());
+                } catch (Throwable ignore2) {
+                }
+            }
+        }
     }
 }
