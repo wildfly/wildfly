@@ -298,6 +298,10 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
             builder.addChild(this.factory.builder(SingleAffinityResourceDefinition.PATH).setXmlElementName(Constants.SINGLE_AFFINITY).build());
             builder.addChild(this.factory.builder(RankedAffinityResourceDefinition.PATH).addAttributes(Attribute.stream(RankedAffinityResourceDefinition.Attribute.class)).setXmlElementName(Constants.RANKED_AFFINITY).build());
         }
+        // Always generate a default affinity=single child; if the XML specifies a different affinity type,
+        // AddStepHandler's required-singleton-child logic will remove the auto-created single and add the real one.
+        builder.setAdditionalOperationsGenerator((address, addOperation, operations) ->
+                operations.add(Util.createAddOperation(address.append(SingleAffinityResourceDefinition.PATH))));
 
         Stream<AttributeDefinition> attributes = ModClusterDefinition.ATTRIBUTES.stream();
         if (!this.since(UndertowSubsystemSchema.VERSION_4_0)) {

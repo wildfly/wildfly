@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!--
+  Domain configuration for testing composite batch operations involving a
+  profile clone followed by a mod-cluster remove in the same batch.
+
+  The "load-balancer" profile contains an undertow subsystem with a mod-cluster filter.
+  When the profile is cloned and the mod-cluster is removed from the clone in the same
+  batch, the operation should succeed.
+-->
+<domain xmlns="urn:jboss:domain:20.0">
+
+    <extensions>
+        <extension module="org.jboss.as.logging"/>
+        <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.undertow"/>
+    </extensions>
+
+    <profiles>
+
+        <!-- Minimal profile used by the host-primary.xml server groups -->
+        <profile name="default">
+            <subsystem xmlns="urn:jboss:domain:logging:8.0">
+                <root-logger>
+                    <level name="INFO"/>
+                </root-logger>
+            </subsystem>
+        </profile>
+
+        <!-- Profile under test: contains an undertow mod-cluster filter -->
+        <profile name="load-balancer">
+            <subsystem xmlns="urn:jboss:domain:io:3.0">
+                <worker name="default"/>
+                <buffer-pool name="default"/>
+            </subsystem>
+            <subsystem xmlns="urn:jboss:domain:undertow:15.0">
+                <buffer-cache name="default"/>
+                <server name="default-server">
+                    <http-listener name="default" socket-binding="http"/>
+                    <host name="default-host" alias="localhost">
+                        <location name="/" handler="welcome-content"/>
+                    </host>
+                </server>
+                <servlet-container name="default"/>
+                <handlers>
+                    <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+                </handlers>
+                <filters>
+                    <mod-cluster name="load-balancer" management-socket-binding="http">
+                        <single-affinity/>
+                    </mod-cluster>
+                </filters>
+            </subsystem>
+        </profile>
+
+    </profiles>
+
+    <interfaces>
+        <interface name="management"/>
+        <interface name="public"/>
+    </interfaces>
+
+    <socket-binding-groups>
+        <socket-binding-group name="standard-sockets" default-interface="public">
+            <socket-binding name="http"  port="8080"/>
+            <socket-binding name="https" port="8443"/>
+        </socket-binding-group>
+    </socket-binding-groups>
+
+    <server-groups>
+        <!-- Required by host-primary.xml server configs -->
+        <server-group name="main-server-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+        <server-group name="other-server-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+        <server-group name="reload-test-group" profile="default">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+        <!-- The profile under test -->
+        <server-group name="load-balancer-group" profile="load-balancer">
+            <socket-binding-group ref="standard-sockets"/>
+        </server-group>
+    </server-groups>
+
+</domain>

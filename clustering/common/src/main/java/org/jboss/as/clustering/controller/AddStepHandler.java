@@ -5,10 +5,8 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -76,7 +74,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Management
 
             if (parentDescriptor.getRequiredChildren().contains(path)) {
                 if (context.readResourceFromRoot(parentAddress, false).hasChild(path)) {
-                    // If we are a required child resource of our parent, we need to remove the auto-created resource first
                     context.addStep(Util.createRemoveOperation(address), context.getRootResourceRegistration().getOperationHandler(address, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
                     context.addStep(operation, this, OperationContext.Stage.MODEL);
                     return;
@@ -87,7 +84,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Management
                 if (requiredPath.getKey().equals(path.getKey())) {
                     Set<String> childrenNames = context.readResourceFromRoot(parentAddress, false).getChildrenNames(requiredPathKey);
                     if (!childrenNames.isEmpty()) {
-                        // If there is a required singleton sibling resource, we need to remove it first
                         for (String childName : childrenNames) {
                             PathAddress singletonAddress = parentAddress.append(requiredPathKey, childName);
                             context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
@@ -185,19 +181,9 @@ public class AddStepHandler extends AbstractAddStepHandler implements Management
             }
         }
 
-        // Auto-create required child resources as necessary
-        addRequiredChildren(context, this.descriptor.getRequiredChildren(), (Resource parent, PathElement path) -> parent.hasChild(path));
-        addRequiredChildren(context, this.descriptor.getRequiredSingletonChildren(), (Resource parent, PathElement path) -> parent.hasChildren(path.getKey()));
-
         // Don't leave model undefined
         if (!model.isDefined()) {
             model.setEmptyObject();
-        }
-    }
-
-    private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {
-        for (PathElement path : paths) {
-            context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL);
         }
     }
 
