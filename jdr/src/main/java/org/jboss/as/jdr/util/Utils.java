@@ -12,8 +12,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -64,6 +67,12 @@ public final class Utils {
     public static byte[] toBytes(VirtualFile r) throws IOException {
         try(InputStream is = r.openStream()) {
             return toByteArray(is);
+        }
+    }
+
+    public static void updateDigest(VirtualFile file, MessageDigest digest) throws IOException {
+        try (InputStream is = new DigestInputStream(file.openStream(), digest)) {
+            is.transferTo(OutputStream.nullOutputStream());
         }
     }
 
