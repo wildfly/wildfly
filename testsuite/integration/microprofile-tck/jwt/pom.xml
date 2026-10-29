@@ -26,7 +26,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.jwt:microprofile-jwt-auth-tck</ts.microprofile-tck-tests-dependency>
-        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, ee-security, ejb-lite, jaxrs, jsonp, microprofile-config, microprofile-jwt, servlet]==>ee-core-profile-server,ejb-lite,jaxrs,microprofile-jwt</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonp, microprofile-config, microprofile-jwt]==>ee-core-profile-server,jaxrs,microprofile-jwt</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
