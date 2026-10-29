@@ -153,7 +153,7 @@ WildFly also provides support for MicroProfile technologies. The same versions o
 |MicroProfile Reactive Messaging 3.0 |-- |--
 |MicroProfile Rest Client 4.0|X |X
 |MicroProfile Streams Operators 3.0 |-- |--
-|MicroProfile Telemetry 2.1|--|X
+|MicroProfile Telemetry 2.2|--|X
 |=======================================================================
 
 [[requirements]]
