@@ -3,7 +3,9 @@
 
 The `hashicorp-vault` subsystem provides credential stores backed by HashiCorp Vault and expressions that resolve to secrets in those stores. The subsystem and its Galleon layer are available at *default* stability in the `wildfly-ee` feature-pack.
 
-The standard WildFly distribution includes the required modules, but its default configuration does not enable the extension or subsystem. Add them with the following management CLI operations:
+== Provisioning and enabling the subsystem
+
+The standard WildFly distribution includes the required modules, but its default standalone and domain configurations do not enable the extension or subsystem. To enable Vault support in an existing standalone server, add them with the following management CLI operations:
 
 [source,options="nowrap"]
 ----
@@ -11,7 +13,25 @@ The standard WildFly distribution includes the required modules, but its default
 /subsystem=hashicorp-vault:add()
 ----
 
-When provisioning a server, include the `hashicorp-vault` layer to enable the subsystem. A separate Vault feature-pack is not required. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for provisioning details.
+When provisioning a server with Galleon layers, explicitly include the `hashicorp-vault` layer to install the required modules and enable the extension and subsystem. For example:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-vault-server --layers=hashicorp-vault
+----
+
+The generated `standalone/configuration/standalone.xml` registers `org.wildfly.extension.hashicorp-vault` and contains an empty subsystem:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:wildfly:hashicorp-vault:2.0"/>
+----
+
+No Vault credential stores, server addresses or tokens are configured by the layer. Add the credential store resources described below before using Vault credentials.
+
+Include `hashicorp-vault` alongside the other layers required by your application. Selecting other layers alone does not enable the Vault subsystem; the modules included in such an installation depend on its selected layers and packages. The same layer can be selected when provisioning with the WildFly Maven Plugin, including when building a bootable JAR.
+
+A separate Vault feature-pack is not required. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for provisioning details.
 
 == HashiCorp Vault credential store
 
@@ -279,8 +299,6 @@ The following table shows how to convert legacy aliases to the new format:
 |`secret/myapp/config.api_key`
 |`myapp/config?api_key`
 
-|`secret/services.db.host`
-|`services?db.host`
 |===
 
 In the legacy format, the first path segment (e.g. `secret`) was the mount path. In the new format, the mount path defaults to `secret` and is omitted unless you need a different mount.
