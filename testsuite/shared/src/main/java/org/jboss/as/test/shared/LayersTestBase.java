@@ -261,10 +261,7 @@ public abstract class LayersTestBase {
     public static final String[] NOT_REFERENCED_STD_EE_LATEST = {
             // Only referenced by the unreferenced org.infinispan.query
             // In the legacy variant this is referenced by other Hibernate modules
-            "org.hibernate.commons-annotations",
-            "io.github.jopenlibs.vault-java-driver",
-            "org.wildfly.extension.hashicorp-vault",
-            "org.wildfly.security.elytron-hashicorp-vault"
+            "org.hibernate.commons-annotations"
     };
 
 
@@ -274,9 +271,6 @@ public abstract class LayersTestBase {
      * of the wildfly-ee feature-pack.
      */
     public static final String[] NOT_REFERENCED_STD_EE_LEGACY = {
-        "io.github.jopenlibs.vault-java-driver",
-        "org.wildfly.extension.hashicorp-vault",
-        "org.wildfly.security.elytron-hashicorp-vault"
     };
 
 
