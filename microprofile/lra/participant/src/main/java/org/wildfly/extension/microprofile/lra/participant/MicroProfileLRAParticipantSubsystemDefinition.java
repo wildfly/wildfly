@@ -20,6 +20,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDefinition;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,19 +52,16 @@ public class MicroProfileLRAParticipantSubsystemDefinition extends PersistentRes
             .setRestartAllServices()
             .build();
 
-    static final SimpleAttributeDefinition PROXY_SERVER =
-        new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY_SERVER, ModelType.STRING, true)
-            .setXmlName(CommonAttributes.PROXY_SERVER)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setCapabilityReference(CapabilityReference.builder(LRA_PARTICIPANT_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
-            .build();
 
-    static final SimpleAttributeDefinition PROXY_HOST =
-        new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY_HOST, ModelType.STRING, true)
-            .setXmlName(CommonAttributes.PROXY_HOST)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setCapabilityReference(CapabilityReference.builder(LRA_PARTICIPANT_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(PROXY_SERVER).build())
-            .build();
+    static final CapabilityReferenceAttributeDefinition<Server> PROXY_SERVER = new CapabilityReferenceAttributeDefinition.Builder<>(CommonAttributes.PROXY_SERVER, CapabilityReference.builder(LRA_PARTICIPANT_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
+        .setRequired(false)
+        .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+        .build();
+
+    static final CapabilityReferenceAttributeDefinition<Host> PROXY_HOST = new CapabilityReferenceAttributeDefinition.Builder<>(CommonAttributes.PROXY_HOST, CapabilityReference.builder(LRA_PARTICIPANT_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(PROXY_SERVER).build())
+        .setRequired(false)
+        .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+        .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {LRA_COORDINATOR_URL, PROXY_SERVER, PROXY_HOST};
 

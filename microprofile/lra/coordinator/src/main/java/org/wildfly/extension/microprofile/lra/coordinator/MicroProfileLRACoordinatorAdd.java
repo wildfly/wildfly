@@ -19,6 +19,7 @@ import org.wildfly.extension.microprofile.lra.coordinator.service.LRARecoverySer
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -48,17 +49,10 @@ class MicroProfileLRACoordinatorAdd extends AbstractBoottimeAddStepHandler {
 
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
 
-        ModelNode serverNode = MicroProfileLRACoordinatorSubsystemDefinition.SERVER.resolveModelAttribute(context, model);
-        ModelNode hostNode = MicroProfileLRACoordinatorSubsystemDefinition.HOST.resolveModelAttribute(context, model);
+        ServiceDependency<Host> host = MicroProfileLRACoordinatorSubsystemDefinition.HOST.resolve(context, model);
 
-        Supplier<Host> hostSupplier;
-        if (serverNode.isDefined() && hostNode.isDefined()) {
-            hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverNode.asString(), hostNode.asString());
-        } else {
-            hostSupplier = builder.requires(UndertowService.DEFAULT_HOST);
-        }
 
-        final LRACoordinatorService lraCoordinatorService = new LRACoordinatorService(hostSupplier);
+        final LRACoordinatorService lraCoordinatorService = new LRACoordinatorService(host);
 
         builder.requiresCapability(MicroProfileLRACoordinatorSubsystemDefinition.LRA_RECOVERY_SERVICE_CAPABILITY_NAME, null);
 
