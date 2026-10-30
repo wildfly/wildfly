@@ -27,9 +27,8 @@ by Apache CXF into the application server.
 Apache CXF enables _WS-Discovery_ depending on the availability of its
 runtime component; given that's always shipped in the application
 server, JBossWS integration requires using the
-`cxf.ws-discovery.enabled`
-https://docs.jboss.org/author/display/WFLY8/Advanced+User+Guide#AdvancedUserGuide-Configurationthroughdeploymentdescriptor[property]
-usage for enabling _WS-Discovery_ for a given deployment. By default
+`cxf.ws-discovery.enabled` property as described in the <<property-element,deployment descriptor `property` element>>
+for enabling _WS-Discovery_ for a given deployment. By default
 _WS-Discovery_ is disabled on the application server. Below is an
 example of _jboss-webservices.xml_ descriptor to be used for enabling
 _WS-Discovery_:
@@ -68,10 +67,10 @@ resolve services. When running in-container, a JBoss module
 be set to have access to _WS-Discovery_ client functionalities.
 
 The
-http://svn.apache.org/viewvc/cxf/tags/cxf-2.7.5/services/ws-discovery/ws-discovery-api/src/main/java/org/apache/cxf/ws/discovery/WSDiscoveryClient.java?revision=1481139&view=markup[org.apache.cxf.ws.discovery.WSDiscoveryClient]
+https://github.com/apache/cxf/blob/main/services/ws-discovery/ws-discovery-api/src/main/java/org/apache/cxf/ws/discovery/WSDiscoveryClient.java[org.apache.cxf.ws.discovery.WSDiscoveryClient]
 class provides the _probe_ and _resolve_ methods which also accepts
 filters on scopes. Users can rely on them for locating available
 endpoints on the network. Please have a look at the JBossWS testsuite
 which includes a
-http://anonsvn.jboss.org/repos/jbossws/stack/cxf/tags/jbossws-cxf-4.2.0.Beta1/modules/testsuite/cxf-tests/src/test/java/org/jboss/test/ws/jaxws/samples/wsdd/WSDiscoveryTestCase.java[sample]
+https://github.com/jbossws/jbossws-cxf/blob/main/modules/testsuite/cxf-tests/src/test/java/org/jboss/test/ws/jaxws/samples/wsdd/WSDiscoveryTestCase.java[sample]
 on CXF WS-Discovery usage.

@@ -56,7 +56,7 @@ behaviour. Don't put the journal on a NFS share!
 *One point that should be added is that AIO doesn't work well with
 encrypted partitions, thus you have to move to NIO on those.*
 
-What are the symptoms of an AIO isssue ?
+What are the symptoms of an AIO issue?
 
 [[aio-issue-on-wildfly-10]]
 == AIO issue on WildFly 10
@@ -78,7 +78,7 @@ To use NIO instead execute the following command using jboss-cli:
 ----
 
 You need to reload or restart your server and you should see the
-following trace in your server console :
+following trace in your server console:
 
 ....
 INFO  [org.apache.activemq.artemis.core.server] (ServerService Thread Pool -- 64) AMQ221013: Using NIO Journal
@@ -94,7 +94,7 @@ INFO  [org.apache.activemq.artemis.core.server] (ServerService Thread Pool -- 64
 
 that means that AIO isn't working properly on your system.
 
-To use NIO instead execute the following commnd using jboss-cli :
+To use NIO instead execute the following command using jboss-cli:
 
 [source,options="nowrap"]
 ----
@@ -102,7 +102,7 @@ To use NIO instead execute the following commnd using jboss-cli :
 ----
 
 You need to reload or restart your server and you see the following
-trace in your server console :
+trace in your server console:
 
 ....
 INFO  [org.hornetq.core.server] (ServerService Thread Pool -- 64) HQ221013: Using NIO Journal

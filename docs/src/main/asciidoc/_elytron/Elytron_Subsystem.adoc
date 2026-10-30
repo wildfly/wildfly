@@ -462,16 +462,16 @@ under jboss.server.config.dir, which by default, maps to
 $JBOSS_HOME/standalone/configuration. They are also the same files used by
 the legacy security default configuration.
 
-|default-permission-mapper |The default-permission-mapper mapper is a
+|default-permission-mapper |The default-permission-mapper is a
 simple permission mapper that uses the default-permissions permission set
 to assign the full set of permissions that an identity would require to
 access any services on the server. For example, the default-permission-mapper
-mapper uses org.wildfly.extension.batch.jberet.deployment.BatchPermission
+uses org.wildfly.extension.batch.jberet.deployment.BatchPermission
 specified by the default-permissions permission set to assign permission for
 batch jobs. The batch permissions are start, stop, restart, abandon, and read
 which aligns with jakarta.batch.operations.JobOperator. The default-permission-mapper
-mapper also uses org.wildfly.security.auth.permission.LoginPermission specified
-by the the login-permission permission set to assign the login permission.
+also uses org.wildfly.security.auth.permission.LoginPermission specified
+by the login-permission permission set to assign the login permission.
 
 |local (mapper) |The local mapper is a constant role mapper that maps to
 the local security realm. This is used to map authentication to the
@@ -481,7 +481,7 @@ local security realm.
 that will decode the groups information of a principal and use it for
 the role information.
 
-|super-user-mapper |The super-user-mapper mapper is a constant role
+|super-user-mapper |The super-user-mapper is a constant role
 mapper that maps the SuperUser role to a principal.
 
 |management-http-authentication |The management-http-authentication

@@ -7,12 +7,12 @@ package org.wildfly.test.integration.microprofile.jwt.smoke;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 import org.wildfly.test.integration.microprofile.jwt.SampleEndPoint;
@@ -22,7 +22,7 @@ import org.wildfly.test.integration.microprofile.jwt.SampleEndPoint;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JWTSmokeTestCase extends BaseJWTCase {
 

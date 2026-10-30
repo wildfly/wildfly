@@ -64,7 +64,7 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
             try {
                 container.start();
             } catch (Exception e) {
-                // Either throw AssumptionViolatedException because we are ignoring intermittent failures,
+                // Either throw an assumption exception because we are ignoring intermittent failures,
                 // or propagate the exception and fail
                 IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-20945");
                 throw e;

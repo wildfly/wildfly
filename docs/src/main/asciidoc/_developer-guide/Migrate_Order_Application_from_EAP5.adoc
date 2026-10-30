@@ -188,8 +188,8 @@ configuration:
 
 Most of the properties are removed since they will default to the
 correct values for the second level cache. See
-https://docs.jboss.org/author/display/AS71/JPA+Reference+Guide#JPAReferenceGuide-UsingtheInfinispansecondlevelcache["Using
-the Infinispan second level cache"] for more details.
+<<using-the-infinispan-second-level-cache,Using the Infinispan second level cache>>
+for more details.
 
 That was the extent of the code changes required to migrate the
 application to AS7.

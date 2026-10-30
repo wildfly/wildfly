@@ -43,6 +43,10 @@ public class ManagedThreadFactoryDefinitionDescriptorProcessor extends ResourceD
         if (priority != null) {
             resourceDefinitionInjectionSource.setPriority(priority);
         }
+        final Boolean virtual = metaData.getVirtual();
+        if (virtual != null) {
+            resourceDefinitionInjectionSource.setVirtual(virtual);
+        }
         return resourceDefinitionInjectionSource;
     }
 }

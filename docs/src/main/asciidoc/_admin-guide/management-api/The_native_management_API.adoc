@@ -624,7 +624,7 @@ Since a rollout plan may be quite complex, having to pass it as a header
 every time can become quickly painful. So instead we can store it in the
 model and then reference it when we want to use it. +
 To create a rollout plan you can use the operation `rollout-plan add`
-like this :
+like this:
 
 ----
 rollout-plan add --name=simple --content={"rollout-plan" => {"in-series" => [{"server-group" => {"main-server-group" => {"rolling-to-servers" => false,"max-failed-servers" => 1}}}, {"server-group" => {"other-server-group" => {"rolling-to-servers" => true,"max-failure-percentage" => 20}}}],"rollback-across-groups" => true}}
@@ -661,8 +661,8 @@ repository.
 }
 ----
 
-Now you may reference the roolout plan in your command by adding a
-header just like this :
+Now you may reference the rollout plan in your command by adding a
+header just like this:
 
 ----
 deploy /quickstart/ejb-in-war/target/wildfly-ejb-in-war.war --all-server-groups --headers={rollout name=simple}

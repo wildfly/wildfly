@@ -8,6 +8,7 @@ package org.jboss.as.ee.concurrent;
 import org.glassfish.concurro.AbstractManagedExecutorService;
 import org.glassfish.concurro.AbstractManagedThread;
 import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -22,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
 
 /**
- * @author Stuart Douglas
- * @author emmartins
+ * WildFly's extension of {@link org.glassfish.concurro.ManagedExecutorServiceImpl}.
+ * @author Eduardo Martins
  */
 public class ConcurroManagedExecutorServiceImpl extends org.glassfish.concurro.ManagedExecutorServiceImpl implements WildFlyManagedExecutorService {
 
@@ -32,14 +33,14 @@ public class ConcurroManagedExecutorServiceImpl extends org.glassfish.concurro.M
     private final ManagedExecutorRuntimeStats runtimeStats;
 
     public ConcurroManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ConcurroManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy), queue);
+        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy), queue);
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);
     }
 
     public ConcurroManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ConcurroManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy));
+        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);

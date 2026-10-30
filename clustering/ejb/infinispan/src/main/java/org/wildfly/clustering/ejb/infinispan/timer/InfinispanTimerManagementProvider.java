@@ -18,9 +18,9 @@ import org.infinispan.configuration.cache.IsolationLevel;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.StoreConfiguration;
+import org.infinispan.configuration.cache.TransactionMode;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
@@ -139,7 +139,7 @@ public class InfinispanTimerManagementProvider implements TimerManagementProvide
             builder.persistence().passivation(false).clearStores();
         }
 
-        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
+        builder.transaction().mode(TransactionMode.NON_DURABLE_XA).transactionManagerLookup(EmbeddedTransactionManager::getInstance).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
         return builder;
     }
 }

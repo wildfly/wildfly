@@ -49,13 +49,13 @@ This optional element specifies transport providers for the remote endpoint. It 
 
 ==== <provider />
 
-This element defines a remote transport provider provider. It has the following attributes.
+This element defines a remote transport provider. It has the following attributes.
 
 [cols=",",options="header"]
 |===
 | Attribute Name | Attribute Description
 | `scheme` | The primary URI scheme which corresponds to this provider. This attribute is required.
-| `aliases` | A space-separated list of other URI scheme names that are also recognized for this provider . This attribute is optional.
+| `aliases` | A space-separated list of other URI scheme names that are also recognized for this provider. This attribute is optional.
 | `module` | The name of the module that contains the provider implementation.  This attribute is optional; if not given, the class loader of JBoss Remoting itself will be searched for the provider class.
 | `class` | The name of the class that implements the transport provider.  This attribute is optional; if not given, the Java `java.util.ServiceLoader` facility will be used to search for the provider class.
 |===

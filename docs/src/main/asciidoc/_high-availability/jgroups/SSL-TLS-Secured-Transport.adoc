@@ -49,6 +49,30 @@ it will incur a performance penalty.
 
 NOTE: The `TCP_NIO2` transport does not support SSL/TLS and cannot be configured as such.
 
+
+== Connection Timeout
+
+The `sock_conn_timeout` property of the `TCP` transport bounds the establishment of a connection to another member,
+which includes _both_ the TCP connect and the TLS handshake.
+The WildFly's default value of 300 milliseconds might not be sufficient to complete the TLS handshake,
+for instance on heavily loaded cluster members or with high network latency between members.
+In such case, the connection attempt might fail and be retried, which may delay the formation of the cluster.
+The member accepting the connection then repeatedly logs a warning (`JGRP000006`) for the connection whose TLS handshake was not completed:
+
+[source,title="TLS Handhake Timeout Example"]
+----
+2026-10-18 10:10:15,705 WARN  [org.jgroups.protocols.TCP] (TcpServer.Acceptor[7600]-1,null,null) JGRP000006: 127.0.0.1:7600: failed accepting connection from peer SSLSocket[hostname=127.0.0.1, port=63142, Session(1792311011579|SSL_NULL_WITH_NULL_NULL)]: java.net.SocketException: Socket is closed
+----
+
+Note the `SSL_NULL_WITH_NULL_NULL` in the log, since no cipher suite was negotiated, so the handshake never finished.
+
+To raise the timeout, set the property on the transport, e.g. to 2 seconds:
+
+[source,title="JGroups Connection Timeout Example CLI"]
+----
+/subsystem=jgroups/stack=tcp/transport=TCP:map-put(name=properties, key=sock_conn_timeout, value=2000)
+----
+
 == Securing Failure Detection Communication
 
 // n.b. There is no active JEP to add native encrypted NIO channels to the JDK

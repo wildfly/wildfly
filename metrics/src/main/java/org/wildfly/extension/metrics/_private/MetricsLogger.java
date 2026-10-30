@@ -56,4 +56,8 @@ public interface MetricsLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 6, value = "Additional metrics systems discovered while configuring WildFly Metrics: %s. Please refer to the documentation for more information.")
     void multipleMetricsSystemsEnabled(String others);
+
+    @LogMessage(level = INFO)
+    @Message(id = 7, value = "Unable to collect metrics for resource %s after %d attempts%s.")
+    void unableToCollectMetrics(PathAddress address, int attempts, String failure);
 }

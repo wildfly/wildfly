@@ -17,8 +17,8 @@ This document is not intended to be a CDI tutorial, it only covers CDI
 usage that is specific to WildFly. For some general information on CDI
 see the below links:
 
-http://docs.jboss.org/cdi/spec/1.2/cdi-spec.html[CDI Specification] +
-http://docs.jboss.org/weld/reference/latest/en-US/html/[Weld Reference
+https://jakarta.ee/specifications/cdi/[CDI Specification] +
+https://docs.jboss.org/weld/reference/latest/en-US/html/[Weld Reference
 Guide] +
 https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 
@@ -130,7 +130,7 @@ is the case of your application you will see an exception like this:
 org.jboss.weld.exceptions.IllegalStateException: WELD-001332: BeanManager method getBeans() is not available during application initialization
 ....
 
-Fortunatelly, there is a non-portable mode available in WildFly which
+Fortunately, there is a non-portable mode available in WildFly which
 skips some of the API usage checks and therefore allows the legacy
 extensions to work as before.
 
@@ -162,7 +162,7 @@ WildFly instance by executing the following command:
 ----
 
 *Note that new portable extensions should always use the*
-*https://jakarta.ee/specifications/cdi/4.0/apidocs/jakarta.cdi/jakarta/enterprise/inject/spi/beanmanager[BeanManager
+*https://jakarta.ee/specifications/cdi/4.0/apidocs/jakarta.cdi/jakarta/enterprise/inject/spi/BeanManager.html[BeanManager
 API]* *properly and thus never require the non-portable mode. The
 non-portable mode only exists to preserve compatibility with legacy
 extensions!*

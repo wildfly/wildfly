@@ -22,7 +22,7 @@ import java.util.Collections;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Add a config-source with a custom class in the microprofile-config subsystem.
@@ -50,11 +50,11 @@ public class SetupTask extends CLIServerSetupTask {
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         Path target = Paths.get("target").toAbsolutePath().normalize();
         rootDir = Files.createTempDirectory(target, "test");
-        Assert.assertTrue(Files.exists(rootDir));
+        Assertions.assertTrue(Files.exists(rootDir));
 
         nonExistent = Files.createTempDirectory(target, "duff");
         deleteDirectory(nonExistent);
-        Assert.assertFalse(Files.exists(nonExistent));
+        Assertions.assertFalse(Files.exists(nonExistent));
 
         Path dirA = createPropsDir(rootDir, PROPS_A, FROM_A, A, B_OVERRIDES_A, OVERRIDDEN_A);
         Path dirB = createPropsDir(rootDir, PROPS_B, FROM_B, B, B_OVERRIDES_A, OVERRIDDEN_B);
@@ -92,12 +92,12 @@ public class SetupTask extends CLIServerSetupTask {
     private Path createPropsDir(Path rootDir, String sourceName, String... props) throws IOException {
         Path sourceDir = rootDir.resolve(sourceName);
         Files.createDirectory(sourceDir);
-        Assert.assertTrue(Files.exists(sourceDir));
+        Assertions.assertTrue(Files.exists(sourceDir));
 
         for (int i = 0 ; i < props.length ; i += 2) {
             Path file = sourceDir.resolve(props[i]);
             Files.createFile(file);
-            Assert.assertTrue(Files.exists(file));
+            Assertions.assertTrue(Files.exists(file));
             Files.write(file, Collections.singletonList(props[i + 1]));
         }
         return sourceDir.toAbsolutePath().normalize();

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -25,7 +26,6 @@ import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
-import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Cache the TLDs for JSF and add them to deployments as needed.
@@ -68,8 +68,10 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
     private TldMetaData parseTLD(InputStream is) throws Exception {
         try {
-            final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
+            final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
+            setIfSupported(inputFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader    );
         } finally {
@@ -108,5 +110,11 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
         List<TldMetaData> jsfTlds = this.getMap().get(slot);
         if (jsfTlds != null) tldsMetaData.addAll(jsfTlds);
         deploymentUnit.putAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY, tldsMetaData);
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
+        }
     }
 }

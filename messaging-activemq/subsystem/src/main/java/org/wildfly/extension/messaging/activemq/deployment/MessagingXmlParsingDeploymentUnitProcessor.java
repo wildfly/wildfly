@@ -29,6 +29,7 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Processor that handles the messaging subsystems deployable XML
@@ -36,8 +37,6 @@ import org.jboss.vfs.VirtualFile;
  * @author Stuart Douglas
  */
 public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUnitProcessor {
-
-    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
     private static final String[] LOCATIONS = {"WEB-INF", "META-INF"};
 
@@ -64,10 +63,7 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
                 xmlStream = new FileInputStream(f);
                 try {
 
-                    final XMLInputFactory inputFactory = INPUT_FACTORY;
-                    setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
-                    setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-                    setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+                    final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                     inputFactory.setXMLResolver(NoopXMLResolver.create());
                     final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(xmlStream);
                     final ParseResult result = new ParseResult();
@@ -85,12 +81,6 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
             } finally {
                 VFSUtils.safeClose(xmlStream);
             }
-        }
-    }
-
-    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
-        if (inputFactory.isPropertySupported(property)) {
-            inputFactory.setProperty(property, value);
         }
     }
 

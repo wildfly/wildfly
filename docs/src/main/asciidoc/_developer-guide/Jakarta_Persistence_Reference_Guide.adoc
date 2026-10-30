@@ -420,7 +420,7 @@ The Hibernate native API application will also need a MANIFEST.MF:
 Dependencies: org.infinispan,org.hibernate
 ....
 
-http://infinispan.org/docs/9.4.x/user_guide/user_guide.html#integrations_jpa_hibernate[Infinispan
+https://infinispan.org/docs/stable/titles/hibernate/hibernate.html[Infinispan
 Hibernate/JPA second level cache provider documentation] contains
 advanced configuration information but you should bear in mind that when
 Hibernate runs within WildFly, some of those configuration options,
@@ -589,10 +589,6 @@ include;
 ----
 <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 ----
-
-Also refer to page
-https://community.jboss.org/wiki/HowToUseEclipseLinkWithAS7[how to use
-EclipseLink with WildFly guide here].
 
 [[native-hibernate-use]]
 == Native Hibernate use

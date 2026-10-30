@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>42.0.0.Beta1-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-release</artifactId>
@@ -49,12 +49,12 @@
                     <type>pom</type>
                     <scope>provided</scope>
                 </dependency>
-                <dependency>
+                <!--<dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>${legacy.full.dist.artifactId}</artifactId>
                     <type>pom</type>
                     <scope>provided</scope>
-                </dependency>
+                </dependency>-->
             </dependencies>
             <build>
                 <plugins>
@@ -93,7 +93,7 @@
                                                 <include>wildfly-*.zip.asc</include>
                                             </includes>
                                         </resource>
-                                        <resource>
+                                        <!--<resource>
                                             <directory>../legacy/ee-feature-pack/dist/target</directory>
                                             <includes>
                                                 <include>wildfly-*.tar.gz</include>
@@ -101,7 +101,7 @@
                                                 <include>wildfly-*.zip</include>
                                                 <include>wildfly-*.zip.asc</include>
                                             </includes>
-                                        </resource>
+                                        </resource>-->
                                     </resources>
                                 </configuration>
                             </execution>

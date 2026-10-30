@@ -250,7 +250,7 @@ security settings are provided in the comments in the listing below.
 [[ssl-configuration-saml-holder]]
 === SSL configuration
 
-https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-SSLconfiguration
+<<ssl-configuration-saml-bearer,SAML Bearer Assertion Scenario>>
 
 This web service is using https, therefore the JBoss server must be
 configured to provide SSL support in the Web subsystem. There are 2
@@ -371,7 +371,7 @@ org.apache.ws.security.crypto.merlin.keystore.file=servicestore.jks
 [[manifest-mf-saml-holder]]
 === MANIFEST.MF
 
-https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-MANIFEST.MF
+<<manifest-mf-ws-trust,WS-Trust and STS>>
 
 When deployed on WildFly this application requires access to the JBossWs
 and CXF APIs provided in module org.jboss.ws.cxf.jbossws-cxf-client. The

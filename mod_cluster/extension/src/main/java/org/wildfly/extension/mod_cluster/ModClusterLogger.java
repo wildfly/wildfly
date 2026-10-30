@@ -58,11 +58,8 @@ interface ModClusterLogger extends BasicLogger {
 //    @Message(id = 3, value = "%s failed to stop.")
 //    void stopFailure(@Cause Throwable cause, String name);
 
-    /**
-     * Logs an error message indicating ModCluster requires advertise, but no multi-cast interface is available.
-     */
     @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available.")
+    @Message(id = 4, value = "mod_cluster is configured to use the advertise mechanism, but no multicast-capable network interface is available. Proxies will not be discovered automatically.")
     void multicastInterfaceNotAvailable();
 
     @LogMessage(level = WARN)

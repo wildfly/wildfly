@@ -120,7 +120,8 @@ The following arguments can be used when starting the bootable JAR:
 |Set a security property
 
 |-secmgr
-|Activate and install the `WildFlySecurityManager`.
+|Activate and install the `WildFlySecurityManager`. +
+*Note:* Since the WildFly 40 release, starting a xref:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly or WildFly Preview] bootable JAR with the Security Manager activated will result in a boot failure.
 
 |--stability[=value]
 |Runs the server using a specific stability level. Possible values: [default, community, preview, experimental], Default = community

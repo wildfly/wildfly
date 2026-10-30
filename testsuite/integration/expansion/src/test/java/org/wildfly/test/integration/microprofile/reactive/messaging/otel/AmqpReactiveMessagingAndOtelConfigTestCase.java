@@ -7,14 +7,14 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SnapshotRestoreSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class AmqpReactiveMessagingAndOtelConfigTestCase extends BaseReactiveMessagingAndOtelConfigTest {

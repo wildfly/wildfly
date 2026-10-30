@@ -8,6 +8,7 @@ package org.wildfly.extension.undertow.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -26,7 +27,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 
@@ -51,8 +51,10 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             InputStream is = null;
             try {
                 is = jbossWebXml.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
+                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
+                setIfSupported(inputFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
                 final JBossWebMetaData jBossWebMetaData = JBossWebMetaDataParser.parse(xmlReader, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
@@ -86,6 +88,12 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             if(jbMeta != null) {
                 warMetaData.setJBossWebMetaData(jbMeta);
             }
+        }
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
         }
     }
 }

@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>42.0.0.Beta1-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -961,7 +961,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-converter-api</artifactId>
-                <version>${version.io.smallrye.reactive-utils}</version>
+                <version>${version.io.smallrye.reactive-converters}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

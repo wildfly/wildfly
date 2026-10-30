@@ -119,7 +119,7 @@ ws-provider.
 6.  The ws-provider verifies the token was issued by the STS, thus
 proving the ws-requester has successfully authenticated with the STS.
 7.  The ws-provider executes the requested service and returns the
-results to the the ws-requester.
+results to the ws-requester.
 
 === Web service provider
 

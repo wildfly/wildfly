@@ -14,15 +14,17 @@ import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
 
 /**
@@ -32,6 +34,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
  */
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestcontainersRequired
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
 
@@ -52,36 +55,36 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void deploy() {
         deployer.deploy(DEPLOYMENT_SERVICE1);
         deployer.deploy(DEPLOYMENT_SERVICE2);
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testContextPropagation() throws InterruptedException, MalformedURLException {
         try (Client client = ClientBuilder.newClient()) {
             Response response = client.target(getDeploymentUrl(DEPLOYMENT_SERVICE1) + "contextProp1")
                     .request().get();
-            Assert.assertEquals(204, response.getStatus());
+            Assertions.assertEquals(204, response.getStatus());
 
             otelCollector.assertTraces(DEPLOYMENT_SERVICE1 + ".war", traces -> {
-                Assert.assertFalse("Traces not found for service", traces.isEmpty());
+                Assertions.assertFalse(traces.isEmpty(), "Traces not found for service");
 
                 JaegerTrace trace = traces.get(0);
                 String traceId = trace.getTraceID();
                 List<JaegerSpan> spans = trace.getSpans();
 
                 spans.forEach(s ->
-                    Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
-                        traceId, s.getTraceID()));
+                    Assertions.assertEquals(traceId,
+                        s.getTraceID(), "The traceId of the span did not match the first span's. Context propagation failed."));
             });
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void undeploy() {
         deployer.undeploy(DEPLOYMENT_SERVICE2);
     }

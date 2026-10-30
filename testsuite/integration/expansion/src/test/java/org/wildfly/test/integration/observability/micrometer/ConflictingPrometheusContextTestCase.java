@@ -5,15 +5,15 @@
 package org.wildfly.test.integration.observability.micrometer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -28,15 +28,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AssumptionViolatedException;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Community.class, MicrometerSetupTask.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestcontainersRequired
 @RunAsClient
 public class ConflictingPrometheusContextTestCase {
@@ -58,11 +61,9 @@ public class ConflictingPrometheusContextTestCase {
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
-        if (AssumeTestGroupUtil.isBootableJar() || AssumeTestGroupUtil.isWildFlyPreview() || isGalleon()) {
-            throw new AssumptionViolatedException("Not supported in this configuration");
-        }
+        assumeFalse(AssumeTestGroupUtil.isBootableJar() || AssumeTestGroupUtil.isWildFlyPreview() || isGalleon(), "Not supported in this configuration");
     }
 
     private static boolean isGalleon() {
@@ -70,7 +71,7 @@ public class ConflictingPrometheusContextTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void setupMetrics() throws IOException {
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, metricsExtension))) {
             executeOp(managementClient, Operations.createAddOperation(metricsExtension));
@@ -86,19 +87,19 @@ public class ConflictingPrometheusContextTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void configureConflictingContexts() throws Exception {
         ModelNode addOperation = Operations.createAddOperation(PROMETHEUS_REGISTRY_ADDRESS);
         addOperation.get("context").set("${no.such.property:/metrics}");
         addOperation.get("security-enabled").set("false");
 
         ModelNode response = managementClient.getControllerClient().execute(Operation.Factory.create(addOperation));
-        assertTrue(response.asString(), response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION)
-            .asString().contains("WFLYCTL0436"));
+        assertTrue(response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION)
+            .asString().contains("WFLYCTL0436"), response.asString());
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void tearDown() throws IOException {
         if (Operations.isSuccessfulOutcome(executeRead(managementClient, PROMETHEUS_REGISTRY_ADDRESS))) {
             executeOp(managementClient, Operations.createRemoveOperation(PROMETHEUS_REGISTRY_ADDRESS));

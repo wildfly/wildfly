@@ -13,7 +13,7 @@ link:https://jakarta.ee/specifications/data[Jakarta Data] brings the repository 
 
 == Jakarta Data Overview
 
-The key concept in Jakarta Data is the _repository_ . As explained in the link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#architecture[Jakarta Data 1.0 Specification, window=_blank]
+The key concept in Jakarta Data is the _repository_ . As explained in the link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0.html#architecture[Jakarta Data 1.0 Specification, window=_blank]
 
 [quote]
 ____
@@ -22,7 +22,7 @@ a repository is a mediator between an application’s domain logic and the under
 In Jakarta Data, a Repository provides a structured and organized way to interact with data. It abstracts data storage and retrieval complexities, allowing you to work with domain-specific objects and perform common operations on data without writing low-level database queries.
 ____
 
-An application developer defines a repository by providing an interface annotated with the Jakarta Data `@Repository` annotation. The repository interface declares methods used for data retrieval and modification of a particular link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#_entity_classes[entity type, window=_blank]. A repository interface can include different methods that deal with different entity types, giving application authors flexibility to define repositories that fit the needs of their application domain.
+An application developer defines a repository by providing an interface annotated with the Jakarta Data `@Repository` annotation. The repository interface declares methods used for data retrieval and modification of a particular link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0.html#_entity_classes[entity type, window=_blank]. A repository interface can include different methods that deal with different entity types, giving application authors flexibility to define repositories that fit the needs of their application domain.
 
 Following is an example repository:
 
@@ -52,12 +52,12 @@ The repository interface methods are annotated with various Jakarta Data annotat
 
 There's much more to the Jakarta Data programming model than this; for all the details see:
 
-* The link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0[Jakarta Data 1.0 specification, window=_blank]
+* The link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0.html[Jakarta Data 1.0 specification, window=_blank]
 * The link:https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories documentation, window=_blank]
 * Gavin King's excellent link:https://in.relation.to/2024/04/01/jakarta-data-1/[blog posts, window=_blank] on Jakarta Data
 
 
-A Jakarta Data implementation like WildFly can support one or more Jakarta Data link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0#_jakarta_data_providers[providers, window=_blank]. A provider understands one or more Java annotation types that are used to define entities, and it understands how to interact with a particular type of back end datastore.
+A Jakarta Data implementation like WildFly can support one or more Jakarta Data link:https://jakarta.ee/specifications/data/1.0/jakarta-data-1.0.html#_jakarta_data_providers[providers, window=_blank]. A provider understands one or more Java annotation types that are used to define entities, and it understands how to interact with a particular type of back end datastore.
 
 WildFly's Jakarta Data implementation supports the link:https://docs.hibernate.org/orm/6.6/repositories/html_single/[Hibernate Data Repositories, window=_blank] provider, which uses Hibernate ORM to interact with a variety of different relational databases. Hibernate Data Repositories supports the `jakarta.persistence.Entity` annotation as the mechanism for application authors to define entities.
 

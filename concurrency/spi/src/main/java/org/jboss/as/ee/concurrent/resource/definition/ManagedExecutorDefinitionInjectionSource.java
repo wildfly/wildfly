@@ -45,6 +45,7 @@ public class ManagedExecutorDefinitionInjectionSource extends ResourceDefinition
     public static final String CONTEXT_PROP = "context";
     public static final String HUNG_TASK_THRESHOLD_PROP = "hungTaskThreshold";
     public static final String MAX_ASYNC_PROP = "maxAsync";
+    public static final String VIRTUAL_PROP = "virtual";
 
     private static final String REQUEST_CONTROLLER_CAPABILITY_NAME = "org.wildfly.request-controller";
 
@@ -59,6 +60,7 @@ public class ManagedExecutorDefinitionInjectionSource extends ResourceDefinition
     private int queueLength = Integer.MAX_VALUE;
     private WildFlyManagedExecutorService.RejectPolicy rejectPolicy = WildFlyManagedExecutorService.RejectPolicy.ABORT;
     private int threadPriority = Thread.NORM_PRIORITY;
+    private boolean virtual;
 
     public ManagedExecutorDefinitionInjectionSource(final String jndiName) {
         super(jndiName);
@@ -80,7 +82,7 @@ public class ManagedExecutorDefinitionInjectionSource extends ResourceDefinition
             if (capabilityServiceSupport.hasCapability(REQUEST_CONTROLLER_CAPABILITY_NAME)) {
                 requestControllerSupplier = resourceServiceBuilder.requires(capabilityServiceSupport.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY_NAME));
             }
-            final ManagedExecutorServiceService resourceService = new ManagedExecutorServiceService(consumer, null, null, processStateNotifierSupplier, requestControllerSupplier, resourceName, resourceJndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, maxAsync, maxAsync, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+            final ManagedExecutorServiceService resourceService = new ManagedExecutorServiceService(consumer, null, null, processStateNotifierSupplier, requestControllerSupplier, resourceName, resourceJndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, maxAsync, maxAsync, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService, virtual);
             resourceServiceBuilder.setInstance(resourceService);
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
@@ -216,5 +218,13 @@ public class ManagedExecutorDefinitionInjectionSource extends ResourceDefinition
 
     public void setThreadPriority(int threadPriority) {
         this.threadPriority = threadPriority;
+    }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
     }
 }

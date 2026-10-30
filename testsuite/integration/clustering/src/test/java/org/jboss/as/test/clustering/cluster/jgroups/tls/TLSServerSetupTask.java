@@ -6,10 +6,12 @@ package org.jboss.as.test.clustering.cluster.jgroups.tls;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.test.shared.ManagementServerSetupTask;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jgroups.protocols.TCP;
 
 /**
@@ -18,6 +20,12 @@ import org.jgroups.protocols.TCP;
  * @author Radoslav Husar
  */
 public interface TLSServerSetupTask {
+
+    /**
+     * Since JGroups 5.5.8 the TLS handshake is bounded by {@code sock_conn_timeout} together with the TCP connect,
+     * so raise it from the default 300ms to the JGroups default to avoid spurious handshake timeouts on slow CI machines.
+     */
+    Duration SOCK_CONN_TIMEOUT = TimeoutUtil.adjust(Duration.ofSeconds(2));
 
     /**
      * Server setup task that generates a unique key pair on each node and configures TLS transport.
@@ -41,10 +49,12 @@ public interface TLSServerSetupTask {
                                     .add("/subsystem=elytron/server-ssl-context=jgroupsSSC:add(key-manager=jgroupsKM, trust-manager=jgroupsTM, protocols=[\"TLSv1.2\"], need-client-auth=true)")
                                     .add("/subsystem=jgroups/stack=tcp/transport=%s:write-attribute(name=client-ssl-context, value=jgroupsCSC)", tp)
                                     .add("/subsystem=jgroups/stack=tcp/transport=%s:write-attribute(name=server-ssl-context, value=jgroupsSSC)", tp)
+                                    .add("/subsystem=jgroups/stack=tcp/transport=%s:map-put(name=properties, key=sock_conn_timeout, value=%d)", tp, SOCK_CONN_TIMEOUT.toMillis())
                                     .endBatch()
                                     .build())
                             .tearDownScript(createScriptBuilder()
                                     .startBatch()
+                                    .add("/subsystem=jgroups/stack=tcp/transport=%s:map-remove(name=properties, key=sock_conn_timeout)", tp)
                                     .add("/subsystem=jgroups/stack=tcp/transport=%s:undefine-attribute(name=server-ssl-context)", tp)
                                     .add("/subsystem=jgroups/stack=tcp/transport=%s:undefine-attribute(name=client-ssl-context)", tp)
                                     .add("/subsystem=elytron/server-ssl-context=jgroupsSSC:remove")
@@ -155,10 +165,12 @@ public interface TLSServerSetupTask {
                                 .add("/subsystem=elytron/server-ssl-context=jgroupsSSC:add(key-manager=jgroupsKM, trust-manager=jgroupsTM, protocols=[\"TLSv1.2\"], need-client-auth=true)")
                                 .add("/subsystem=jgroups/stack=tcp/transport=%s:write-attribute(name=client-ssl-context, value=jgroupsCSC)", tp)
                                 .add("/subsystem=jgroups/stack=tcp/transport=%s:write-attribute(name=server-ssl-context, value=jgroupsSSC)", tp)
+                                .add("/subsystem=jgroups/stack=tcp/transport=%s:map-put(name=properties, key=sock_conn_timeout, value=%d)", tp, SOCK_CONN_TIMEOUT.toMillis())
                                 .endBatch()
                                 .build())
                         .tearDownScript(createScriptBuilder()
                                 .startBatch()
+                                .add("/subsystem=jgroups/stack=tcp/transport=%s:map-remove(name=properties, key=sock_conn_timeout)", tp)
                                 .add("/subsystem=jgroups/stack=tcp/transport=%s:undefine-attribute(name=server-ssl-context)", tp)
                                 .add("/subsystem=jgroups/stack=tcp/transport=%s:undefine-attribute(name=client-ssl-context)", tp)
                                 .add("/subsystem=elytron/server-ssl-context=jgroupsSSC:remove")

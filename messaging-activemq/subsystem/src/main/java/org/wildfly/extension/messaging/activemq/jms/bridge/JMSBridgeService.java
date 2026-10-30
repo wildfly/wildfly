@@ -18,8 +18,10 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
+import org.wildfly.extension.messaging.activemq.jms.WildFlyRecoveryRegistry;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -38,11 +40,14 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final Supplier<ExecutorService> executorSupplier;
     private final ExceptionSupplier<CredentialSource, Exception> sourceCredentialSourceSupplier;
     private final ExceptionSupplier<CredentialSource, Exception> targetCredentialSourceSupplier;
+    // Supplier of the XA resource recovery registry contributed to WildFlyRecoveryRegistry while this service is up.
+    private final Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier;
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge,
             Supplier<ExecutorService> executorSupplier,
             ExceptionSupplier<CredentialSource, Exception> sourceCredentialSourceSupplier,
-            ExceptionSupplier<CredentialSource, Exception> targetCredentialSourceSupplier) {
+            ExceptionSupplier<CredentialSource, Exception> targetCredentialSourceSupplier,
+            Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier) {
         if(bridge == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("bridge");
         }
@@ -52,10 +57,14 @@ class JMSBridgeService implements Service<JMSBridge> {
         this.executorSupplier = executorSupplier;
         this.sourceCredentialSourceSupplier = sourceCredentialSourceSupplier;
         this.targetCredentialSourceSupplier = targetCredentialSourceSupplier;
+        this.recoveryRegistrySupplier = recoveryRegistrySupplier;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+        // A started bridge contributes its supplier to XA recovery lookups. Registering here (rather than at
+        // add time) keeps it symmetric with stop() so the bridge is re-registered if the service is restarted.
+        WildFlyRecoveryRegistry.registerSupplier(recoveryRegistrySupplier);
         final Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -99,6 +108,8 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     @Override
     public synchronized void stop(final StopContext context) {
+        // A stopped bridge no longer contributes to XA recovery lookups.
+        WildFlyRecoveryRegistry.deregisterSupplier(recoveryRegistrySupplier);
         final Runnable task = new Runnable() {
             @Override
             public void run() {

@@ -15,7 +15,7 @@
 ##  * Set Maven options via MAVEN_OPTS environment variable - these can     ##
 ##    now be set in .mvn/jvm.config and .mvn/maven.config                   ##
 ##                                                                          ##
-##  The only task left in this script is settting a sufficient limit for    ##
+##  The only task left in this script is setting a sufficient limit for     ##
 ##  the open files (a.k.a. ulimit -n). If this is not important to you,     ##
 ##  feel free to use ./mvnw directly                                        ##
 ##                                                                          ##
@@ -147,8 +147,7 @@ main() {
     MVN_ARGS=${MVN_ARGS:-"$MVN_SETTINGS_XML_ARGS"};
 
     # WFLY-8175 requires that we keep installing Maven under the tools directory
-    # the current project, at least when mvnw is invoked from build and integration-tests
-    # scripts
+    # the current project, at least when mvnw is invoked from the build script
     MVN_ARGS="-Dmaven.user.home=$DIRNAME/tools $MVN_ARGS"
 
     echo "$MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS"

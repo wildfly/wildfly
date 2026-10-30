@@ -5,8 +5,8 @@
 
 package org.wildfly.test.integration.microprofile.jwt.propagation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.createKeySupplier;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
@@ -21,7 +21,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -35,8 +35,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.jwt.App;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
@@ -46,7 +46,7 @@ import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({ JWTIdentityPropagationTestCase.PropagationSetup.class })
 public class JWTIdentityPropagationTestCase {
@@ -318,10 +318,10 @@ public class JWTIdentityPropagationTestCase {
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build();
              CloseableHttpResponse httpResponse = httpClient.execute(httpGet)) {
-            assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
+            assertEquals(200, httpResponse.getStatusLine().getStatusCode(), "Successful call");
             String body = EntityUtils.toString(httpResponse.getEntity());
-            assertTrue("Call was authenticated: expectedMessage:[" + expectedMessage + "] returned msg:[" + body + "]",
-                    body.contains(expectedMessage));
+            assertTrue(body.contains(expectedMessage),
+                    "Call was authenticated: expectedMessage:[" + expectedMessage + "] returned msg:[" + body + "]");
         }
     }
 

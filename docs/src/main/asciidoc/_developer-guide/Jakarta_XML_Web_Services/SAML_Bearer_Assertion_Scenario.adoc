@@ -1122,7 +1122,7 @@ ActAs and OnBehalfOf examples.
 [[clientcallbackhandler-saml-bearer]]
 === ClientCallbackHandler
 
-https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-ClientCallbackHandler
+<<clientcallbackhandler,WS-Trust and STS>>
 
 ClientCallbackHandler is a callback handler for the WSS4J Crypto API. It
 is used to obtain the password for the private key in the keystore. This
@@ -1171,7 +1171,7 @@ public class ClientCallbackHandler implements CallbackHandler {
 [[crypto-properties-and-keystore-files-saml-bearer-2]]
 === Crypto properties and keystore files
 
-https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-RequesterCryptopropertiesandkeystorefiles
+<<requester-crypto-properties-and-keystore-files,WS-Trust and STS>>
 
 WSS4J's Crypto implementation is loaded and configured via a Java
 properties file that contains Crypto configuration data. The file

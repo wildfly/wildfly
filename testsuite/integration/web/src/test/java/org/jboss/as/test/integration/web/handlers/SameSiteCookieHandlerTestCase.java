@@ -160,7 +160,7 @@ public class SameSiteCookieHandlerTestCase {
             Assert.assertEquals(1, hdrs.length);
             if (secure) {
                 String cookieValue = hdrs[0].getValue();
-                Assert.assertEquals("cookie=created-by-servlet; secure; SameSite=" + mode, cookieValue);
+                Assert.assertEquals("cookie=created-by-servlet; Secure; SameSite=" + mode, cookieValue);
             } else {
                 String expectedCookie = "cookie=created-by-servlet" + (mode == null? "" :"; SameSite=" + mode);
                 Assert.assertEquals(expectedCookie, hdrs[0].getValue());

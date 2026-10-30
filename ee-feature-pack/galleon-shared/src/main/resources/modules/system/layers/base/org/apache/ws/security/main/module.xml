@@ -24,10 +24,10 @@
       <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
       <module name="org.apache.commons.codec"/>
       <module name="org.apache.commons.logging"/>
+      <module name="org.apache.commons.securexml"/>
       <module name="org.apache.neethi"/>
       <module name="org.jasypt"/>
       <module name="org.apache.santuario.xmlsec"/>
-      <module name="org.joda.time"/>
       <module name="org.opensaml"/>
       <module name="org.slf4j"/>
       <module name="java.xml"/>

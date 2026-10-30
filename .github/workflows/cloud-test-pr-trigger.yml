@@ -16,8 +16,6 @@ on:
       - 'build.sh'
       - "CODE_OF_CONDUCT.md"
       - "CONTRIBUTING.md"
-      - "integration-tests.bat"
-      - "integration-tests.sh"
       - "LICENSE.txt"
       - "mvnw"
       - "mvnw.cmd"

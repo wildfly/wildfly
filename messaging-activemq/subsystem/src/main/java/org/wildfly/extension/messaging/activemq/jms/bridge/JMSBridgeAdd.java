@@ -29,9 +29,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
-import org.wildfly.extension.messaging.activemq.jms.WildFlyRecoveryRegistry;
 import org.wildfly.security.credential.source.CredentialSource;
 
 /**
@@ -69,7 +69,12 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
 
                 final ServiceBuilder jmsBridgeServiceBuilder = context.getCapabilityServiceTarget().addService(bridgeServiceName);
                 jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
-                WildFlyRecoveryRegistry.setSupplier(jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, null)));
+                // The supplier is captured here (requires(...) must be called on the builder) but the
+                // registration/deregistration with WildFlyRecoveryRegistry is done by the service itself in
+                // start()/stop() so it stays symmetric across service restarts.
+                @SuppressWarnings("unchecked")
+                final Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier =
+                        jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, null));
                 jmsBridgeServiceBuilder.setInitialMode(Mode.ACTIVE);
                 Supplier<ExecutorService> executorSupplier = requireServerExecutor(jmsBridgeServiceBuilder);
                 if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
@@ -86,7 +91,8 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
                 final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, createJMSBridge(context, model), executorSupplier,
                         getCredentialStoreReference(JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder),
-                        getCredentialStoreReference(JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder));
+                        getCredentialStoreReference(JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder),
+                        recoveryRegistrySupplier);
                 jmsBridgeServiceBuilder.setInstance(bridgeService);
                 jmsBridgeServiceBuilder.install();
 

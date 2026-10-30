@@ -7,18 +7,6 @@
 <licenseSummary>
     <dependencies>
         <dependency>
-            <groupId>net.shibboleth.utilities</groupId>
-            <artifactId>java-support</artifactId>
-            <licenses>
-                <license>
-                    <name>Apache License 2.0</name>
-                </license>
-                <license>
-                    <name>BSD 3-Clause "New" or "Revised" License</name>
-                </license>
-            </licenses>
-        </dependency>
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
             <licenses>

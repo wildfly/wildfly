@@ -47,7 +47,7 @@ through the API
 * setting the _org.apache.cxf.ws.addressing.using_ property in the
 message context
 
-Please refer to the the Apache CXF documentation for further information
+Please refer to the Apache CXF documentation for further information
 on the proprietary
 http://cxf.apache.org/docs/ws-addressing.html[WS-Addressing setup] and
 http://cxf.apache.org/docs/wsaconfiguration.html[configuration details].

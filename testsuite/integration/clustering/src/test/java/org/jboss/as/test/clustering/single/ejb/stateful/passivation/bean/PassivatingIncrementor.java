@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.clustering.single.ejb.stateful.passivation.bean;
 
+import org.jboss.as.test.clustering.PassivationEventCollector;
 import org.jboss.as.test.clustering.single.ejb.stateful.bean.Incrementor;
 
 /**
@@ -11,10 +12,5 @@ import org.jboss.as.test.clustering.single.ejb.stateful.bean.Incrementor;
  *
  * @author Radoslav Husar
  */
-public interface PassivatingIncrementor extends Incrementor {
-
-    /**
-     * Gets the unique identifier for this bean instance.
-     */
-    String getIdentifier();
+public interface PassivatingIncrementor extends Incrementor, PassivationEventCollector {
 }

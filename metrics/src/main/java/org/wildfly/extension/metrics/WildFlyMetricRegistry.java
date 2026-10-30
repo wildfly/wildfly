@@ -64,6 +64,9 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
         lock.writeLock().lock();
         try {
             metricMap.remove(metricID);
+            if (metricMap.keySet().stream().noneMatch(id -> id.getMetricName().equals(metricID.getMetricName()))) {
+                metadataMap.remove(metricID.getMetricName());
+            }
         } finally {
             lock.writeLock().unlock();
         }

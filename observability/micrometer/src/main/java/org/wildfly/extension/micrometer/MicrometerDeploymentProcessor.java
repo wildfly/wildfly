@@ -45,7 +45,7 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         ServiceDependency<MicrometerService> serviceDependency = ServiceDependency.on(MICROMETER_SERVICE);
-        Supplier<MetricRegistration> factory = () -> serviceDependency.get().collectResourceMetrics(
+        Supplier<MetricRegistration> factory = () -> serviceDependency.get().collectDeploymentResourceMetrics(
                 deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE),
                 deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT),
                 createDeploymentAddressPrefix(deploymentUnit)::append);

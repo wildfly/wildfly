@@ -17,20 +17,20 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({MicroProfileHealthSecuredHTTPEndpointSetupTask.class})
 public class MicroProfileHealthSecuredHTTPEndpointTestCase {
@@ -54,7 +54,7 @@ public class MicroProfileHealthSecuredHTTPEndpointTestCase {
             assertEquals(401, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
-            assertTrue("'401 - Unauthorized' message is expected", content.contains("401 - Unauthorized"));
+            assertTrue(content.contains("401 - Unauthorized"), "'401 - Unauthorized' message is expected");
         }
     }
 
@@ -73,7 +73,7 @@ public class MicroProfileHealthSecuredHTTPEndpointTestCase {
             assertEquals(200, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
-            assertTrue("'UP' message is expected", content.contains("UP"));
+            assertTrue(content.contains("UP"), "'UP' message is expected");
         }
     }
 }

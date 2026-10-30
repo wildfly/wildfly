@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY;
@@ -12,6 +11,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureDiscoverySystemProperty;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureXxeSystemProperty;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE;
@@ -80,6 +80,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
+        configureXxeSystemProperty();
         // Cache support for capability service name lookups by our services
         MessagingServices.capabilityServiceSupport = context.getCapabilityServiceSupport();
 
@@ -132,17 +133,17 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (threadPoolMaxSizeValue != null || scheduledThreadPoolMaxSizeValue != null) {
             ActiveMQClient.initializeGlobalThreadPoolProperties();
-            if(threadPoolMaxSizeValue == null) {
+            if (threadPoolMaxSizeValue == null) {
                 threadPoolMaxSizeValue = ActiveMQClient.getGlobalThreadPoolSize();
             }
-            if(scheduledThreadPoolMaxSizeValue == null) {
+            if (scheduledThreadPoolMaxSizeValue == null) {
                 scheduledThreadPoolMaxSizeValue = ActiveMQClient.getGlobalScheduledThreadPoolSize();
             }
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
             ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue, ActiveMQClient.DEFAULT_FLOW_CONTROL_THREAD_POOL_MAX_SIZE);
         }
         context.getCapabilityServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                .setInstance( new ThreadPoolService())
+                .setInstance(new ThreadPoolService())
                 .install();
         context.addStep(new OperationStepHandler() {
             @Override
@@ -171,7 +172,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         }
                     }
                 }
-                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations =new ArrayList<>();
+                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<>();
                 //this requires connectors
                 BroadcastGroupAdd.addBroadcastGroupConfigs(context, broadcastGroupConfigurations, connectors.keySet(), model);
                 final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = ConfigurationHelper.addDiscoveryGroupConfigurations(context, model);

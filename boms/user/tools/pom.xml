@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>42.0.0.Beta1-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -92,9 +92,19 @@
                                     <groupId>com.h2database</groupId>
                                     <artifactId>h2</artifactId>
                                 </dependency>
+                                <!-- JUnit 4 -->
                                 <dependency>
                                     <groupId>junit</groupId>
                                     <artifactId>junit</artifactId>
+                                </dependency>
+                                <!-- JUnit 5+ -->
+                                <dependency>
+                                    <groupId>org.junit.jupiter</groupId>
+                                    <artifactId>junit-jupiter</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.junit.platform</groupId>
+                                    <artifactId>junit-platform-launcher</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.apache.httpcomponents</groupId>

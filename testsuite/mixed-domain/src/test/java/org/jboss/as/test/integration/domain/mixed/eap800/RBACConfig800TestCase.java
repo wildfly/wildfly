@@ -10,7 +10,7 @@ import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.BeforeClass;
 
 /**
- * EAP 7.4 variant of RBACConfigTestCase.
+ * EAP 8.0 variant of RBACConfigTestCase.
  *
  * @author Brian Stansberry
  */

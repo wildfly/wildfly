@@ -18,8 +18,7 @@ import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
@@ -28,13 +27,17 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(MicrometerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestcontainersRequired
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
@@ -54,7 +57,7 @@ public class MicrometerOtelIntegrationTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void makeRequests() throws URISyntaxException {
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(url.toURI());
@@ -67,7 +70,7 @@ public class MicrometerOtelIntegrationTestCase {
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
     // a few metrics to verify there existence
     @Test
-    @InSequence(4)
+    @Order(4)
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = Arrays.asList(
                 "classloader_loaded_classes_count",
@@ -84,13 +87,13 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_bytes_received"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
-                prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)))));
+        otelCollector.assertMetrics(prometheusMetrics -> metricsToTest.forEach(n -> Assertions.assertTrue(prometheusMetrics.stream().anyMatch(m -> m.getKey().startsWith(n)),
+                "Missing metric: " + n)));
     }
 
     @Test
     @RunAsClient
-    @InSequence(5)
+    @Order(5)
     public void testApplicationModelMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(
                 "undertow_active_sessions",
@@ -113,13 +116,13 @@ public class MicrometerOtelIntegrationTestCase {
                             )
                             .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
 
-            metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
+            metricsToTest.forEach(m -> Assertions.assertTrue(appMetrics.containsKey(m), "Missing app metric: " + m));
         });
     }
 
 
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testJmxMetrics() throws InterruptedException {
         List<String> metricsToTest = Arrays.asList(
                 "thread_max_count",
@@ -132,15 +135,13 @@ public class MicrometerOtelIntegrationTestCase {
                 "cpu_available_processors"
         );
 
-        otelCollector.assertMetrics(prometheusMetrics -> {
-            metricsToTest.forEach(m -> {
-                Assert.assertNotEquals("Metric value should be non-zero: " + m,
-                        "0", prometheusMetrics.stream().filter(e -> e.getKey().startsWith(m))
+        otelCollector.assertMetrics(prometheusMetrics ->
+            metricsToTest.forEach(m ->
+                Assertions.assertNotEquals("0",
+                        prometheusMetrics.stream().filter(e -> e.getKey().startsWith(m))
                                 .findFirst()
                                 .orElseThrow()
-                                .getValue()); // Add the metrics tags to complete the key
-            });
-        });
+                                .getValue(), "Metric value should be non-zero: " + m)));
     }
 
     private Map<String, String> getMetricsMap(String response) {

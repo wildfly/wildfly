@@ -39,12 +39,8 @@ import org.junit.Assume;
 public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static final String STANDARD_DOMAIN_CONFIG = "copied-primary-config/domain.xml";
-    private static final int TEST_VM_VERSION;
-
-    static {
-        String spec = System.getProperty("java.specification.version");
-        TEST_VM_VERSION = "1.8".equals(spec) ? 8 : Integer.parseInt(spec);
-    }
+    private static final String DEFAULT_SECONDARY_CONFIG = "secondary-config/host-secondary.xml";
+    private static final int TEST_VM_VERSION = Runtime.version().feature();
 
     private final Version.AsVersion version;
     private final boolean adjustDomain;
@@ -81,19 +77,19 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         return create(testClass, version, STANDARD_DOMAIN_CONFIG, "primary-config/host.xml",
-                version.getDefaultSecondaryHostConfigFileName(), "full-ha", true, false, false);
+                DEFAULT_SECONDARY_CONFIG, "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                version.getDefaultSecondaryHostConfigFileName(), "full-ha", adjustDomain, legacyConfig, false);
+                DEFAULT_SECONDARY_CONFIG, "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
                                                 boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                version.getDefaultSecondaryHostConfigFileName(), profile, adjustDomain, legacyConfig, withPrimaryServers);
+                DEFAULT_SECONDARY_CONFIG, profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String primaryConfig, String secondaryConfig,

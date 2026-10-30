@@ -8,6 +8,7 @@ package org.wildfly.extension.undertow;
 import java.util.EnumSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -20,9 +21,10 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
-
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 import org.wildfly.extension.undertow.deployment.DefaultSecurityDomainProcessor;
 import org.wildfly.extension.undertow.deployment.DeploymentRootExplodedMountProcessor;
@@ -48,6 +50,7 @@ import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.SharedSessionConfigSchema;
 import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
@@ -101,6 +104,15 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY);
         csb.setInstance(new UndertowService(usConsumer.andThen(captor), defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
         csb.install();
+
+        CapabilityServiceInstaller.BlockingBuilder.of(UndertowRootDefinition.DEFAULT_SERVER_CAPABILITY, ServiceDependency.on(Server.SERVICE_DESCRIPTOR, defaultServer)).build().install(context);
+        CapabilityServiceInstaller.BlockingBuilder.of(UndertowRootDefinition.DEFAULT_HOST_CAPABILITY, ServiceDependency.on(Host.DEFAULT_SERVICE_DESCRIPTOR, defaultServer)).build().install(context);
+
+        // Webservices still requires legacy service installation!
+        CapabilityServiceBuilder<?> webServerBuilder = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
+        Consumer<WebServerService> webServer = webServerBuilder.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
+        Supplier<Server> server = webServerBuilder.requires(Server.SERVICE_DESCRIPTOR, defaultServer);
+        webServerBuilder.setInstance(new WebServerService(webServer, server)).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

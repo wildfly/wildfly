@@ -8,6 +8,8 @@ package org.jboss.as.test.clustering.cluster.infinispan.lock;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +18,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.infinispan.lock.exception.ClusteredLockException;
+import org.infinispan.remoting.RemoteException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -127,14 +131,44 @@ public class InfinispanLockTestCase extends AbstractClusteringTestCase {
         }
     }
 
+    /**
+     * Verifies that a {@link ClusteredLockException} thrown on a remote primary owner can be unmarshalled, see WFLY-21732.
+     * Since the primary owner of a given lock is not known upfront, the scenario is executed against each node using the same lock,
+     * thus one of the nodes is guaranteed not to be the primary owner.
+     */
+    @Test
+    void testRemoteClusteredLockException(@ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+                                          @ArquillianResource(InfinispanLockServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            throws Exception {
+
+        String lockName = UUID.randomUUID().toString();
+
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
+            for (URL baseURL : List.of(baseURL1, baseURL2)) {
+                // (Potentially re)define the lock, since it was removed by the previous iteration
+                try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL, lockName, LockOperation.DEFINE)))) {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertTrue(Boolean.parseBoolean(EntityUtils.toString(response.getEntity())));
+                }
+
+                try (CloseableHttpResponse response = client.execute(new HttpGet(InfinispanLockServlet.createURI(baseURL, lockName, LockOperation.IS_LOCKED_AFTER_REMOVE)))) {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    String rootCause = EntityUtils.toString(response.getEntity());
+                    // Infinispan 16.3+ (ISPN #17934) resolves the exception class via the TCCL and falls back to a RemoteException, losing the original exception type
+                    // TODO Require ClusteredLockException once https://github.com/infinispan/infinispan/issues/18335 is resolved
+                    assertTrue(Set.of(ClusteredLockException.class.getName(), RemoteException.class.getName()).contains(rootCause), rootCause);
+                }
+            }
+        }
+    }
+
     public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
             super(NODE_1_2, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add("/subsystem=infinispan/cache-container=lock:add(default-cache=repl, modules=[org.infinispan.lock])")
+                            .add("/subsystem=infinispan/cache-container=lock:add(modules=[org.infinispan.lock])")
                             .add("/subsystem=infinispan/cache-container=lock/transport=jgroups:add")
-                            .add("/subsystem=infinispan/cache-container=lock/replicated-cache=repl:add")
                             .endBatch()
                             .build())
                     .build());

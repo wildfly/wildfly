@@ -36,7 +36,7 @@ Presently, the default configuration currently uses replicated caches.
 This effectively fixes the heap capability of the cluster such that it cannot be increased by scaling up.
 Thus, existing applications need to update the default cache mode to optimize scalability.
 
-Applications built using Maven with https://docs.wildfly.org/wildfly-maven-plugin/releases/4.2/package-mojo.html#packagingScripts[WildFly Maven Plugin]
+Applications built using Maven with https://docs.wildfly.org/wildfly-maven-plugin/package-mojo.html#packagingScripts[WildFly Maven Plugin]
 to create an image can be easily configured to update the default cache mode.
 This can be done by configuring a set of commands in the packaging step to reconfigure the bundled server.
 The following `infinispan.cli` configuration script will reconfigure the `infinispan` subsystem to use the distributed cache for web sessions:

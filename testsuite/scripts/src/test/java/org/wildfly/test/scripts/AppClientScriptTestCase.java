@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.test.shared.AssumeTestGroupUtil;
 import org.junit.Assert;
 
 /**
@@ -24,15 +23,8 @@ public class AppClientScriptTestCase extends ScriptTestCase {
 
     @Override
     void testScript(final ScriptProcess script) throws InterruptedException, TimeoutException, IOException {
-        // First check the standard script
         script.start(MAVEN_JAVA_OPTS, "-v");
         this.test(script);
-
-        if (AssumeTestGroupUtil.isJDKVersionBefore(24)) {
-            // Test with the security manager enabled
-            script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
-            this.test(script);
-        }
     }
 
     private void test(final ScriptProcess script) throws InterruptedException, IOException {

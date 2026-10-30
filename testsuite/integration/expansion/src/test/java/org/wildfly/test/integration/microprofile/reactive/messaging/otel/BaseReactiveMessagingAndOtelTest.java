@@ -6,11 +6,12 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,14 +41,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -87,27 +87,24 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         this.connectorSuffix = connectorSuffix;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
 
-    @Rule
-    public TestName name = new TestName();
-
-    @Before
-    public void testName() {
+    @BeforeEach
+    public void testName(TestInfo testInfo) {
         System.out.println("=============================");
-        System.out.println("TestName: " + name.getMethodName());
+        System.out.println("TestName: " + testInfo.getTestMethod().map(Method::getName).orElse(null));
         System.out.println("=============================");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         previousTestsTraceIds.addAll(currentTraceIds);
         currentTraceIds.clear();
@@ -401,12 +398,12 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         while (System.currentTimeMillis() < end) {
             List<String> read = getData(client);
             if (read.size() == expected.length) {
-                Assert.assertArrayEquals(expected, read.toArray(new String[0]));
+                Assertions.assertArrayEquals(expected, read.toArray(new String[0]));
                 return;
             }
             Thread.sleep(2000);
         }
-        Assert.fail("Could not read data in time");
+        Assertions.fail("Could not read data in time");
     }
 
     private List<String> getData(CloseableHttpClient client) throws Exception {
@@ -464,10 +461,10 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         });
         if (errMessage != null) {
             // some checker produced false and err message
-            Assert.fail(errMessage);
+            Assertions.fail(errMessage);
         } else {
             // should not really happen, just to be sure. If everything is good, method returns without getting here
-            Assert.fail();
+            Assertions.fail();
         }
     }
 }

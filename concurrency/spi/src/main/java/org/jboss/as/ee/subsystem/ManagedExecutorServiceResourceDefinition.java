@@ -60,6 +60,8 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final String KEEPALIVE_TIME = "keepalive-time";
     public static final String QUEUE_LENGTH = "queue-length";
     public static final String REJECT_POLICY = "reject-policy";
+    public static final String VIRTUAL = "virtual";
+
 
     public static final SimpleAttributeDefinition JNDI_NAME_AD =
             new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
@@ -156,7 +158,14 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setValidator(EnumValidator.create(WildFlyManagedExecutorService.RejectPolicy.class))
                     .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
+    public static final SimpleAttributeDefinition VIRTUAL_AD =
+            new SimpleAttributeDefinitionBuilder(VIRTUAL, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD, VIRTUAL_AD};
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
 

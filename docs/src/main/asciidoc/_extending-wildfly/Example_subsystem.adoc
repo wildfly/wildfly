@@ -454,8 +454,8 @@ changes.
 The `type` child does not exist in our skeleton project so we need to
 implement the operations to add and remove them from the model.
 
-Create two constant in SubsystemExtension with the the name and property of
-the new child, and mount child path
+Create two constants in `SubsystemExtension` with the name and property of
+the new child, and mount the child path.
 
 [source,java,options="nowrap"]
 ----
@@ -1006,8 +1006,8 @@ private static class SubsystemDescribeHandler implements OperationStepHandler, D
 [[testing-the-parsers]]
 === Testing the parsers
 
-From 7.0.1 the testing framework is now brought in via the
-`org.jboss.as:jboss-as-subsystem-test` maven artifact, and the test's
+From 7.0.1, the testing framework is now brought in via the
+`org.jboss.as:jboss-as-subsystem-test` Maven artifact, and the test's
 superclass is `org.jboss.as.subsystem.test.AbstractSubsystemTest`. The
 concepts are the same but more and more functionality will be available
 as JBoss AS 7 is developed.
@@ -1182,7 +1182,7 @@ the models are identical by calling `compare()` on the test superclass.
 }
 ----
 
-To test the removal of the the subsystem and child resources we modify
+To test the removal of the subsystem and child resources, we modify
 the `testSubsystemRemoval()` test provided by the archetype:
 
 [source,java,options="nowrap"]
@@ -1623,8 +1623,9 @@ Now start up WildFly by running `$WFLY/bin/standalone.sh` and you should
 see messages like these after the server has started, which means our
 subsystem has been added and our `TrackerService` is working:
 
+[subs="verbatim,attributes"]
 ....
-15:27:33,838 INFO  [org.jboss.as] (Controller Boot Thread) JBoss AS 7.0.0.Final "Lightning" started in 2861ms - Started 94 of 149 services (55 services are passive or on-demand)
+15:27:33,838 INFO  [org.jboss.as.server] (Controller Boot Thread) WFLYSRV0025: WildFly {wildflyVersion}.0.0.Final (WildFly Core 34.0.0.Final) started in 2861ms - Started 335 of 540 services (349 services are lazy, passive or on-demand)
 15:27:42,966 INFO  [stdout] (Thread-8) Current deployments deployed while sar tracking active:
 15:27:42,966 INFO  [stdout] (Thread-8) []
 15:27:42,967 INFO  [stdout] (Thread-8) Cool: 0

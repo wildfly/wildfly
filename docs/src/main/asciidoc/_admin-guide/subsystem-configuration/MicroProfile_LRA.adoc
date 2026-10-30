@@ -127,5 +127,5 @@ The MicroProfile LRA implementation is provided by the Narayana project - https:
 
 ****
 * https://github.com/eclipse/microprofile-lra[MicroProfile LRA]
-* https://github.com/jbosstm/narayana/tree/main/rts/lra[Narayana LRA implementation]
+* https://github.com/jbosstm/lra[Narayana LRA implementation]
 ****

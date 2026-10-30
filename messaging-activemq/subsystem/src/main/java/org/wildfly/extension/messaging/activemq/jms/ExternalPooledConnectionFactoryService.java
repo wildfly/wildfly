@@ -97,6 +97,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
@@ -175,6 +176,8 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
     private ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier;
     private final boolean createBinderService;
     private final CapabilityServiceSupport capabilityServiceSupport;
+    // Supplier of the XA resource recovery registry contributed to WildFlyRecoveryRegistry while this service is up.
+    private volatile Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier;
 
 
     public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
@@ -514,7 +517,8 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                                     activator.getCcmInjector());
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-            WildFlyRecoveryRegistry.setSupplier(sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)));
+            recoveryRegistrySupplier = sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.registerSupplier(recoveryRegistrySupplier);
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
 
@@ -634,7 +638,9 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
 
     @Override
     public void stop(StopContext context) {
-        // Service context takes care of this
+        // The service context tears down the installed services; deregister our recovery registry
+        // supplier so a stopped connection factory no longer contributes to XA recovery lookups.
+        WildFlyRecoveryRegistry.deregisterSupplier(recoveryRegistrySupplier);
     }
     public BroadcastCommandDispatcherFactory getCommandDispatcherFactory(String name) {
         return this.commandDispatcherFactories.get(name).get();

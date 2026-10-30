@@ -174,7 +174,7 @@ adding: WEB-INF/classes/echo/Echo.class(in = 340) (out= 247)(deflated 27%)
 adding: WEB-INF/web.xml(in = 576) (out= 271)(deflated 52%)
 ....
 
-The war can then be deployed to the JBoss Application Server.The war can
+The war can then be deployed to the JBoss Application Server. The war can
 then be deployed to the JBoss Application Server; this will internally
 invoke wsprovide, which will generate the WSDL. If deployment was
 successful, and you are using the default settings, it should be

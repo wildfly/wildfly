@@ -83,7 +83,7 @@ directed to one node in the cluster for processing. In this way, the
 cluster acts as a pool of processing nodes and the load is "balanced"
 over the pool, achieving scalability and, as a consequence,
 availability. Requests involving session-oriented servlets are directed
-to the the same application instance in the pool for efficiency of
+to the same application instance in the pool for efficiency of
 processing (sticky sessions). Using mod_cluster has the advantage that
 changes in cluster topology (scaling the pool up or down, servers
 crashing) are communicated back to the load balancer and used to update

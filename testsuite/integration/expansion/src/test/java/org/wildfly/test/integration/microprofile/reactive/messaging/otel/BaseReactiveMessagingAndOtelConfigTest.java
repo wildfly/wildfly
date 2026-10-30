@@ -1,7 +1,7 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
@@ -20,10 +20,10 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.ConfigBeanAndEndpoint;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelApplication;
@@ -52,12 +52,12 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
     private final String tracingAttributeName;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
@@ -158,7 +158,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, property);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
-        Assert.assertEquals(expectedConfigValue, calculatedValue);
+        Assertions.assertEquals(expectedConfigValue, calculatedValue);
     }
 
     private void adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType subsystemAttributeValue,
@@ -168,7 +168,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
         ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, subsystemAttributeValue);
         ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
-        Assert.assertEquals(expectedConfigValue, calculatedValue);
+        Assertions.assertEquals(expectedConfigValue, calculatedValue);
     }
 
     private boolean readEffectiveTracingEnabledValueFromConfig() throws Exception {
@@ -178,7 +178,7 @@ public abstract class BaseReactiveMessagingAndOtelConfigTest {
                 assertEquals(200, response.getStatusLine().getStatusCode());
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                     String line = reader.readLine();
-                    Assert.assertNotNull(line);
+                    Assertions.assertNotNull(line);
                     return Boolean.parseBoolean(line);
                 }
             }

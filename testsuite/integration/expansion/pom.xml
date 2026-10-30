@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>42.0.0.Beta1-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-expansion</artifactId>
@@ -38,6 +38,9 @@
 
         <wildfly.test.kafka.version>${version.org.apache.kafka.test-image}</wildfly.test.kafka.version>
 
+        <!-- Tests run on JUnit Jupiter, so skip @TestcontainersRequired tests with an opentest4j abort when no container engine is available -->
+        <ts.docker.required.exception>org.opentest4j.TestAbortedException</ts.docker.required.exception>
+
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
@@ -54,11 +57,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
             <scope>test</scope>
@@ -66,11 +64,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-model-test</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -116,12 +109,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
         </dependency>
 
         <!-- Jakarta specification dependencies -->
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
@@ -301,6 +299,11 @@
         <dependency>
             <groupId>org.jctools</groupId>
             <artifactId>jctools-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -489,6 +492,7 @@
                         <add-on>kafka</add-on>
                         <add-on>micrometer</add-on>
                         <add-on>lra-coordinator</add-on>
+                        <add-on>embedded-activemq</add-on>
                     </add-ons>
                 </configuration>
                 <executions>
@@ -502,7 +506,7 @@
                             <expected-errors>
                                 <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                             </expected-errors>
-                            <expected-discovery>[cdi, ee-integration, ejb, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, mvc-krazo, naming, opentelemetry, transactions]==>ee-core-profile-server,ejb,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry,mvc-krazo</expected-discovery>
+                            <expected-discovery>[cdi, ee, ee-integration, ejb, ejb-lite, elytron, embedded-activemq, h2-datasource, jaxrs, jpa, jsonp, messaging-activemq, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, mvc-krazo, naming, opentelemetry, remoting, servlet, transactions, undertow]==>ee-core-profile-server,ejb,embedded-activemq,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry,mvc-krazo</expected-discovery>
                         </configuration>
                     </execution>
                 </executions>

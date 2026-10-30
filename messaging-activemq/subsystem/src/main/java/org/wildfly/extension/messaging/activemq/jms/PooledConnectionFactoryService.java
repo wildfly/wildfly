@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
@@ -95,6 +96,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
@@ -165,6 +167,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
+    // Supplier of the XA resource recovery registry contributed to WildFlyRecoveryRegistry while this service is up.
+    private volatile Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier;
 
 
     public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
@@ -452,7 +456,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
             sb.requires(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)));
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-            WildFlyRecoveryRegistry.setSupplier(sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)));
+            recoveryRegistrySupplier = sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.registerSupplier(recoveryRegistrySupplier);
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
             // Mock the deployment service to allow it to start
@@ -574,6 +579,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
 
     public void stop(StopContext context) {
-        // Service context takes care of this
+        // The service context tears down the installed services; deregister our recovery registry
+        // supplier so a stopped connection factory no longer contributes to XA recovery lookups.
+        WildFlyRecoveryRegistry.deregisterSupplier(recoveryRegistrySupplier);
     }
 }

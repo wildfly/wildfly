@@ -10,17 +10,20 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
 
 @RunAsClient
 @ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "otel-logs-test";
 
@@ -43,29 +46,29 @@ public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void deploy() {
         deployer.deploy(DEPLOYMENT_SERVICE1);
         deployer.deploy(DEPLOYMENT_SERVICE2);
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testFormattedLogMessage() throws Exception {
         makeRequests(new URL(getDeploymentUrl(DEPLOYMENT_SERVICE1) + "logging/hello"), 1, Response.noContent().build().getStatus());
 
         otelCollector.assertOpenTelemetryLogs(logEntries ->
-                Assert.assertTrue("Missing log entry: '" + EXPECTED_LOG_ENTRY + "'",
-                        logEntries.stream().anyMatch(entry ->
-                                entry.body().contains(EXPECTED_LOG_ENTRY))));
+                Assertions.assertTrue(logEntries.stream().anyMatch(entry ->
+                                entry.body().contains(EXPECTED_LOG_ENTRY)),
+                        "Missing log entry: '" + EXPECTED_LOG_ENTRY + "'"));
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testDuplicateLogs() {
         var logMessages = otelCollector.getOpenTelemetryLogs().stream()
                 .filter(log -> log.body().contains(EXPECTED_LOG_ENTRY)).toList();
 
-        Assert.assertEquals("Duplicated log entry found", 1, logMessages.size());
+        Assertions.assertEquals(1, logMessages.size(), "Duplicated log entry found");
     }
 }

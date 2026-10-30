@@ -8,6 +8,7 @@ package org.wildfly.extension.undertow.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -28,7 +29,6 @@ import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.jboss.metadata.parser.util.XMLSchemaValidator;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.common.xml.XMLInputFactoryUtil;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xml.sax.SAXException;
@@ -71,10 +71,12 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 InputStream is = null;
                 try {
                     is = webXml.openStream();
-                    final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
+                    final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
                     MetaDataElementParser.DTDInfo dtdInfo = new MetaDataElementParser.DTDInfo();
                     inputFactory.setXMLResolver(dtdInfo);
+                    setIfSupported(inputFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                    setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
                     final XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
                     WebMetaData webMetaData = WebMetaDataParser.parse(xmlReader, dtdInfo, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
@@ -136,6 +138,12 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             }
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
+        }
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
         }
     }
 }

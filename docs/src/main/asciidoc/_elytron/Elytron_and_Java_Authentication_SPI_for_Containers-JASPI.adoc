@@ -180,7 +180,7 @@ In this mode the CallbackHandlers operate as follows: -
  
  This Callback is used to establish the Principal for the resulting identity, as the ServerAuthModule is handling all of the identity checking requirements no checks are performed to verify if the identity exists in the security domain and no authorization checks are performed.
  
- If a Callback is received with a null Principal and name then then the identity will be established as the anonymous identity, as the ServerAuthModule is making the decisions no authorizaton check will be performed with the SecurityDomain.
+ If a Callback is received with a null Principal and name, then the identity will be established as the anonymous identity; as the ServerAuthModule is making the decisions, no authorization check will be performed with the SecurityDomain.
  
   * *GroupPrincipalCallback*
   
@@ -218,5 +218,4 @@ The control flag has no effect on `secureResponse` processing, processing ends w
 === SecurityIdentity
 
 Once the authentication process has completed a `org.wildfly.security.auth.server.SecurityIdentity` for the deployments SecurityDomain will have been created as a result of the Callbacks to the CallbackHandler, depending on the Callbacks this will either be an identity loaded directly from the SecurityDomain or will be an ad-hoc identity described by the callbacks.  This SecurityIdentity will be associated with the request as we do for other authentication mechanisms  
-
 

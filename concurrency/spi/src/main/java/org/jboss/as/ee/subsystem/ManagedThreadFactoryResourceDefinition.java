@@ -37,6 +37,7 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
     public static final String JNDI_NAME = "jndi-name";
     public static final String CONTEXT_SERVICE = "context-service";
     public static final String PRIORITY = "priority";
+    public static final String VIRTUAL = "virtual";
 
     public static final SimpleAttributeDefinition JNDI_NAME_AD =
             new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
@@ -60,12 +61,21 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, PRIORITY_AD};
+    public static final SimpleAttributeDefinition VIRTUAL_AD =
+            new SimpleAttributeDefinitionBuilder(VIRTUAL, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, PRIORITY_AD, VIRTUAL_AD};
+
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY);
 
     private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver(EESubsystemModel.MANAGED_THREAD_FACTORY, EeExtension.class.getPackage().getName() + ".LocalDescriptions", EeExtension.class.getClassLoader(), true, true);
 
     public ManagedThreadFactoryResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY), RESOLVER)
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, RESOLVER)
                 .setAddHandler(ManagedThreadFactoryAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedThreadFactoryAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));

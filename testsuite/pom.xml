@@ -61,7 +61,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>42.0.0.Beta1-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -103,6 +103,9 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        <!-- Exception thrown by @TestcontainersRequired tests when no container engine is available (see ts.disable-container-tests-on-windows.profile).
+             Modules running on JUnit Jupiter override this with org.opentest4j.TestAbortedException. -->
+        <ts.docker.required.exception>org.junit.AssumptionViolatedException</ts.docker.required.exception>
 
         <!-- Galleon feature-pack to use in testsuite provisioning executions that provides content
              that *could* be obtained solely from the wildfly-ee-galleon-pack.
@@ -641,6 +644,8 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
                 <!-- Use the EE 11+ EL API artifact -->
                 <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
@@ -703,6 +708,8 @@
                 <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
                 <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
                 <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
                 <!-- Use the EE 11+ EL API artifact -->
                 <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
@@ -1001,23 +1008,6 @@
                                     </target>
                                 </configuration>
                             </execution>
-
-                            <!-- Help banner. -->
-                            <execution>
-                                <id>banner</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <target>
-                                        <loadfile property="help.banner" srcFile="${basedir}/tools/help-banner.txt"/>
-                                        <echo>${help.banner}</echo>
-                                    </target>
-                                </configuration>
-                            </execution>
-
                         </executions>
                         <dependencies>
                             <dependency>
@@ -1273,7 +1263,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <org.arquillian.testcontainers.docker.required.exception>org.junit.AssumptionViolatedException</org.arquillian.testcontainers.docker.required.exception>
+                                <org.arquillian.testcontainers.docker.required.exception>${ts.docker.required.exception}</org.arquillian.testcontainers.docker.required.exception>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

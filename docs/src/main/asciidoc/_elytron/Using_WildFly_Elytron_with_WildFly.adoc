@@ -215,7 +215,7 @@ descriptor or annotation to secure webservice endpoint.
 When Elytron security is enabled, JAAS subject or principal can be pushed
 to jbossws-cxf endpoint’s SecurityContext to propagate authenticated
 identity to Jakarta Enterprise Beans container. Here is a CXF interceptor example to
-propagate authenticated information to Jakarta Enterprise Beans container :
+propagate authenticated information to Jakarta Enterprise Beans container:
 [source,java,options="nowrap"]
 ----
 public class PropagateSecurityInterceptor extends WSS4JInInterceptor {
@@ -237,4 +237,3 @@ public class PropagateSecurityInterceptor extends WSS4JInInterceptor {
 }
 
 ----
-

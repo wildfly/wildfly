@@ -8,6 +8,7 @@ import jakarta.enterprise.concurrent.LastExecution;
 import jakarta.enterprise.concurrent.Trigger;
 import org.glassfish.concurro.AbstractManagedThread;
 import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -22,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * WildFly's extension of {@link org.glassfish.concurro.ManagedScheduledExecutorServiceImpl}.
- *
  * @author Eduardo Martins
  */
 public class ConcurroManagedScheduledExecutorServiceImpl extends org.glassfish.concurro.ManagedScheduledExecutorServiceImpl implements WildFlyManagedScheduledExecutorService {
@@ -32,7 +32,7 @@ public class ConcurroManagedScheduledExecutorServiceImpl extends org.glassfish.c
     private final ManagedExecutorRuntimeStats runtimeStats;
 
     public ConcurroManagedScheduledExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
-        super(name, (ConcurroManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, ConcurroManagedExecutorServiceImpl.convertRejectPolicy(rejectPolicy));
+        super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, ConcurroManagedExecutorServiceImpl.convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ConcurroManagedExecutorRuntimeStatsImpl(this);

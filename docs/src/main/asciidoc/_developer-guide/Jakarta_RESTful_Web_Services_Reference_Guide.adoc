@@ -38,7 +38,7 @@ This will make your Jakarta RESTful Web Services resources available under `/`
 
 [WARNING]
 
-Note that that the path is `/mypath` not `/mypath/*`
+Note that the path is `/mypath`, not `/mypath/*`.
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-web.xml]]
 === Subclassing jakarta.ws.rs.core.Application and using web.xml

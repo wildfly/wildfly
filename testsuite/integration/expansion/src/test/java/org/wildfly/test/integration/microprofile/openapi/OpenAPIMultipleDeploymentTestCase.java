@@ -29,7 +29,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -39,8 +39,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.openapi.filter.TestModelReader;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,7 +52,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * @author Paul Ferraro
  */
 @ServerSetup(OpenAPIMultipleDeploymentTestCase.ConfigServerSetupTask.class)
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class OpenAPIMultipleDeploymentTestCase {
     private static final String DEPLOYMENT1_NAME = "deployment-1";

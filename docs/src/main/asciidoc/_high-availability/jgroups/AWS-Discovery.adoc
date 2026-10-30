@@ -22,9 +22,9 @@ batch
 run-batch
 ----
 
-The AWS SDK (version 2.x) client used by the protocol uses the default credential store provider.
-Refer to https://docs.aws.amazon.com/sdk-for-java/[AWS SDK documentation] how to generate and supply appropriate credentials.
-For instance, credentials can be provided by Java system properties (`aws.accessKeyId` and `aws.secretAccessKey`),
-environmental properties (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), etc.
+The AWS SDK (version 2.x) client used by the protocol resolves credentials using the
+https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html[default credentials provider chain].
+For example, credentials can be provided by Java system properties (`aws.accessKeyId` and `aws.secretAccessKey`),
+environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), etc.
 
-For advanced configuration options, please visit https://github.com/jgroups-extras/jgroups-aws/tree/4.0.0.Final#readme[protocol's documentation on GitHub].
+For advanced protocol configuration options, please visit https://github.com/jgroups-extras/jgroups-aws/tree/4.0.2.Final#readme[JGroups AWS documentation on GitHub].

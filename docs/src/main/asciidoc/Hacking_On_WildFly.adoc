@@ -9,7 +9,6 @@ WildFly authors;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 26
 :sectlinks:
 :idseparator: -
 :include-depth: 2

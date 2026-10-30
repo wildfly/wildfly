@@ -423,10 +423,6 @@ are practical and helpful to you icon:smile-o[role="yellow"]
 [[references]]
 == References
 
-* _https://developer.jboss.org/wiki/JBossAS7UsingJPDAToDebugTheASSourceCode[JBoss
-AS7: Using JPDA to debug the AS source code]_
-* _https://developer.jboss.org/wiki/MavenGettingStarted-Developers[Maven
-Getting Started - Developers]_
 * _https://blog.v-s-f.co.uk/2010/09/jsf-2-1-project-using-eclipse-and-maven-2/[JSF
 2.1 project using Eclipse and Maven 2:http]_
 * _https://www.amazon.com/Practical-RichFaces-Max-Katz/dp/1430234490/ref=dp_ob_title_bk[Practical

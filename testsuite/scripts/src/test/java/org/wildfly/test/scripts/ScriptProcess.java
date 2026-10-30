@@ -130,6 +130,13 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
         return Files.readAllLines(stdoutLog, StandardCharsets.UTF_8);
     }
 
+    String getStdoutAsString() throws IOException {
+        if (stdoutLog == null) {
+            return "";
+        }
+        return String.join(System.lineSeparator(), getStdout());
+    }
+
     String getErrorMessage(final String msg) {
         final StringBuilder errorMessage = new StringBuilder(msg)
                 .append(System.lineSeparator())
@@ -352,5 +359,9 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
                 LOGGER.error("The process was interrupted while waiting to be destroyed.", e);
             }
         }
+    }
+
+    public String getLastExecutedCmd() {
+        return lastExecutedCmd;
     }
 }
