@@ -1193,6 +1193,18 @@
             </dependency>
 
             <dependency>
+                <groupId>io.github.jopenlibs</groupId>
+                <artifactId>vault-java-driver</artifactId>
+                <version>${version.io.github.jopenlibs.vault-java-driver}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-core</artifactId>
                 <version>${version.io.github.resilience4j}</version>
@@ -3213,6 +3225,30 @@
                 <groupId>org.wildfly.launcher</groupId>
                 <artifactId>wildfly-launcher</artifactId>
                 <version>${version.org.wildfly.launcher}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.hashicorp.vault</groupId>
+                <artifactId>wildfly-elytron-hashicorp-vault</artifactId>
+                <version>${version.org.wildfly.security.hashicorp.vault}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-subsystem</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

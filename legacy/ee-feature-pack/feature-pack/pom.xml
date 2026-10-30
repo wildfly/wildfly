@@ -482,7 +482,6 @@
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-local</exclude>
-                                                <exclude>org.wildfly.security.vault:wildfly-vault-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

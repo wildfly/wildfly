@@ -1,13 +1,21 @@
 [[Vault_Integration]]
 = HashiCorp Vault Integration
 
-To use credential stores backed by HashiCorp Vault in the WildFly management model, the Vault feature-pack can be used. This feature-pack adds the `hashicorp-vault` subsystem to WildFly, which allows you to define Elytron credential store resources that read secrets from a HashiCorp Vault server. It also allows you to define expressions backed by HashiCorp Vault.
+The `hashicorp-vault` subsystem provides credential stores backed by HashiCorp Vault and expressions that resolve to secrets in those stores. The subsystem and its Galleon layer are available at *default* stability in the `wildfly-ee` feature-pack.
 
-There are several ways to install the Vault feature-pack. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for details.
+The standard WildFly distribution includes the required modules, but its default configuration does not enable the extension or subsystem. Add them with the following management CLI operations:
+
+[source,options="nowrap"]
+----
+/extension=org.wildfly.extension.hashicorp-vault:add()
+/subsystem=hashicorp-vault:add()
+----
+
+When provisioning a server, include the `hashicorp-vault` layer to enable the subsystem. A separate Vault feature-pack is not required. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for provisioning details.
 
 == HashiCorp Vault credential store
 
-After the feature-pack is installed, define one or more credential store resources in the `hashicorp-vault` subsystem. You can then reference credentials from these stores elsewhere in the configuration using the standard `credential-reference` pattern with `store` and `alias`.
+After enabling the subsystem, define one or more credential store resources. You can then reference credentials from these stores elsewhere in the configuration using the standard `credential-reference` pattern with `store` and `alias`.
 
 The following management CLI operation adds a minimal credential store that uses a clear-text Vault token (adjust `host-address` and paths for your environment):
 
@@ -32,14 +40,36 @@ The credential store resource supports the following attributes:
 |No
 |The Vault namespace to use (Vault Enterprise feature).
 
-|`authentication-context`
+|`client-ssl-context`
 |No
-|Reference to an Elytron `authentication-context` for TLS client certificate authentication.
+|Reference to an Elytron `client-ssl-context` for HTTPS server trust and optional client certificates.
 
 |`credential-reference`
 |No
 |A credential reference providing the Vault authentication token.
 |===
+
+NOTE: The Vault token can be obtained from another credential store using `credential-reference={store=token-store,alias=vault-token}`. See <<CredentialStore,Credential Store>> for information on creating and protecting that store.
+
+=== HTTPS connections
+
+Configure server trust and optional client certificates in Elytron, then reference the resulting `client-ssl-context` from the Vault credential store. See <<configuring-a-client-sslcontext,Configuring a client SSLContext>> for the Elytron configuration.
+
+[source,options="nowrap"]
+----
+/subsystem=hashicorp-vault/credential-store=secure-vault:add( \
+    host-address="https://vault.example.com:8200", \
+    client-ssl-context=vault-tls-context, \
+    credential-reference={store=token-store,alias=vault-token})
+----
+
+Create `vault-tls-context` and `token-store` before adding this resource. The SSL context's trust manager validates the Vault server certificate; configure a key manager as well when Vault requires client certificates.
+
+=== Migrating the TLS configuration
+
+The `authentication-context` attribute is no longer supported. When migrating an existing Vault credential store, define an Elytron `client-ssl-context` with the required trust manager and optional key manager, and replace `authentication-context` with `client-ssl-context` on the Vault resource.
+
+For XML configurations, use the `urn:wildfly:hashicorp-vault:2.0` namespace with `client-ssl-context`. Older subsystem namespaces reject `authentication-context` with a migration error.
 
 == Alias format
 
@@ -207,9 +237,9 @@ A more complex example using a custom mount and nested key path:
 <credential-reference store="my-vault" alias="@prod#services/auth?jwt/signing/key"/>
 ----
 
-== Encrypted expressions backed by HashiCorp Vault
+== Expressions backed by HashiCorp Vault
 
-You can reference a HashiCorp Vault credential store anywhere expressions are allowed in the management model. The pattern for these expressions is:
+Vault expressions resolve during the runtime stage of management operations. They can be used in expression-capable attributes that are resolved at runtime; they cannot be resolved during the model stage. The pattern for these expressions is:
 
 [source,text,options="nowrap"]
 ----
@@ -222,6 +252,8 @@ For example, a system property value might use an expression as follows:
 ----
 <property name="db.password" value="${HC_VAULT::my-vault:myapp/database?password}"/>
 ----
+
+The referenced credential store can be initialized on demand during runtime resolution, before its service has started. This also allows a Vault-backed `credential-reference` to be used by resources such as Elytron key stores during boot. A configuration in which resolving a credential requires that same credential store to finish initializing forms a dependency cycle and is rejected.
 
 [[legacy-alias-format]]
 == Legacy alias format

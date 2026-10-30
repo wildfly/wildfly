@@ -587,7 +587,6 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
                                                 <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
-                                                <exclude>org.wildfly.security.vault:wildfly-vault-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

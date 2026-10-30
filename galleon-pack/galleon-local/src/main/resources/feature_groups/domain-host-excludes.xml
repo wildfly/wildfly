@@ -118,7 +118,7 @@
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly42.0"/>
-        <!-- WildFly Core 34 has no WildFly42.0 host-release alias. -->
+        <!-- WildFly 42 uses management version 34.0.0. -->
         <param name="management-major-version" value="34"/>
         <param name="management-minor-version" value="0"/>
         <param name="management-micro-version" value="0"/>

@@ -29,27 +29,14 @@
         <jboss.dist>${project.build.directory}/wildfly-layers</jboss.dist>
         <server.jboss.args>${jboss.args}</server.jboss.args>
         <hashicorp.vault.provisioning.phase>process-test-classes</hashicorp.vault.provisioning.phase>
-        <version.hashicorp-vault.test.junit>6.0.0</version.hashicorp-vault.test.junit>
+        <vault.docker.image>hashicorp/vault:2.2.1</vault.docker.image>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>${version.hashicorp-vault.test.junit}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <!-- Execute published Vault tests directly in WildFly testsuite -->
         <dependency>
             <groupId>org.wildfly.security.vault</groupId>
             <artifactId>wildfly-vault-tests</artifactId>
-            <version>${version.org.wildfly.security.vault}</version>
             <type>test-jar</type>
             <classifier>tests</classifier>
             <scope>test</scope>
@@ -58,28 +45,55 @@
         <dependency>
             <groupId>org.wildfly.security.vault</groupId>
             <artifactId>wildfly-vault-subsystem</artifactId>
-            <version>${version.org.wildfly.security.vault}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit</groupId>
-                    <artifactId>junit-bom</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security.vault</groupId>
             <artifactId>wildfly-vault-subsystem</artifactId>
-            <version>${version.org.wildfly.security.vault}</version>
             <type>test-jar</type>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit</groupId>
-                    <artifactId>junit-bom</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.github.jopenlibs</groupId>
+            <artifactId>vault-java-driver</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security.hashicorp.vault</groupId>
+            <artifactId>wildfly-elytron-hashicorp-vault</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- The Vault subsystem's transitives are excluded by WildFly's BOM. -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron-integration</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-version</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -90,19 +104,16 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-vault</artifactId>
-            <version>${version.org.testcontainers}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-embedded</artifactId>
-            <version>${version.org.wildfly.core}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-protocol</artifactId>
-            <version>${version.org.wildfly.core}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -123,7 +134,6 @@
         <dependency>
             <groupId>io.smallrye.certs</groupId>
             <artifactId>smallrye-certificate-generator</artifactId>
-            <version>0.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -191,6 +201,7 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <failIfNoTests>true</failIfNoTests>
                     <dependenciesToScan>
                         <dependency>org.wildfly.security.vault:wildfly-vault-tests:test-jar:tests</dependency>
                     </dependenciesToScan>
@@ -205,6 +216,7 @@
                         <arquillian.launch>wildfly</arquillian.launch>
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <server.jboss.args>${server.jboss.args}</server.jboss.args>
+                        <vault.docker.image>${vault.docker.image}</vault.docker.image>
                         <module.path>${project.build.directory}/wildfly-layers/modules</module.path>
                     </systemPropertyVariables>
                 </configuration>
