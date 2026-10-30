@@ -58,7 +58,7 @@ The datasource itself is defined within the subsystem _datasources_:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
             <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
@@ -68,23 +68,17 @@ The datasource itself is defined within the subsystem _datasources_:
                 <max-pool-size>20</max-pool-size>
                 <prefill>true</prefill>
             </pool>
-            <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-            </security>
+            <security user-name="sa" password="sa"/>
         </datasource>
         <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
-           <driver>h2</driver>
            <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
+           <driver>h2</driver>
            <xa-pool>
                 <min-pool-size>10</min-pool-size>
                 <max-pool-size>20</max-pool-size>
                 <prefill>true</prefill>
            </xa-pool>
-           <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-           </security>
+           <security user-name="sa" password="sa"/>
         </xa-datasource>
         <drivers>
             <driver name="h2" module="com.h2database.h2">
@@ -97,6 +91,14 @@ The datasource itself is defined within the subsystem _datasources_:
 ----
 
 ~(See~ `standalone/configuration/standalone.xml` ~)~
+
+[IMPORTANT]
+
+The `password` attribute shown above stores the database password in clear text in the
+server configuration file. This is acceptable for the in-memory development database used
+by the example datasource, but it should not be used for real databases. See
+<<datasource-security,Datasource Security>> for the supported ways of keeping datasource
+credentials out of the configuration files.
 
 As you can see the datasource references a driver by it's logical name.
 
@@ -202,6 +204,237 @@ RESOURCE DESCRIPTION
 
 [...]
 ----
+
+[[datasource-security]]
+== Datasource Security
+
+The credentials a datasource uses to connect to the database are sensitive, so the
+_datasources_ subsystem integrates with
+<<WildFly_Elytron_Security.adoc#WildFly_Elytron_Security,WildFly Elytron>> to allow them to
+be stored outside of the server configuration files.
+
+[WARNING]
+====
+Documentation written for JBoss AS and for older JBoss EAP releases often recommends
+"encrypting" a datasource password with one of the following PicketBox login modules:
+
+* `org.jboss.resource.security.SecureIdentityLoginModule`
+* `org.picketbox.datasource.security.JaasSecurityDomainIdentityLoginModule`, typically
+combined with the `org.picketbox.datasource.security.PBEUtils` command line tool
+
+Neither of these protects the password:
+
+* `SecureIdentityLoginModule` encrypts the password with a key that is hard coded in the
+login module itself. As the login module is open source, anybody who can read the
+configuration file can recover the clear text password.
+* `JaasSecurityDomainIdentityLoginModule` combined with `PBEUtils` derives its key from a
+password based encryption passphrase, salt and iteration count which all have to be stored
+in the configuration as well, and it uses legacy algorithms that no longer provide adequate
+protection.
+
+Both login modules belong to the legacy `security` subsystem, which is not supported in
+WildFly. The `security-domain` and `recovery-security-domain` datasource attributes that
+referenced those security domains are deprecated, and a datasource that defines either of
+them is rejected with `WFLYJCA0124: Datasource <name> is configured to require the legacy
+security subsystem, which is not present`. A `-ds.xml` deployment that uses them fails to
+parse with `WFLYJCA0132: Legacy security is no longer supported. Please use Elytron
+configuration instead`. Use one of the approaches described below instead.
+====
+
+[[ds-credential-store]]
+=== Using a Credential Store
+
+Storing the password in an Elytron credential store is the recommended approach. The store
+itself is encrypted, is kept outside of the configuration files, and is unlocked with a
+password that you control.
+
+First define the credential store, creating it if it does not exist yet:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/credential-store=mycredstore:add(path=mycredstore.cs, relative-to=jboss.server.config.dir, credential-reference={clear-text=StorePassword}, create=true)
+{"outcome" => "success"}
+----
+
+Add the database password to the store under an alias:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] history --disable
+[standalone@localhost:9990 /] /subsystem=elytron/credential-store=mycredstore:add-alias(alias=example-ds, secret-value=sa)
+{"outcome" => "success"}
+[standalone@localhost:9990 /] history --enable
+----
+
+[NOTE]
+
+The CLI history is temporarily disabled so that the clear text password is not written to
+the CLI history file.
+
+Then replace the `password` attribute of the datasource with a `credential-reference` that
+points at the alias, and reload the server so that the change takes effect:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=password)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:write-attribute(name=credential-reference, value={store=mycredstore, alias=example-ds})
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] reload
+----
+
+This results in the following datasource configuration, which no longer contains the
+password:
+
+[source,xml,options="nowrap"]
+----
+<datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
+    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+    <driver>h2</driver>
+    <security user-name="sa">
+        <credential-reference store="mycredstore" alias="example-ds"/>
+    </security>
+</datasource>
+----
+
+[NOTE]
+
+`password` and `credential-reference` are alternatives, so the `password` attribute has to
+be undefined before the `credential-reference` attribute can be written. The `user-name`
+attribute is unaffected and remains in the configuration.
+
+[TIP]
+
+A credential store entry can also be created implicitly by specifying `clear-text` together
+with `store` and `alias` in the `credential-reference`. That only works while the server is
+in the `running` state; if the server is already in `reload-required` state the credential
+is not written to the store, so prefer the explicit `add-alias` operation shown above.
+
+Credentials can also be managed with the `elytron-tool.sh` utility. See
+<<WildFly_Elytron_Security.adoc#CredentialStore,Credential Store>> for the full set of
+options, and <<WildFly_Elytron_Security.adoc#Vault_Integration,HashiCorp Vault Integration>>
+if the credentials are managed by an external vault.
+
+[[ds-xa-recovery-credentials]]
+=== Securing XA Recovery Credentials
+
+An XA datasource can use a dedicated identity for transaction recovery. Those credentials
+are configured with the `recovery-username` and `recovery-credential-reference`
+attributes, which support a credential store in exactly the same way:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=datasources/xa-data-source=ExampleXADS:write-attribute(name=recovery-username, value=sa)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/xa-data-source=ExampleXADS:write-attribute(name=recovery-credential-reference, value={store=mycredstore, alias=example-xa-recovery})
+{"outcome" => "success"}
+----
+
+This results in the following recovery configuration:
+
+[source,xml,options="nowrap"]
+----
+<recovery>
+    <recover-credential user-name="sa">
+        <credential-reference store="mycredstore" alias="example-xa-recovery"/>
+    </recover-credential>
+</recovery>
+----
+
+[[ds-encrypted-expression]]
+=== Using an Encrypted Expression
+
+If you prefer to keep the value in the configuration file, the `password` and
+`recovery-password` attributes support expressions, so they can hold an encrypted
+expression resolved by the `elytron` subsystem. Unlike the legacy login modules, the key
+used to encrypt the expression is generated for your installation rather than being hard
+coded.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/secret-key-credential-store=secret-key-store:add(path=secret-key.store, relative-to=jboss.server.config.dir)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=elytron/expression=encryption:add(resolvers=[{name=ds, credential-store=secret-key-store, secret-key=key}], default-resolver=ds)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=elytron/expression=encryption:create-expression(clear-text=sa)
+{
+    "outcome" => "success",
+    "result" => {"expression" => "${ENC::RUxZAUMQ5Z7mXbyrCtv2kZlwHHpyJ//ma49gMAUnbmTfv2pGs30=}"}
+}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:write-attribute(name=password, value="${ENC::RUxZAUMQ5Z7mXbyrCtv2kZlwHHpyJ//ma49gMAUnbmTfv2pGs30=}")
+{"outcome" => "success"}
+----
+
+See <<WildFly_Elytron_Security.adoc#EncryptedExpressions,Encrypted Expressions>> for
+details.
+
+[[ds-authentication-context]]
+=== Using an Elytron Authentication Context
+
+Instead of configuring a user name and a password on the datasource itself, the datasource
+can delegate authentication to an Elytron `authentication-context`. This is the replacement
+for the legacy `security-domain` attribute and it is also the way to have the identity of
+the caller used when obtaining a connection.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/authentication-configuration=ds-auth:add(authentication-name=sa, credential-reference={store=mycredstore, alias=example-ds})
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=elytron/authentication-context=ds-context:add(match-rules=[{authentication-configuration=ds-auth}])
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=password)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=user-name)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:write-attribute(name=elytron-enabled, value=true)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:write-attribute(name=authentication-context, value=ds-context)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] reload
+----
+
+This results in the following datasource configuration:
+
+[source,xml,options="nowrap"]
+----
+<datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
+    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+    <driver>h2</driver>
+    <security>
+        <authentication-context>ds-context</authentication-context>
+        <elytron-enabled>true</elytron-enabled>
+    </security>
+</datasource>
+----
+
+[IMPORTANT]
+
+`authentication-context` is only taken into account when `elytron-enabled` is set to
+`true` on the same datasource. Although `elytron-enabled` is deprecated, it still defaults
+to `false`, and a datasource that sets `authentication-context` without it is rejected
+because the value is treated as the name of a legacy security domain.
+
+[NOTE]
+
+`authentication-context` is an alternative to `user-name`, so `user-name` and `password`
+have to be undefined first. An XA datasource uses `recovery-elytron-enabled` and
+`recovery-authentication-context` for the recovery identity.
+
+If you are migrating an existing configuration that uses the legacy login modules, see
+<<WildFly_Elytron_Security.adoc#Datasource_Password_Migration,Datasource Passwords>> in the
+WildFly Elytron Security guide.
 
 [[ds-component-reference]]
 == Component Reference

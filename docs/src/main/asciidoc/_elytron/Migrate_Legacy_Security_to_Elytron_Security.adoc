@@ -25,6 +25,11 @@ include::migrate/Caching_Migration.adoc[]
 include::migrate/Application_Client_Migration.adoc[]
 :leveloffset: -1
 
+== Datasources and Resource Adapters
+:leveloffset: +1
+include::migrate/Datasource_Password_Migration.adoc[]
+:leveloffset: -1
+
 == General Utilities
 :leveloffset: +1
 include::migrate/Security_Vault_Migration.adoc[]
