@@ -103,7 +103,7 @@ public class DefaultServletTestCase {
      */
     @OperateOnDeployment(INFDIRS_DEPLOYMENT)
     @Test
-    public void testInfDirectories(@ArquillianResource URL webAppURL) throws Exception {
+    public void testInfDirectories(@ArquillianResource @OperateOnDeployment(INFDIRS_DEPLOYMENT) URL webAppURL) throws Exception {
         DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "WEB-INFOOBAR/test.html"));
         Assertions.assertEquals(200, httpResponse.getStatusLine().getStatusCode());

@@ -102,16 +102,16 @@ public class ResteasyScanResourcesTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    @Test
     @OperateOnDeployment(depNameTrue)
-    public void testDeployTrue(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testDeployTrue(@ArquillianResource @OperateOnDeployment(depNameTrue) URL url) throws Exception {
         String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
         assertEquals("Hello World!", result);
     }
 
-    @Test
     @OperateOnDeployment(depNameFalse)
-    public void testDeployFalse(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testDeployFalse(@ArquillianResource @OperateOnDeployment(depNameFalse) URL url) throws Exception {
         try {
             @SuppressWarnings("unused")
             String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld", 10, TimeUnit.SECONDS);
@@ -130,16 +130,16 @@ public class ResteasyScanResourcesTestCase {
         }
     }
 
-    @Test
     @OperateOnDeployment(depNameTrueApp)
-    public void testDeployTrueApp(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testDeployTrueApp(@ArquillianResource @OperateOnDeployment(depNameTrueApp) URL url) throws Exception {
         String result = HttpRequest.get(url.toExternalForm() + "app1/helloworld", 10, TimeUnit.SECONDS);
         assertEquals("Hello World!", result);
     }
 
-    @Test
     @OperateOnDeployment(depNameFalseApp)
-    public void testDeployFalseApp(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testDeployFalseApp(@ArquillianResource @OperateOnDeployment(depNameFalseApp) URL url) throws Exception {
         try {
             @SuppressWarnings("unused")
             String result = HttpRequest.get(url.toExternalForm() + "app1/helloworld", 10, TimeUnit.SECONDS);

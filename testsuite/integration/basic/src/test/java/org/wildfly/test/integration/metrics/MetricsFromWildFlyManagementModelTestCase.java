@@ -109,10 +109,10 @@ public class MetricsFromWildFlyManagementModelTestCase {
 
     }
 
+    @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase")
     @Test
     @Order(2)
-    @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase")
-    public void testMetricsAfterDeployment(@ArquillianResource URL url) throws Exception {
+    public void testMetricsAfterDeployment(@ArquillianResource @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase") URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources
         checkRequestCount(0, true);
         performCall(url);

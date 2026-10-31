@@ -86,34 +86,30 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
                 .addAsManifestResource(DeploymentDescriptorTestCase.class.getPackage(), "defined-jdbc-jboss-all.xml", "jboss-all.xml");
     }
 
-    @OperateOnDeployment(NAMED_IN_MEMORY_DEPLOYMENT)
     @Test
-    public void namedInMemoryTest(@ArquillianResource final URL url) throws Exception {
+    public void namedInMemoryTest(@ArquillianResource @OperateOnDeployment(NAMED_IN_MEMORY_DEPLOYMENT) final URL url) throws Exception {
         // Test the default batch defined, ExampleDS, repository is isolated
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
 
-    @OperateOnDeployment(DEFINED_IN_MEMORY_DEPLOYMENT)
     @Test
-    public void definedInMemoryTest(@ArquillianResource final URL url) throws Exception {
+    public void definedInMemoryTest(@ArquillianResource @OperateOnDeployment(DEFINED_IN_MEMORY_DEPLOYMENT) final URL url) throws Exception {
         // Test that a newly named
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
 
-    @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT)
     @Test
     @Order(1)
-    public void namedJdbcTest(@ArquillianResource final URL url) throws Exception {
+    public void namedJdbcTest(@ArquillianResource @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT) final URL url) throws Exception {
         // This test runs after definedJdbcTest, and the two tests share the same data source.
         testCompletion(3L, url);
         testCompletion(4L, url);
     }
 
-    @OperateOnDeployment(DEFINED_JDBC_DEPLOYMENT)
     @Test
-    public void definedJdbcTest(@ArquillianResource final URL url) throws Exception {
+    public void definedJdbcTest(@ArquillianResource @OperateOnDeployment(DEFINED_JDBC_DEPLOYMENT) final URL url) throws Exception {
         testCompletion(1L, url);
         testCompletion(2L, url);
     }

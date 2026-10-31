@@ -64,8 +64,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testForwardCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testForwardCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, false, true);
     }
 
@@ -75,8 +74,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testForwardNoCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testForwardNoCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, false, false);
     }
 
@@ -86,8 +84,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testIncludeCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testIncludeCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, true, true);
     }
 
@@ -97,8 +94,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testIncludeNoCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testIncludeNoCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, true, false);
     }
 

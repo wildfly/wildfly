@@ -48,8 +48,7 @@ public class ResponseBufferSizeTestCase {
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
-    public void increaseBufferSizeTest(@ArquillianResource URL url) throws Exception {
+    public void increaseBufferSizeTest(@ArquillianResource @OperateOnDeployment(DEPLOYMENT) URL url) throws Exception {
         URL testURL = new URL(url.toString() + "ResponseBufferSizeServlet?"
                 + ResponseBufferSizeServlet.SIZE_CHANGE_PARAM_NAME + "=1.5" +
                 "&" + ResponseBufferSizeServlet.DATA_LENGTH_IN_PERCENTS_PARAM_NAME + "=0.8"); // more than original size, less than new buffer size

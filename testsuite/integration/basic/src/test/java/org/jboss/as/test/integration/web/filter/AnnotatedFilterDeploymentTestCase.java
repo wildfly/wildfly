@@ -64,23 +64,23 @@ public class AnnotatedFilterDeploymentTestCase {
         return HttpRequest.get(finalUrl, 1, SECONDS);
     }
 
-    @Test
     @OperateOnDeployment("v24")
-    public void testFilterPresent24(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testFilterPresent24(@ArquillianResource @OperateOnDeployment("v24") URL url) throws Exception {
         String result = performCall(url, "EmptyServlet");
         assertEquals(AnnotatedFilter.OUTPUT, result);
     }
 
-    @Test
     @OperateOnDeployment("v30")
-    public void testFilterPresent30(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testFilterPresent30(@ArquillianResource @OperateOnDeployment("v30") URL url) throws Exception {
         String result = performCall(url, "EmptyServlet");
         assertEquals(AnnotatedFilter.OUTPUT, result);
     }
 
-    @Test
     @OperateOnDeployment("v30MetadataComplete")
-    public void testFilterPresent30MetadataComplete(@ArquillianResource URL url) throws Exception {
+    @Test
+    public void testFilterPresent30MetadataComplete(@ArquillianResource @OperateOnDeployment("v30MetadataComplete") URL url) throws Exception {
         String result = performCall(url, "EmptyServlet");
         assertEquals(EmptyServlet.OUTPUT, result);
     }
