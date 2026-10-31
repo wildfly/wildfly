@@ -62,4 +62,8 @@ public interface ElytronOidcLogger extends BasicLogger {
     @Message(id = 9, value = "Oidc attribute '%s' is not supported with the current stability level.")
     DeploymentUnitProcessingException unsupportedAttribute(String attributeName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "The 'secure-server' resource '%s' has been ignored because a server in a managed domain does not host the management console. To secure the management console of a managed domain, add this resource to the 'elytron-oidc-client' subsystem of the host controller instead.")
+    void secureServerIgnoredOnDomainServer(String secureServerName);
+
 }

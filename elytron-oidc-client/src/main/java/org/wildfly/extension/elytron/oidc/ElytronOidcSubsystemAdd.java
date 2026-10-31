@@ -37,8 +37,12 @@ class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         ROOT_LOGGER.activatingSubsystem();
         OidcConfigService.getInstance().clear();
-        ServiceTarget target = context.getCapabilityServiceTarget();
-        installService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new OidcVirtualSecurityDomainCreationService(), target);
+
+        // virtual security domains are only ever created for deployments, so there is nothing to install on a host controller
+        if (context.getProcessType().isServer()) {
+            ServiceTarget target = context.getCapabilityServiceTarget();
+            installService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new OidcVirtualSecurityDomainCreationService(), target);
+        }
 
         if (context.isNormalServer()) {
             context.addStep(new AbstractDeploymentChainStep() {
