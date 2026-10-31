@@ -5,9 +5,7 @@
 
 package org.jboss.as.test.integration.jca.security.workmanager;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
@@ -235,7 +233,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
             wm.doWork(myWork);
         });
         assertInstanceOf(EJBAccessException.class, exception.getCause());
-        assertThat(exception.getMessage(), containsString("WFLYEJB0364"));
+        assertThat(exception.getMessage()).contains("WFLYEJB0364");
     }
 
     private WorkManager getWorkManager() {
@@ -247,12 +245,12 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
     private void verifyUsers(MyWork work, String... expectedUsers) {
         Set<Principal> principals = work.getPrincipals();
         Set<Principal> expectedPrincipals = Stream.of(expectedUsers).map(NamePrincipal::new).collect(Collectors.toSet());
-        assertThat(principals, is(expectedPrincipals));
+        assertThat(principals).isEqualTo(expectedPrincipals);
     }
 
     private void verifyRoles(MyWork work, String... expectedRoles) {
         String[] roles = work.getRoles();
-        assertThat(roles, is(expectedRoles));
+        assertThat(roles).isEqualTo(expectedRoles);
     }
 
     public static class MyWork implements Work, WorkContextProvider {

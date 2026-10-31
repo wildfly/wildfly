@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.integration.jca.statistics;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -38,7 +37,7 @@ public abstract class AbstractDataSourcePoolStatisticsTestCase {
         ModelNode readAttributeOperation = Util.getReadAttributeOperation(statisticsPathAddress, attributeName);
 
         ModelNode result = managementClient.getControllerClient().execute(readAttributeOperation);
-        assertThat("Failed to read statistics: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to read statistics: " + result).isTrue();
         return Operations.readResult(result).asInt();
     }
 
@@ -47,7 +46,7 @@ public abstract class AbstractDataSourcePoolStatisticsTestCase {
         PathAddress statisticsPathAddress = PathAddress.parseCLIStyleAddress("/subsystem=datasources/data-source=ExampleDS/statistics=pool/");
         ModelNode operation = Util.createOperation("clear-statistics", statisticsPathAddress);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        assertThat("Failed to configure connection pool: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to configure connection pool: " + result).isTrue();
     }
 
     protected void allocateConnection() throws SQLException {

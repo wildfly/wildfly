@@ -45,10 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author baranowb
@@ -390,12 +387,12 @@ public class JMXPropertyEditorsTestCase {
     private void performTest(String attributeName, Object expectedValue, Comparator comparator) throws Exception {
         ObjectName oname = new ObjectName("test:service=WithProperties");
         Object attributeValue = connection.getAttribute(oname, attributeName);
-        assertThat("Found null attribute value for '" + attributeName + "'", attributeValue, is(notNullValue()));
+        assertThat(attributeValue).as("Found null attribute value for '" + attributeName + "'").isNotNull();
         if (comparator == null) {
-            assertThat("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'", expectedValue, equalTo(attributeValue));
+            assertThat(expectedValue).as("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'").isEqualTo(attributeValue);
         } else {
             boolean equal = comparator.compare(expectedValue, attributeValue) == 0;
-            assertThat("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'", equal, equalTo(true));
+            assertThat(equal).as("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'").isTrue();
         }
     }
 }

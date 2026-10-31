@@ -5,9 +5,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.requestdeserialization;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Hashtable;
 import javax.naming.Context;
@@ -52,7 +50,7 @@ public class RequestDeserializationTestCase {
 
         // check the TCCL used during unmarshalling of parameters on the server side, it should be the deployment
         // classloader, not the "org.wildfly.extension.io" module classloader
-        assertThat(response.getTccl(), not(containsString("org.wildfly.extension.io")));
-        assertThat(response.getTccl(), containsString(getClass().getSimpleName()));
+        assertThat(response.getTccl()).doesNotContain("org.wildfly.extension.io");
+        assertThat(response.getTccl()).contains(getClass().getSimpleName());
     }
 }

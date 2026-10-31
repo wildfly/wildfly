@@ -5,11 +5,9 @@
 
 package org.jboss.as.test.integration.messaging.jms.context;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.PropertyPermission;
 import java.util.UUID;
@@ -143,9 +141,9 @@ public class InjectedJMSContextTestCase {
             String t = consumer.receiveBody(String.class, adjust(2000));
 
             if (rollback) {
-                assertThat("from " + destination, t, is(nullValue()));
+                assertThat(t).as("from " + destination).isNull();
             } else {
-                assertThat("from " + destination, t, is(expectedText));
+                assertThat(t).as("from " + destination).isEqualTo(expectedText);
             }
         }
     }

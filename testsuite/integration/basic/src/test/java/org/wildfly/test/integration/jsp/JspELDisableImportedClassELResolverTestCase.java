@@ -18,9 +18,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URL;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import java.util.concurrent.TimeUnit;
-import org.hamcrest.CoreMatchers;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 
@@ -74,15 +73,10 @@ public class JspELDisableImportedClassELResolverTestCase {
 
     private void commonTestPart(final URL url, final String possibleCausingIssues) throws Exception {
         final String responseBody = HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
-        assertThat("Unexpected EL evaluation for ${Boolean.TRUE}; " + possibleCausingIssues, responseBody,
-                CoreMatchers.containsString("Boolean.TRUE: --- " + Boolean.TRUE + " ---"));
-        assertThat("Unexpected EL evaluation for ${Integer.MAX_VALUE}; " + possibleCausingIssues, responseBody,
-                CoreMatchers.containsString("Integer.MAX_VALUE: --- " + Integer.MAX_VALUE + " ---"));
-        assertThat("Unexpected EL evaluation for ${DummyConstants.FOO};  " + possibleCausingIssues, responseBody,
-                CoreMatchers.containsString("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"));
-        assertThat("Unexpected EL evaluation for ${DummyEnum.VALUE}; " + possibleCausingIssues, responseBody,
-                CoreMatchers.containsString("DummyEnum.VALUE: --- " + DummyEnum.VALUE + " ---"));
-        assertThat("Unexpected EL evaluation for ${DummyBean.test}; " + possibleCausingIssues, responseBody,
-                CoreMatchers.containsString("DummyBean.test: --- " + DummyBean.DEFAULT_VALUE + " ---"));
+        assertThat(responseBody).as("Unexpected EL evaluation for ${Boolean.TRUE}; " + possibleCausingIssues).contains("Boolean.TRUE: --- " + Boolean.TRUE + " ---");
+        assertThat(responseBody).as("Unexpected EL evaluation for ${Integer.MAX_VALUE}; " + possibleCausingIssues).contains("Integer.MAX_VALUE: --- " + Integer.MAX_VALUE + " ---");
+        assertThat(responseBody).as("Unexpected EL evaluation for ${DummyConstants.FOO};  " + possibleCausingIssues).contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---");
+        assertThat(responseBody).as("Unexpected EL evaluation for ${DummyEnum.VALUE}; " + possibleCausingIssues).contains("DummyEnum.VALUE: --- " + DummyEnum.VALUE + " ---");
+        assertThat(responseBody).as("Unexpected EL evaluation for ${DummyBean.test}; " + possibleCausingIssues).contains("DummyBean.test: --- " + DummyBean.DEFAULT_VALUE + " ---");
     }
 }
