@@ -7,6 +7,7 @@ package org.jboss.as.test.shared.observability.containers;
 import java.util.List;
 
 import org.arquillian.testcontainers.api.TestcontainersRequired;
+import org.jboss.as.test.shared.StaleDockerConnectionWorkaround;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
@@ -41,6 +42,11 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
                 }
             }));
         }
+    }
+
+    @Override
+    public void start() {
+        StaleDockerConnectionWorkaround.start(containerName, super::start);
     }
 
     private void checkForLogging(String containerName) {

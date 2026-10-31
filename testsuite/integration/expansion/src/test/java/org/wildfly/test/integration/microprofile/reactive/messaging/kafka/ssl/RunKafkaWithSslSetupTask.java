@@ -19,6 +19,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.IntermittentFailure;
+import org.jboss.as.test.shared.StaleDockerConnectionWorkaround;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
@@ -62,7 +63,7 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
             container.addEnv("KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:29093");
 
             try {
-                container.start();
+                StaleDockerConnectionWorkaround.start(container);
             } catch (Exception e) {
                 // Either throw an assumption exception because we are ignoring intermittent failures,
                 // or propagate the exception and fail
