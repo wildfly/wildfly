@@ -18,7 +18,7 @@ import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptorBinding;
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
-import org.jboss.as.test.shared.AssumeTestGroupUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
