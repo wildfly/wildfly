@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.integration.weld.deployment;
 
+import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Inject;
@@ -73,32 +74,50 @@ public class BeanDiscoveryTest {
     @Inject
     private BeanManager manager;
 
+    @Inject
+    Alpha alpha;
+
+    @Inject
+    Instance<Bravo> bravo;
+
+    @Inject
+    Instance<Charlie> charlie;
+
+    @Inject
+    Delta delta;
+
+    @Inject
+    Echo echo;
+
+    @Inject
+    LegacyAlpha legacyAlpha;
+
     @Test
-    public void testExplicitBeanArchiveModeAll(Alpha alpha) {
+    public void testExplicitBeanArchiveModeAll() {
         assertDiscoveredAndAvailable(alpha, Alpha.class);
     }
 
     @Disabled("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
-    public void testImplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
-        assertDiscoveredAndAvailable(bravo, Bravo.class);
+    public void testImplicitBeanArchiveEmptyDescriptor() {
+        assertDiscoveredAndAvailable(bravo.get(), Bravo.class);
         assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
     @Disabled("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
-    public void testImplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
-        assertDiscoveredAndAvailable(charlie, Charlie.class);
+    public void testImplicitBeanArchiveLegacyDescriptor() {
+        assertDiscoveredAndAvailable(charlie.get(), Charlie.class);
         assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
     @Test
-    public void testImplicitBeanArchiveNoDescriptor(Delta delta) {
+    public void testImplicitBeanArchiveNoDescriptor() {
         assertDiscoveredAndAvailable(delta, Delta.class);
     }
 
     @Test
-    public void testImplicitBeanArchiveModeAnnotated(Echo echo) {
+    public void testImplicitBeanArchiveModeAnnotated() {
         assertDiscoveredAndAvailable(echo, Echo.class);
         assertNotDiscoveredAndNotAvailable(EchoNotABean.class);
     }
@@ -109,7 +128,7 @@ public class BeanDiscoveryTest {
     }
 
     @Test
-    public void testNotBeanArchiveExtension(LegacyAlpha legacyAlpha) {
+    public void testNotBeanArchiveExtension() {
         assertDiscoveredAndAvailable(legacyAlpha, LegacyAlpha.class);
         assertNotDiscoveredAndNotAvailable(LegacyBravo.class);
     }

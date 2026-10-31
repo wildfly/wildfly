@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.integration.ee.injection.support.jpa.beanmanager;
 
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -42,8 +43,14 @@ public class EntityListenerBeanManagerInjectionTestCase {
                 .cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
+    @Inject
+    Foo foo;
+
+    @Inject
+    Bar bar;
+
     @Test
-    public void testBeanManagerInEntityListenerCallbacks(Foo foo, Bar bar) throws NamingException {
+    public void testBeanManagerInEntityListenerCallbacks() throws NamingException {
         TestBean bean = lookup("TestBean", TestBean.class);
         bean.createEmployee("Joe Black", "Brno 2", 20);
         bean.updateEmployee(20);
