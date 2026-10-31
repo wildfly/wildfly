@@ -5,6 +5,7 @@
 package org.jboss.as.test.integration.weld.configuration.nonportablemode;
 
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -26,8 +27,11 @@ public class NonPortableModeTest {
                 .addAsManifestResource(NonPortableModeTest.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
     }
 
+    @Inject
+    NonPortableExtension extension;
+
     @Test
-    public void testApplicationDeploys(NonPortableExtension extension) {
+    public void testApplicationDeploys() {
         // in the strict mode, the extension would fail to deploy
         Assertions.assertNotNull(extension);
     }

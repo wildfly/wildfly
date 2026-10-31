@@ -5,6 +5,7 @@
 package org.jboss.as.test.integration.weld.configuration.requirebeandescriptor;
 
 import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -29,8 +30,11 @@ public class RequireBeanDescriptorTest {
                 .addAsLibrary(library);
     }
 
+    @Inject
+    BeanManager manager;
+
     @Test
-    public void testImplicitBeanArchiveWithoutBeanDescriptorNotDiscovered(BeanManager manager) {
+    public void testImplicitBeanArchiveWithoutBeanDescriptorNotDiscovered() {
         Assertions.assertEquals(1, manager.getBeans(Foo.class).size());
         Assertions.assertEquals(Foo.class, manager.getBeans(Foo.class).iterator().next().getBeanClass());
         Assertions.assertTrue(manager.getBeans(Bar.class).isEmpty());

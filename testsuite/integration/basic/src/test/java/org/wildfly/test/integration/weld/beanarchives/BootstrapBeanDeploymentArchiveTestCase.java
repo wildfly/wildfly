@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Map;
 
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -38,8 +39,16 @@ public class BootstrapBeanDeploymentArchiveTestCase {
                 .addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers")),"permissions.xml");
     }
 
+    @Inject
+    @Alpha
+    Map<String, String> alphaMap;
+
+    @Inject
+    @Bravo
+    Map<String, String> bravoMap;
+
     @Test
-    public void testDeployment(@Alpha Map<String, String> alphaMap, @Bravo Map<String, String> bravoMap) throws NamingException {
+    public void testDeployment() throws NamingException {
         // Test that the deployment does not fail due to non-unique bean deployment identifiers and also the custom beans
         assertEquals(alphaMap.get("foo"), bravoMap.get("foo"));
     }

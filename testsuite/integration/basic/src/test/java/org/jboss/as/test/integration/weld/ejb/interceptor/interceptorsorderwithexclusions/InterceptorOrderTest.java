@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.integration.weld.ejb.interceptor.interceptorsorderwithexclusions;
 
+import jakarta.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
@@ -27,8 +29,11 @@ public class InterceptorOrderTest {
                 .addPackage(InterceptorOrderTest.class.getPackage());
     }
 
+    @Inject
+    Processor processor;
+
     @Test
-    public void testOrder(Processor processor) {
+    public void testOrder() {
         Counter.count = 0;
         SimpleProcessor.count = 0;
         CdiInterceptor.count = 0;
@@ -47,7 +52,7 @@ public class InterceptorOrderTest {
     }
 
     @Test
-    public void testOrder2(Processor processor) {
+    public void testOrder2() {
         Counter.count = 0;
         SimpleProcessor.count = 0;
         CdiInterceptor.count = 0;
