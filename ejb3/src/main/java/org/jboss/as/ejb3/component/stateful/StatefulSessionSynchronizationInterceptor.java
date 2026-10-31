@@ -78,6 +78,9 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             throw EjbLogger.ROOT_LOGGER.failToObtainLock(component.getComponentName(), timeout.getValue(), timeout.getTimeUnit());
         }
         synchronized (threadLock) {
+            // Capture the state before this invocation. If it is already SYNC_STATE_INVOCATION_IN_PROGRESS
+            // then this is a reentrant call - the outermost frame will handle the state reset on unwind.
+            final int previousSyncState = invocationSyncState.get();
             invocationSyncState.set(SYNC_STATE_INVOCATION_IN_PROGRESS); //invocation in progress
             if (ROOT_LOGGER.isTraceEnabled()) {
                 ROOT_LOGGER.trace("Acquired lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
@@ -142,26 +145,30 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                         releaseLock(instance);
                     }
                 }
-                for(;;) {
-                    int state = invocationSyncState.get();
-                    if(state == SYNC_STATE_INVOCATION_IN_PROGRESS && invocationSyncState.compareAndSet(SYNC_STATE_INVOCATION_IN_PROGRESS, SYNC_STATE_NO_INVOCATION)) {
-                        break;
-                    } else if (state == SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED || state == SYNC_STATE_AFTER_COMPLETE_DELAYED_NO_COMMIT) {
-                        try {
-                            //invoke the after completion method, other after completion syncs may have already run
-                            handleAfterCompletion(state == SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED, bean);
-                        } finally {
-                            invocationSyncState.set(SYNC_STATE_NO_INVOCATION);
+                // Only the outermost invocation frame transitions the state back to NO_INVOCATION.
+                // Reentrant (nested) frames saw previousSyncState == INVOCATION_IN_PROGRESS and exit
+                // without touching the state, avoiding the spurious WFLYEJB0487 error.
+                if (previousSyncState != SYNC_STATE_INVOCATION_IN_PROGRESS) {
+                    for(;;) {
+                        int state = invocationSyncState.get();
+                        if(state == SYNC_STATE_INVOCATION_IN_PROGRESS && invocationSyncState.compareAndSet(SYNC_STATE_INVOCATION_IN_PROGRESS, SYNC_STATE_NO_INVOCATION)) {
+                            break;
+                        } else if (state == SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED || state == SYNC_STATE_AFTER_COMPLETE_DELAYED_NO_COMMIT) {
+                            try {
+                                //invoke the after completion method, other after completion syncs may have already run
+                                handleAfterCompletion(state == SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED, bean);
+                            } finally {
+                                invocationSyncState.set(SYNC_STATE_NO_INVOCATION);
+                            }
+                            break;
+                        } else if (state != SYNC_STATE_INVOCATION_IN_PROGRESS) {
+                            // Unexpected state: log and break to avoid spinning forever.
+                            EjbLogger.ROOT_LOGGER.unexpectedInvocationState(state, component.getApplicationName(),
+                                    component.getModuleName(), component.getComponentName());
+                            break;
                         }
-                        break;
-                    } else if (state != SYNC_STATE_INVOCATION_IN_PROGRESS) {
-                        // The state wasn't in progress, so it wasn't a CAS failure.
-                        // It's an unexpected state (like NO_INVOCATION). We must break to prevent the forever loop.
-                        EjbLogger.ROOT_LOGGER.unexpectedInvocationState(state, component.getApplicationName(),
-                                component.getModuleName(), component.getComponentName());
-                        break;
+                        // else: state IS IN_PROGRESS but CAS failed due to a lost race. Retry cleanly.
                     }
-                    // else: state WAS IN_PROGRESS, meaning CAS failed due to race. Retry cleanly.
                 }
             }
         }
