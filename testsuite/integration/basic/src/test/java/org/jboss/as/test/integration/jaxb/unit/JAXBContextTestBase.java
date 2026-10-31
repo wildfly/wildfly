@@ -11,15 +11,13 @@ import java.net.URL;
 
 import jakarta.xml.bind.JAXBContextFactory;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.FakeJAXBContextFactory;
 import org.jboss.as.test.integration.jaxb.JAXBContextServlet;
@@ -83,9 +81,7 @@ public abstract class JAXBContextTestBase {
             final HttpEntity entity = response.getEntity();
             Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Matcher matcher1 = CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl");
-            Matcher matcher2 = CoreMatchers.containsString("/org/glassfish/jaxb/runtime/v2/runtime/JAXBContextImpl");
-            assertThat(responseMessage, CoreMatchers.either(matcher1).or(matcher2));
+            assertThat(responseMessage).containsAnyOf("/com/sun/xml/bind/v2/runtime/JAXBContextImpl", "/org/glassfish/jaxb/runtime/v2/runtime/JAXBContextImpl");
         }
         // test it works
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {

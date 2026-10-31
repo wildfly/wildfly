@@ -27,8 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(ArquillianExtension.class)
@@ -84,24 +83,24 @@ public class HibernateSearchCDIInjectionTestCase {
         EntityWithCDIAwareBridges entity = new EntityWithCDIAwareBridges();
         entity.setInternationalizedValue(InternationalizedValue.HELLO);
         dao.create(entity);
-        assertThat(dao.searchValueBridge("bonjour"), hasItems(entity.getId()));
-        assertThat(dao.searchValueBridge("hello"), hasItems(entity.getId()));
-        assertThat(dao.searchValueBridge("hallo"), hasItems(entity.getId()));
+        assertThat(dao.searchValueBridge("bonjour")).contains(entity.getId());
+        assertThat(dao.searchValueBridge("hello")).contains(entity.getId());
+        assertThat(dao.searchValueBridge("hallo")).contains(entity.getId());
         assertEquals(0, dao.searchValueBridge("au revoir").size());
 
         EntityWithCDIAwareBridges entity2 = new EntityWithCDIAwareBridges();
         entity2.setInternationalizedValue(InternationalizedValue.GOODBYE);
         dao.create(entity2);
-        assertThat(dao.searchValueBridge("bonjour"), hasItems(entity.getId()));
-        assertThat(dao.searchValueBridge("hello"), hasItems(entity.getId()));
-        assertThat(dao.searchValueBridge("hallo"), hasItems(entity.getId()));
-        assertThat(dao.searchValueBridge("au revoir"), hasItems(entity2.getId()));
+        assertThat(dao.searchValueBridge("bonjour")).contains(entity.getId());
+        assertThat(dao.searchValueBridge("hello")).contains(entity.getId());
+        assertThat(dao.searchValueBridge("hallo")).contains(entity.getId());
+        assertThat(dao.searchValueBridge("au revoir")).contains(entity2.getId());
 
         dao.delete(entity);
         assertEquals(0, dao.searchValueBridge("bonjour").size());
         assertEquals(0, dao.searchValueBridge("hello").size());
         assertEquals(0, dao.searchValueBridge("hallo").size());
-        assertThat(dao.searchValueBridge("au revoir"), hasItems(entity2.getId()));
+        assertThat(dao.searchValueBridge("au revoir")).contains(entity2.getId());
     }
 
     @Test
@@ -114,23 +113,23 @@ public class HibernateSearchCDIInjectionTestCase {
         EntityWithCDIAwareBridges entity = new EntityWithCDIAwareBridges();
         entity.setInternationalizedValue(InternationalizedValue.HELLO);
         dao.create(entity);
-        assertThat(dao.searchTypeBridge("bonjour"), hasItems(entity.getId()));
-        assertThat(dao.searchTypeBridge("hello"), hasItems(entity.getId()));
-        assertThat(dao.searchTypeBridge("hallo"), hasItems(entity.getId()));
+        assertThat(dao.searchTypeBridge("bonjour")).contains(entity.getId());
+        assertThat(dao.searchTypeBridge("hello")).contains(entity.getId());
+        assertThat(dao.searchTypeBridge("hallo")).contains(entity.getId());
         assertEquals(0, dao.searchTypeBridge("au revoir").size());
 
         EntityWithCDIAwareBridges entity2 = new EntityWithCDIAwareBridges();
         entity2.setInternationalizedValue(InternationalizedValue.GOODBYE);
         dao.create(entity2);
-        assertThat(dao.searchTypeBridge("bonjour"), hasItems(entity.getId()));
-        assertThat(dao.searchTypeBridge("hello"), hasItems(entity.getId()));
-        assertThat(dao.searchTypeBridge("hallo"), hasItems(entity.getId()));
-        assertThat(dao.searchTypeBridge("au revoir"), hasItems(entity2.getId()));
+        assertThat(dao.searchTypeBridge("bonjour")).contains(entity.getId());
+        assertThat(dao.searchTypeBridge("hello")).contains(entity.getId());
+        assertThat(dao.searchTypeBridge("hallo")).contains(entity.getId());
+        assertThat(dao.searchTypeBridge("au revoir")).contains(entity2.getId());
 
         dao.delete(entity);
         assertEquals(0, dao.searchTypeBridge("bonjour").size());
         assertEquals(0, dao.searchTypeBridge("hello").size());
         assertEquals(0, dao.searchTypeBridge("hallo").size());
-        assertThat(dao.searchTypeBridge("au revoir"), hasItems(entity2.getId()));
+        assertThat(dao.searchTypeBridge("au revoir")).contains(entity2.getId());
     }
 }

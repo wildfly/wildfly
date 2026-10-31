@@ -4,9 +4,7 @@
  */
 package org.jboss.as.test.integration.jca.workmanager;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AllOf.allOf;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 
 import java.io.IOException;
@@ -53,12 +51,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assertions.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            assertThat("Wrong error message", reason, allOf(
-                    containsString("WFLYJCA0101"),
-                    containsString("Long"),
-                    containsString("long-running-threads"),
-                    containsString("default")
-            ));
+            assertThat(reason).as("Wrong error message").contains("WFLYJCA0101").contains("Long").contains("long-running-threads").contains("default");
         }
     }
 
@@ -72,12 +65,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assertions.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            assertThat("Wrong error message", reason, allOf(
-                    containsString("WFLYJCA0101"),
-                    containsString("Short"),
-                    containsString("short-running-threads"),
-                    containsString("default")
-            ));
+            assertThat(reason).as("Wrong error message").contains("WFLYJCA0101").contains("Short").contains("short-running-threads").contains("default");
         }
     }
 
@@ -95,12 +83,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assertions.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            assertThat("Wrong error message", reason, allOf(
-                    containsString("WFLYJCA0122"),
-                    containsString("Short"),
-                    containsString("short-running-threads"),
-                    containsString("name-test")
-            ));
+            assertThat(reason).as("Wrong error message").contains("WFLYJCA0122").contains("Short").contains("short-running-threads").contains("name-test");
         } finally {
             executeOperation(Operations.createRemoveOperation(address.toModelNode()));
         }

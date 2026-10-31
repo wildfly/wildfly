@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.integration.ejb.transaction.methodparams;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -33,17 +32,17 @@ public class TxMethodParamsTest {
     @Test
     public void shouldNotThrowNeverNeverContainerTransactionWithoutMethodParams() throws Exception {
         LocalHome localHome = (LocalHome) new InitialContext().lookup("java:app/ejbs/FirstWithoutParams!org.jboss.as.test.integration.ejb.transaction.methodparams.LocalHome");
-        assertThat(localHome.create().test(42), is(true));
-        assertThat(localHome.create().test("Hello World"), is(true));
-        assertThat(localHome.create().test(new String[0]), is(true));
+        assertThat(localHome.create().test(42)).isTrue();
+        assertThat(localHome.create().test("Hello World")).isTrue();
+        assertThat(localHome.create().test(new String[0])).isTrue();
     }
 
     @Test
     public void shouldNotThrowNeverNeverContainerTransactionWithMethodParams() throws Exception {
         LocalHome localHome = (LocalHome) new InitialContext().lookup("java:app/ejbs/FirstWithParams!org.jboss.as.test.integration.ejb.transaction.methodparams.LocalHome");
-        assertThat(localHome.create().test(42), is(true));
-        assertThat(localHome.create().test("Hello World"), is(true));
-        assertThat(localHome.create().test(new String[0]), is(true));
+        assertThat(localHome.create().test(42)).isTrue();
+        assertThat(localHome.create().test("Hello World")).isTrue();
+        assertThat(localHome.create().test(new String[0])).isTrue();
     }
 
 }

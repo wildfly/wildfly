@@ -12,7 +12,6 @@ import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import static org.hamcrest.CoreMatchers.containsString;
 import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -23,7 +22,7 @@ import org.jboss.as.test.integration.ejb.container.interceptor.incorrect.Incorre
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Assertions;
@@ -73,7 +72,7 @@ public class ContainerInterceptorsTestCase {
         } catch (Exception ex) {
             final StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
-            assertThat(sw.toString(), containsString("WFLYEE0109"));
+            assertThat(sw.toString()).contains("WFLYEE0109");
     }
 }
 

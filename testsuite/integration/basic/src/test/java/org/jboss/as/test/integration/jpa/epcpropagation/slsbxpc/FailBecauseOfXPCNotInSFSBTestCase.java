@@ -5,8 +5,7 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.slsbxpc;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -70,7 +69,7 @@ public class FailBecauseOfXPCNotInSFSBTestCase {
                 cause = cause.getCause();
             }
             assertTrue(cause instanceof IllegalStateException, "expected IllegalStateException was not thrown");
-            assertThat("Wrong error message", cause.getMessage(), containsString(errorCode));
+            assertThat(cause.getMessage()).as("Wrong error message").contains(errorCode);
         } catch (Throwable unexpected) {
             fail("unexcepted exception " + unexpected.toString());
         }

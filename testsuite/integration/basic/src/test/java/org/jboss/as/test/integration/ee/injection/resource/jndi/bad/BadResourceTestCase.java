@@ -24,8 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author baranowb
@@ -86,10 +85,8 @@ public class BadResourceTestCase {
 
         // asserts
         String failureDescription = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
-        assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
-                failureDescription, containsString(Constants.ERROR_MESSAGE));
-        assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
-                failureDescription, containsString(Constants.JNDI_NAME_BAD));
+        assertThat(failureDescription).as(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString())).contains(Constants.ERROR_MESSAGE);
+        assertThat(failureDescription).as(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString())).contains(Constants.JNDI_NAME_BAD);
     }
 
 }
