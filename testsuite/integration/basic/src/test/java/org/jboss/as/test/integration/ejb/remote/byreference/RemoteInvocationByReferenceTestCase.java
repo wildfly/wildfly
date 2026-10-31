@@ -39,8 +39,8 @@ public class RemoteInvocationByReferenceTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             // setup pass-by-reference semantics
-            // we do this here instead of a separate @BeforeClass method because of some weirdness
-            // with the ordering of the @BeforeClass execution and deploying the deployment by Arquillian
+            // we do this here instead of a separate @BeforeAll method because of some weirdness
+            // with the ordering of the @BeforeAll execution and deploying the deployment by Arquillian
             EJBManagementUtil.disablePassByValueForRemoteInterfaceInvocations(managementClient);
         }
 

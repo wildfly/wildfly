@@ -225,7 +225,6 @@ public class CoreQueueManagementTestCase {
         Assertions.assertFalse(result.asBoolean());
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
 
@@ -261,7 +260,6 @@ public class CoreQueueManagementTestCase {
         return result.get(0).get("messageID").asLong();
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 
@@ -296,7 +294,6 @@ public class CoreQueueManagementTestCase {
 
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testChangeMessagePriority() throws Exception {
         final int priority = 3;

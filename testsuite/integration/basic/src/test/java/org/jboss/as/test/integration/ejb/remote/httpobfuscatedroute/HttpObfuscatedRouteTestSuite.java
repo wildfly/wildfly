@@ -10,7 +10,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runners.Suite;
 
 /**
  * Test suite for running some http invocation tests with Undertow obfuscated-session-route set to true.
@@ -18,8 +17,6 @@ import org.junit.runners.Suite;
  * @author Flavia Rainone
  */
 @RunAsClient
-@Suite.SuiteClasses({HttpObfuscatedRouteTestSuite.HttpRemoteEJBJndiBasedInvocationTest.class,
-                     HttpObfuscatedRouteTestSuite.HttpRemoteIdentityTestCase.class})
 public class HttpObfuscatedRouteTestSuite {
 
     private static Throwable failure = null;
