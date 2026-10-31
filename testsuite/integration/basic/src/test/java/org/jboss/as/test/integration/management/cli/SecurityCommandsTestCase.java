@@ -6,6 +6,7 @@ package org.jboss.as.test.integration.management.cli;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.wildfly.test.management.cli.CliProcessWrapper;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

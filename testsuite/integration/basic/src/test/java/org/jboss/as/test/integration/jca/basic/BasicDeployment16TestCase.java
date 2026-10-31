@@ -19,7 +19,8 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsyst
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -74,7 +75,7 @@ public class BasicDeployment16TestCase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
                 addClasses(BasicDeployment16TestCase.class, BasicDeploymentTestCaseSetup.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());  // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage());  // needed to process the @ServerSetup annotation on the server side
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(BasicDeployment16TestCase.class.getPackage(), "ra16.xml", "ra.xml");

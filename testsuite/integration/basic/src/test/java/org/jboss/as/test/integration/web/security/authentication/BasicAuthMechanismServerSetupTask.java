@@ -8,7 +8,7 @@ package org.jboss.as.test.integration.web.security.authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.wildfly.test.security.common.CoreUtils;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;

@@ -27,6 +27,7 @@ import static org.jboss.as.security.Constants.TRUSTSTORE;
 import static org.jboss.as.security.Constants.TYPE;
 import static org.jboss.as.security.Constants.URL;
 
+import org.wildfly.test.security.common.CoreUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
