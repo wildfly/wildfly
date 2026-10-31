@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -144,7 +145,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         }
     }
 
-    @Deployment
+    @Deployment(name = "form-auth.war")
     public static WebArchive deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
         war.setWebXML("org/jboss/as/test/integration/security/auditing/form-auth/web.xml");
@@ -202,7 +203,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
      * @throws Exception
      */
     @Test
-    public void test(@ArquillianResource URL url) throws Exception {
+    public void test(@ArquillianResource @OperateOnDeployment("form-auth.war") URL url) throws Exception {
 
         assertTrue(auditLog.exists(), "Audit log file has not been created (" + auditLog.getAbsolutePath() + ")");
         assertTrue(auditLog.canRead(), "Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")");

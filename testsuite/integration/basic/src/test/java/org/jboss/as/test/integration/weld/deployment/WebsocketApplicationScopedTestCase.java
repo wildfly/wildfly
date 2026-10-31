@@ -49,9 +49,8 @@ public class WebsocketApplicationScopedTestCase {
     }
 
     @Test
-    @OperateOnDeployment(CLIENT_STANDALONE)
     @RunAsClient
-    public void testClientStandalone(@ArquillianResource URL webapp) throws Exception {
+    public void testClientStandalone(@ArquillianResource @OperateOnDeployment(CLIENT_STANDALONE) URL webapp) throws Exception {
         URI uriUser1 = createUri(webapp,"/chat/user1");
         URI uriUser2 = createUri(webapp,"/chat/user2");
 

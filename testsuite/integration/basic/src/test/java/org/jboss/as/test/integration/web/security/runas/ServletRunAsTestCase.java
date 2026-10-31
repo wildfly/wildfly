@@ -83,10 +83,10 @@ public class ServletRunAsTestCase {
      * @param url
      * @throws Exception
      */
+    @OperateOnDeployment(DEPLOYMENT)
     @Test
     @Order(1)
-    @OperateOnDeployment(DEPLOYMENT)
-    public void runServletWithCorrectRole(@ArquillianResource URL url) throws Exception {
+    public void runServletWithCorrectRole(@ArquillianResource @OperateOnDeployment(DEPLOYMENT) URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + RunAsAdminServlet.SERVLET_PATH.substring(1) + "?"
                 + Utils.encodeQueryParam(CallProtectedEjbServlet.FILE_PARAM, CORRECT_ROLE_AND_UNDEPLOY.getAbsolutePath()));
         correctRoleResult = Utils.makeCall(servletUrl.toURI(), HTTP_OK);
@@ -126,10 +126,10 @@ public class ServletRunAsTestCase {
      * @param url
      * @throws Exception
      */
+    @OperateOnDeployment(DEPLOYMENT)
     @Test
     @Order(4)
-    @OperateOnDeployment(DEPLOYMENT)
-    public void runServletWithIncorrectRole(@ArquillianResource URL url) throws Exception {
+    public void runServletWithIncorrectRole(@ArquillianResource @OperateOnDeployment(DEPLOYMENT) URL url) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + RunAsUserServlet.SERVLET_PATH.substring(1) + "?"
                 + Utils.encodeQueryParam(CallProtectedEjbServlet.FILE_PARAM, INCORRECT_ROLE_AND_UNDEPLOY.getAbsolutePath()));
         incorrectRoleResult = Utils.makeCall(servletUrl.toURI(), HTTP_OK);
@@ -216,10 +216,10 @@ public class ServletRunAsTestCase {
      * @param url
      * @throws Exception
      */
+    @OperateOnDeployment(DEPLOYMENT)
     @Test
     @Order(11)
-    @OperateOnDeployment(DEPLOYMENT)
-    public void runDestroyMethodInStopServer(@ArquillianResource URL url) throws Exception {
+    public void runDestroyMethodInStopServer(@ArquillianResource @OperateOnDeployment(DEPLOYMENT) URL url) throws Exception {
         URL servletUrl = new URL(url.toExternalForm() + RunAsAdminServlet.SERVLET_PATH.substring(1) + "?"
                 + Utils.encodeQueryParam(CallProtectedEjbServlet.FILE_PARAM, CORRECT_ROLE_AND_STOP_SERVER.getAbsolutePath()));
         Utils.makeCall(servletUrl.toURI(), HTTP_OK);

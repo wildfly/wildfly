@@ -66,9 +66,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_No_Spec_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation(@ArquillianResource @OperateOnDeployment(Servlet_No_Spec_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
@@ -80,9 +79,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_4_0_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation40(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation40(@ArquillianResource @OperateOnDeployment(Servlet_Spec_4_0_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
@@ -94,9 +92,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_3_1_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation31(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation31(@ArquillianResource @OperateOnDeployment(Servlet_Spec_3_1_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
@@ -120,9 +117,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_3_0_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluationForLesserSpecVersion(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluationForLesserSpecVersion(@ArquillianResource @OperateOnDeployment(Servlet_Spec_3_0_War) URL url) throws Exception {
         // with the Jakarta upgrade for jsp spec (WFLY-12439), we can now evaluate Boolean.TRUE and Integer.MAX_VALUE
         // even when using the previous spec version
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
