@@ -4,8 +4,6 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor;
 
-import static org.junit.Assert.fail;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -14,21 +12,22 @@ import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import static org.hamcrest.CoreMatchers.containsString;
 import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ejb.container.interceptor.incorrect.IncorrectContainerInterceptor;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import static org.hamcrest.MatcherAssert.assertThat;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the <code>container-interceptors</code> configured in jboss-ejb3.xml and processed and applied correctly to the
@@ -36,7 +35,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ContainerInterceptorsTestCase {
 
     private static final String EJB_JAR_NAME = "ejb-container-interceptors";
@@ -73,7 +72,7 @@ public class ContainerInterceptorsTestCase {
         } catch (Exception ex) {
             final StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
-            assertThat(sw.toString(), containsString("WFLYEE0109"));
+            assertThat(sw.toString()).contains("WFLYEE0109");
     }
 }
 
@@ -98,8 +97,8 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + message;
         final String firstResult = bean.echo(message);
 
-        Assert.assertEquals (
-        "Unexpected result after first invocation on bean", expectedResultForFirstInvocation, firstResult);
+        Assertions.assertEquals (
+        expectedResultForFirstInvocation, firstResult, "Unexpected result after first invocation on bean");
 
         final String secondMessage = "bar";
         // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
@@ -107,11 +106,11 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + secondMessage;
         final String secondResult = bean.echo(secondMessage);
 
-        Assert.assertEquals (
+        Assertions.assertEquals (
 
 
-    "Unexpected result after second invocation on bean", expectedResultForSecondInvocation,
-                secondResult);
+    expectedResultForSecondInvocation, secondResult,
+                "Unexpected result after second invocation on bean");
     }
 
     /**
@@ -128,16 +127,16 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         final String expectedResultForFirstInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + message;
         final String firstResult = bean.echo(message);
-        Assert.assertEquals("Unexpected result after first invocation on remote view of bean",
-                expectedResultForFirstInvocation, firstResult);
+        Assertions.assertEquals(expectedResultForFirstInvocation,
+                firstResult, "Unexpected result after first invocation on remote view of bean");
 
         final String secondMessage = "bar";
         // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + secondMessage;
         final String secondResult = bean.echo(secondMessage);
-        Assert.assertEquals("Unexpected result after second invocation on remote view of bean",
-                expectedResultForSecondInvocation, secondResult);
+        Assertions.assertEquals(expectedResultForSecondInvocation,
+                secondResult, "Unexpected result after second invocation on remote view of bean");
 
     }
 
@@ -168,8 +167,8 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
             final String expectedResultForFirstInvocation = NonContainerInterceptor.class.getName() + " "
                     + FlowTrackingBean.class.getName() + " " + message;
             final String firstResult = bean.echo(message);
-            Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
-                    expectedResultForFirstInvocation, firstResult);
+            Assertions.assertEquals(expectedResultForFirstInvocation,
+                    firstResult, "Unexpected result invoking on bean when passing context data via EJB client interceptor");
 
             // Now try another invocation, this time skip a different interceptor
             interceptorData.clear();
@@ -180,8 +179,8 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
             final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
                     + FlowTrackingBean.class.getName() + " " + secondMessage;
             final String secondResult = bean.echo(secondMessage);
-            Assert.assertEquals("Unexpected result invoking on bean when passing context data via EJB client interceptor",
-                    expectedResultForSecondInvocation, secondResult);
+            Assertions.assertEquals(expectedResultForSecondInvocation,
+                    secondResult, "Unexpected result invoking on bean when passing context data via EJB client interceptor");
             return null;
         });
     }
@@ -204,7 +203,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
 
         // invoke on the specific method which has the container-interceptor eligible
         final String firstResult = bean.echoWithMethodSpecificContainerInterceptor(message);
-        Assert.assertEquals("Unexpected result after invocation on bean", expectedResultForFirstInvocation, firstResult);
+        Assertions.assertEquals(expectedResultForFirstInvocation, firstResult, "Unexpected result after invocation on bean");
 
         // now let's invoke on a method for which that method level container interceptor isn't applicable
         final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
@@ -212,7 +211,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
                 + AnotherFlowTrackingBean.class.getName() + " " + message;
 
         final String secondResult = bean.echo(message);
-        Assert.assertEquals("Unexpected result after invocation on bean", expectedResultForSecondInvocation, secondResult);
+        Assertions.assertEquals(expectedResultForSecondInvocation, secondResult, "Unexpected result after invocation on bean");
 
     }
 
@@ -233,7 +232,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
 
         // invoke on the specific method which has the interceptor-order specified
         final String firstResult = bean.echoInSpecificOrderOfContainerInterceptors(message);
-        Assert.assertEquals("Unexpected result after invocation on bean", expectedResultForFirstInvocation, firstResult);
+        Assertions.assertEquals(expectedResultForFirstInvocation, firstResult, "Unexpected result after invocation on bean");
 
     }
 

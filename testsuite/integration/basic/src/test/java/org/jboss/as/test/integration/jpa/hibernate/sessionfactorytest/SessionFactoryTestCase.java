@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.sessionfactorytest;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -14,7 +14,7 @@ import javax.naming.NamingException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.Employee;
 import org.jboss.as.test.integration.jpa.hibernate.SFSB1;
@@ -23,15 +23,16 @@ import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Hibernate session factory tests
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SessionFactoryTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
@@ -76,11 +77,11 @@ public class SessionFactoryTestCase {
         // check if we can look up the Hibernate session factory that should of been bound because of
         // the hibernate.session_factory_name was specified in the properties (in peristence.xml above).
         SessionFactory hibernateSessionFactory = rawLookup("modelSessionFactory", SessionFactory.class);
-        assertNotNull("jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory", hibernateSessionFactory);
+        assertNotNull(hibernateSessionFactory, "jndi lookup of hibernate.session_factory_name should return HibernateSessionFactory");
 
         Session session = hibernateSessionFactory.openSession();
         Employee emp = session.get(Employee.class, 1);
-        assertTrue("name read from hibernate session is Sally", "Sally".equals(emp.getName()));
+        assertTrue("Sally".equals(emp.getName()), "name read from hibernate session is Sally");
     }
 
     // Test that an extended Persistence context can be injected into a Hibernate Session
@@ -93,7 +94,7 @@ public class SessionFactoryTestCase {
         sfsbHibernateSession.createEmployee("Molly", "2 apple way", 2);
 
         Employee emp = sfsbHibernateSession.getEmployee(2);
-        assertTrue("name read from hibernate session is Molly", "Molly".equals(emp.getName()));
+        assertTrue("Molly".equals(emp.getName()), "name read from hibernate session is Molly");
     }
 
     // Test that a Persistence unit can be injected into a Hibernate Session factory
@@ -105,7 +106,7 @@ public class SessionFactoryTestCase {
         sfsbHibernateSessionFactory.createEmployee("Sharon", "3 beach ave", 3);
 
         Employee emp = sfsbHibernateSessionFactory.getEmployee(3);
-        assertTrue("name read from hibernate session is Sharon", "Sharon".equals(emp.getName()));
+        assertTrue("Sharon".equals(emp.getName()), "name read from hibernate session is Sharon");
     }
 
 }

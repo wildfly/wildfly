@@ -10,14 +10,15 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.java.permission.JndiPermission;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
@@ -26,7 +27,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  * A test which enforces that
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class LinkRefResourceInjectionTestCase {
 
     private static final String BINDER_JAR_NAME = "binder";
@@ -69,7 +70,7 @@ public class LinkRefResourceInjectionTestCase {
         try {
             final Injected injected = (Injected) initialContext.lookup("java:global/"+INJECTED_JAR_NAME+"/InjectedBean!"+Injected.class.getName());
             // this assertion implies that the link was followed corrected into the src binding
-            Assert.assertEquals(injected.getInjectedResource(),bindValue);
+            Assertions.assertEquals(injected.getInjectedResource(),bindValue);
         } finally {
             deployer.undeploy(INJECTED_JAR_NAME);
         }

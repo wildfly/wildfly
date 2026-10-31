@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.ejb.interceptor.binding;
 import jakarta.ejb.Stateless;
 import jakarta.interceptor.Interceptors;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -18,8 +18,8 @@ import org.junit.Assert;
 public class SimpleSLSB {
 
     public String sayHello() {
-        Assert.assertTrue(CdiInterceptor.invoked);
-        Assert.assertTrue(EjbInterceptor.invoked);
+        Assertions.assertTrue(CdiInterceptor.invoked);
+        Assertions.assertTrue(EjbInterceptor.invoked);
         return "Hello";
     }
 }

@@ -5,13 +5,14 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+
 import jakarta.ejb.Stateful;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.ejb.TransactionManagement;

@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
@@ -26,16 +26,16 @@ import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test the situation when abstract DataSource class is specified when creating a data source.
  *
  * @author lgao
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
 
@@ -59,32 +59,32 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         operation.get("driver-name").set(driverName);
 
         ModelNode result = executeOperation(operation).asList().get(0);
-        Assert.assertEquals(driverName, result.get("driver-name").asString());
-        Assert.assertEquals(driverName, result.get("deployment-name").asString());
-        Assert.assertEquals(TestDriver.class.getName(), result.get("driver-class-name").asString());
-        Assert.assertEquals(1, result.get("driver-major-version").asInt());
-        Assert.assertEquals(0, result.get("driver-minor-version").asInt());
-        Assert.assertFalse(result.get("jdbc-compliant").asBoolean());
+        Assertions.assertEquals(driverName, result.get("driver-name").asString());
+        Assertions.assertEquals(driverName, result.get("deployment-name").asString());
+        Assertions.assertEquals(TestDriver.class.getName(), result.get("driver-class-name").asString());
+        Assertions.assertEquals(1, result.get("driver-major-version").asInt());
+        Assertions.assertEquals(0, result.get("driver-minor-version").asInt());
+        Assertions.assertFalse(result.get("jdbc-compliant").asBoolean());
 
         String driver1FQCN = driverName + "_" + TestDriver.class.getName() + "_1_0";
         operation.get("driver-name").set(driver1FQCN);
         result = executeOperation(operation).asList().get(0);
-        Assert.assertEquals(driver1FQCN, result.get("driver-name").asString());
-        Assert.assertEquals(driver1FQCN, result.get("deployment-name").asString());
-        Assert.assertEquals(TestDriver.class.getName(), result.get("driver-class-name").asString());
-        Assert.assertEquals(1, result.get("driver-major-version").asInt());
-        Assert.assertEquals(0, result.get("driver-minor-version").asInt());
-        Assert.assertFalse(result.get("jdbc-compliant").asBoolean());
+        Assertions.assertEquals(driver1FQCN, result.get("driver-name").asString());
+        Assertions.assertEquals(driver1FQCN, result.get("deployment-name").asString());
+        Assertions.assertEquals(TestDriver.class.getName(), result.get("driver-class-name").asString());
+        Assertions.assertEquals(1, result.get("driver-major-version").asInt());
+        Assertions.assertEquals(0, result.get("driver-minor-version").asInt());
+        Assertions.assertFalse(result.get("jdbc-compliant").asBoolean());
 
         String driver2FQCN = driverName + "_" + TestDriver2.class.getName() + "_1_1";
         operation.get("driver-name").set(driver2FQCN);
         result = executeOperation(operation).asList().get(0);
-        Assert.assertEquals(driver2FQCN, result.get("driver-name").asString());
-        Assert.assertEquals(driver2FQCN, result.get("deployment-name").asString());
-        Assert.assertEquals(TestDriver2.class.getName(), result.get("driver-class-name").asString());
-        Assert.assertEquals(1, result.get("driver-major-version").asInt());
-        Assert.assertEquals(1, result.get("driver-minor-version").asInt());
-        Assert.assertTrue(result.get("jdbc-compliant").asBoolean());
+        Assertions.assertEquals(driver2FQCN, result.get("driver-name").asString());
+        Assertions.assertEquals(driver2FQCN, result.get("deployment-name").asString());
+        Assertions.assertEquals(TestDriver2.class.getName(), result.get("driver-class-name").asString());
+        Assertions.assertEquals(1, result.get("driver-major-version").asInt());
+        Assertions.assertEquals(1, result.get("driver-minor-version").asInt());
+        Assertions.assertTrue(result.get("jdbc-compliant").asBoolean());
 
     }
 
@@ -126,7 +126,7 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         ModelNode addDS1Operation = getAddDatasourceOperation(ds1);
         try {
             ModelNode addDSResult = getManagementClient().getControllerClient().execute(addDS1Operation);
-            Assert.assertEquals("success", addDSResult.get("outcome").asString());
+            Assertions.assertEquals("success", addDSResult.get("outcome").asString());
         } finally {
             ModelNode removeDSOperation = getRemoveDatasourceOperation(ds1);
             executeOperation(removeDSOperation);
@@ -137,7 +137,7 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         ModelNode addDS1FQCNOperation = getAddDatasourceOperation(ds1FQCN);
         try {
             ModelNode addDSResult = getManagementClient().getControllerClient().execute(addDS1FQCNOperation);
-            Assert.assertEquals("success", addDSResult.get("outcome").asString());
+            Assertions.assertEquals("success", addDSResult.get("outcome").asString());
         } finally {
             ModelNode removeDSOperation = getRemoveDatasourceOperation(ds1FQCN);
             executeOperation(removeDSOperation);
@@ -148,7 +148,7 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         ModelNode addDS2FQCNOperation = getAddDatasourceOperation(ds2FQCN);
         try {
             ModelNode addDSResult = getManagementClient().getControllerClient().execute(addDS2FQCNOperation);
-            Assert.assertEquals("success", addDSResult.get("outcome").asString());
+            Assertions.assertEquals("success", addDSResult.get("outcome").asString());
         } finally {
             ModelNode removeDSOperation = getRemoveDatasourceOperation(ds2FQCN);
             executeOperation(removeDSOperation);
@@ -163,15 +163,15 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         ModelNode operation = getDataSourceOperation(address, "java:/wrongClsDs", driverName, DummyDataSource.class.getName());
         try {
             executeOperation(operation);
-            Assert.fail("Not supposed to succeed");
+            Assertions.fail("Not supposed to succeed");
         } catch (MgmtOperationException e) {
             ModelNode result = e.getResult();
-            Assert.assertEquals("failed", result.get("outcome").asString());
+            Assertions.assertEquals("failed", result.get("outcome").asString());
             String failDesc = result.get("failure-description").asString();
-            Assert.assertTrue(failDesc.contains("WFLYJCA0117"));
+            Assertions.assertTrue(failDesc.contains("WFLYJCA0117"));
             return;
         }
-        Assert.fail("Not supposed to be here");
+        Assertions.fail("Not supposed to be here");
     }
 
     @Test
@@ -181,13 +181,13 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
         ModelNode operation = getXADataSourceOperation(address, "java:/wrongXAClsDs", driverName, DummyXADataSource.class.getName());
         try {
             executeOperation(operation);
-            Assert.fail("Not supposed to succeed");
+            Assertions.fail("Not supposed to succeed");
         } catch (MgmtOperationException e) {
             ModelNode result = e.getResult();
-            Assert.assertEquals("failed", result.get("outcome").asString());
+            Assertions.assertEquals("failed", result.get("outcome").asString());
             return;
         }
-        Assert.fail("Not supposed to be here");
+        Assertions.fail("Not supposed to be here");
     }
 
     private ModelNode getXADataSourceAddress(String xaDsName) {

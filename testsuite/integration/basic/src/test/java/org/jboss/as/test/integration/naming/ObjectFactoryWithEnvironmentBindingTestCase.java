@@ -33,7 +33,7 @@ import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -44,9 +44,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 /**
@@ -56,7 +57,7 @@ import org.xnio.IoUtils;
  *
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ObjectFactoryWithEnvironmentBindingTestCase.ObjectFactoryWithEnvironmentBindingTestCaseServerSetup.class)
 public class ObjectFactoryWithEnvironmentBindingTestCase {
 
@@ -106,7 +107,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
             }
             bindingAdd.get(ENVIRONMENT).set(environment);
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
             LOGGER.trace("Object factory bound.");
 
         }
@@ -127,8 +128,8 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
                 bindingRemove.get(OP_ADDR).set(createAddress());
                 bindingRemove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
                 final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
-                Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                        .isDefined());
+                Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                        .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
                 LOGGER.trace("Object factory unbound.");
             } finally {
                 undeployModule();
@@ -147,7 +148,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
     @Test
     public void testBindingWithEnvironment() throws Exception {
         InitialContext context = new InitialContext();
-        Assert.assertEquals("v1", context.lookup("java:global/b"));
+        Assertions.assertEquals("v1", context.lookup("java:global/b"));
     }
 
     private static void deployModule() throws IOException {

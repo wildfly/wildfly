@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.deployment.jcedeployment;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.FilePermission;
@@ -16,7 +16,7 @@ import java.security.SecurityPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.deployment.jcedeployment.provider.DummyProvider;
@@ -28,9 +28,9 @@ import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This tests a JCE provider bundled in an EAR.
@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JCETestCase {
     private static final Logger log = Logger.getLogger(JCETestCase.class);
@@ -89,9 +89,9 @@ public class JCETestCase {
 
     @Test
     public void testJCE() throws Exception {
-        Assume.assumeTrue(
-                "Skipping test as 'javax.crypto.JarVerifier' does not contain a field called 'providerValidator'.",
-                isJCETestable());
+        Assumptions.assumeTrue(
+                isJCETestable(),
+                "Skipping test as 'javax.crypto.JarVerifier' does not contain a field called 'providerValidator'.");
 
         String result = performCall(url, "controller");
         assertEquals("ok", result);

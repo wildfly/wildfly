@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.jca.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import jakarta.annotation.Resource;
@@ -14,7 +14,7 @@ import jakarta.resource.cci.Connection;
 import javax.security.auth.PrivateCredentialPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -32,9 +32,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -47,7 +48,7 @@ import org.wildfly.test.security.common.elytron.SimpleAuthContext;
  *
  * @author Flavia Rainone
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({WildFlyActivationRaWithElytronAuthContextTestCase.ElytronSetup.class, WildFlyActivationRaWithElytronAuthContextTestCase.RaSetup.class})
 public class WildFlyActivationRaWithElytronAuthContextTestCase {
 
@@ -92,7 +93,7 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
             addRaOperation.get("archive").set("wf-ra-ely-security.rar");
             addRaOperation.get("transaction-support").set("NoTransaction");
             ModelNode response = execute(addRaOperation, client);
-            Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
         }
 
         private void addConnectionDefinition(ModelControllerClient client) throws IOException {
@@ -103,7 +104,7 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
             addConnectionDefinitionOperation.get("authentication-context").set(AUTH_CONTEXT);
 
             ModelNode response = execute(addConnectionDefinitionOperation, client);
-            Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
         }
 
         private void removeResourceAdapterSilently(ModelControllerClient client) throws IOException {
@@ -142,9 +143,9 @@ public class WildFlyActivationRaWithElytronAuthContextTestCase {
 
     @Test
     public void deploymentTest() throws Exception {
-        assertNotNull("CF1 not found", connectionFactory1);
+        assertNotNull(connectionFactory1, "CF1 not found");
         Connection cci = connectionFactory1.getConnection();
-        assertNotNull("Cannot obtain connection", cci);
+        assertNotNull(cci, "Cannot obtain connection");
         cci.close();
     }
 

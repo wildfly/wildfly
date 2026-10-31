@@ -15,17 +15,17 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class FlashScopeDistributedSessionTestCase {
 
@@ -56,7 +56,7 @@ public class FlashScopeDistributedSessionTestCase {
             client.execute(setVarRequest).close();
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 String text = EntityUtils.toString(getVarResponse.getEntity());
-                Assert.assertTrue("Text should contain \"Flash Variable: hello\", but is [" + text + "]", text.contains("Flash Variable: hello"));
+                Assertions.assertTrue(text.contains("Flash Variable: hello"), "Text should contain \"Flash Variable: hello\", but is [" + text + "]");
             }
         }
     }
@@ -69,7 +69,7 @@ public class FlashScopeDistributedSessionTestCase {
             HttpUriRequest getVarRequest = new HttpGet(url.toExternalForm() + "getvar2.jsf");
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 String text = EntityUtils.toString(getVarResponse.getEntity());
-                Assert.assertTrue("Text should contain \"Flash Variable: null\", but is [" + text + "]", text.contains("Flash Variable: null"));
+                Assertions.assertTrue(text.contains("Flash Variable: null"), "Text should contain \"Flash Variable: null\", but is [" + text + "]");
             }
         }
     }
@@ -82,7 +82,7 @@ public class FlashScopeDistributedSessionTestCase {
             HttpUriRequest setVarRequest = new HttpGet(url.toExternalForm() + "setvar2.jsf");
             try (CloseableHttpResponse setVarResponse = client.execute(setVarRequest)) {
                 String text = EntityUtils.toString(setVarResponse.getEntity());
-                Assert.assertEquals("Put operation failedwith: " + text, 200, setVarResponse.getStatusLine().getStatusCode());
+                Assertions.assertEquals(200, setVarResponse.getStatusLine().getStatusCode(), "Put operation failedwith: " + text);
             }
         }
     }

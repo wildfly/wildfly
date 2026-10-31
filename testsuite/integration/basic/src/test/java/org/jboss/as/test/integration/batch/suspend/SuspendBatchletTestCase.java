@@ -18,7 +18,7 @@ import jakarta.batch.runtime.JobExecution;
 import jakarta.batch.runtime.JobInstance;
 import jakarta.batch.runtime.StepExecution;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -30,9 +30,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that starts a long-running Batchlet and performs a suspend/resume.
@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
  *
  * @author rmartinc
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SuspendBatchletTestCase extends AbstractBatchTestCase {
 
     @ArquillianResource
@@ -63,22 +63,22 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set("suspend");
         ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertTrue("Failed to suspend: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to suspend: " + result);
     }
 
     private void resumeServer() throws IOException {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set("resume");
         ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertTrue("Failed to resume: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to resume: " + result);
     }
 
     private void checkJobExecution(JobOperator jobOperator, JobExecution jobExecution, BatchStatus expectedBatchStatus, String expectedExitStatus) {
         waitForTermination(jobExecution, 10);
-        Assert.assertEquals("The batchlet is not in the expected batch status", expectedBatchStatus, jobExecution.getBatchStatus());
+        Assertions.assertEquals(expectedBatchStatus, jobExecution.getBatchStatus(), "The batchlet is not in the expected batch status");
         List<StepExecution> steps = jobOperator.getStepExecutions(jobExecution.getExecutionId());
-        Assert.assertFalse("The job execution has no steps", steps.isEmpty());
-        Assert.assertEquals("The batchlet did not return the expected exit status", expectedExitStatus, steps.get(0).getExitStatus());
+        Assertions.assertFalse(steps.isEmpty(), "The job execution has no steps");
+        Assertions.assertEquals(expectedExitStatus, steps.get(0).getExitStatus(), "The batchlet did not return the expected exit status");
     }
 
     // Reimplementation of the following if we ever decide to simplify our testing using Awaitility:

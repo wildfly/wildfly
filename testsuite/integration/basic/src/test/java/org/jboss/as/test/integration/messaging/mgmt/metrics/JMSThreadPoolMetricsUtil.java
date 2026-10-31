@@ -8,9 +8,10 @@ package org.jboss.as.test.integration.messaging.mgmt.metrics;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.junit.Assert;
 
 import jakarta.jms.Destination;
+
+import org.junit.jupiter.api.Assertions;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
@@ -92,10 +93,10 @@ public class JMSThreadPoolMetricsUtil {
     }
 
     public static void assertGreater(String message, long greater, long lesser) {
-        Assert.assertTrue(String.format("%s: expected <%d> is greater than <%d>", message, greater, lesser), greater > lesser);
+        Assertions.assertTrue(greater > lesser, String.format("%s: expected <%d> is greater than <%d>", message, greater, lesser));
     }
 
     public static void assertGreaterOrEqual(String message, long greater, long lesser) {
-        Assert.assertTrue(String.format("%s: expected <%d> is greater or equal to <%d>", message, greater, lesser), greater >= lesser);
+        Assertions.assertTrue(greater >= lesser, String.format("%s: expected <%d> is greater or equal to <%d>", message, greater, lesser));
     }
 }

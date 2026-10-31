@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.ejb.interceptor.regex;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Checking if default interceptor binding works if ejb3 subsystem attribute
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RegexServerSetup.class)
 public class DefaultInterceptorRegexTestCase {
     private static final String EJB_RETURN = TestEjb.MESSAGE;
@@ -40,20 +40,20 @@ public class DefaultInterceptorRegexTestCase {
     public void defaultInterceptor() throws NamingException {
         final InitialContext ctx = new InitialContext();
         TestEjb bean = (TestEjb) ctx.lookup("java:module/Test1");
-        Assert.assertEquals(EJB_INTERCEPTED, bean.test());
+        Assertions.assertEquals(EJB_INTERCEPTED, bean.test());
     }
 
     @Test
     public void defaultInterceptorAnnotatedBean() throws NamingException {
         final InitialContext ctx = new InitialContext();
         AnnotatedEjb bean = (AnnotatedEjb) ctx.lookup("java:module/" + AnnotatedEjb.class.getName());
-        Assert.assertEquals(EJB_INTERCEPTED, bean.test());
+        Assertions.assertEquals(EJB_INTERCEPTED, bean.test());
     }
 
     @Test
     public void annotationExcludeInterceptor() throws NamingException {
         final InitialContext ctx = new InitialContext();
         TestEjb bean = (TestEjb) ctx.lookup("java:module/Test1");
-        Assert.assertEquals(EJB_RETURN, bean.testIgnoreDefault());
+        Assertions.assertEquals(EJB_RETURN, bean.testIgnoreDefault());
     }
 }

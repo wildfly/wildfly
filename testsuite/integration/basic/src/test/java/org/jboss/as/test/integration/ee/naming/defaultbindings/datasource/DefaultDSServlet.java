@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import jakarta.annotation.Resource;
 import javax.naming.InitialContext;
@@ -34,12 +34,12 @@ public class DefaultDSServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
         // this is expected to be null because default datasource binding was removed from ee subsystem
-        Assert.assertNull(dataSource);
+        Assertions.assertNull(dataSource);
         try {
             new InitialContext().lookup("java:comp/env/dataSource");
-            Assert.fail("Lookup should fail!");
+            Assertions.fail("Lookup should fail!");
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof NamingException);
+            Assertions.assertTrue(e instanceof NamingException);
         }
         out.print("OK");
         out.flush();

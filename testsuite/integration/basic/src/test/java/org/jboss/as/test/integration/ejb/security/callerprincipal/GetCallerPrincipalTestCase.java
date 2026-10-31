@@ -25,12 +25,11 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -38,7 +37,8 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.logging.Logger;
@@ -47,9 +47,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.permission.ElytronPermission;
 
 /**
@@ -66,9 +68,9 @@ import org.wildfly.security.permission.ElytronPermission;
  *
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EjbSecurityDomainSetup.class, GetCallerPrincipalTestCase.JmsQueueSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class GetCallerPrincipalTestCase {
 
     private static final String QUEUE_NAME = "queue/callerPrincipal";
@@ -168,7 +170,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(PollingUtils.class)
                 .addClass(Util.class)
                 .addClasses(JmsQueueSetup.class, EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, AbstractMgmtTestBase.class)
-                .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
+                .addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
@@ -190,11 +192,11 @@ public class GetCallerPrincipalTestCase {
         IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
         log.trace("Stateless bean returns: " + bean.get());
 
-        Assert.assertEquals(OK + "start", results.getSlsb("postconstruct"));
+        Assertions.assertEquals(OK + "start", results.getSlsb("postconstruct"));
 
         deployer.undeploy("slsb");
 
-        Assert.assertEquals(OK + "stop", results.getSlsb("predestroy"));
+        Assertions.assertEquals(OK + "stop", results.getSlsb("predestroy"));
     }
 
     @Test
@@ -205,11 +207,11 @@ public class GetCallerPrincipalTestCase {
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.trace("Stateful bean returns: " + bean.get());
 
-            Assert.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));
+            Assertions.assertEquals(ANONYMOUS + "start", results.getSfsb("postconstruct"));
 
             bean.remove();
 
-            Assert.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
+            Assertions.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
         } finally {
             deployer.undeploy("sfsb");
         }
@@ -253,11 +255,11 @@ public class GetCallerPrincipalTestCase {
                 Object obj = ((ObjectMessage) replyMsg).getObject();
                 log.trace("MDB message get: " + obj);
 
-                Assert.assertEquals(OK + "start", results.getMdb("postconstruct"));
+                Assertions.assertEquals(OK + "start", results.getMdb("postconstruct"));
 
                 deployer.undeploy("mdb");
 
-                Assert.assertEquals(OK + "stop", results.getMdb("predestroy"));
+                Assertions.assertEquals(OK + "stop", results.getMdb("predestroy"));
             } finally {
                 if(consumer != null) {
                     consumer.close();

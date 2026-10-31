@@ -13,14 +13,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the HTTP invoker session cookie has the correct path attribute.
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  *
  * @author Rafael Rosa
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class HttpInvokerCookiePathTestCase {
 
@@ -57,9 +57,9 @@ public class HttpInvokerCookiePathTestCase {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 // The HTTP invoker endpoint requires authentication, so it returns 401 Unauthorized.
                 // The JSESSIONID cookie is only set on 401 responses to avoid sticky session issues.
-                Assert.assertEquals(
-                    "Expected 401 Unauthorized from the HTTP invoker endpoint",
-                    401, response.getStatusLine().getStatusCode()
+                Assertions.assertEquals(
+                    401,
+                    response.getStatusLine().getStatusCode(), "Expected 401 Unauthorized from the HTTP invoker endpoint"
                 );
 
                 // Inspect Set-Cookie headers
@@ -88,22 +88,22 @@ public class HttpInvokerCookiePathTestCase {
                     }
                 }
 
-                Assert.assertTrue(
-                    "HTTP invoker endpoint should set JSESSIONID cookie",
-                    foundJSessionId
+                Assertions.assertTrue(
+                    foundJSessionId,
+                    "HTTP invoker endpoint should set JSESSIONID cookie"
                 );
-                Assert.assertNotNull(
-                    "JSESSIONID cookie should have a path attribute",
-                    actualPath
+                Assertions.assertNotNull(
+                    actualPath,
+                    "JSESSIONID cookie should have a path attribute"
                 );
-                Assert.assertTrue(
-                    "HTTP invoker cookie path must start with '/', but was: " + actualPath,
-                    actualPath.startsWith("/")
+                Assertions.assertTrue(
+                    actualPath.startsWith("/"),
+                    "HTTP invoker cookie path must start with '/', but was: " + actualPath
                 );
-                Assert.assertEquals(
-                    "HTTP invoker cookie path should be '/wildfly-services'",
+                Assertions.assertEquals(
                     "/wildfly-services",
-                    actualPath
+                    actualPath,
+                    "HTTP invoker cookie path should be '/wildfly-services'"
                 );
             }
         }

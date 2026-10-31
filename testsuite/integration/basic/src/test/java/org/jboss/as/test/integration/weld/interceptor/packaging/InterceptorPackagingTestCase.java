@@ -5,15 +5,15 @@
 package org.jboss.as.test.integration.weld.interceptor.packaging;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
@@ -23,7 +23,7 @@ import jakarta.inject.Inject;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InterceptorPackagingTestCase {
 
     @Deployment
@@ -54,14 +54,14 @@ public class InterceptorPackagingTestCase {
 
     @Test
     public void testInterceptorEnabled() {
-        Assert.assertEquals("Hello World", simpleEjb2.sayHello());
-        Assert.assertEquals("Hello World", interceptedBean.sayHello());
-        Assert.assertEquals("Hello World", simpleEjb.sayHello());
+        Assertions.assertEquals("Hello World", simpleEjb2.sayHello());
+        Assertions.assertEquals("Hello World", interceptedBean.sayHello());
+        Assertions.assertEquals("Hello World", simpleEjb.sayHello());
     }
 
     @Test
     public void testPostConstructInvoked() {
-        Assert.assertEquals(SimpleInterceptor.POST_CONSTRUCT_MESSAGE  + " World", simpleEjb2.getPostConstructMessage());
+        Assertions.assertEquals(SimpleInterceptor.POST_CONSTRUCT_MESSAGE  + " World", simpleEjb2.getPostConstructMessage());
     }
 
 

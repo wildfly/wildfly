@@ -4,20 +4,19 @@
  */
 
 package org.jboss.as.test.integration.ejb.singleton.creation;
-
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the fix to {@link org.jboss.as.ejb3.component.singleton.SingletonComponent#getComponentInstance())} that was made to
@@ -29,7 +28,7 @@ import org.junit.runner.RunWith;
  *
  * @author steve.coy
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonReentrantPostConstructTestCase {
     private static final Logger log = Logger.getLogger(SingletonReentrantPostConstructTestCase.class.getName());
 
@@ -51,11 +50,11 @@ public class SingletonReentrantPostConstructTestCase {
         // trigger the bean creation life-cycle
         try {
             singletonBean.start();
-            Assert.fail("Expected an EJBException");
+            Assertions.fail("Expected an EJBException");
         } catch (EJBException expected) {
             final Throwable cause = expected.getCause();
-            Assert.assertTrue("Expected exception cause to be an java.lang.IllegalStateException, but it was a " + cause,
-                    cause instanceof IllegalStateException);
+            Assertions.assertTrue(cause instanceof IllegalStateException,
+                    "Expected exception cause to be an java.lang.IllegalStateException, but it was a " + cause);
         }
     }
 

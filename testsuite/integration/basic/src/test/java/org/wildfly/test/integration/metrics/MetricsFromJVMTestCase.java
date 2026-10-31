@@ -5,27 +5,27 @@
 
 package org.wildfly.test.integration.metrics;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.test.integration.metrics.MetricsHelper.getMetricValueFromPrometheusOutput;
 import static org.wildfly.test.integration.metrics.MetricsHelper.getPrometheusMetrics;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test JVM metrics with the base "metrics" subsystem.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class MetricsFromJVMTestCase {
 
@@ -36,7 +36,7 @@ public class MetricsFromJVMTestCase {
         return war;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void skipNonPreview() {
         AssumeTestGroupUtil.assumeNotWildFlyPreview();
     }

@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -33,14 +33,14 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(JdbcRepositoryTestCase.AgroalJdbcJobRepositorySetUp.class)
 public class JdbcRepositoryTestCase extends AbstractBatchTestCase {
     private static final String DEPLOYMENT_NAME = "jdbc-batch.war";
@@ -65,13 +65,13 @@ public class JdbcRepositoryTestCase extends AbstractBatchTestCase {
         final ModelNode op = Operations.createReadAttributeOperation(address, "default-job-repository");
         final ModelNode result = client.getControllerClient().execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).toString());
+            Assertions.fail(Operations.getFailureDescription(result).toString());
         }
         final String foundName = Operations.readResult(result).asString();
-        Assert.assertEquals(
-                String.format("Expected the default-job-repository to be set to %s but was %s. See previously logged errors", REPOSITORY_NAME, foundName),
+        Assertions.assertEquals(
                 REPOSITORY_NAME,
-                foundName);
+                foundName,
+                String.format("Expected the default-job-repository to be set to %s but was %s. See previously logged errors", REPOSITORY_NAME, foundName));
     }
 
     @Test
@@ -90,16 +90,16 @@ public class JdbcRepositoryTestCase extends AbstractBatchTestCase {
         waitForTermination(jobExecution, 5);
 
         // Check the job as completed and the expected execution id should be 1
-        Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+        Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
         // Query the actual DB and ensure we're using the correct repository
-        Assert.assertNotNull(dataSource);
+        Assertions.assertNotNull(dataSource);
         try (Connection connection = dataSource.getConnection()) {
             final Statement stmt = connection.createStatement();
             final ResultSet rs = stmt.executeQuery("SELECT JOBEXECUTIONID, BATCHSTATUS FROM JOB_EXECUTION ORDER BY JOBEXECUTIONID DESC");
-            Assert.assertTrue("Expected a single entry for the query", rs.next());
-            Assert.assertEquals(jobExecution.getExecutionId(), rs.getLong("JOBEXECUTIONID"));
-            Assert.assertEquals(BatchStatus.COMPLETED.toString(), rs.getString("BATCHSTATUS"));
+            Assertions.assertTrue(rs.next(), "Expected a single entry for the query");
+            Assertions.assertEquals(jobExecution.getExecutionId(), rs.getLong("JOBEXECUTIONID"));
+            Assertions.assertEquals(BatchStatus.COMPLETED.toString(), rs.getString("BATCHSTATUS"));
         }
     }
 
@@ -151,7 +151,7 @@ public class JdbcRepositoryTestCase extends AbstractBatchTestCase {
         private static void execute(final ModelControllerClient client, final Operation op) throws IOException {
             final ModelNode result = client.execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                Assert.fail(Operations.getFailureDescription(result).toString());
+                Assertions.fail(Operations.getFailureDescription(result).toString());
             }
             Operations.readResult(result);
         }

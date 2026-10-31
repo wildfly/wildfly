@@ -23,10 +23,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.wildfly.test.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -34,14 +34,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class PreservePathTestCase {
 
    @ArquillianResource
@@ -54,7 +54,7 @@ public class PreservePathTestCase {
 
    static final int TIMEOUT = TimeoutUtil.adjust(5000);
 
-   @Before
+   @BeforeEach
    public void setUp() throws Exception {
 
       ModelNode setPreservePathOp = createOpNode("subsystem=undertow/servlet-container=default", UNDEFINE_ATTRIBUTE_OPERATION);
@@ -66,7 +66,7 @@ public class PreservePathTestCase {
       ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 
-   @After
+   @AfterEach
    public void tearDown() throws Exception {
       File file = new File(tempDir + "/output.txt");
       if (file.exists()) {
@@ -120,8 +120,8 @@ public class PreservePathTestCase {
       while ((!file.exists() || file.length() == 0) && System.currentTimeMillis() < end) {
          Thread.sleep(100);
       }
-      Assert.assertTrue(file + " was not created within the timeout", file.exists());
-      Assert.assertTrue(file + " is empty", file.length() > 0);
+      Assertions.assertTrue(file.exists(), file + " was not created within the timeout");
+      Assertions.assertTrue(file.length() > 0, file + " is empty");
 
       final String expectedServletPath;
       final String expectedRequestURL;
@@ -138,11 +138,11 @@ public class PreservePathTestCase {
 
       try (BufferedReader r = new BufferedReader(new FileReader(file))) {
          String servletPath = r.readLine();
-         Assert.assertEquals("servletPath: " + expectedServletPath, servletPath);
+         Assertions.assertEquals("servletPath: " + expectedServletPath, servletPath);
          String requestUrl = r.readLine();
-         Assert.assertEquals("requestUrl: " + expectedRequestURL, requestUrl);
+         Assertions.assertEquals("requestUrl: " + expectedRequestURL, requestUrl);
          String requestUri = r.readLine();
-         Assert.assertEquals("requestUri: " + expectedRequestURI, requestUri);
+         Assertions.assertEquals("requestUri: " + expectedRequestURI, requestUri);
       }
    }
 

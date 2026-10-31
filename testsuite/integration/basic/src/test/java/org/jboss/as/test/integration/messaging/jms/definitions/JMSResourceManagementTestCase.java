@@ -6,15 +6,15 @@
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -27,16 +27,16 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JMSResourceManagementTestCase {
     private static final Logger LOGGER = Logger.getLogger(JMSResourceManagementTestCase.class);
 
@@ -45,7 +45,7 @@ public class JMSResourceManagementTestCase {
 
     private JMSOperations jmsOperations;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         jmsOperations = JMSOperationsProvider.getInstance(managementClient);
     }
@@ -128,7 +128,7 @@ public class JMSResourceManagementTestCase {
         //System.out.println("result = " + result.toJSONString(false));
         assertEquals(0, result.get("min-pool-size").asInt());
         assertEquals(20, result.get("max-pool-size").asInt());
-        assertFalse(result.toJSONString(false), result.hasDefined("user"));
+        assertFalse(result.hasDefined("user"), result.toJSONString(false));
         assertFalse(result.hasDefined("password"));
         assertFalse(result.hasDefined("client-id"));
 
@@ -162,17 +162,17 @@ public class JMSResourceManagementTestCase {
         readResource.get("recursive").set(true);
 
         ModelNode result = execute(readResource, true);
-        Assert.assertTrue(result.has("runtime-queue"));
-        Assert.assertFalse(result.hasDefined("runtime-queue"));
+        Assertions.assertTrue(result.has("runtime-queue"));
+        Assertions.assertFalse(result.hasDefined("runtime-queue"));
 
         readResource.get("include-runtime").set(true);
         result = execute(readResource, true);
-        Assert.assertTrue(result.hasDefined("runtime-queue"));
+        Assertions.assertTrue(result.hasDefined("runtime-queue"));
         ModelNode queues = result.get("runtime-queue");
         List<Property> propsList = queues.asPropertyList();
-        Assert.assertTrue(propsList.size() > 0);
+        Assertions.assertTrue(propsList.size() > 0);
         for (Property prop : propsList) {
-            Assert.assertTrue(prop.getValue().isDefined());
+            Assertions.assertTrue(prop.getValue().isDefined());
         }
     }
 

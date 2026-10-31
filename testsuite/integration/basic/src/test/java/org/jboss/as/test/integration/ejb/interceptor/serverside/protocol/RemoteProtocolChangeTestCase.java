@@ -13,8 +13,7 @@ import java.util.PropertyPermission;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.InterceptorModule;
@@ -23,17 +22,21 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test case verifying server-side interceptor execution after changing JBoss Remoting protocol.
  *
  * @author Sultan Zhantemirov
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RemoteProtocolChangeTestCase.SetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RemoteProtocolChangeTestCase {
 
     private static Context ctx;
@@ -52,18 +55,18 @@ public class RemoteProtocolChangeTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void initialCheck() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.PROVIDER_URL, "http-remoting://" + TestSuiteEnvironment.getServerAddress() + ":8080");
         ctx = new InitialContext(props);
 
         final SampleBean bean1 = (SampleBean) ctx.lookup("java:module/" + SampleBean.class.getSimpleName());
-        Assert.assertEquals(ProtocolSampleInterceptor.PREFIX + SampleBean.class.getSimpleName(), bean1.getSimpleName());
+        Assertions.assertEquals(ProtocolSampleInterceptor.PREFIX + SampleBean.class.getSimpleName(), bean1.getSimpleName());
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void otherRemoteProtocolCheck() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.PROVIDER_URL, "remoting://" + TestSuiteEnvironment.getServerAddress() + ":8080");
@@ -71,7 +74,7 @@ public class RemoteProtocolChangeTestCase {
 
         final SampleBean bean2 = (SampleBean) ctx.lookup("java:module/" + SampleBean.class.getSimpleName());
 
-        Assert.assertEquals(ProtocolSampleInterceptor.PREFIX + SampleBean.class.getSimpleName(), bean2.getSimpleName());
+        Assertions.assertEquals(ProtocolSampleInterceptor.PREFIX + SampleBean.class.getSimpleName(), bean2.getSimpleName());
     }
 
     static class SetupTask extends AbstractServerInterceptorsSetupTask.SetupTask {

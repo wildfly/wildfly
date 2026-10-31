@@ -10,6 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
+import org.wildfly.test.security.common.CoreUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

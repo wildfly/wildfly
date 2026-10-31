@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.net.URL;
 
 import javax.naming.InitialContext;
@@ -13,7 +15,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
@@ -21,10 +23,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -38,7 +39,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas, Jaikiran Pai, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CreateQueueSetupTask.class)
 public class ResourceRefTestCase {
 
@@ -66,20 +67,22 @@ public class ResourceRefTestCase {
     public void testCorrectBinding() throws NamingException {
         InitialContext context = new InitialContext();
         Object result = context.lookup("java:module/env/ds");
-        Assert.assertTrue(result instanceof DataSource);
+        Assertions.assertTrue(result instanceof DataSource);
     }
 
-    @Test(expected = NameNotFoundException.class)
+    @Test
     public void testIgnoredDependency() throws NamingException {
-        InitialContext context = new InitialContext();
-        context.lookup("java:module/env/ds-ignored");
+        assertThrows(NameNotFoundException.class, () -> {
+            InitialContext context = new InitialContext();
+            context.lookup("java:module/env/ds-ignored");
+        });
     }
 
     @Test
     public void testInjection() throws NamingException {
         InitialContext context = new InitialContext();
         DatasourceBean bean = (DatasourceBean)context.lookup("java:module/datasourceManagedBean");
-        Assert.assertNotNull(bean.getDataSource());
+        Assertions.assertNotNull(bean.getDataSource());
     }
 
     /**
@@ -93,11 +96,11 @@ public class ResourceRefTestCase {
         // lookup the bean
         InitialContext context = new InitialContext();
         ResourceRefRemote bean = (ResourceRefRemote) context.lookup("java:app/resource-ref-test/" + ResourceRefBean.class.getSimpleName() + "!" + ResourceRefRemote.class.getName());
-        Assert.assertNotNull("Bean returned from JNDI is null", bean);
+        Assertions.assertNotNull(bean, "Bean returned from JNDI is null");
 
         // test datasource resource-ref which does not have a res-type specified
         boolean result = bean.isDataSourceAvailableInEnc();
-        Assert.assertTrue("Datasource not bound in ENC of the bean", result);
+        Assertions.assertTrue(result, "Datasource not bound in ENC of the bean");
     }
 
     /**
@@ -111,13 +114,13 @@ public class ResourceRefTestCase {
         InitialContext context = new InitialContext();
        StatelessBeanRemote bean = (StatelessBeanRemote) context.lookup("java:app/resource-ref-test/"+StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getName());
        // check EJBContext through resource-env-ref was handled
-       Assert.assertTrue("resource-env-ref did not handle EJBContext", bean.isEJBContextAvailableThroughResourceEnvRef());
+       Assertions.assertTrue(bean.isEJBContextAvailableThroughResourceEnvRef(), "resource-env-ref did not handle EJBContext");
        // check UserTransaction through resource-env-ref was handled
-       Assert.assertTrue("resource-env-ref did not handle UserTransaction", bean
-             .isUserTransactionAvailableThroughResourceEnvRef());
+       Assertions.assertTrue(bean
+             .isUserTransactionAvailableThroughResourceEnvRef(), "resource-env-ref did not handle UserTransaction");
        // check some other resource through resource-env-ref was handled
-       Assert.assertTrue("resource-env-ref did not setup the other resource in java:comp/env of the bean", bean
-             .isOtherResourceAvailableThroughResourceEnvRef());
+       Assertions.assertTrue(bean
+             .isOtherResourceAvailableThroughResourceEnvRef(), "resource-env-ref did not setup the other resource in java:comp/env of the bean");
     }
 
     @Test
@@ -126,6 +129,6 @@ public class ResourceRefTestCase {
         // defined in jboss.xml
         URL expected = new URL("http://somewhere/url2");
         URL actual = bean.getURL2();
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
     }
 }

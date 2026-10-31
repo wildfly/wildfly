@@ -5,26 +5,26 @@
 
 package org.jboss.as.test.integration.weld.jpa;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Weld JPA injection tests. Simply tests that a persistence context can be injected into a CDI bean.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldJpaInjectionTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_OrmTestCase";
@@ -56,15 +56,12 @@ public class WeldJpaInjectionTestCase {
         return jar;
     }
 
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
-
     @Inject
     private CdiJpaInjectingBean bean;
 
     @Test
     public void testOrmXmlDefinedEmployeeEntity() {
-        expected.expect(NoResultException.class);
-        bean.queryEmployeeName(1);
+        assertThrows(NoResultException.class, () ->
+            bean.queryEmployeeName(1));
     }
 }

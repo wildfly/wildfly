@@ -13,10 +13,10 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIB
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FilePermission;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import jakarta.jms.Session;
 import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -49,15 +49,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests MDB DeliveryActive property + management methods to start/stop delivering messages.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MDBTestCase.JmsQueueSetup.class})
 public class MDBTestCase {
 
@@ -183,8 +184,8 @@ public class MDBTestCase {
         operation.get(OP).set(opName);
         ModelNode result = managementClient.getControllerClient().execute(operation);
 
-        assertTrue(result.toJSONString(true), result.hasDefined(OUTCOME));
-        assertEquals(result.toJSONString(true), SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.hasDefined(OUTCOME), result.toJSONString(true));
+        assertEquals(SUCCESS, result.get(OUTCOME).asString(), result.toJSONString(true));
     }
 
     private void assertMDBDeliveryIsActive(String mdbName, boolean expected) throws IOException {
@@ -193,8 +194,8 @@ public class MDBTestCase {
         operation.get(NAME).set("delivery-active");
         ModelNode result = managementClient.getControllerClient().execute(operation);
 
-        assertTrue(result.toJSONString(true), result.hasDefined(OUTCOME));
-        assertEquals(result.toJSONString(true), expected, result.get(RESULT).asBoolean());
+        assertTrue(result.hasDefined(OUTCOME), result.toJSONString(true));
+        assertEquals(expected, result.get(RESULT).asBoolean(), result.toJSONString(true));
     }
 
     private ModelNode createMDBOperation(String mdbName) {

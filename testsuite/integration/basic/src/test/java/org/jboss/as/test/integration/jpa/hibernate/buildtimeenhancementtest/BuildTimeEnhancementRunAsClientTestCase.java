@@ -5,14 +5,14 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.buildtimeenhancementtest;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jpa.hibernate.buildtimeenhancementtest.entityClasses.Employee;
@@ -21,8 +21,10 @@ import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.jboss.as.arquillian.api.ServerSetup;
 
 /**
@@ -36,7 +38,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
  * - https://docs.hibernate.org/orm/7.4/userguide/html_single/#tooling-maven
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({BuildTimeEnhancementRunAsClientTestCase.TestLogHandlerSetup.class})
 public class BuildTimeEnhancementRunAsClientTestCase {
@@ -82,9 +84,9 @@ public class BuildTimeEnhancementRunAsClientTestCase {
     public void testHibernateBuildTimeEnhancement() {
         // Note: ManagedTypeHelper is an internal Hibernate ORM class, if it is removed or renamed then this test can be updated
         // accordingly.
-        assertTrue("Employee class is expected to be be build time bytecode enhanced but wasn't (" +
-                        org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class) + ")",
-                org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
+        assertTrue(org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class),
+                "Employee class is expected to be be build time bytecode enhanced but wasn't (" +
+                        org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class) + ")");
     }
 
     @ContainerResource
@@ -98,8 +100,8 @@ public class BuildTimeEnhancementRunAsClientTestCase {
     @Test
     public void testHibernateRuntimeEnhancementLogsTraceMessageHHH90009001() throws Exception {
         String expected = "Skipping enhancement of [org.jboss.as.test.integration.jpa.hibernate.buildtimeenhancementtest.entityClasses.Employee]: it's already annotated with @EnhancementInfo";
-        assertTrue("Hibernate ORM Log message not found: " + expected,
-                LoggingUtil.hasLogMessage(managementClient.getControllerClient(), TEST_HANDLER_NAME, expected));
+        assertTrue(LoggingUtil.hasLogMessage(managementClient.getControllerClient(), TEST_HANDLER_NAME, expected),
+                "Hibernate ORM Log message not found: " + expected);
     }
 
 }

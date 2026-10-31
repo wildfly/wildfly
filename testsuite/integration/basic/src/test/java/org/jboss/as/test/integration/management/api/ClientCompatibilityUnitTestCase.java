@@ -15,7 +15,7 @@ import java.util.Random;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -35,9 +35,9 @@ import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
  *
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
 public class ClientCompatibilityUnitTestCase {
@@ -256,7 +256,7 @@ public class ClientCompatibilityUnitTestCase {
             operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
             operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set(true);
             final ModelNode result = client.execute(operation);
-            Assert.assertEquals(operation.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+            Assertions.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString(), operation.toString());
 
             final ModelNode deploy = new ModelNode();
             deploy.get(ModelDescriptionConstants.OP).set("add");
@@ -269,7 +269,7 @@ public class ClientCompatibilityUnitTestCase {
 
             try {
                 final ModelNode deployResult = client.execute(o);
-                Assert.assertEquals(deployResult.toString(), ModelDescriptionConstants.SUCCESS, deployResult.get(ModelDescriptionConstants.OUTCOME).asString());
+                Assertions.assertEquals(ModelDescriptionConstants.SUCCESS, deployResult.get(ModelDescriptionConstants.OUTCOME).asString(), deployResult.toString());
 
             } finally {
                 final ModelNode undeploy = new ModelNode();

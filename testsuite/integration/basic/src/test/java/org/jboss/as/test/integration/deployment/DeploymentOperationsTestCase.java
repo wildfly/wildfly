@@ -22,14 +22,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.protocol.StreamUtils.safeClose;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -42,16 +42,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase {
 
@@ -61,16 +61,16 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
     private static final String tempDir = System.getProperty("java.io.tmpdir");
     private File deployDir;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         deployDir = new File(tempDir + File.separator + "tempDeployments");
         if (deployDir.exists()) {
             FileUtils.deleteDirectory(deployDir);
         }
-        assertTrue("Unable to create deployment scanner directory.", deployDir.mkdir());
+        assertTrue(deployDir.mkdir(), "Unable to create deployment scanner directory.");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         FileUtils.deleteDirectory(deployDir);
     }
@@ -114,16 +114,16 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         try {
             // Deploy
             final ModelNode overallResult = client.execute(operation);
-            Assert.assertTrue(overallResult.asString(), SUCCESS.equals(overallResult.get(OUTCOME).asString()));
+            Assertions.assertTrue(SUCCESS.equals(overallResult.get(OUTCOME).asString()), overallResult.asString());
 
             final ModelNode result = overallResult.get(RESULT, "step-1");
-            Assert.assertTrue(result.asString(), SUCCESS.equals(result.get(OUTCOME).asString()));
+            Assertions.assertTrue(SUCCESS.equals(result.get(OUTCOME).asString()), result.asString());
 
             final ModelNode step1 = result.get(RESULT, "step-1");
-            Assert.assertEquals(SUCCESS, step1.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, step1.get(OUTCOME).asString());
 
             final ModelNode step2 = result.get(RESULT, "step-2");
-            Assert.assertEquals(FAILED, step2.get(OUTCOME).asString());
+            Assertions.assertEquals(FAILED, step2.get(OUTCOME).asString());
 
         } finally {
             safeClose(operation);

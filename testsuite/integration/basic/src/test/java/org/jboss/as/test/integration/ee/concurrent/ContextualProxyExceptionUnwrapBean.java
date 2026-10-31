@@ -5,11 +5,12 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.concurrent.ContextService;
+
 /**
  * The bean that will do the actual test.
  * @author emartins

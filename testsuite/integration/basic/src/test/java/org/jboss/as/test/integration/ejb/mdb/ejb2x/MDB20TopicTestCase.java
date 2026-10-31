@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -19,10 +19,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.jms.Message;
 import jakarta.jms.Queue;
@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MDB20TopicTestCase.JmsQueueSetup.class})
 public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
 
@@ -103,7 +103,7 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
         return ejbJar;
     }
 
-    @Before
+    @BeforeEach
     public void initTopics() {
         try {
             final InitialContext ic = new InitialContext();
@@ -123,13 +123,13 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
     @Test
     public void testEjb20TopicMDBs() throws Exception {
         // make sure that 2 MDBs created 2 subscriptions on topic - wait 5 seconds
-        Assert.assertTrue("MDBs did not created 2 subscriptions on topic in 5s timeout.",
-                waitUntilAtLeastGivenNumberOfSubscriptionIsCreatedOnTopic("ejb2x/topic", 2, 5000));
+        Assertions.assertTrue(waitUntilAtLeastGivenNumberOfSubscriptionIsCreatedOnTopic("ejb2x/topic", 2, 5000),
+                "MDBs did not created 2 subscriptions on topic in 5s timeout.");
         sendTextMessage("Say hello to the topic", topic);
         final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueA, replyA);
+        Assertions.assertNotNull(replyA, "Reply message was null on reply queue: " + replyQueueA);
         final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueB, replyB);
+        Assertions.assertNotNull(replyB, "Reply message was null on reply queue: " + replyQueueB);
     }
 
     /**

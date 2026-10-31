@@ -10,7 +10,7 @@ import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchRuntime;
@@ -36,28 +36,28 @@ public final class JobRepositoryTestUtils {
             // Wait until the job is complete for a maximum of 5 seconds
             AbstractBatchTestCase.waitForTermination(jobExecution, 5);
             // Check the job as completed and the expected execution id should be 1
-            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+            Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
         }
 
         serviceContainer.dumpServices();
 
         ServiceController<?> service = serviceContainer.getService(ServiceName.of("org", "wildfly", "batch", "job", "repository", repositoryName));
-        Assert.assertNotNull(String.format("MSC service for the %s job repository not found. Services found: %s",
+        Assertions.assertNotNull(service, String.format("MSC service for the %s job repository not found. Services found: %s",
                 repositoryName,
                 serviceContainer.getServiceNames().stream()
                         .map(ServiceName::toString)
                         .filter(n -> n.contains("jdbc"))
-                        .collect(Collectors.joining("\n"))), service);
+                        .collect(Collectors.joining("\n"))));
         JobRepository repositoryService = (JobRepository) service.getValue();
         List<Long> list = repositoryService.getJobExecutionsByJob("test-chunk");
-        Assert.assertEquals(2, list.size());
+        Assertions.assertEquals(2, list.size());
         // the last two executions are supposed to be obtained
-        Assert.assertEquals(latestExecutionId, (long) list.get(0));
-        Assert.assertEquals(latestExecutionId - 1, (long) list.get(1));
+        Assertions.assertEquals(latestExecutionId, (long) list.get(0));
+        Assertions.assertEquals(latestExecutionId - 1, (long) list.get(1));
 
         // override the limit and verify that all executions were retrieved
         list = repositoryService.getJobExecutionsByJob("test-chunk", 10);
-        Assert.assertEquals(5, list.size());
+        Assertions.assertEquals(5, list.size());
     }
 
 }

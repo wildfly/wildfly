@@ -7,23 +7,24 @@ package org.jboss.as.test.integration.deployment.classloading.war;
 import jakarta.ejb.Stateless;
 
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.deployment.classloading.ear.TestBB;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.jboss.as.test.integration.common.WebInfLibClass;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WarInEarChildFirstClassLoadingTestCase {
 
     @Deployment
@@ -43,13 +44,13 @@ public class WarInEarChildFirstClassLoadingTestCase {
 
     @Test
     public void testChildFirst() throws ClassNotFoundException {
-        Assert.assertNotSame(Stateless.class.getClassLoader(), getClass().getClassLoader());
+        Assertions.assertNotSame(Stateless.class.getClassLoader(), getClass().getClassLoader());
     }
 
     @Test
     public void testMultipleClasses() throws ClassNotFoundException {
         Class<?> clazz = loadClass(WebInfLibClass.class.getName(), TestBB.class.getClassLoader());
-        Assert.assertNotSame(WebInfLibClass.class, clazz);
+        Assertions.assertNotSame(WebInfLibClass.class, clazz);
     }
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {

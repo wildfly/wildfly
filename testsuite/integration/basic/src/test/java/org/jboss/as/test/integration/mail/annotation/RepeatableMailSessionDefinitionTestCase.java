@@ -9,15 +9,15 @@ import jakarta.annotation.Resource;
 import jakarta.mail.Session;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RepeatableMailSessionDefinitionTestCase {
 
     @Resource(mappedName = "java:/mail/test-mail-session-1")
@@ -36,8 +36,8 @@ public class RepeatableMailSessionDefinitionTestCase {
 
     @Test
     public void testRepeatedMailSessionDefinition() {
-        Assert.assertNotNull(session1);
-        Assert.assertNotNull(session2);
+        Assertions.assertNotNull(session1);
+        Assertions.assertNotNull(session2);
     }
 
 

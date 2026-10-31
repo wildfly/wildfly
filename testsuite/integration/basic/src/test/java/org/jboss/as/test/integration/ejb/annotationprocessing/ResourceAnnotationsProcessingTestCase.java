@@ -5,17 +5,20 @@
 
 package org.jboss.as.test.integration.ejb.annotationprocessing;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 public class ResourceAnnotationsProcessingTestCase {
 
     private static final String ABSTRACT_REFERENCING_INTERFACE_WITHOUT_IMPL = "abstract-referencing-interface-without-impl";
@@ -111,9 +114,10 @@ public class ResourceAnnotationsProcessingTestCase {
         tryDeployment(EJBS_REFERENCING_INTERFACE_WITH_IMPL);
     }
 
-    @Test(expected = DeploymentException.class)
+    @Test
     public void testEjbsReferencingInterfaceWithoutImpl() {
-        tryDeployment(EJBS_REFERENCING_INTERFACE_WITHOUT_IMPL);
+        assertThrows(DeploymentException.class, () ->
+            tryDeployment(EJBS_REFERENCING_INTERFACE_WITHOUT_IMPL));
     }
 
     @Test
@@ -121,9 +125,10 @@ public class ResourceAnnotationsProcessingTestCase {
         tryDeployment(CLASSES_REFERENCING_INTERFACE_WITH_IMPL);
     }
 
-    @Test(expected = DeploymentException.class)
+    @Test
     public void testClassesReferencingInterfaceWithoutImpl() {
-        tryDeployment(CLASSES_REFERENCING_INTERFACE_WITHOUT_IMPL);
+        assertThrows(DeploymentException.class, () ->
+            tryDeployment(CLASSES_REFERENCING_INTERFACE_WITHOUT_IMPL));
     }
 
     private void tryDeployment(String name) {

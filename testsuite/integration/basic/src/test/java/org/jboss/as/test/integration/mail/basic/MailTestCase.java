@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -27,20 +27,20 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A basic Mail test case that sends an email using SMTP and retrieves it via POP3
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ MailTestCase.BatchMailSetup.class })
 public class MailTestCase {
     public static MailServerContainer mailServer = new MailServerContainer("src/test/resources/org/jboss/as/test/integration/mail/basic/");
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         if (mailServer.isRunning()) {
             mailServer.stop();
@@ -63,7 +63,7 @@ public class MailTestCase {
     @ArquillianResource
     private URL url;
 
-    @BeforeClass
+    @BeforeAll
     public static void testRequiresDocker() {
         AssumeTestGroupUtil.assumeDockerAvailable();
     }

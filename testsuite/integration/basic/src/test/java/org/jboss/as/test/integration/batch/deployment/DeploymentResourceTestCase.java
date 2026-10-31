@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -26,16 +26,16 @@ import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the start, stop and restart functionality for deployments.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeploymentResourceTestCase extends AbstractBatchTestCase {
 
@@ -99,10 +99,10 @@ public class DeploymentResourceTestCase extends AbstractBatchTestCase {
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         final ModelNode result = executeOperation(op);
         final ModelNode otherJob = result.get("job", "test-chunk-other");
-        Assert.assertTrue("Expected the test-chunk-other job resource to exist", otherJob.isDefined());
-        Assert.assertEquals(0, otherJob.get("instance-count").asInt());
-        Assert.assertEquals(0, otherJob.get("running-executions").asInt());
-        Assert.assertFalse(otherJob.get("executions").isDefined());
+        Assertions.assertTrue(otherJob.isDefined(), "Expected the test-chunk-other job resource to exist");
+        Assertions.assertEquals(0, otherJob.get("instance-count").asInt());
+        Assertions.assertEquals(0, otherJob.get("running-executions").asInt());
+        Assertions.assertFalse(otherJob.get("executions").isDefined());
     }
 
     private void validateJobXmlNames(final String deploymentName, final String... expectedDescriptors) throws IOException {
@@ -128,15 +128,15 @@ public class DeploymentResourceTestCase extends AbstractBatchTestCase {
                 .map(ModelNode::asString)
                 .collect(Collectors.toSet());
 
-        Assert.assertEquals(expectedDescriptors.size(), jobNames.size());
+        Assertions.assertEquals(expectedDescriptors.size(), jobNames.size());
         for (String xmlDescriptor : expectedDescriptors) {
-            Assert.assertTrue(String.format("Expected %s to be in the list of job-xml-names.", xmlDescriptor),
-                    jobNames.contains(xmlDescriptor));
+            Assertions.assertTrue(jobNames.contains(xmlDescriptor),
+                    String.format("Expected %s to be in the list of job-xml-names.", xmlDescriptor));
         }
 
         for (String xmlDescriptor : unexpectedDescriptors) {
-            Assert.assertFalse(String.format("Expected %s to NOT be in the list of job-xml-names.", xmlDescriptor),
-                    jobNames.contains(xmlDescriptor));
+            Assertions.assertFalse(jobNames.contains(xmlDescriptor),
+                    String.format("Expected %s to NOT be in the list of job-xml-names.", xmlDescriptor));
         }
     }
 
@@ -147,7 +147,7 @@ public class DeploymentResourceTestCase extends AbstractBatchTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(Operations.getFailureDescription(result).asString());
+        Assertions.fail(Operations.getFailureDescription(result).asString());
         // Should never be reached
         return new ModelNode();
     }

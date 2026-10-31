@@ -13,19 +13,19 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.UserTransaction;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * tests the transactional behaviour of EJB lifecycle methods
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class LifecycleMethodTransactionManagementTestCase {
 
     @Deployment
@@ -38,7 +38,7 @@ public class LifecycleMethodTransactionManagementTestCase {
     @Test
     public void testDefaultRequired() throws NamingException {
         StatelessRequired2LifecycleBean required = (StatelessRequired2LifecycleBean)new InitialContext().lookup("java:module/StatelessRequired2LifecycleBean");
-        Assert.assertEquals(Status.STATUS_ACTIVE, required.getState());
+        Assertions.assertEquals(Status.STATUS_ACTIVE, required.getState());
     }
 
     @Test
@@ -49,8 +49,8 @@ public class LifecycleMethodTransactionManagementTestCase {
         StatelessRequiredLifecycleBean required = (StatelessRequiredLifecycleBean)new InitialContext().lookup("java:module/StatelessRequiredLifecycleBean");
         try {
             Object key = tsr.getTransactionKey();
-            Assert.assertNotSame(key, required.getKey());
-            Assert.assertEquals(Status.STATUS_ACTIVE, required.getState());
+            Assertions.assertNotSame(key, required.getKey());
+            Assertions.assertEquals(Status.STATUS_ACTIVE, required.getState());
         } finally {
             userTransaction.rollback();
         }
@@ -62,7 +62,7 @@ public class LifecycleMethodTransactionManagementTestCase {
         userTransaction.begin();
         StatelessNeverLifecycleBean never = (StatelessNeverLifecycleBean)new InitialContext().lookup("java:module/StatelessNeverLifecycleBean");
         try {
-            Assert.assertEquals(Status.STATUS_NO_TRANSACTION, never.getState());
+            Assertions.assertEquals(Status.STATUS_NO_TRANSACTION, never.getState());
         } finally {
             userTransaction.rollback();
         }
@@ -77,8 +77,8 @@ public class LifecycleMethodTransactionManagementTestCase {
         StatefulRequiresNewLifecycleBean required = (StatefulRequiresNewLifecycleBean)new InitialContext().lookup("java:module/StatefulRequiresNewLifecycleBean");
         try {
             Object key = tsr.getTransactionKey();
-            Assert.assertNotSame(key, required.getKey());
-            Assert.assertEquals(Status.STATUS_ACTIVE, required.getState());
+            Assertions.assertNotSame(key, required.getKey());
+            Assertions.assertEquals(Status.STATUS_ACTIVE, required.getState());
         } finally {
             userTransaction.rollback();
         }

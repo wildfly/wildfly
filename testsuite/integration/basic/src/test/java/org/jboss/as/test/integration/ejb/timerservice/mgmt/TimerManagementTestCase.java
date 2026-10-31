@@ -7,11 +7,9 @@ package org.jboss.as.test.integration.ejb.timerservice.mgmt;
 
 import java.io.Serializable;
 
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -21,13 +19,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -35,8 +36,9 @@ import static org.hamcrest.CoreMatchers.containsString;
  *
  * @author: baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
 
     @Deployment
@@ -46,47 +48,47 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
         return ejbJar;
     }
 
-    @After
+    @AfterEach
     public void clean() {
         super.clean();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         super.setup();
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testResourceExistence() throws Exception {
         super.testResourceExistence();
         this.bean.waitOnTimeout();
-        Assert.assertEquals("Timer ticks should register some ++!", 1, this.bean.getTimerTicks());
+        Assertions.assertEquals(1, this.bean.getTimerTicks(), "Timer ticks should register some ++!");
 
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testSuspendAndActivate() throws Exception {
         this.bean.createTimer();
         this.suspendTimer();
         final long ticksCount = this.bean.getTimerTicks();
         this.waitOverTimer();
 
-        Assert.assertEquals("Timer ticks should not change after suspension!", ticksCount, this.bean.getTimerTicks());
+        Assertions.assertEquals(ticksCount, this.bean.getTimerTicks(), "Timer ticks should not change after suspension!");
         this.activateTimer();
         this.bean.waitOnTimeout();
-        Assert.assertEquals("Timer ticks should register some ++!", ticksCount + 1, this.bean.getTimerTicks());
+        Assertions.assertEquals(ticksCount + 1, this.bean.getTimerTicks(), "Timer ticks should register some ++!");
         try {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            MatcherAssert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            assertThat(failureDescription.toString()).as("Wrong failure description").contains("WFLYCTL0216");
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testCancel() throws Exception {
         this.bean.createTimer();
         this.cancelTimer();
@@ -94,20 +96,20 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            MatcherAssert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            assertThat(failureDescription.toString()).as("Wrong failure description").contains("WFLYCTL0216");
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testWildcard() throws Exception {
         assertNoTimers();
         this.bean.createTimer();
         final PathAddress address = PathAddress.pathAddress(getTimerAddressBase(), PathElement.pathElement("timer", "*"));
         final ModelNode operation = Util.createOperation("suspend", address);
         ModelNode response = executeForResult(operation);
-        Assert.assertFalse(Operations.isSuccessfulOutcome(response));
-        MatcherAssert.assertThat("Wrong failure description", Operations.getFailureDescription(response).toString(), containsString("WFLYEJB0526"));
+        Assertions.assertFalse(Operations.isSuccessfulOutcome(response));
+        assertThat(Operations.getFailureDescription(response).toString()).as("Wrong failure description").contains("WFLYEJB0526");
         this.waitOverTimer();
     }
 
@@ -130,6 +132,6 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
 
     @Override
     protected void assertCalendar(final ModelNode timerDetails) {
-        Assert.assertFalse("Calendar", this.isCalendarTimer(timerDetails));
+        Assertions.assertFalse(this.isCalendarTimer(timerDetails), "Calendar");
     }
 }

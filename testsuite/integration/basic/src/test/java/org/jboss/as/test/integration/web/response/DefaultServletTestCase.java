@@ -14,17 +14,17 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URL;
@@ -34,7 +34,7 @@ import java.net.URL;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DefaultServletTestCase {
 
@@ -63,7 +63,7 @@ public class DefaultServletTestCase {
         return war;
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.httpclient = HttpClientBuilder.create().build();
     }
@@ -81,16 +81,16 @@ public class DefaultServletTestCase {
         final String correctURL = url.toString() + APP_XHTML_FILE_NAME;
         final HttpGet httpGetCorrectURL = new HttpGet(correctURL);
         final HttpResponse response = this.httpclient.execute(httpGetCorrectURL);
-        Assert.assertEquals("Unexpected response code for URL " + correctURL, HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        Assertions.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), "Unexpected response code for URL " + correctURL);
         final String content = EntityUtils.toString(response.getEntity());
-        Assert.assertTrue("Unexpected content served at " + correctURL, content.contains("Hello World"));
+        Assertions.assertTrue(content.contains("Hello World"), "Unexpected content served at " + correctURL);
 
         // now try accessing the same URL with a "." at the end of the resource name.
         // This should throw a 404 error and NOT show up the "source" content of the resource
         final String nonExistentURL = url.toString() + APP_XHTML_FILE_NAME + ".";
         final HttpGet httpGetNonExistentURL = new HttpGet(nonExistentURL);
         final HttpResponse responseForNonExistentURL = this.httpclient.execute(httpGetNonExistentURL);
-        Assert.assertEquals("Unexpected response code for URL " + nonExistentURL, HttpServletResponse.SC_NOT_FOUND, responseForNonExistentURL.getStatusLine().getStatusCode());
+        Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseForNonExistentURL.getStatusLine().getStatusCode(), "Unexpected response code for URL " + nonExistentURL);
     }
 
     /**
@@ -103,12 +103,12 @@ public class DefaultServletTestCase {
      */
     @OperateOnDeployment(INFDIRS_DEPLOYMENT)
     @Test
-    public void testInfDirectories(@ArquillianResource URL webAppURL) throws Exception {
+    public void testInfDirectories(@ArquillianResource @OperateOnDeployment(INFDIRS_DEPLOYMENT) URL webAppURL) throws Exception {
         DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "WEB-INFOOBAR/test.html"));
-        Assert.assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, httpResponse.getStatusLine().getStatusCode());
         EntityUtils.consumeQuietly(httpResponse.getEntity());
         httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "META-INFOOBAR/test.html"));
-        Assert.assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, httpResponse.getStatusLine().getStatusCode());
     }
 }

@@ -11,8 +11,7 @@ import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.integration.ejb.interceptor.serverside.AbstractServerInterceptorsSetupTask;
@@ -24,9 +23,12 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test case verifying server-side interceptor execution while accessing an EJB with @RolesAllowed, @DenyAll and @PermitAll security annotations.
@@ -34,8 +36,9 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({SecuredBeanTestCase.SetupTask.class, EjbSecurityDomainSetup.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SecuredBeanTestCase {
 
     static final int EJB_INVOKED_METHODS_COUNT = 4;
@@ -59,7 +62,7 @@ public class SecuredBeanTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void securedBeanAccessCheck() throws NamingException {
         ctx = new InitialContext();
         SecuredBean bean = (SecuredBean) ctx.lookup("java:module/" + SecuredBean.class.getSimpleName());
@@ -68,7 +71,7 @@ public class SecuredBeanTestCase {
 
         try {
             bean.denyAll("denyAll");
-            Assert.fail("it was supposed to throw EJBAccessException");
+            Assertions.fail("it was supposed to throw EJBAccessException");
         }
         catch (EJBAccessException ie){
             // expected
@@ -76,7 +79,7 @@ public class SecuredBeanTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void securedBeanRoleCheck() throws Exception {
         final Callable<Void> callable = () -> {
             ctx = new InitialContext();
@@ -92,7 +95,7 @@ public class SecuredBeanTestCase {
             } catch (EJBAccessException e) {
                 // expected
             }
-            Assert.assertEquals(0, SampleInterceptor.latch.getCount());
+            Assertions.assertEquals(0, SampleInterceptor.latch.getCount());
             return null;
         };
         Util.switchIdentity("user1", "password1", callable);

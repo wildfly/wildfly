@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.batch.repository;
 
 import org.jberet.repository.JobRepository;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.CountingItemReader;
@@ -19,9 +19,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchRuntime;
@@ -30,7 +30,7 @@ import jakarta.batch.runtime.JobExecution;
 import java.util.List;
 import java.util.Properties;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InMemoryRepositoryTestCase extends AbstractBatchTestCase {
 
     private static final String DEPLOYMENT_NAME = "jdbc-batch.war";
@@ -63,19 +63,19 @@ public class InMemoryRepositoryTestCase extends AbstractBatchTestCase {
             // Wait until the job is complete for a maximum of 5 seconds
             AbstractBatchTestCase.waitForTermination(jobExecution, 5);
             // Check the job as completed and the expected execution id should be 1
-            Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+            Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
         }
 
         ServiceController<?> service = serviceContainer.getService(ServiceName.of("org", "wildfly", "batch", "job", "repository", "in-memory"));
         JobRepository repositoryService = (JobRepository) service.getValue();
         List<Long> list = repositoryService.getJobExecutionsByJob("test-chunk");
-        Assert.assertEquals(5, list.size());
+        Assertions.assertEquals(5, list.size());
         // executions should be retrieved in the order from latest to the oldest
-        Assert.assertEquals(latestExecutionId, (long) list.get(0));
-        Assert.assertEquals(latestExecutionId - 1, (long) list.get(1));
-        Assert.assertEquals(latestExecutionId - 2, (long) list.get(2));
-        Assert.assertEquals(latestExecutionId - 3, (long) list.get(3));
-        Assert.assertEquals(latestExecutionId - 4, (long) list.get(4));
+        Assertions.assertEquals(latestExecutionId, (long) list.get(0));
+        Assertions.assertEquals(latestExecutionId - 1, (long) list.get(1));
+        Assertions.assertEquals(latestExecutionId - 2, (long) list.get(2));
+        Assertions.assertEquals(latestExecutionId - 3, (long) list.get(3));
+        Assertions.assertEquals(latestExecutionId - 4, (long) list.get(4));
     }
 
 }

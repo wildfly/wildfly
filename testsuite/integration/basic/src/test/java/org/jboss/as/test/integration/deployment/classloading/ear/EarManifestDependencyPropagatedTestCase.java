@@ -4,21 +4,21 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * tests that dependencies added to items in the ear are propagated to sub deployments.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarManifestDependencyPropagatedTestCase {
 
     public static final String CLASS_FILE_WRITER_CLASS = "org.jboss.classfilewriter.ClassFile";
@@ -53,7 +53,7 @@ public class EarManifestDependencyPropagatedTestCase {
         loadClass(JANDEX_CLASS);
         try {
             EarLibClassLoadingClass.loadClass(JANDEX_CLASS);
-            Assert.fail("Expected class loading to fail");
+            Assertions.fail("Expected class loading to fail");
         } catch (ClassNotFoundException e) {
 
         }

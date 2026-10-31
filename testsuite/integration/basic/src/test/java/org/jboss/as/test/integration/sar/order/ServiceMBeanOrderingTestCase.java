@@ -5,9 +5,9 @@
 
 package org.jboss.as.test.integration.sar.order;
 
-import static org.junit.Assert.assertEquals;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,22 +29,23 @@ import javax.management.remote.JMXConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that Service MBeans that depend on other such mbeans have their lifecycle methods called in correct dependency order.
  *
  * @author Brian Stansberry
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ServiceMBeanOrderingTestCase {
 
@@ -125,12 +126,12 @@ public class ServiceMBeanOrderingTestCase {
 
             // Confirm A is registered before any dependent is created
             for (Map.Entry<String, Integer> entry : events.createsIndexes.entrySet()) {
-                assertTrue(entry.getKey() + " was created before A was registered", entry.getValue() > events.aRegistered);
+                assertTrue(entry.getValue() > events.aRegistered, entry.getKey() + " was created before A was registered");
             }
 
             // Confirm A is deregistered after any dependent is destroyed
             for (Map.Entry<String, Integer> entry : events.destroysIndexes.entrySet()) {
-                assertTrue(entry.getKey() + " was destroyed after A was deregistered", entry.getValue() < events.aDeregistered);
+                assertTrue(entry.getValue() < events.aDeregistered, entry.getKey() + " was destroyed after A was deregistered");
             }
         }
 

@@ -16,7 +16,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,9 +26,10 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.api.Authentication;
 
 /**
@@ -36,7 +37,7 @@ import org.wildfly.test.api.Authentication;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(EJBClientDescriptorTestCase.EJBClientDescriptorTestCaseSetup.class)
 public class EJBClientDescriptorTestCase {
@@ -145,11 +146,11 @@ public class EJBClientDescriptorTestCase {
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_ONE + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
             final String msg = "Hello world from an EJB client descriptor test!!!";
             final String echo = remoteEcho.echo(MODULE_NAME_ONE, msg);
             logger.trace("Received echo " + echo);
-            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+            Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote bean");
         } finally {
             deployer.undeploy("good-client-config");
         }
@@ -167,11 +168,11 @@ public class EJBClientDescriptorTestCase {
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_TWO + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
             final String msg = "Hello world from an EJB client descriptor test!!!";
             try {
                 remoteEcho.echo(MODULE_NAME_TWO, msg);
-                Assert.fail("Exepcted to fail due to no EJB receivers availability");
+                Assertions.fail("Exepcted to fail due to no EJB receivers availability");
             } catch (EJBException e) {
                 // no EJB receivers available, so expected to fail
                 logger.trace("Received the expected exception during testing with no EJB receivers", e);
@@ -198,11 +199,11 @@ public class EJBClientDescriptorTestCase {
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
             final String msg = "Hello world from an EJB client descriptor test!!!";
             final String echo = remoteEcho.echo(MODULE_NAME_THREE, msg);
             logger.trace("Received echo " + echo);
-            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+            Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote bean");
         } finally {
             deployer.undeploy("local-and-remote-receviers-config");
         }
@@ -221,11 +222,11 @@ public class EJBClientDescriptorTestCase {
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_1_2_MODULE_NAME + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
             final String msg = "Hello world from an EJB client descriptor test!!!";
             try {
                 remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
-                Assert.fail("Expected to receive a timeout for the invocation");
+                Assertions.fail("Expected to receive a timeout for the invocation");
             } catch (Exception e) {
                 if (e instanceof EJBException && e.getCause() instanceof TimeoutException) {
                     logger.trace("Got the expected timeout exception", e.getCause());
@@ -252,7 +253,7 @@ public class EJBClientDescriptorTestCase {
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
             final String msg = "Hello world from an EJB client descriptor test!!!";
             remoteEcho.echo(JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME, msg);
         } finally {

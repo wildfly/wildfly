@@ -16,7 +16,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -31,8 +30,11 @@ import org.jboss.resteasy.plugins.providers.StringTextStar;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-disable-providers} attribute works as expected.
@@ -45,6 +47,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -66,7 +69,7 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefaultBuiltInReader() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -76,18 +79,18 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = StringTextStar.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkDefaultBuiltInWriter() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -97,18 +100,18 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request(MediaType.APPLICATION_JSON)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = StringTextStar.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkDefaultUserDefinedReader() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -119,18 +122,18 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void checkDefaultUserDefinedWriter() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -141,18 +144,18 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(5)
+    @Order(5)
     public void checkDefaultBuiltIn() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -160,14 +163,14 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request()
                             .post(Entity.text("stringStarEnabled"))
             ) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("stringStarEnabled", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("stringStarEnabled", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(6)
+    @Order(6)
     public void checkDefaultUserDefined() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -175,15 +178,15 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request()
                             .post(Entity.text(new SimpleText("simple-text")))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final SimpleText simpleText = response.readEntity(SimpleText.class);
-                Assert.assertEquals("simple-text", simpleText.getText());
+                Assertions.assertEquals("simple-text", simpleText.getText());
             }
         }
     }
 
     @Test
-    @InSequence(11)
+    @Order(11)
     public void checkDisableBuiltInProvider() throws Exception {
         final ModelNode disabledProviders = new ModelNode().setEmptyList();
         disabledProviders.add(StringTextStar.class.getName());
@@ -195,13 +198,13 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request()
                             .post(Entity.text("stringStarDisabled"))
             ) {
-                Assert.assertEquals(415, response.getStatus());
+                Assertions.assertEquals(415, response.getStatus());
             }
         }
     }
 
     @Test
-    @InSequence(12)
+    @Order(12)
     public void checkDisableUserDefinedProvider() throws Exception {
         final ModelNode disabledProviders = new ModelNode().setEmptyList();
         disabledProviders.add(SimpleTextReaderWriter.class.getName());
@@ -213,16 +216,16 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request()
                             .post(Entity.text(new SimpleText("simple-text-error")))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 // We can use the SimpleTextReaderWriter because we're on the client site
                 final SimpleText simpleText = response.readEntity(SimpleText.class);
-                Assert.assertEquals("simple-text-error", simpleText.getText());
+                Assertions.assertEquals("simple-text-error", simpleText.getText());
             }
         }
     }
 
     @Test
-    @InSequence(13)
+    @Order(13)
     public void checkDisableProvider() throws Exception {
         // Disable all providers which can write text/plain
         final ModelNode disabledProviders = new ModelNode().setEmptyList();
@@ -237,7 +240,7 @@ public class ResteasyDisableProvidersTestCase extends AbstractResteasyAttributeT
                             .request()
                             .post(Entity.text(new SimpleText("simple-text-error")))
             ) {
-                Assert.assertEquals(415, response.getStatus());
+                Assertions.assertEquals(415, response.getStatus());
             }
         }
     }

@@ -11,13 +11,13 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that in a CDI enabled deployment that the legacy {@link PersistenceContext} and {@link PersistenceUnit} still
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:jperkins@ibm.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ApplicationScoped
 public class LegacyInjectionTestCase {
 
@@ -53,25 +53,25 @@ public class LegacyInjectionTestCase {
 
     @Test
     public void checkPu1EntityManager() {
-        Assert.assertNotNull(emPu1);
-        Assert.assertEquals(DEPLOYMENT_NAME + "#pu1", emPu1.getEntityManagerFactory().getName());
+        Assertions.assertNotNull(emPu1);
+        Assertions.assertEquals(DEPLOYMENT_NAME + "#pu1", emPu1.getEntityManagerFactory().getName());
     }
 
     @Test
     public void checkPu2EntityManager() {
-        Assert.assertNotNull(emPu2);
-        Assert.assertEquals(DEPLOYMENT_NAME + "#pu2", emPu2.getEntityManagerFactory().getName());
+        Assertions.assertNotNull(emPu2);
+        Assertions.assertEquals(DEPLOYMENT_NAME + "#pu2", emPu2.getEntityManagerFactory().getName());
     }
 
     @Test
     public void checkPu1EntityManagerFactory() {
-        Assert.assertNotNull(emfPu1);
-        Assert.assertEquals(DEPLOYMENT_NAME + "#pu1", emfPu1.getName());
+        Assertions.assertNotNull(emfPu1);
+        Assertions.assertEquals(DEPLOYMENT_NAME + "#pu1", emfPu1.getName());
     }
 
     @Test
     public void checkPu2EntityManagerFactory() {
-        Assert.assertNotNull(emfPu2);
-        Assert.assertEquals(DEPLOYMENT_NAME + "#pu2", emfPu2.getName());
+        Assertions.assertNotNull(emfPu2);
+        Assertions.assertEquals(DEPLOYMENT_NAME + "#pu2", emfPu2.getName());
     }
 }

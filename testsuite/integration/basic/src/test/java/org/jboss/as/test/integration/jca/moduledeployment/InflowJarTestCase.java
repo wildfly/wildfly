@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.jca.moduledeployment;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,7 +13,7 @@ import java.util.Set;
 import jakarta.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -32,8 +32,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -51,7 +52,7 @@ import org.junit.runner.RunWith;
  *         modulename/main/META-INF/ra.xml
  *         modulename/main/module.jar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(InflowJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
 

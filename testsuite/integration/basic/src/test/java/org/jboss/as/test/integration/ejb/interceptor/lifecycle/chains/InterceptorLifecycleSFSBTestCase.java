@@ -8,13 +8,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that lifecycle interceptors are handed correctly,
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InterceptorLifecycleSFSBTestCase {
 
     @Deployment
@@ -38,8 +38,8 @@ public class InterceptorLifecycleSFSBTestCase {
         InitialContext ctx = new InitialContext();
         InterceptedNoProceedSLSB bean = (InterceptedNoProceedSLSB)ctx.lookup("java:module/" + InterceptedNoProceedSLSB.class.getSimpleName());
         bean.doStuff();
-        Assert.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
-        Assert.assertFalse(InterceptedNoProceedSLSB.isPostConstructCalled());
+        Assertions.assertTrue(LifecycleInterceptorNoProceed.postConstruct);
+        Assertions.assertFalse(InterceptedNoProceedSLSB.isPostConstructCalled());
     }
 
     @Test
@@ -47,8 +47,8 @@ public class InterceptorLifecycleSFSBTestCase {
         InitialContext ctx = new InitialContext();
         InterceptedWithProceedSLSB bean = (InterceptedWithProceedSLSB)ctx.lookup("java:module/" + InterceptedWithProceedSLSB.class.getSimpleName());
         bean.doStuff();
-        Assert.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
-        Assert.assertTrue(InterceptedWithProceedSLSB.isPostConstructCalled());
+        Assertions.assertTrue(LifecycleInterceptorWithProceed.postConstruct);
+        Assertions.assertTrue(InterceptedWithProceedSLSB.isPostConstructCalled());
     }
 
 

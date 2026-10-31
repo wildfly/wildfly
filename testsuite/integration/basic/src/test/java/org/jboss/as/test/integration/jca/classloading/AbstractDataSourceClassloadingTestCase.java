@@ -16,8 +16,8 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import jakarta.annotation.Resource;
 import javax.sql.DataSource;
@@ -156,7 +156,7 @@ public abstract class AbstractDataSourceClassloadingTestCase {
 
     @Test
     public void testGetConnection() throws Exception {
-        Assert.assertNotNull(ds);
+        Assertions.assertNotNull(ds);
         ds.getConnection();
         ds.getConnection("", "");
     }

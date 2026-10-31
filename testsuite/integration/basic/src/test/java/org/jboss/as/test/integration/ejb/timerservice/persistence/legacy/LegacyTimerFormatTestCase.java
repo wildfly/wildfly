@@ -9,7 +9,7 @@ import java.io.InputStream;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -17,16 +17,16 @@ import org.jboss.as.test.shared.FileUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the old non-xml class based serialization format can still be read
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(LegacyTimerFormatTestCase.LegacyTimerFormatTestCaseSetup.class)
 public class LegacyTimerFormatTestCase {
 
@@ -67,7 +67,7 @@ public class LegacyTimerFormatTestCase {
 
     @Test
     public void createTimerService() throws NamingException {
-        Assert.assertTrue(LegacyTimerServiceBean.awaitTimerCall());
+        Assertions.assertTrue(LegacyTimerServiceBean.awaitTimerCall());
     }
 
 }

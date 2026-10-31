@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -26,8 +25,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-prefer-jackson-over-jsonb} attribute works as expected.
@@ -40,6 +42,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -61,7 +64,7 @@ public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttr
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -69,15 +72,15 @@ public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttr
                             .request()
                             .post(Entity.json("{\"name\":\"resteasy\",\"roles\": [\"ADMIN\", \"MANAGER\"]}"))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final User user = response.readEntity(User.class);
-                Assert.assertEquals("resteasy", user.getName());
+                Assertions.assertEquals("resteasy", user.getName());
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkJackson() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
@@ -86,15 +89,15 @@ public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttr
                             .request()
                             .post(Entity.json("{\"name\":\"resteasy\",\"roles\": [\"admin\", \"user\"]}"))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final User user = response.readEntity(User.class);
-                Assert.assertEquals("resteasy", user.getName());
+                Assertions.assertEquals("resteasy", user.getName());
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkJacksonInvalidProperty() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -103,9 +106,9 @@ public class ResteasyPreferJacksonOverJsonbTestCase extends AbstractResteasyAttr
                             .request()
                             .post(Entity.json("{\"name\":\"resteasy\",\"roles\": [\"MANAGER\"],\"invalid\": true}"))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final User user = response.readEntity(User.class);
-                Assert.assertEquals("resteasy", user.getName());
+                Assertions.assertEquals("resteasy", user.getName());
             }
         }
     }

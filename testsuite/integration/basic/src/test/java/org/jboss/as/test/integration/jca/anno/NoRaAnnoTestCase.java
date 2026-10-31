@@ -5,9 +5,9 @@
 package org.jboss.as.test.integration.jca.anno;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +17,7 @@ import jakarta.annotation.Resource;
 import jakarta.resource.spi.ActivationSpec;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -33,7 +33,8 @@ import org.jboss.as.test.integration.jca.annorar.AnnoMessageListener;
 import org.jboss.as.test.integration.jca.annorar.AnnoMessageListener1;
 import org.jboss.as.test.integration.jca.annorar.AnnoResourceAdapter;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.metadata.spec.ConnectorImpl;
@@ -47,15 +48,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Activation of annotated RA
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(NoRaAnnoTestCase.NoRaAnnoTestCaseSetup.class)
 public class NoRaAnnoTestCase {
 
@@ -100,7 +102,7 @@ public class NoRaAnnoTestCase {
                 ResourceAdapterArchive.class, "ra16anno.rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class);
         ja.addClasses(NoRaAnnoTestCase.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()).addPackage(
                 AnnoConnectionFactory.class.getPackage());
         raa.addAsLibrary(ja)
                 .addAsManifestResource(

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.common.WebInfLibClass;
 import org.jboss.as.test.shared.ResourceListingUtils;
 import org.jboss.logging.Logger;
@@ -20,11 +20,11 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarResourceListingTestCase {
 
     private static final Logger log = Logger.getLogger(EarResourceListingTestCase.class);
@@ -60,26 +60,26 @@ public class EarResourceListingTestCase {
         return ear;
     }
 
-    @Test()
+    @Test
     public void testRecursiveEARResourceRetrieval() {
         log.trace("Test non-recursive listing of resources in EAR deployment");
         doTestEARResourceRetrieval(true, "/");
 
     }
 
-    @Test()
+    @Test
     public void testNonRecursiveEARResourceRetrieval() {
         log.trace("Test recursive listing of resources in EAR deployment");
         doTestEARResourceRetrieval(false, "/");
     }
 
-    @Test()
+    @Test
     public void testRecursiveEARResourceRetrievalForSpecifiedRootDir() {
         log.trace("Test recursive listing of resources in EAR deployment for root dir /META-INF");
         doTestEARResourceRetrieval(true, "/META-INF");
     }
 
-    @Test()
+    @Test
     public void testNonRecursiveEARResourceRetrievalForSpecifiedRootDir() {
         log.trace("Test non-recursive listing of resources in EAR deployment for root dir /META-INF");
         doTestEARResourceRetrieval(false, "/META-INF");
@@ -110,7 +110,7 @@ public class EarResourceListingTestCase {
             log.trace(foundResource);
         }
 
-        Assert.assertArrayEquals("Not all resources from EAR archive are correctly listed", resourcesInDeployment.toArray(), foundResources.toArray());
+        Assertions.assertArrayEquals(resourcesInDeployment.toArray(), foundResources.toArray(), "Not all resources from EAR archive are correctly listed");
     }
 
 

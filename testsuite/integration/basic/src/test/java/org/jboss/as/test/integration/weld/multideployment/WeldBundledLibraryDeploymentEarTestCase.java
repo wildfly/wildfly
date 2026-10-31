@@ -7,16 +7,16 @@ package org.jboss.as.test.integration.weld.multideployment;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that CDI beans defined in an installed library can be used in an .ear deployment.
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  * @see https://issues.jboss.org/browse/AS7-6821
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibraryDeploymentTestCase {
 
     @Inject
@@ -38,15 +38,15 @@ public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibr
 
     @Test
     public void testSimpleBeanInjected() {
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
         bean.ping();
 
-        Assert.assertNotNull(injectedBean);
-        Assert.assertNotNull(injectedBean.getBean());
+        Assertions.assertNotNull(injectedBean);
+        Assertions.assertNotNull(injectedBean.getBean());
         injectedBean.getBean().ping();
 
-        Assert.assertNotNull(injectedSessionBean);
-        Assert.assertNotNull(injectedSessionBean.getBean());
+        Assertions.assertNotNull(injectedSessionBean);
+        Assertions.assertNotNull(injectedSessionBean.getBean());
         injectedSessionBean.getBean().ping();
     }
 

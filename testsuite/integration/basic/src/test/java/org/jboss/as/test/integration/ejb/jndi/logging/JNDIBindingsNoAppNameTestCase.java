@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ejb.jndi.logging;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -16,9 +16,9 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -32,7 +32,7 @@ import java.util.Properties;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(JNDIBindingsNoAppNameTestCase.TestLogHandlerSetup.class)
 public class JNDIBindingsNoAppNameTestCase {
@@ -78,9 +78,9 @@ public class JNDIBindingsNoAppNameTestCase {
     public void testJNDIBindingsNoAppName() throws Exception {
         Context ctx = getInitialContext(HOST, PORT);
         Hello ejb = (Hello) ctx.lookup("ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello");
-        Assert.assertNotNull("Null object returned for local business interface lookup in the ejb namespace", ejb);
-        Assert.assertTrue("Expected JNDI binding message not found", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), TEST_HANDLER_NAME,
-                "ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello"));
+        Assertions.assertNotNull(ejb, "Null object returned for local business interface lookup in the ejb namespace");
+        Assertions.assertTrue(LoggingUtil.hasLogMessage(managementClient.getControllerClient(), TEST_HANDLER_NAME,
+                "ejb:/ejb-jndi/Hello!org.jboss.as.test.integration.ejb.jndi.logging.Hello"), "Expected JNDI binding message not found");
     }
 
     private static Context getInitialContext(String host, Integer port)  throws NamingException {

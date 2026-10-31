@@ -10,12 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
@@ -30,21 +28,21 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.After;
-import org.junit.AfterClass;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeployWithRuntimeNameTestCase {
 
@@ -66,12 +64,12 @@ public class DeployWithRuntimeNameTestCase {
         return ShrinkWrap.create(JavaArchive.class, "dummy.jar").addClass(DeployWithRuntimeNameTestCase.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setupCli() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ctx = CLITestUtil.getCommandContext();
         ctx.connectController();
@@ -88,14 +86,14 @@ public class DeployWithRuntimeNameTestCase {
         return tempFile;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         AbstractCliTestBase.closeCLI();
     }
 
-    @After
+    @AfterEach
     public void undeployAll() {
-        assertThat(warFile.delete(), is(true));
+        assertThat(warFile.delete()).isTrue();
         if(ctx != null) {
             ctx.handleSafe("undeploy " + APP_NAME);
             ctx.handleSafe("undeploy " +OTHER_APP_NAME);
@@ -113,7 +111,7 @@ public class DeployWithRuntimeNameTestCase {
         try {
         ctx.handle(buildDeployCommand(RUNTIME_NAME, OTHER_APP_NAME));
         } catch(CommandLineException ex) {
-            assertThat(ex.getMessage(), containsString("WFLYSRV0205"));
+            assertThat(ex.getMessage()).contains("WFLYSRV0205");
         }
         checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet",  false);
         checkURL("SimpleServlet/page.html", "Version1",  false);
@@ -164,7 +162,7 @@ public class DeployWithRuntimeNameTestCase {
         boolean failed = false;
         try {
             String response = HttpRequest.get(baseUrl + path, 10, TimeUnit.SECONDS);
-            assertThat(response, containsString(content));
+            assertThat(response).contains(content);
         } catch (Exception e) {
             failed = true;
             if (!shouldFail) {
@@ -172,7 +170,7 @@ public class DeployWithRuntimeNameTestCase {
             }
         }
         if (shouldFail) {
-            assertThat(baseUrl + path, failed, is(true));
+            assertThat(failed).as(baseUrl + path).isTrue();
         }
     }
 

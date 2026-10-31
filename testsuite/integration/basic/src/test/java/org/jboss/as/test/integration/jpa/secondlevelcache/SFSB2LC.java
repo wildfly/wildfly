@@ -5,9 +5,9 @@
 
 package org.jboss.as.test.integration.jpa.secondlevelcache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import jakarta.ejb.Stateful;
@@ -50,15 +50,15 @@ public class SFSB2LC {
         try {
             // check if entities are NOT cached in 2LC
             String[] names = stats.getSecondLevelCacheRegionNames();
-            assertEquals("There aren't any 2LC regions.", 0, names.length);
+            assertEquals(0, names.length, "There aren't any 2LC regions.");
 
             createEmployee(em, "Martin", "Prague 132", 1);
-            assertEquals("There aren't any puts in the 2LC.", 0, stats.getSecondLevelCachePutCount());
+            assertEquals(0, stats.getSecondLevelCachePutCount(), "There aren't any puts in the 2LC.");
 
             // check if queries are NOT cached in 2LC
             Employee emp = getEmployeeQuery(em, 1);
-            assertNotNull("Employee returned", emp);
-            assertEquals("There aren't any query puts in the 2LC.", 0, stats.getQueryCachePutCount());
+            assertNotNull(emp, "Employee returned");
+            assertEquals(0, stats.getQueryCachePutCount(), "There aren't any query puts in the 2LC.");
 
             // cleanup
             em.remove(emp);
@@ -90,20 +90,20 @@ public class SFSB2LC {
             // add new entities and check if they are put in 2LC
             createEmployee(em, "Peter", "Ostrava", 2);
             createEmployee(em, "Tom", "Brno", 3);
-            assertEquals("There are 2 puts in the 2LC" + generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getPutCount());
+            assertEquals(2, emp2LCStats.getPutCount(), "There are 2 puts in the 2LC" + generateEntityCacheStats(emp2LCStats));
 
             // loading all Employee entities should put in 2LC all Employee
             List<?> empList = getAllEmployeesQuery(em);
-            assertEquals("There are 2 entities.", empList.size(), 2);
-            assertEquals("There are 2 entities in the 2LC" + generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getElementCountInMemory());
+            assertEquals(empList.size(), 2, "There are 2 entities.");
+            assertEquals(2, emp2LCStats.getElementCountInMemory(), "There are 2 entities in the 2LC" + generateEntityCacheStats(emp2LCStats));
 
             // clear session
             em.clear();
 
             // entity should be loaded from 2L cache, we'are expecting hit in 2L cache
             Employee emp = getEmployee(em, 2);
-            assertNotNull("Employee returned", emp);
-            assertEquals("Expected 1 hit in cache" + generateEntityCacheStats(emp2LCStats), 1, emp2LCStats.getHitCount());
+            assertNotNull(emp, "Employee returned");
+            assertEquals(1, emp2LCStats.getHitCount(), "Expected 1 hit in cache" + generateEntityCacheStats(emp2LCStats));
 
         } catch (AssertionError e) {
             return e.getMessage();
@@ -127,7 +127,7 @@ public class SFSB2LC {
         try {
             // add new entity
             createEmployee(em, "David", "Praha", 10);
-            assertEquals("There is 1 put in the 2LC" + generateEntityCacheStats(emp2LCStats), 1, emp2LCStats.getPutCount());
+            assertEquals(1, emp2LCStats.getPutCount(), "There is 1 put in the 2LC" + generateEntityCacheStats(emp2LCStats));
 
         } catch (AssertionError e) {
             return e.getMessage();
@@ -140,8 +140,8 @@ public class SFSB2LC {
         try {
             // loading entity stored in previous session, we'are expecting hit in cache
             Employee emp = getEmployee(em2, 10);
-            assertNotNull("Employee returned", emp);
-            assertEquals("Expected 1 hit in 2LC" + generateEntityCacheStats(emp2LCStats), 1, emp2LCStats.getHitCount());
+            assertNotNull(emp, "Employee returned");
+            assertEquals(1, emp2LCStats.getHitCount(), "Expected 1 hit in 2LC" + generateEntityCacheStats(emp2LCStats));
 
         } catch (AssertionError e) {
             return e.getMessage();
@@ -166,9 +166,9 @@ public class SFSB2LC {
         try {
             createEmployee(em, "Jan", "Ostrava", 20);
             createEmployee(em, "Martin", "Brno", 30);
-            assertEquals("There are 2 puts in the 2LC" + generateEntityCacheStats(emp2LCStats), 2, emp2LCStats.getPutCount());
+            assertEquals(2, emp2LCStats.getPutCount(), "There are 2 puts in the 2LC" + generateEntityCacheStats(emp2LCStats));
 
-            assertTrue("Expected entities stored in the cache" + generateEntityCacheStats(emp2LCStats), emp2LCStats.getElementCountInMemory() > 0);
+            assertTrue(emp2LCStats.getElementCountInMemory() > 0, "Expected entities stored in the cache" + generateEntityCacheStats(emp2LCStats));
 
             // evict entity 2lc
             emf.getCache().evictAll();
@@ -194,12 +194,12 @@ public class SFSB2LC {
         CacheRegionStatistics emp2LCStats = stats.getDomainDataRegionStatistics(CACHE_REGION_NAME + "Employee");
 
         try {
-            assertEquals("Expected no entities stored in the cache" + emp2LCStats, 0, emp2LCStats.getElementCountInMemory());
+            assertEquals(0, emp2LCStats.getElementCountInMemory(), "Expected no entities stored in the cache" + emp2LCStats);
 
             // loading entity stored in previous session, we are expecting miss in 2lc
             Employee emp = getEmployee(em, 20);
-            assertNotNull("Employee returned", emp);
-            assertEquals("Expected 1 miss in 2LC" + generateEntityCacheStats(emp2LCStats), 1, emp2LCStats.getMissCount());
+            assertNotNull(emp, "Employee returned");
+            assertEquals(1, emp2LCStats.getMissCount(), "Expected 1 miss in 2LC" + generateEntityCacheStats(emp2LCStats));
 
         } catch (AssertionError e) {
             return e.getMessage();
@@ -238,13 +238,13 @@ public class SFSB2LC {
 
             // query - this call should fill the cache
             query.getResultList();
-            assertEquals("Expected 1 miss in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCacheMissCount());
-            assertEquals("Expected 1 put in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCachePutCount());
-            assertEquals("Expected no hits in cache" + generateQueryCacheStats(queryStats), 0, queryStats.getCacheHitCount());
+            assertEquals(1, queryStats.getCacheMissCount(), "Expected 1 miss in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(1, queryStats.getCachePutCount(), "Expected 1 put in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(0, queryStats.getCacheHitCount(), "Expected no hits in cache" + generateQueryCacheStats(queryStats));
 
             // query - second call should hit cache
             query.getResultList();
-            assertEquals("Expected 1 hit in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCacheHitCount());
+            assertEquals(1, queryStats.getCacheHitCount(), "Expected 1 hit in cache" + generateQueryCacheStats(queryStats));
 
 
         } catch (AssertionError e) {
@@ -298,9 +298,9 @@ public class SFSB2LC {
 
             // query - this call shouldn't hit the cache -> query cache is empty
             query.getResultList();
-            assertEquals("Expected 1 miss in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCacheMissCount());
-            assertEquals("Expected 1 put in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCachePutCount());
-            assertEquals("Expected no hits in cache" + generateQueryCacheStats(queryStats), 0, queryStats.getCacheHitCount());
+            assertEquals(1, queryStats.getCacheMissCount(), "Expected 1 miss in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(1, queryStats.getCachePutCount(), "Expected 1 put in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(0, queryStats.getCacheHitCount(), "Expected no hits in cache" + generateQueryCacheStats(queryStats));
 
 
         } catch (AssertionError e) {

@@ -31,7 +31,7 @@ import java.net.URL;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.naming.NamingContext;
@@ -42,9 +42,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for changing JBDI bound values in the naming subsystem without forcing a reload/restart (see WFLY-3239).
@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RebindTestCase {
 
     @ArquillianResource
@@ -117,8 +117,8 @@ public class RebindTestCase {
 
             operation = prepareReadResourceOperation(name);
             operationResult = managementClient.getControllerClient().execute(operation);
-            Assert.assertFalse(operationResult.get(FAILURE_DESCRIPTION).toString(), operationResult.get(FAILURE_DESCRIPTION).isDefined());
-            Assert.assertEquals("java:global/lookup", operationResult.get(RESULT).get(LOOKUP).asString());
+            Assertions.assertFalse(operationResult.get(FAILURE_DESCRIPTION).isDefined(), operationResult.get(FAILURE_DESCRIPTION).toString());
+            Assertions.assertEquals("java:global/lookup", operationResult.get(RESULT).get(LOOKUP).asString());
         } catch (Exception e) {
             error = e;
             throw e;
@@ -195,14 +195,14 @@ public class RebindTestCase {
     }
 
     private void verifyBinding(ModelNode result, String bindingName, String bindingValue) throws Exception {
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
-        Assert.assertEquals(bindingValue, bean.lookupBind(bindingName).toString());
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
+        Assertions.assertEquals(bindingValue, bean.lookupBind(bindingName).toString());
     }
 
     private void verifyBindingClass(ModelNode result, String bindingName, String bindingClassName) throws Exception {
         Class bindingClass = Class.forName(bindingClassName);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
-        Assert.assertTrue(bindingClass.isInstance(bean.lookupBind(bindingName)));
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
+        Assertions.assertTrue(bindingClass.isInstance(bean.lookupBind(bindingName)));
     }
 
     private ModelNode prepareAddBindingOperation(String bindingName, String bindingType) {
@@ -243,8 +243,8 @@ public class RebindTestCase {
         ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
         if (testException == null) {
             //Only error here if the test was successful
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         } else {
             if (removeResult.get(FAILURE_DESCRIPTION).isDefined()) {
                 throw new Exception(removeResult.get(FAILURE_DESCRIPTION) +

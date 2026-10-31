@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
 import static jakarta.jms.JMSContext.AUTO_ACKNOWLEDGE;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;

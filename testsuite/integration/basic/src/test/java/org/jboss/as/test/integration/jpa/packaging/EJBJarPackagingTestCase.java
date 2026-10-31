@@ -5,26 +5,27 @@
 
 package org.jboss.as.test.integration.jpa.packaging;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * Test that an EJB jar can reference the persistence provider classes
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EJBJarPackagingTestCase {
 
     @Deployment
@@ -57,7 +58,7 @@ public class EJBJarPackagingTestCase {
     public void testBeanInEJBJarCanAccessPersistenceProviderClass() throws Exception {
         EmployeeBean bean = (EmployeeBean) iniCtx.lookup("java:app/ejbjar/EmployeeBean");
         Class sessionClass = bean.getPersistenceProviderClass("org.hibernate.Session");
-        assertNotNull("was able to load 'org.hibernate.Session' class from persistence provider", sessionClass);
+        assertNotNull(sessionClass, "was able to load 'org.hibernate.Session' class from persistence provider");
     }
 
     private static StringAsset emptyEjbJar() {

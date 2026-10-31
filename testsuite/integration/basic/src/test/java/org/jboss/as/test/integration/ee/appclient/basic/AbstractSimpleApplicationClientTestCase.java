@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.ee.appclient.basic;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 
@@ -55,7 +55,6 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         ear.addAsModule(ejb);
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
-        appClient.addClasses(org.junit.Assert.class, org.junit.ComparisonFailure.class);
         appClient.addClasses(AppClientMain.class);
         if (!useCommonEjbInterface) {
             appClient.addClasses(AppClientSingletonRemote.class);
@@ -114,7 +113,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
                 appclientArgs == null ? "" : appclientArgs);
         try {
             final String result = remote.awaitAppClientCall();
-            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
+            assertTrue(result != null, "App client call failed. App client output: " + wrapper.readAllUnformated(1000));
             assertEquals(expectedResult, result);
         } finally {
             wrapper.quit();

@@ -7,19 +7,19 @@ package org.jboss.as.test.integration.ee.injection.resource.enventry;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test for managed bean injection via env-entry in web.xml
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EnvEntryInjectionTestCase {
 
     @Deployment
@@ -38,14 +38,14 @@ public class EnvEntryInjectionTestCase {
     public void testEnvEntryInjectionIntoManagedBean() throws NamingException {
         final InitialContext initialContext = new InitialContext();
         final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
-        Assert.assertEquals("bye", bean.getExistingString());
+        Assertions.assertEquals("bye", bean.getExistingString());
     }
 
     @Test
     public void testEnvEntryNonExistentManagedBean() throws NamingException {
         final InitialContext initialContext = new InitialContext();
         final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
-        Assert.assertEquals("hi", bean.getNonExistentString());
+        Assertions.assertEquals("hi", bean.getNonExistentString());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class EnvEntryInjectionTestCase {
         try {
             final InitialContext initialContext = new InitialContext();
             initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistentString");
-            Assert.fail();
+            Assertions.fail();
         } catch (NamingException expected) {
 
         }
@@ -63,6 +63,6 @@ public class EnvEntryInjectionTestCase {
     public void testBoxedUnboxedMismatch() throws NamingException {
         final InitialContext initialContext = new InitialContext();
         final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
-        Assert.assertEquals(10, bean.getByteField());
+        Assertions.assertEquals(10, bean.getByteField());
     }
 }

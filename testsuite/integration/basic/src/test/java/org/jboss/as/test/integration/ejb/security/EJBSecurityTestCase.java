@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
@@ -13,21 +13,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * User: jpai
  */
-@RunWith(Arquillian.class)
-@Category(CommonCriteria.class)
+@ExtendWith(ArquillianExtension.class)
+@Tag("CommonCriteria")
 public class EJBSecurityTestCase {
 
     @ArquillianResource
@@ -53,7 +53,7 @@ public class EJBSecurityTestCase {
         final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + Restriction.class.getName());
         try {
             restrictedBean.restrictedMethod();
-            Assert.fail("Call to restrictedMethod() method was expected to fail");
+            Assertions.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -64,7 +64,7 @@ public class EJBSecurityTestCase {
         final AnnotatedSLSB annotatedBean = (AnnotatedSLSB) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + AnnotatedSLSB.class.getName());
         try {
             annotatedBean.restrictedMethod();
-            Assert.fail("Call to restrictedMethod() method was expected to fail");
+            Assertions.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             //expected
         }
@@ -72,7 +72,7 @@ public class EJBSecurityTestCase {
         annotatedBean.doAnything();
         try {
             annotatedBean.restrictedBaseClassMethod();
-            Assert.fail("Call to restrictedBaseClassMethod() method was expected to fail");
+            Assertions.fail("Call to restrictedBaseClassMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             //expected
         }
@@ -83,7 +83,7 @@ public class EJBSecurityTestCase {
         final FullyRestrictedBean fullyRestrictedBean = (FullyRestrictedBean) ctx.lookup("java:module/" + FullyRestrictedBean.class.getSimpleName() + "!" + FullyRestrictedBean.class.getName());
         try {
             fullyRestrictedBean.overriddenMethod();
-            Assert.fail("Call to overriddenMethod() method was expected to fail");
+            Assertions.fail("Call to overriddenMethod() method was expected to fail");
 
         } catch (EJBAccessException ejae) {
             // expected
@@ -108,13 +108,13 @@ public class EJBSecurityTestCase {
         final DDBasedSLSB ddBasedSLSB = (DDBasedSLSB) ctx.lookup("java:module/" + DDBasedSLSB.class.getSimpleName() + "!" + DDBasedSLSB.class.getName());
         try {
             ddBasedSLSB.accessDenied();
-            Assert.fail("Call to accessDenied() method was expected to fail");
+            Assertions.fail("Call to accessDenied() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
         try {
             ddBasedSLSB.onlyTestRoleCanAccess();
-            Assert.fail("Call to onlyTestRoleCanAccess() method was expected to fail");
+            Assertions.fail("Call to onlyTestRoleCanAccess() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected since only TestRole can call that method
         }
@@ -134,7 +134,7 @@ public class EJBSecurityTestCase {
         try {
             // try invoking a method annotated @DenyAll (expected to fail)
             restrictedBean.restrictedMethod();
-            Assert.fail("Call to restrictedMethod() method was expected to fail");
+            Assertions.fail("Call to restrictedMethod() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -150,7 +150,7 @@ public class EJBSecurityTestCase {
             // invoke a method which only a specific role can access.
             // this is expected to fail since we haven't logged in as any user
             specificRoleAccessBean.allowOnlyRoleTwoToAccess();
-            Assert.fail("Invocation was expected to fail since only a specific role was expected to be allowed to access the bean method");
+            Assertions.fail("Invocation was expected to fail since only a specific role was expected to be allowed to access the bean method");
         } catch (EJBAccessException ejbae) {
             // expected
         }
@@ -171,7 +171,7 @@ public class EJBSecurityTestCase {
         final AnnotatedSLSB annotatedBean = (AnnotatedSLSB) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + AnnotatedSLSB.class.getName());
         try {
             annotatedBean.methodWithEmptyRolesAllowedAnnotation();
-            Assert.fail("Call to methodWithEmptyRolesAllowedAnnotation() method was expected to fail");
+            Assertions.fail("Call to methodWithEmptyRolesAllowedAnnotation() method was expected to fail");
         } catch (EJBAccessException ejbae) {
             //expected
         }

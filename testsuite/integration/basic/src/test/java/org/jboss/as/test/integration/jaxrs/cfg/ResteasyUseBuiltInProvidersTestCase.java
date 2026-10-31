@@ -16,7 +16,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.EchoResource;
@@ -30,8 +29,11 @@ import org.jboss.resteasy.plugins.providers.jsonp.JsonObjectProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-use-builtin-providers} attribute works as expected.
@@ -44,6 +46,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(ResteasyUseBuiltInProvidersTestCase.WriteAttributeServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttributeTest {
 
     // Register the JsonObjectProvider that we will need to write the response in the ProviderCheckResource
@@ -79,7 +82,7 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefaultBuiltInReader() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -89,18 +92,18 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = StringTextStar.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkDefaultBuiltInWriter() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -110,18 +113,18 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = StringTextStar.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkDefaultUserDefinedReader() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -132,18 +135,18 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void checkDefaultUserDefinedWriter() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -154,18 +157,18 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(11)
+    @Order(11)
     public void checkFalseBuiltInReader() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -176,15 +179,15 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
-                Assert.assertTrue(String.format("Should not have found built-in provider for %s", String.class), json.isNull("type"));
+                Assertions.assertTrue(json.isNull("type"), String.format("Should not have found built-in provider for %s", String.class));
             }
         }
     }
 
     @Test
-    @InSequence(12)
+    @Order(12)
     public void checkFalseBuiltInWriter() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -195,15 +198,15 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
-                Assert.assertTrue(String.format("Should not have found built-in provider for %s", String.class), json.isNull("type"));
+                Assertions.assertTrue(json.isNull("type"), String.format("Should not have found built-in provider for %s", String.class));
             }
         }
     }
 
     @Test
-    @InSequence(13)
+    @Order(13)
     public void checkFalseUserDefinedReader() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -215,18 +218,18 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }
 
     @Test
-    @InSequence(14)
+    @Order(14)
     public void checkFalseUserDefinedWriter() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
@@ -238,12 +241,12 @@ public class ResteasyUseBuiltInProvidersTestCase extends AbstractResteasyAttribu
                             .request(MediaType.APPLICATION_JSON_TYPE)
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final JsonObject json = response.readEntity(JsonObject.class);
                 final String className = SimpleTextReaderWriter.class.getName();
-                Assert.assertFalse(String.format("Failed to find provider for %s", String.class), json.isNull("type"));
-                Assert.assertTrue(String.format("Expected %s to be the base class name in %s", className, json), json.getString("type")
-                        .startsWith(className));
+                Assertions.assertFalse(json.isNull("type"), String.format("Failed to find provider for %s", String.class));
+                Assertions.assertTrue(json.getString("type")
+                        .startsWith(className), String.format("Expected %s to be the base class name in %s", className, json));
             }
         }
     }

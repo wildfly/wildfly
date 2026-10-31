@@ -8,19 +8,19 @@ package org.jboss.as.test.integration.beanvalidation;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests Jakarta Bean Validation within a Jakarta EE component
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BeanValidationTestCase {
 
     @EJB(mappedName = "java:module/StatelessBean")
@@ -48,8 +48,8 @@ public class BeanValidationTestCase {
      */
     @Test
     public void testValidatorInjection() {
-        Assert.assertTrue("Validator wasn't injected in EJB", this.slsb.isValidatorInjected());
-        Assert.assertTrue("ValidatorFactory wasn't injected in EJB", this.slsb.isValidatorFactoryInjected());
+        Assertions.assertTrue(this.slsb.isValidatorInjected(), "Validator wasn't injected in EJB");
+        Assertions.assertTrue(this.slsb.isValidatorFactoryInjected(), "ValidatorFactory wasn't injected in EJB");
     }
 
     /**
@@ -57,6 +57,6 @@ public class BeanValidationTestCase {
      */
     @Test
     public void testGetValidatorFromValidatorFactory() {
-        Assert.assertNotNull("Validator from ValidatorFactory was null", this.slsb.getValidatorFromValidatorFactory());
+        Assertions.assertNotNull(this.slsb.getValidatorFromValidatorFactory(), "Validator from ValidatorFactory was null");
     }
 }

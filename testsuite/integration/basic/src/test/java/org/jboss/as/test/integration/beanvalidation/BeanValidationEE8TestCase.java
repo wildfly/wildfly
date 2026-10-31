@@ -19,13 +19,13 @@ import jakarta.validation.valueextraction.ValueExtractor;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -34,7 +34,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author <a href="mailto:guillaume@hibernate.org">Guillaume Smet</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BeanValidationEE8TestCase {
 
     @Deployment
@@ -53,13 +53,13 @@ public class BeanValidationEE8TestCase {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
         Set<ConstraintViolation<MapKeyBean>> violations = validator.validate(MapKeyBean.valid());
-        Assert.assertTrue(violations.isEmpty());
+        Assertions.assertTrue(violations.isEmpty());
 
         violations = validator.validate(MapKeyBean.invalid());
-        Assert.assertEquals(1, violations.size());
+        Assertions.assertEquals(1, violations.size());
 
         ConstraintViolation<MapKeyBean> violation = violations.iterator().next();
-        Assert.assertEquals(NotNull.class, violation.getConstraintDescriptor().getAnnotation().annotationType());
+        Assertions.assertEquals(NotNull.class, violation.getConstraintDescriptor().getAnnotation().annotationType());
     }
 
     @Test
@@ -70,13 +70,13 @@ public class BeanValidationEE8TestCase {
                 .getValidator();
 
         Set<ConstraintViolation<ContainerBean>> violations = validator.validate(ContainerBean.valid());
-        Assert.assertTrue(violations.isEmpty());
+        Assertions.assertTrue(violations.isEmpty());
 
         violations = validator.validate(ContainerBean.invalid());
-        Assert.assertEquals(1, violations.size());
+        Assertions.assertEquals(1, violations.size());
 
         ConstraintViolation<ContainerBean> violation = violations.iterator().next();
-        Assert.assertEquals(NotNull.class, violation.getConstraintDescriptor().getAnnotation().annotationType());
+        Assertions.assertEquals(NotNull.class, violation.getConstraintDescriptor().getAnnotation().annotationType());
     }
 
     private static class MapKeyBean {

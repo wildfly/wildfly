@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.management.cli;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -30,16 +30,16 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author btison
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ArchiveTestCase {
 
@@ -54,7 +54,7 @@ public class ArchiveTestCase {
         return ja;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         String tempDir = TestSuiteEnvironment.getTmpDir();
 
@@ -101,9 +101,9 @@ public class ArchiveTestCase {
 
             // check that now both wars are deployed
             String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
-            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+            assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
             response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
-            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+            assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
             assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
 
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
@@ -126,9 +126,9 @@ public class ArchiveTestCase {
 
             // check that now both wars are deployed
             String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
-            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+            assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
             response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
-            assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+            assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
 
             ctx.handle("undeploy " + "--path=" + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
 
@@ -140,7 +140,7 @@ public class ArchiveTestCase {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         cliArchiveFile.delete();
     }

@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.hibernate.search.backend.lucene.massindexer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -18,27 +18,27 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.application6.ApplicationDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Hardy Ferentschik
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateSearchLuceneEarMassIndexerTestCase {
     private static final String NAME = HibernateSearchLuceneEarMassIndexerTestCase.class.getSimpleName();
     private static final String EAR_ARCHIVE_NAME = NAME + ".ear";
     private static final String WAR_ARCHIVE_NAME = NAME + ".war";
     private static final String EJB_ARCHIVE_NAME = NAME + ".jar";
 
-    @BeforeClass
+    @BeforeAll
     public static void securityManagerNotSupportedInHibernateSearch() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
@@ -120,10 +120,10 @@ public class HibernateSearchLuceneEarMassIndexerTestCase {
         singersEjb.insertContact("George", "Harrison");
         singersEjb.insertContact("Ringo", "Starr");
 
-        assertEquals("Don't you know the Beatles?", 4, singersEjb.listAllContacts().size());
-        assertEquals("Beatles should not yet be indexed", 0, singersEjb.searchAllContacts().size());
-        assertTrue("Indexing the Beatles failed.", singersEjb.rebuildIndex());
-        assertEquals("Now the Beatles should be indexed", 4, singersEjb.searchAllContacts().size());
+        assertEquals(4, singersEjb.listAllContacts().size(), "Don't you know the Beatles?");
+        assertEquals(0, singersEjb.searchAllContacts().size(), "Beatles should not yet be indexed");
+        assertTrue(singersEjb.rebuildIndex(), "Indexing the Beatles failed.");
+        assertEquals(4, singersEjb.searchAllContacts().size(), "Now the Beatles should be indexed");
     }
 }
 

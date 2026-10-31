@@ -18,7 +18,7 @@ import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -28,17 +28,17 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the various common use cases of the EJB remote client API
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EJBClientAPIUsageTestCase {
 
@@ -71,7 +71,7 @@ public class EJBClientAPIUsageTestCase {
      *
      * @throws Exception
      */
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
         //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
@@ -89,10 +89,10 @@ public class EJBClientAPIUsageTestCase {
     public void testRemoteSLSBInvocation() throws Exception {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", proxy);
+        Assertions.assertNotNull(proxy, "Received a null proxy");
         final String message = "Hello world from a really remote client";
         final String echo = proxy.echo(message);
-        Assert.assertEquals("Unexpected echo message", message, echo);
+        Assertions.assertEquals(message, echo, "Unexpected echo message");
     }
 
     /**
@@ -106,8 +106,8 @@ public class EJBClientAPIUsageTestCase {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
         String shouldBeNil = proxy.getValue().getShouldBeNilAfterUnmarshalling();
-        Assert.assertNull("transient field should be serialized as null but was '" + shouldBeNil + "'",
-                shouldBeNil);
+        Assertions.assertNull(shouldBeNil,
+                "transient field should be serialized as null but was '" + shouldBeNil + "'");
     }
 
 
@@ -120,11 +120,11 @@ public class EJBClientAPIUsageTestCase {
     public void testRemoteSLSBWithInterceptors() throws Exception {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, InterceptedEchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", proxy);
+        Assertions.assertNotNull(proxy, "Received a null proxy");
         final String message = "Hello world from a really remote client";
         final String echo = proxy.echo(message);
         final String expectedEcho = message + InterceptorTwo.MESSAGE_SEPARATOR + InterceptorOne.class.getSimpleName() + InterceptorOne.MESSAGE_SEPARATOR + InterceptorTwo.class.getSimpleName();
-        Assert.assertEquals("Unexpected echo message", expectedEcho, echo);
+        Assertions.assertEquals(expectedEcho, echo, "Unexpected echo message");
     }
 
     /**
@@ -136,21 +136,21 @@ public class EJBClientAPIUsageTestCase {
     public void testRemoteSLSBWithCustomObjects() throws Exception {
         final StatelessEJBLocator<EmployeeManager> locator = new StatelessEJBLocator(EmployeeManager.class, APP_NAME, MODULE_NAME, EmployeeBean.class.getSimpleName(), "");
         final EmployeeManager proxy = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", proxy);
+        Assertions.assertNotNull(proxy, "Received a null proxy");
         final String[] nickNames = new String[]{"java-programmer", "ruby-programmer", "php-programmer"};
         final Employee employee = new Employee(1, "programmer");
         // invoke on the bean
         final AliasedEmployee employeeWithNickNames = proxy.addNickNames(employee, nickNames);
 
         // check the id of the returned employee
-        Assert.assertEquals("Unexpected employee id", 1, employeeWithNickNames.getId());
+        Assertions.assertEquals(1, employeeWithNickNames.getId(), "Unexpected employee id");
         // check the name of the returned employee
-        Assert.assertEquals("Unexpected employee name", "programmer", employeeWithNickNames.getName());
+        Assertions.assertEquals("programmer", employeeWithNickNames.getName(), "Unexpected employee name");
         // check the number of nicknames
-        Assert.assertEquals("Unexpected number of nick names", nickNames.length, employeeWithNickNames.getNickNames().size());
+        Assertions.assertEquals(nickNames.length, employeeWithNickNames.getNickNames().size(), "Unexpected number of nick names");
         // make sure the correct nick names are present
         for (int i = 0; i < nickNames.length; i++) {
-            Assert.assertTrue("Employee was expected to have nick name: " + nickNames[i], employeeWithNickNames.getNickNames().contains(nickNames[i]));
+            Assertions.assertTrue(employeeWithNickNames.getNickNames().contains(nickNames[i]), "Employee was expected to have nick name: " + nickNames[i]);
         }
     }
 
@@ -164,20 +164,20 @@ public class EJBClientAPIUsageTestCase {
     public void testSFSBInvocation() throws Exception {
         final StatefulEJBLocator<Counter> locator = EJBClient.createSession(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "");
         final Counter counter = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", counter);
+        Assertions.assertNotNull(counter, "Received a null proxy");
         // invoke the bean
         final int initialCount = counter.getCount();
         logger.trace("Got initial count " + initialCount);
-        Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
+        Assertions.assertEquals(0, initialCount, "Unexpected initial count from stateful bean");
         final int NUM_TIMES = 50;
         for (int i = 1; i <= NUM_TIMES; i++) {
             final int count = counter.incrementAndGetCount();
             logger.trace("Got next count " + count);
-            Assert.assertEquals("Unexpected count after increment", i, count);
+            Assertions.assertEquals(i, count, "Unexpected count after increment");
         }
         final int finalCount = counter.getCount();
         logger.trace("Got final count " + finalCount);
-        Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
+        Assertions.assertEquals(NUM_TIMES, finalCount, "Unexpected final count");
     }
 
     /**
@@ -187,21 +187,21 @@ public class EJBClientAPIUsageTestCase {
     public void testSFSBInvocationWithSLSBLocator() {
         final StatelessEJBLocator<Counter> locator = new StatelessEJBLocator<>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName());
         final Counter counter = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", counter);
+        Assertions.assertNotNull(counter, "Received a null proxy");
         // invoke the bean
         final int initialCount = counter.getCount();
         logger.trace("Got initial count " + initialCount);
-        Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
-        Assert.assertTrue("Unexpected stateless locator", EJBClient.getLocatorFor(counter).isStateful());
+        Assertions.assertEquals(0, initialCount, "Unexpected initial count from stateful bean");
+        Assertions.assertTrue(EJBClient.getLocatorFor(counter).isStateful(), "Unexpected stateless locator");
         final int NUM_TIMES = 50;
         for (int i = 1; i <= NUM_TIMES; i++) {
             final int count = counter.incrementAndGetCount();
             logger.trace("Got next count " + count);
-            Assert.assertEquals("Unexpected count after increment", i, count);
+            Assertions.assertEquals(i, count, "Unexpected count after increment");
         }
         final int finalCount = counter.getCount();
         logger.trace("Got final count " + finalCount);
-        Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
+        Assertions.assertEquals(NUM_TIMES, finalCount, "Unexpected final count");
     }
 
     /**
@@ -214,11 +214,11 @@ public class EJBClientAPIUsageTestCase {
     public void testNonExistentEJBAccess() throws Exception {
         final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<NotAnEJBInterface>(NotAnEJBInterface.class, "non-existen-app-name", MODULE_NAME, "blah", "");
         final NotAnEJBInterface nonExistentBean = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", nonExistentBean);
+        Assertions.assertNotNull(nonExistentBean, "Received a null proxy");
         // invoke on the (non-existent) bean
         try {
             nonExistentBean.echo("Hello world to a non-existent bean");
-            Assert.fail("Expected an IllegalStateException");
+            Assertions.fail("Expected an IllegalStateException");
         } catch (IllegalStateException | EJBException ise) {
             // expected
             logger.trace("Received the expected exception", ise);
@@ -234,11 +234,11 @@ public class EJBClientAPIUsageTestCase {
     public void testNonExistentViewForEJB() throws Exception {
         final StatelessEJBLocator<NotAnEJBInterface> locator = new StatelessEJBLocator<NotAnEJBInterface>(NotAnEJBInterface.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final NotAnEJBInterface nonExistentBean = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", nonExistentBean);
+        Assertions.assertNotNull(nonExistentBean, "Received a null proxy");
         // invoke on the (non-existent) view of a bean
         try {
             nonExistentBean.echo("Hello world to a non-existent view of a bean");
-            Assert.fail("Expected an IllegalStateException");
+            Assertions.fail("Expected an IllegalStateException");
         } catch (IllegalStateException | EJBException nsee) {
             // expected
             logger.trace("Received the expected exception", nsee);
@@ -255,15 +255,15 @@ public class EJBClientAPIUsageTestCase {
     public void testApplicationExceptionOnSLSBMethod() throws Exception {
         final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<ExceptionThrowingRemote>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
+        Assertions.assertNotNull(exceptionThrowingBean, "Received a null proxy");
         final String exceptionState = "2342348723Dsbjlfjal#";
         try {
             exceptionThrowingBean.alwaysThrowApplicationException(exceptionState);
-            Assert.fail("Expected a " + StatefulApplicationException.class.getName() + " exception");
+            Assertions.fail("Expected a " + StatefulApplicationException.class.getName() + " exception");
         } catch (StatefulApplicationException sae) {
             // expected
             logger.trace("Received the expected exception", sae);
-            Assert.assertEquals("Unexpected state in the application exception", exceptionState, sae.getState());
+            Assertions.assertEquals(exceptionState, sae.getState(), "Unexpected state in the application exception");
         }
     }
 
@@ -276,17 +276,17 @@ public class EJBClientAPIUsageTestCase {
     public void testSystemExceptionOnSLSBMethod() throws Exception {
         final StatelessEJBLocator<ExceptionThrowingRemote> locator = new StatelessEJBLocator<ExceptionThrowingRemote>(ExceptionThrowingRemote.class, APP_NAME, MODULE_NAME, ExceptionThrowingBean.class.getSimpleName(), "");
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
+        Assertions.assertNotNull(exceptionThrowingBean, "Received a null proxy");
         final String exceptionState = "bafasfaj;l";
         try {
             exceptionThrowingBean.alwaysThrowSystemException(exceptionState);
-            Assert.fail("Expected a " + EJBException.class.getName() + " exception");
+            Assertions.fail("Expected a " + EJBException.class.getName() + " exception");
         } catch (EJBException ejbe) {
             // expected
             logger.trace("Received the expected exception", ejbe);
             final Throwable cause = ejbe.getCause();
-            Assert.assertTrue("Unexpected cause in EJBException", cause instanceof RuntimeException);
-            Assert.assertEquals("Unexpected state in the system exception", exceptionState, cause.getMessage());
+            Assertions.assertTrue(cause instanceof RuntimeException, "Unexpected cause in EJBException");
+            Assertions.assertEquals(exceptionState, cause.getMessage(), "Unexpected state in the system exception");
         }
     }
 
@@ -300,7 +300,7 @@ public class EJBClientAPIUsageTestCase {
     public void testAsyncFutureMethodOnSLSB() throws Exception {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator<EchoRemote>(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote echoRemote = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", echoRemote);
+        Assertions.assertNotNull(echoRemote, "Received a null proxy");
         final String message = "You are supposed to be an asynchronous method";
         final long DELAY = 5000;
         final long start = System.currentTimeMillis();
@@ -309,13 +309,13 @@ public class EJBClientAPIUsageTestCase {
         final long end = System.currentTimeMillis();
         logger.trace("Asynchronous invocation returned a Future: " + futureEcho + " in " + (end - start) + " milliseconds");
         // test that the invocation did not act like a synchronous invocation and instead returned "immediately"
-        Assert.assertFalse("Asynchronous invocation behaved like a synchronous invocation", (end - start) >= DELAY);
-        Assert.assertNotNull("Future is null", futureEcho);
+        Assertions.assertFalse((end - start) >= DELAY, "Asynchronous invocation behaved like a synchronous invocation");
+        Assertions.assertNotNull(futureEcho, "Future is null");
         // Check if the result is marked as complete (it shouldn't be this soon)
-        Assert.assertFalse("Future result is unexpectedly completed", futureEcho.isDone());
+        Assertions.assertFalse(futureEcho.isDone(), "Future result is unexpectedly completed");
         // wait for the result
         final String echo = futureEcho.get();
-        Assert.assertEquals("Unexpected echo message", message, echo);
+        Assertions.assertEquals(message, echo, "Unexpected echo message");
     }
 
 
@@ -329,10 +329,10 @@ public class EJBClientAPIUsageTestCase {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
         final EchoRemote getBusinessObjectProxy = proxy.getBusinessObject();
-        Assert.assertNotNull("Received a null proxy", getBusinessObjectProxy);
+        Assertions.assertNotNull(getBusinessObjectProxy, "Received a null proxy");
         final String message = "Hello world from a really remote client";
         final String echo = getBusinessObjectProxy.echo(message);
-        Assert.assertEquals("Unexpected echo message", message, echo);
+        Assertions.assertEquals(message, echo, "Unexpected echo message");
     }
 
     /**
@@ -344,7 +344,7 @@ public class EJBClientAPIUsageTestCase {
     public void testCdiRequestScopeActive() {
         final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
         final EchoRemote proxy = EJBClient.createProxy(locator);
-        Assert.assertTrue(proxy.testRequestScopeActive());
+        Assertions.assertTrue(proxy.testRequestScopeActive());
     }
 
     /**
@@ -365,12 +365,12 @@ public class EJBClientAPIUsageTestCase {
             public Object call() throws Exception {
                 try {
                     proxy.nonSerializable();
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (Exception e) {
                     logger.trace("expected " + e);
                 }
                 Thread.sleep(1000);
-                Assert.assertEquals("hello", proxy.serializable());
+                Assertions.assertEquals("hello", proxy.serializable());
                 return null;
             }
         };

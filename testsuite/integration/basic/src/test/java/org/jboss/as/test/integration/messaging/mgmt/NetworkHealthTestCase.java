@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.messaging.mgmt;
 
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.Util;
@@ -21,15 +21,15 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Emmanuel Hugonnet (c) 2020 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class NetworkHealthTestCase extends ContainerResourceMgmtTestBase {
 
@@ -44,13 +44,13 @@ public class NetworkHealthTestCase extends ContainerResourceMgmtTestBase {
         op.get("include-defaults").set(true);
         op.get("attributes-only").set(true);
         ModelNode server = executeOperation(op, true);
-        Assert.assertFalse(server.hasDefined("network-check-list"));
-        Assert.assertFalse(server.hasDefined("network-check-nic"));
-        Assert.assertFalse(server.hasDefined("network-check-url-list"));
-        Assert.assertEquals(5000L, server.get("network-check-period").asLong());
-        Assert.assertEquals(1000L, server.get("network-check-timeout").asLong());
-        Assert.assertEquals("ping -c 1 -t %d %s", server.get("network-check-ping-command").asString());
-        Assert.assertEquals("ping6 -c 1 %2$s", server.get("network-check-ping6-command").asString());
+        Assertions.assertFalse(server.hasDefined("network-check-list"));
+        Assertions.assertFalse(server.hasDefined("network-check-nic"));
+        Assertions.assertFalse(server.hasDefined("network-check-url-list"));
+        Assertions.assertEquals(5000L, server.get("network-check-period").asLong());
+        Assertions.assertEquals(1000L, server.get("network-check-timeout").asLong());
+        Assertions.assertEquals("ping -c 1 -t %d %s", server.get("network-check-ping-command").asString());
+        Assertions.assertEquals("ping6 -c 1 %2$s", server.get("network-check-ping6-command").asString());
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", TestSuiteEnvironment.getServerAddress());
         executeOperationForSuccess(op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-nic", "lo");
@@ -71,13 +71,13 @@ public class NetworkHealthTestCase extends ContainerResourceMgmtTestBase {
         op.get("include-defaults").set(true);
         op.get("attributes-only").set(true);
         server = executeOperation(op, true);
-        Assert.assertEquals(server.toJSONString(false), TestSuiteEnvironment.getHttpAddress(), server.get("network-check-list").asString());
-        Assert.assertEquals(server.toJSONString(false), "lo", server.get("network-check-nic").asString());
-        Assert.assertEquals(server.toJSONString(false), TestSuiteEnvironment.getHttpAddress(), server.get("network-check-url-list").asString());
-        Assert.assertEquals(server.toJSONString(false), 10000L, server.get("network-check-period").asLong());
-        Assert.assertEquals(server.toJSONString(false), 5000L, server.get("network-check-timeout").asLong());
-        Assert.assertEquals(server.toJSONString(false), "ping", server.get("network-check-ping-command").asString());
-        Assert.assertEquals(server.toJSONString(false), "ping6", server.get("network-check-ping6-command").asString());
+        Assertions.assertEquals(TestSuiteEnvironment.getHttpAddress(), server.get("network-check-list").asString(), server.toJSONString(false));
+        Assertions.assertEquals("lo", server.get("network-check-nic").asString(), server.toJSONString(false));
+        Assertions.assertEquals(TestSuiteEnvironment.getHttpAddress(), server.get("network-check-url-list").asString(), server.toJSONString(false));
+        Assertions.assertEquals(10000L, server.get("network-check-period").asLong(), server.toJSONString(false));
+        Assertions.assertEquals(5000L, server.get("network-check-timeout").asLong(), server.toJSONString(false));
+        Assertions.assertEquals("ping", server.get("network-check-ping-command").asString(), server.toJSONString(false));
+        Assertions.assertEquals("ping6", server.get("network-check-ping6-command").asString(), server.toJSONString(false));
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-list");
         executeOperationForSuccess(op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-nic");
@@ -97,6 +97,6 @@ public class NetworkHealthTestCase extends ContainerResourceMgmtTestBase {
 
     private void executeOperationForSuccess(ModelNode operation) throws IOException, MgmtOperationException {
         ModelNode result = executeOperation(operation, false);
-        Assert.assertTrue(Util.getFailureDescription(result), isSuccessfulOutcome(result));
+        Assertions.assertTrue(isSuccessfulOutcome(result), Util.getFailureDescription(result));
     }
 }

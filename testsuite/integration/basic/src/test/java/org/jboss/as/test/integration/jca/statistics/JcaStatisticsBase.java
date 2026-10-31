@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.jca.statistics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.dmr.ModelNode;
@@ -98,8 +98,8 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
                 + maxUsed + "\n");
         assertTrue(avail > 0);
         if (yes) {
-            assertTrue("active==" + active, active > 0);
-            assertTrue("maxused==" + maxUsed, maxUsed > 0);
+            assertTrue(active > 0, "active==" + active);
+            assertTrue(maxUsed > 0, "maxused==" + maxUsed);
         } else {
             assertEquals(0, active);
             assertEquals(0, maxUsed);

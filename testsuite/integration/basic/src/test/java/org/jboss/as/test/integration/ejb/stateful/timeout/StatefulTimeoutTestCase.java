@@ -8,15 +8,15 @@ package org.jboss.as.test.integration.ejb.stateful.timeout;
 import jakarta.ejb.NoSuchEJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the stateful timeout annotation and deployment descriptor elements works.
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StatefulTimeoutTestCase extends StatefulTimeoutTestBase1 {
     @Deployment
     public static Archive<?> deploy() {
@@ -69,7 +69,7 @@ public class StatefulTimeoutTestCase extends StatefulTimeoutTestBase1 {
         timeoutNotConfiguredBean.doStuff();
         Thread.sleep(3000);
         timeoutNotConfiguredBean.doStuff();
-        Assert.assertFalse(TimeoutNotConfiguredBean.preDestroy);
+        Assertions.assertFalse(TimeoutNotConfiguredBean.preDestroy);
     }
 
     /**
@@ -84,7 +84,7 @@ public class StatefulTimeoutTestCase extends StatefulTimeoutTestBase1 {
             throw new RuntimeException("Expecting NoSuchEJBException");
         } catch (NoSuchEJBException expected) {
         }
-        Assert.assertTrue(Annotated0TimeoutBean.preDestroy);
+        Assertions.assertTrue(Annotated0TimeoutBean.preDestroy);
     }
 
     /**
@@ -103,6 +103,6 @@ public class StatefulTimeoutTestCase extends StatefulTimeoutTestBase1 {
             throw new RuntimeException("Expecting NoSuchEJBException");
         } catch (NoSuchEJBException expected) {
         }
-        Assert.assertTrue(Annotated0TimeoutBean.preDestroy);
+        Assertions.assertTrue(Annotated0TimeoutBean.preDestroy);
     }
 }

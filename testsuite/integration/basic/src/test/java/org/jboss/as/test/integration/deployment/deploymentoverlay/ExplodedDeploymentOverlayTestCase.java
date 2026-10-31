@@ -15,9 +15,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-
-
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -29,16 +27,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a>  (c) 2015 Red Hat, inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ExplodedDeploymentOverlayTestCase {
 
@@ -48,7 +46,7 @@ public class ExplodedDeploymentOverlayTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
@@ -142,7 +140,7 @@ public class ExplodedDeploymentOverlayTestCase {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
 
         removeContentItem(managementClient, TEST_OVERLAY, "WEB-INF/web.xml");
@@ -210,11 +208,11 @@ public class ExplodedDeploymentOverlayTestCase {
         final HttpClient httpClient = new DefaultHttpClient();
         HttpResponse response = httpClient.execute(request);
         String responseMessage = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals("OVERRIDDEN",responseMessage);
+        Assertions.assertEquals("OVERRIDDEN",responseMessage);
         updateDeployment("update.xml","WEB-INF/web.xml");
         response = httpClient.execute(request);
         responseMessage = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals("OVERRIDDEN",responseMessage);
+        Assertions.assertEquals("OVERRIDDEN",responseMessage);
         updateDeployment("web.xml","WEB-INF/web.xml");
     }
 
@@ -225,18 +223,18 @@ public class ExplodedDeploymentOverlayTestCase {
         HttpGet request = new HttpGet(requestURL);
         HttpResponse response = httpClient.execute(request);
         String responseMessage = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals("test",responseMessage);
+        Assertions.assertEquals("test",responseMessage);
         updateDeployment("web.xml", "WEB-INF/classes/wildcard-new-file");
         response = httpClient.execute(request);
         responseMessage = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals("test",responseMessage);
+        Assertions.assertEquals("test",responseMessage);
         updateDeployment("web.xml", "WEB-INF/classes/wildcard-new-file");
         updateDeployment("index.html", "index.html");
         requestURL = managementClient.getWebUri() + "/exploded-test/index.html";
         request = new HttpGet(requestURL);
         response = httpClient.execute(request);
         responseMessage = EntityUtils.toString(response.getEntity());
-        Assert.assertTrue(responseMessage, responseMessage.contains("Simple Content test for exploded-test.war"));
+        Assertions.assertTrue(responseMessage.contains("Simple Content test for exploded-test.war"), responseMessage);
     }
 
     @Deployment()

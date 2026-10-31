@@ -8,7 +8,7 @@ import java.util.List;
 import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -17,22 +17,23 @@ import org.jboss.as.test.integration.jca.basic.BasicDeployment16TestCase.BasicDe
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Basic test to check if we can activate more than one IDed RA. (there are similar tests but with exploded module)
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(BasicDoubleDeployment16TestCase.BasicDoubleDeploymentTestCaseSetup.class)
 public class BasicDoubleDeployment16TestCase {
 
@@ -91,7 +92,7 @@ public class BasicDoubleDeployment16TestCase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(BasicDoubleDeployment16TestCase.class,
                 BasicDeploymentTestCaseSetup.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
 
         raa.addAsLibrary(ja);
 
@@ -118,10 +119,10 @@ public class BasicDoubleDeployment16TestCase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-        Assert.assertNotNull("CF1 not found", connectionFactory1);
-        Assert.assertNotNull("AO1 not found", adminObject1);
-        Assert.assertNotNull("CF2 not found", connectionFactory2);
-        Assert.assertNotNull("AO2 not found", adminObject2);
+        Assertions.assertNotNull(connectionFactory1, "CF1 not found");
+        Assertions.assertNotNull(adminObject1, "AO1 not found");
+        Assertions.assertNotNull(connectionFactory2, "CF2 not found");
+        Assertions.assertNotNull(adminObject2, "AO2 not found");
     }
 
 }

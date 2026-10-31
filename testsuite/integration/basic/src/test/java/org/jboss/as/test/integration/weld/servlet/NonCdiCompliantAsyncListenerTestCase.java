@@ -5,13 +5,14 @@
 package org.jboss.as.test.integration.weld.servlet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A CDI-incompatible {@link javax.servletAsyncListener} may be bundled with a deployment.
@@ -24,7 +25,7 @@ import org.junit.runner.RunWith;
  * @see https://issues.jboss.org/browse/WFLY-2165
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NonCdiCompliantAsyncListenerTestCase {
 
     @Deployment

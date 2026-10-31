@@ -14,7 +14,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -24,16 +24,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Jakarta Persistence statistics test
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JpaStatisticsTestCase extends ContainerResourceMgmtTestBase {
 
@@ -82,7 +82,7 @@ public class JpaStatisticsTestCase extends ContainerResourceMgmtTestBase {
         // in WildFly management console.
         ModelNode result = executeOperation(op);
 
-        Assert.assertFalse("Subsystem is empty (result=" + result+")", result.keys().size() == 0);
+        Assertions.assertFalse(result.keys().size() == 0, "Subsystem is empty (result=" + result+")");
 
     }
 

@@ -4,8 +4,8 @@
  */
 package org.jboss.as.test.integration.deployment.dependencies.ear;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -18,7 +18,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -34,11 +34,11 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for inter-deployment dependencies in EAR files. It also contains a module dependency simple test - EJB module depends on
@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InterDeploymentDependenciesEarTestCase {
 
@@ -88,12 +88,12 @@ public class InterDeploymentDependenciesEarTestCase {
                 .addAsManifestResource(InterDeploymentDependenciesEarTestCase.class.getPackage(), "jboss-all.xml",
                         "jboss-all.xml").addAsModule(createBeanJar());
 
-    @Before
+    @BeforeEach
     public void setup() {
         deployer = new ArchiveDeployer(managementClient);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         try {
             deployer.undeploy(DEPENDENT.getName());
@@ -197,7 +197,7 @@ public class InterDeploymentDependenciesEarTestCase {
         // This will succeed until WFCORE-1762 is fixed; once it is check that the failure didn't
         // result in rollback
         if ("failed".equals(response.get("outcome").asString())) {
-            Assert.assertFalse(response.toString(), response.get("rolled-back").asBoolean(true));
+            Assertions.assertFalse(response.get("rolled-back").asBoolean(true), response.toString());
         }
 
     }

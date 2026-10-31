@@ -5,9 +5,9 @@
 package org.jboss.as.test.integration.ejb.pool.lifecycle;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
@@ -27,7 +27,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -42,9 +42,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests instance lifecycle of EJB components which can potentially be pooled. Note that this testcase does *not* mandate that the components being tested be pooled. It's completely upto the container
@@ -53,7 +53,7 @@ import org.junit.runner.RunWith;
  * @author baranowb
  * @author Jaikiran Pai - Updates related to https://issues.jboss.org/browse/WFLY-1506
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(PooledEJBLifecycleTestCase.CreateQueueForPooledEJBLifecycleTestCase.class)
 public class PooledEJBLifecycleTestCase {
 
@@ -127,7 +127,7 @@ public class PooledEJBLifecycleTestCase {
         return archive;
     }
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         log.trace("Clearing state of the singleton lifecycle tracker bean");
         lifecycleTracker.clearState();
@@ -153,7 +153,7 @@ public class PooledEJBLifecycleTestCase {
             log.trace("Sending a message to the queue on which the MDB " + " is listening");
             triggerRequestResponseCycleOnQueue();
 
-            assertTrue("@PostConstruct wasn't invoked on MDB", lifecycleTracker.wasPostConstructInvokedOn(this.getClass().getPackage().getName() + ".LifecycleCounterMDB"));
+            assertTrue(lifecycleTracker.wasPostConstructInvokedOn(this.getClass().getPackage().getName() + ".LifecycleCounterMDB"), "@PostConstruct wasn't invoked on MDB");
 
             // undeploy
             log.trace("About to undeploy MDB archive " + MDB_DEPLOYMENT_NAME);
@@ -161,7 +161,7 @@ public class PooledEJBLifecycleTestCase {
             // we have undeployed successfully, there's no need anymore to trigger an undeployment before returning from this method
             requiresUndeploy = false;
 
-            assertTrue("@PreDestroy wasn't invoked on MDB", lifecycleTracker.wasPreDestroyInvokedOn(this.getClass().getPackage().getName() + ".LifecycleCounterMDB"));
+            assertTrue(lifecycleTracker.wasPreDestroyInvokedOn(this.getClass().getPackage().getName() + ".LifecycleCounterMDB"), "@PreDestroy wasn't invoked on MDB");
         } finally {
             if (requiresUndeploy) {
                 try {
@@ -189,13 +189,13 @@ public class PooledEJBLifecycleTestCase {
             final PointlesMathInterface mathBean = (PointlesMathInterface) new InitialContext().lookup(SLSB_JNDI_NAME);
             mathBean.pointlesMathOperation(4, 5, 6);
 
-            assertTrue("@PostConstruct wasn't invoked on SLSB", lifecycleTracker.wasPostConstructInvokedOn(this.getClass().getPackage().getName() + ".PointLessMathBean"));
+            assertTrue(lifecycleTracker.wasPostConstructInvokedOn(this.getClass().getPackage().getName() + ".PointLessMathBean"), "@PostConstruct wasn't invoked on SLSB");
 
             log.trace("About to undeploy SLSB archive " + SLSB_DEPLOYMENT_NAME);
             deployer.undeploy(SLSB_DEPLOYMENT_NAME);
             requiresUndeploy = false;
 
-            assertTrue("@PreDestroy wasn't invoked on SLSB", lifecycleTracker.wasPreDestroyInvokedOn(this.getClass().getPackage().getName() + ".PointLessMathBean"));
+            assertTrue(lifecycleTracker.wasPreDestroyInvokedOn(this.getClass().getPackage().getName() + ".PointLessMathBean"), "@PreDestroy wasn't invoked on SLSB");
 
         } finally {
             if (requiresUndeploy) {
@@ -231,9 +231,9 @@ public class PooledEJBLifecycleTestCase {
 
             //wait for reply
             final Message reply = receiver.receive(TimeoutUtil.adjust(5000));
-            assertNotNull("Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?", reply);
+            assertNotNull(reply, "Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?");
             final String result = ((TextMessage) reply).getText();
-            assertEquals("Unexpected reply messsage", Constants.REPLY_MESSAGE_PREFIX + requestMessage, result);
+            assertEquals(Constants.REPLY_MESSAGE_PREFIX + requestMessage, result, "Unexpected reply messsage");
         } finally {
             if (connection != null) {
                 // just closing the connection will close the session and other related resources (@see jakarta.jms.Connection)

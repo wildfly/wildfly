@@ -4,9 +4,9 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.servlet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -77,11 +77,11 @@ public class TestFilter implements Filter {
             assertEquals(0, ComponentInterceptor.getInterceptions().size());
             resp.getWriter().append("" + ComponentInterceptor.getInterceptions().size());
         } else if ("aroundInvokeVerify".equals(mode)) {
-            assertEquals("Filter invocation not intercepted", 1, ComponentInterceptor.getInterceptions().size());
+            assertEquals(1, ComponentInterceptor.getInterceptions().size(), "Filter invocation not intercepted");
             assertEquals("doFilter", ComponentInterceptor.getInterceptions().get(0).getMethodName());
             resp.getWriter().append("" + ComponentInterceptor.getInterceptions().size());
         } else if ("aroundConstructVerify".equals(mode)) {
-            assertTrue("AroundConstruct interceptor method not invoked", AroundConstructInterceptor.aroundConstructCalled);
+            assertTrue(AroundConstructInterceptor.aroundConstructCalled, "AroundConstruct interceptor method not invoked");
             assertNotNull(name);
             assertTrue(name.contains("AroundConstructInterceptor#"));
             resp.getWriter().append(name);

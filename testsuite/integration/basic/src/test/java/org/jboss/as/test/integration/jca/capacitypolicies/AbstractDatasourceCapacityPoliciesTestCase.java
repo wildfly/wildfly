@@ -11,7 +11,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.lang.reflect.ReflectPermission;
@@ -33,7 +33,7 @@ import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
 import org.jboss.as.test.integration.jca.JcaTestsUtil;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -45,8 +45,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test for Jakarta Connectors capacity policies JBJCA-986 using datasource/xa-datasource
@@ -165,10 +165,10 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         int activeCount = readStatisticsAttribute("ActiveCount");
         int destroyedCount = readStatisticsAttribute("DestroyedCount");
 
-        Assert.assertEquals("Unexpected AvailableCount", expectedAvailableCount, availableCount);
-        Assert.assertEquals("Unexpected InUseCount", expectedInUseCount, inUseCount);
-        Assert.assertEquals("Unexpected ActiveCount", expectedActiveCount, activeCount);
-        Assert.assertEquals("Unexpected DestroyedCount", expectedDestroyedCount, destroyedCount);
+        Assertions.assertEquals(expectedAvailableCount, availableCount, "Unexpected AvailableCount");
+        Assertions.assertEquals(expectedInUseCount, inUseCount, "Unexpected InUseCount");
+        Assertions.assertEquals(expectedActiveCount, activeCount, "Unexpected ActiveCount");
+        Assertions.assertEquals(expectedDestroyedCount, destroyedCount, "Unexpected DestroyedCount");
     }
 
     private int readStatisticsAttribute(final String attributeName) throws Exception {

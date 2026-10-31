@@ -6,8 +6,8 @@ package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URL;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
@@ -29,10 +29,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This tests a CLI deployment archive functionality.
@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ivo Studensky <istudens@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
@@ -81,13 +81,13 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
                 .addClass(DeploymentArchiveTestCase.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         cliFile = createCliArchive(!AssumeTestGroupUtil.isBootableJar());
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
         cliFile.delete();
@@ -110,7 +110,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
             //   $ JBOSS_HOME=<bootablejar_install_dir> jboss.cli.sh -c
             // install-dir is by default folder with random suffix in /tmp
             testModuleRoot = new File(TestModule.getModulesDirectory(false), MODULE_NAME.replace('.', File.separatorChar));
-            assertFalse("Module is already deployed at " + testModuleRoot, testModuleRoot.exists());
+            assertFalse(testModuleRoot.exists(), "Module is already deployed at " + testModuleRoot);
         }
 
         // deploy to server
@@ -118,11 +118,11 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
         // check war deployment
         String response = HttpRequest.get(getBaseURL(url) + WEB_ARCHIVE_NAME + "/SimpleServlet", 1000, 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+        assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
 
         // check module deployment
         if (!AssumeTestGroupUtil.isBootableJar()) {
-            assertTrue("Module deployment failed! Module dir does not exist: " + testModuleRoot, testModuleRoot.exists());
+            assertTrue(testModuleRoot.exists(), "Module deployment failed! Module dir does not exist: " + testModuleRoot);
         }
     }
 
@@ -137,7 +137,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
         // check module undeployment
         if (!AssumeTestGroupUtil.isBootableJar()) {
             final File testModuleRoot = new File(TestModule.getModulesDirectory(false), MODULE_NAME.replace('.', File.separatorChar));
-            assertFalse("Module undeployment failed.", testModuleRoot.exists());
+            assertFalse(testModuleRoot.exists(), "Module undeployment failed.");
         }
     }
 

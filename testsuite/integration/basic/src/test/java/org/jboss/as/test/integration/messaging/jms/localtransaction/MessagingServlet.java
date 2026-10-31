@@ -8,6 +8,8 @@ package org.jboss.as.test.integration.messaging.jms.localtransaction;
 import java.io.IOException;
 
 import jakarta.annotation.Resource;
+
+import org.junit.jupiter.api.Assertions;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSConnectionFactoryDefinition;
@@ -17,8 +19,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.junit.Assert;
 
 
 /**
@@ -51,12 +51,12 @@ public class MessagingServlet extends HttpServlet {
             try {
                 connection.createSession(true, 0);
                 if (!allowLocalTransactions) {
-                    Assert.fail("Local transactions are not allowed");
+                    Assertions.fail("Local transactions are not allowed");
                 }
                 resp.getWriter().write("" + allowLocalTransactions);
             } catch (JMSException e) {
                 if (allowLocalTransactions) {
-                    Assert.fail("Local transactions are allowed");
+                    Assertions.fail("Local transactions are allowed");
                 }
                 resp.getWriter().write("" + allowLocalTransactions);
             }

@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ejb.stateful.passivation.store;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.stateful.passivation.Bean;
@@ -15,9 +15,9 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
@@ -27,7 +27,7 @@ import javax.naming.InitialContext;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(org.jboss.as.test.integration.ejb.stateful.passivation.store.MultiStatefulCachesTestCase.ServerSetupTask.class)
 public class MultiStatefulCachesTestCase {
 
@@ -59,11 +59,11 @@ public class MultiStatefulCachesTestCase {
                     try (Bean differentCacheBean2 = (Bean) ctx.lookup("java:module/" + DifferentCachePassivationBean.class.getSimpleName() + "!" + Bean.class.getName())) {
                         differentCacheBean2.doNothing();
 
-                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
-                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+                        Assertions.assertTrue(bean.wasPassivated(), "(Annotation based) Stateful bean marked as passivation enabled was not passivated");
+                        Assertions.assertTrue(bean.wasActivated(), "(Annotation based) Stateful bean marked as passivation enabled was not activated");
 
-                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated", differentCacheBean1.wasPassivated());
-                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated", differentCacheBean1.wasActivated());
+                        Assertions.assertTrue(differentCacheBean1.wasPassivated(), "(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated");
+                        Assertions.assertTrue(differentCacheBean1.wasActivated(), "(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated");
                     }
                 }
             }

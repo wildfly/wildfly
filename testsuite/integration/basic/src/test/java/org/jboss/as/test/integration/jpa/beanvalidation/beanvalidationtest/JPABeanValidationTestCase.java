@@ -6,8 +6,8 @@
 package org.jboss.as.test.integration.jpa.beanvalidation.beanvalidationtest;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -15,22 +15,23 @@ import jakarta.validation.ConstraintViolationException;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.beanvalidation.Employee;
 import org.jboss.as.test.integration.jpa.beanvalidation.SFSB1;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Jakarta Bean Validation with Jakarta Persistence test
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JPABeanValidationTestCase {
 
     private static final String ARCHIVE_NAME = "JPABeanValidationTestCase";
@@ -91,7 +92,7 @@ public class JPABeanValidationTestCase {
             }
             // should be null or instanceof ConstraintViolationException
             constraintViolationException = (ConstraintViolationException) throwable;
-            assertTrue("expected ConstraintViolationException but got " + constraintViolationException, constraintViolationException instanceof ConstraintViolationException);
+            assertTrue(constraintViolationException instanceof ConstraintViolationException, "expected ConstraintViolationException but got " + constraintViolationException);
         }
     }
 

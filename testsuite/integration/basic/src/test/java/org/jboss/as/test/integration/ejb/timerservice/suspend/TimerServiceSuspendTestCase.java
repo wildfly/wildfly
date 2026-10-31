@@ -11,7 +11,7 @@ import jakarta.ejb.TimerConfig;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -21,9 +21,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -32,7 +32,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServiceSuspendTestCase {
 
     @ArquillianResource
@@ -63,7 +63,7 @@ public class TimerServiceSuspendTestCase {
         try {
             try {
                 timer = bean.getTimerService().createIntervalTimer(100, 100, new TimerConfig("", false));
-                Assert.assertTrue(SuspendTimerServiceBean.awaitTimerServiceCount() > 0);
+                Assertions.assertTrue(SuspendTimerServiceBean.awaitTimerServiceCount() > 0);
 
                 op.get(ModelDescriptionConstants.OP).set("suspend");
                 managementClient.getControllerClient().execute(op);
@@ -71,7 +71,7 @@ public class TimerServiceSuspendTestCase {
                 SuspendTimerServiceBean.resetTimerServiceCalled();
 
                 Thread.sleep(200);
-                Assert.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
+                Assertions.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
 
             } finally {
                 op = new ModelNode();
@@ -79,7 +79,7 @@ public class TimerServiceSuspendTestCase {
                 managementClient.getControllerClient().execute(op);
 
             }
-            Assert.assertTrue(SuspendTimerServiceBean.awaitTimerServiceCount() > 0);
+            Assertions.assertTrue(SuspendTimerServiceBean.awaitTimerServiceCount() > 0);
         } finally {
             if (timer != null) {
                 timer.cancel();
@@ -111,7 +111,7 @@ public class TimerServiceSuspendTestCase {
                 timer = bean.getTimerService().createIntervalTimer(100, 100, new TimerConfig("", false));
                 Thread.sleep(5000);
 
-                Assert.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
+                Assertions.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
 
             } finally {
                 op = new ModelNode();
@@ -120,7 +120,7 @@ public class TimerServiceSuspendTestCase {
             }
             Thread.sleep(300); //if they were backed up we give them some time to run
             int timerServiceCount = SuspendTimerServiceBean.getTimerServiceCount();
-            Assert.assertTrue("Interval " + (System.currentTimeMillis() - start) + " count " + timerServiceCount, timerServiceCount < 40);
+            Assertions.assertTrue(timerServiceCount < 40, "Interval " + (System.currentTimeMillis() - start) + " count " + timerServiceCount);
         } finally {
             if (timer != null) {
                 timer.cancel();
@@ -152,14 +152,14 @@ public class TimerServiceSuspendTestCase {
                 timer = bean.getTimerService().createSingleActionTimer(1, new TimerConfig("", false));
                 Thread.sleep(1000);
 
-                Assert.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
+                Assertions.assertEquals(0, SuspendTimerServiceBean.getTimerServiceCount());
 
             } finally {
                 op = new ModelNode();
                 op.get(ModelDescriptionConstants.OP).set("resume");
                 managementClient.getControllerClient().execute(op);
             }
-            Assert.assertEquals(1, SuspendTimerServiceBean.awaitTimerServiceCount());
+            Assertions.assertEquals(1, SuspendTimerServiceBean.awaitTimerServiceCount());
         } finally {
             if (timer != null) {
                 try {

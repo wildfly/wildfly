@@ -14,18 +14,19 @@ import java.net.http.HttpResponse;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.integration.web.postcontstruct.beanjar.SimpleServlet;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DuplicatePostConstructTestCase {
 
@@ -50,6 +51,6 @@ public class DuplicatePostConstructTestCase {
                         HttpResponse.BodyHandlers.ofString())
                 .body();
 
-        Assert.assertEquals("34", response);
+        Assertions.assertEquals("34", response);
     }
 }

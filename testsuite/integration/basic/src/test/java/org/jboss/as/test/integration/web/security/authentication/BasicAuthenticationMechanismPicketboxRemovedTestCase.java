@@ -15,7 +15,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -23,14 +23,15 @@ import org.jboss.as.test.integration.web.security.authentication.deployment.Secu
 import org.jboss.as.test.integration.web.security.authentication.deployment.SecuredEJBServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Automated test for [ WFLY-10671 ] - tests tracker for picketbox subsystem removing.
@@ -41,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(BasicAuthMechanismServerSetupTask.class)
 @RunAsClient
 public class BasicAuthenticationMechanismPicketboxRemovedTestCase {
@@ -76,12 +77,12 @@ public class BasicAuthenticationMechanismPicketboxRemovedTestCase {
 
             HttpGet httpget = new HttpGet(url.toExternalForm() + "SecuredEJBServlet/");
             HttpResponse response = httpclient.execute(httpget);
-            assertNotNull("Response is 'null', we expected non-null response!", response);
+            assertNotNull(response, "Response is 'null', we expected non-null response!");
             String text = Utils.getContent(response);
             assertEquals(200, response.getStatusLine().getStatusCode());
-            assertTrue("User principal different from what we expected!", text.contains("Principal: " + USER));
-            assertTrue("Remote user different from what we expected!", text.contains("Remote User: " + USER));
-            assertTrue("Authentication type different from what we expected!", text.contains("Authentication Type: BASIC"));
+            assertTrue(text.contains("Principal: " + USER), "User principal different from what we expected!");
+            assertTrue(text.contains("Remote User: " + USER), "Remote user different from what we expected!");
+            assertTrue(text.contains("Authentication Type: BASIC"), "Authentication type different from what we expected!");
         }
     }
 }

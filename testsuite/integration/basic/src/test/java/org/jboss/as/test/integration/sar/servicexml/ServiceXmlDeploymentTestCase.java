@@ -14,7 +14,7 @@ import javax.management.remote.JMXConnectorFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
@@ -22,10 +22,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 /**
@@ -34,7 +35,7 @@ import org.xnio.IoUtils;
  *
  * @see <a href="https://issues.redhat.com/browse/WFLY-14858">WFLY-14858</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ServiceXmlDeploymentTestCase {
 
@@ -43,7 +44,7 @@ public class ServiceXmlDeploymentTestCase {
 
     private JMXConnector connector;
 
-    @After
+    @AfterEach
     public void closeConnector() {
         IoUtils.safeClose(connector);
     }
@@ -101,7 +102,7 @@ public class ServiceXmlDeploymentTestCase {
         final int num2 = 4;
         Integer sum = (Integer) mBeanServerConnection.invoke(mbeanObjectName, "add", new Object[]{num1, num2},
                 new String[]{Integer.TYPE.getName(), Integer.TYPE.getName()});
-        Assert.assertEquals("Unexpected return value from MBean: " + mbeanObjectName, num1 + num2, (int) sum);
+        Assertions.assertEquals(num1 + num2, (int) sum, "Unexpected return value from MBean: " + mbeanObjectName);
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {

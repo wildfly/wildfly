@@ -5,15 +5,15 @@
 
 package org.jboss.as.test.integration.weld.extensions.cdiportableextensions;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.MalformedURLException;
 
 import jakarta.enterprise.inject.spi.Extension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -21,17 +21,17 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExtensionTestCase {
 
     private static final String MODULE_NAME = "cidExtensionModule";
     private static TestModule testModule;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         if (!AssumeTestGroupUtil.isBootableJar()) {
             testModule.remove();
@@ -70,8 +70,8 @@ public class ExtensionTestCase {
 
     @Test
     public void testFoo() throws MalformedURLException {
-        assertEquals("There should be one funny bean.", 1, funExtension.getFunnyBeans().size());
-        assertEquals("Clown should be the funny bean.", Clown.class, funExtension.getFunnyBeans().iterator().next()
-                .getBeanClass());
+        assertEquals(1, funExtension.getFunnyBeans().size(), "There should be one funny bean.");
+        assertEquals(Clown.class, funExtension.getFunnyBeans().iterator().next()
+                .getBeanClass(), "Clown should be the funny bean.");
     }
 }

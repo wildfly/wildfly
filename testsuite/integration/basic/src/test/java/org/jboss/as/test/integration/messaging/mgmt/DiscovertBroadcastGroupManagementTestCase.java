@@ -11,7 +11,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -21,15 +21,15 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DiscovertBroadcastGroupManagementTestCase extends ContainerResourceMgmtTestBase {
     private static final String MULTICAST_SOCKET_BINDING = "messaging-group";
@@ -46,15 +46,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         broadcastLegacy.remove("jgroups-cluster");
         broadcastLegacy.remove("jgroups-stack");
         ModelNode broadcast = executeOperation(Operations.createReadResourceOperation(socketBgAddress));
-        Assert.assertEquals(broadcast.toString(), broadcastLegacy.toString());
+        Assertions.assertEquals(broadcast.toString(), broadcastLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/jgroups-broadcast-group=bg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(socketBgAddress, "broadcast-period", 5000));
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketBgAddress, "broadcast-period"));
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
 
         executeOperation(Operations.createRemoveOperation(socketBgAddress));
         checkNoResource(socketBgAddress);
@@ -72,15 +72,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode broadcastLegacy = executeOperation(Operations.createReadResourceOperation(legacyBgAddress));
         broadcastLegacy.remove("socket-binding");
         ModelNode broadcast = executeOperation(Operations.createReadResourceOperation(jgroupBgAddress));
-        Assert.assertEquals(broadcast.toString(), broadcastLegacy.toString());
+        Assertions.assertEquals(broadcast.toString(), broadcastLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/socket-broadcast-group=bg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(jgroupBgAddress, "broadcast-period", 5000));
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(jgroupBgAddress, "broadcast-period"));
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
 
         executeOperation(Operations.createRemoveOperation(jgroupBgAddress));
         checkNoResource(jgroupBgAddress);
@@ -100,15 +100,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         discoveryLegacy.remove("jgroups-cluster");
         discoveryLegacy.remove("jgroups-stack");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(socketDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/jgroups-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(socketDgAddress, "initial-wait-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketDgAddress, "initial-wait-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(socketDgAddress));
         checkNoResource(socketDgAddress);
@@ -126,15 +126,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode discoveryLegacy = executeOperation(Operations.createReadResourceOperation(legacyDgAddress));
         discoveryLegacy.remove("socket-binding");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(socketDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/socket-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(socketDgAddress, "initial-wait-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketDgAddress, "initial-wait-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(socketDgAddress));
         checkNoResource(socketDgAddress);
@@ -155,15 +155,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         discoveryLegacy.remove("jgroups-cluster");
         discoveryLegacy.remove("jgroups-stack");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(socketDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/jgroups-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(socketDgAddress, "refresh-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketDgAddress, "refresh-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(socketDgAddress));
         checkNoResource(socketDgAddress);
@@ -183,15 +183,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode discoveryLegacy = executeOperation(Operations.createReadResourceOperation(legacyDgAddress));
         discoveryLegacy.remove("socket-binding");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(jgroupDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/socket-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(jgroupDgAddress, "refresh-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(jgroupDgAddress, "refresh-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(jgroupDgAddress));
         checkNoResource(jgroupDgAddress);
@@ -211,15 +211,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         broadcastLegacy.remove("jgroups-cluster");
         broadcastLegacy.remove("jgroups-stack");
         ModelNode broadcast = executeOperation(Operations.createReadResourceOperation(socketBgAddress));
-        Assert.assertEquals(broadcast.toString(), broadcastLegacy.toString());
+        Assertions.assertEquals(broadcast.toString(), broadcastLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/jgroups-broadcast-group=bg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyBgAddress, "broadcast-period", 5000));
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketBgAddress, "broadcast-period"));
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(socketBgAddress, "broadcast-period")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyBgAddress));
         checkNoResource(legacyBgAddress);
@@ -237,15 +237,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode broadcastLegacy = executeOperation(Operations.createReadResourceOperation(legacyBgAddress));
         broadcastLegacy.remove("socket-binding");
         ModelNode broadcast = executeOperation(Operations.createReadResourceOperation(jgroupBgAddress));
-        Assert.assertEquals(broadcast.toString(), broadcastLegacy.toString());
+        Assertions.assertEquals(broadcast.toString(), broadcastLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/socket-broadcast-group=bg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyBgAddress, "broadcast-period", 5000));
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(5000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(jgroupBgAddress, "broadcast-period"));
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
-        Assert.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(legacyBgAddress, "broadcast-period")).asLong());
+        Assertions.assertEquals(2000L, executeOperation(Operations.createReadAttributeOperation(jgroupBgAddress, "broadcast-period")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyBgAddress));
         checkNoResource(legacyBgAddress);
@@ -265,15 +265,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         discoveryLegacy.remove("jgroups-cluster");
         discoveryLegacy.remove("jgroups-stack");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(socketDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/jgroups-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyDgAddress, "refresh-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketDgAddress, "refresh-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "refresh-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyDgAddress));
         checkNoResource(legacyDgAddress);
@@ -291,15 +291,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode discoveryLegacy = executeOperation(Operations.createReadResourceOperation(legacyDgAddress));
         discoveryLegacy.remove("socket-binding");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(jgroupDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/server=default/socket-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyDgAddress, "refresh-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(jgroupDgAddress, "refresh-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "refresh-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "refresh-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyDgAddress));
         checkNoResource(legacyDgAddress);
@@ -319,15 +319,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         discoveryLegacy.remove("jgroups-cluster");
         discoveryLegacy.remove("jgroups-stack");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(socketDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/jgroups-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyDgAddress, "initial-wait-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(socketDgAddress, "initial-wait-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(socketDgAddress, "initial-wait-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyDgAddress));
         checkNoResource(legacyDgAddress);
@@ -346,15 +346,15 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
         ModelNode discoveryLegacy = executeOperation(Operations.createReadResourceOperation(legacyDgAddress));
         discoveryLegacy.remove("socket-binding");
         ModelNode discovery = executeOperation(Operations.createReadResourceOperation(jgroupDgAddress));
-        Assert.assertEquals(discovery.toString(), discoveryLegacy.toString());
+        Assertions.assertEquals(discovery.toString(), discoveryLegacy.toString());
         checkNoResource("/subsystem=messaging-activemq/socket-discovery-group=dg-group1");
 
         executeOperation(Operations.createWriteAttributeOperation(legacyDgAddress, "initial-wait-timeout", 50000));
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(50000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "initial-wait-timeout")).asLong());
         executeOperation(Operations.createUndefineAttributeOperation(jgroupDgAddress, "initial-wait-timeout"));
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
-        Assert.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(legacyDgAddress, "initial-wait-timeout")).asLong());
+        Assertions.assertEquals(10000L, executeOperation(Operations.createReadAttributeOperation(jgroupDgAddress, "initial-wait-timeout")).asLong());
 
         executeOperation(Operations.createRemoveOperation(legacyDgAddress));
         checkNoResource(legacyDgAddress);
@@ -437,7 +437,7 @@ public class DiscovertBroadcastGroupManagementTestCase extends ContainerResource
 
     void checkNoResource(ModelNode address) throws IOException, MgmtOperationException {
         ModelNode result = executeOperation(Operations.createReadResourceOperation(address), false);
-        Assert.assertEquals(ModelDescriptionConstants.FAILED, result.require(OUTCOME).asString());
-        Assert.assertTrue(result.require(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0216"));
+        Assertions.assertEquals(ModelDescriptionConstants.FAILED, result.require(OUTCOME).asString());
+        Assertions.assertTrue(result.require(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0216"));
     }
 }

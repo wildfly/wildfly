@@ -4,14 +4,13 @@
  */
 package org.jboss.as.test.integration.web.tx;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import jakarta.transaction.Status;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,20 +18,21 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests of servlet transaction lifecycle handling, particularly AS7-5329.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class TxControlUnitTestCase {
 
@@ -64,8 +64,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testForwardCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testForwardCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, false, true);
     }
 
@@ -75,8 +74,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testForwardNoCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testForwardNoCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, false, false);
     }
 
@@ -86,8 +84,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testIncludeCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testIncludeCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, true, true);
     }
 
@@ -97,8 +94,7 @@ public class TxControlUnitTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("tx-control.war")
-    public void testIncludeNoCommit(@ArquillianResource(TxControlServlet.class) URL baseURL) throws Exception {
+    public void testIncludeNoCommit(@ArquillianResource(TxControlServlet.class) @OperateOnDeployment("tx-control.war") URL baseURL) throws Exception {
         testURL(baseURL, true, false);
     }
 
@@ -111,15 +107,15 @@ public class TxControlUnitTestCase {
         HttpResponse response = httpclient.execute(httpget);
 
         int statusCode = response.getStatusLine().getStatusCode();
-        assertEquals("Wrong response code: " + statusCode, HttpURLConnection.HTTP_OK, statusCode);
+        assertEquals(HttpURLConnection.HTTP_OK, statusCode, "Wrong response code: " + statusCode);
 
         if (include) {
             Header outerStatus = response.getFirstHeader(TxControlServlet.OUTER_STATUS_HEADER);
-            Assert.assertNotNull(TxControlServlet.OUTER_STATUS_HEADER + " is null", outerStatus);
+            Assertions.assertNotNull(outerStatus, TxControlServlet.OUTER_STATUS_HEADER + " is null");
             Header innerStatus = response.getFirstHeader(TxControlServlet.INNER_STATUS_HEADER);
-            Assert.assertNotNull(TxControlServlet.INNER_STATUS_HEADER + " is null", innerStatus);
-            assertEquals("Wrong inner transaction status: " + innerStatus.getValue(), STATUS_ACTIVE, innerStatus.getValue());
-            assertEquals("Wrong inner transaction status: " + outerStatus.getValue(), STATUS_ACTIVE, outerStatus.getValue());
+            Assertions.assertNotNull(innerStatus, TxControlServlet.INNER_STATUS_HEADER + " is null");
+            assertEquals(STATUS_ACTIVE, innerStatus.getValue(), "Wrong inner transaction status: " + innerStatus.getValue());
+            assertEquals(STATUS_ACTIVE, outerStatus.getValue(), "Wrong inner transaction status: " + outerStatus.getValue());
         } // else TxControlServlet is using RequestDispatcher.forward and can't write to the response
 
 

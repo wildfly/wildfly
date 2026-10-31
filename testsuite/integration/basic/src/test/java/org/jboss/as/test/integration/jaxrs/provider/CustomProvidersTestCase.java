@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 import java.util.Currency;
@@ -13,15 +13,16 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A JUnit 4 test for testing deployment multiple Jakarta RESTful Web Services providers from different modules. It's mainly a regression test for
@@ -29,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class CustomProvidersTestCase {
 
@@ -73,8 +74,7 @@ public class CustomProvidersTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER)
-    public void testProvidersInTwoWars(@ArquillianResource URL webAppURL) throws Exception {
+    public void testProvidersInTwoWars(@ArquillianResource @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER) URL webAppURL) throws Exception {
         final String path = webAppURL.toExternalForm() + ExceptionMapperProvider.PATH_EXCEPTION.substring(1);
         LOGGER.trace("Requested path: " + path);
         assertEquals(ExceptionMapperProvider.ERROR_MESSAGE, HttpRequest.get(path, 10, TimeUnit.SECONDS));
