@@ -99,18 +99,18 @@ public class ClassFileTransformerTestCase {
     public void test_persistenceUnitInfoURLS() throws Exception {
         if(WildFlySecurityManager.isChecking()) {  // avoid Permission check failed (permission "("org.jboss.vfs.VirtualFilePermission"
             try {
-                assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
-                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
-                        "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
+                assertTrue("vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()),
+                        "testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
+                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol());
             } finally {
                 TestPersistenceProvider.clearLastPersistenceUnitInfo();
             }
         }
         else {
             try {
-                assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
-                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
-                        "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
+                assertTrue("vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()),
+                        "testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
+                                TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol());
                 InputStream inputStream = TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream();
                 assertNotNull(inputStream, "getPersistenceUnitRootUrl().openStream() returned non-null value");
 
@@ -123,9 +123,8 @@ public class ClassFileTransformerTestCase {
                 while (entry != null && !entry.getName().contains("persistence.xml")) {
                     entry = jarInputStream.getNextEntry();
                 }
-                assertNotNull("didn't find persistence.xml in getPersistenceUnitRootUrl, details=" +
-                                urlOpenStreamDetails(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream()),
-                        entry);
+                assertNotNull(entry, "didn't find persistence.xml in getPersistenceUnitRootUrl, details=" +
+                                urlOpenStreamDetails(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream()));
             } finally {
                 TestPersistenceProvider.clearLastPersistenceUnitInfo();
             }

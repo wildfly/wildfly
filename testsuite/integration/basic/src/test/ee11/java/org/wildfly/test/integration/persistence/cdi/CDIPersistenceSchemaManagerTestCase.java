@@ -4,7 +4,10 @@
  */
 package org.wildfly.test.integration.persistence.cdi;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.persistence.Cache;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -16,13 +19,13 @@ import jakarta.persistence.SchemaManager;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit5.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that CDI Persistence integration features works as described in
@@ -30,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CDIPersistenceSchemaManagerTestCase {
 
     private static final String ARCHIVE_NAME = "CDIPersistenceSchemaManagerTestCase";
