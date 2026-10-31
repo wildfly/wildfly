@@ -8,6 +8,7 @@
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:tns="urn:jboss:domain:distributable-ejb:3.0"
            elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
            version="3.0">
 
     <xs:element name="subsystem" type="tns:subsystem"/>
@@ -20,14 +21,14 @@
                 </xs:annotation>
             </xs:element>
             <xs:choice>
-                <xs:element name="local-client-mappings-registry" type="tns:empty">
+                <xs:element name="local-ejb-client-services" type="tns:empty">
                     <xs:annotation>
-                        <xs:documentation>Configures support for local client mappings registry</xs:documentation>
+                        <xs:documentation>Configures support for local EJB client services</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="infinispan-client-mappings-registry" type="tns:infinispan-client-mappings-registry">
+                <xs:element name="infinispan-ejb-client-services" type="tns:infinispan-ejb-client-services">
                     <xs:annotation>
-                        <xs:documentation>Configures support for cluster-aware client mappings registry</xs:documentation>
+                        <xs:documentation>Configures support for cluster-aware EJB client services</xs:documentation>
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
@@ -78,7 +79,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="infinispan-client-mappings-registry">
+    <xs:complexType name="infinispan-ejb-client-services">
         <xs:attributeGroup ref="tns:infinispan"/>
     </xs:complexType>
 
