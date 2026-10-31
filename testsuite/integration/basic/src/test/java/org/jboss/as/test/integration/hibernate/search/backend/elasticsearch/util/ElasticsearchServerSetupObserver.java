@@ -31,7 +31,7 @@ public class ElasticsearchServerSetupObserver {
     public ElasticsearchServerSetupObserver() {
 
         // This observer can be invoked by Arquillian in environments where Docker is not available,
-        // even though the test itself is disabled, e.g. with an org.junit.Assume in a @BeforeClass method.
+        // even though the test itself is disabled, e.g. with an assumption in a @BeforeAll method.
         // Hence this hack: if Docker is not available,
         // we simply don't create a container and the observer acts as a no-op.
         if (!AssumeTestGroupUtil.isDockerAvailable()) {

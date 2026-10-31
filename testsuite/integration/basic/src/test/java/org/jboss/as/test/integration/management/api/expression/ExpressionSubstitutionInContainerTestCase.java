@@ -114,9 +114,9 @@ public class ExpressionSubstitutionInContainerTestCase {
        *    <property name="qa.test.exp" value="expression.value"/>
        * </system-properties>
      */
-    /*@Ignore("AS7-6431")
+    /*@Disabled("AS7-6431")
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testExpressionDefinedFirst() {
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());
         Utils.setProperty(EXPRESSION_PROP_NAME, EXPRESSION_PROP_VALUE, managementClient.getControllerClient());
@@ -224,9 +224,9 @@ public class ExpressionSubstitutionInContainerTestCase {
      * Write attribute set:
      * <property name="qa.test.exp" value="expression.value"/>
      *//*
-    @Ignore("AS7-6431")  // for this test works there will be :reload after redefinition
+    @Disabled("AS7-6431")  // for this test works there will be :reload after redefinition
     @Test
-    @InSequence(6)
+    @Order(6)
     public void testRedefinitionExpressionValue() {
         Utils.setProperty(EXPRESSION_PROP_NAME, "firstly.defined.value.", managementClient.getControllerClient());
         Utils.setProperty(PROP_NAME, "${" + EXPRESSION_PROP_NAME + ":" + PROP_DEFAULT_VALUE + "}", managementClient.getControllerClient());

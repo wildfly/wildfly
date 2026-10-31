@@ -49,7 +49,7 @@ public class HibernateSearchV5MigrationHelperTestCase {
     @Deployment
     public static WebArchive createArchive() throws Exception {
 
-        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        // TODO maybe just use managed=false and deploy in the @BeforeAll / undeploy in an @AfterAll
         if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
             return AssumeTestGroupUtil.emptyWar(WAR_ARCHIVE_NAME);
         }
