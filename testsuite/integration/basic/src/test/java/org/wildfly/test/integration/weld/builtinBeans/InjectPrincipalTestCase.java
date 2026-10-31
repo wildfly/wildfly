@@ -6,6 +6,8 @@ package org.wildfly.test.integration.weld.builtinBeans;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import jakarta.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
@@ -41,8 +43,17 @@ public class InjectPrincipalTestCase {
                         ), "permissions.xml");
     }
 
+    @Inject
+    BeanWithInjectedPrincipal beanA;
+
+    @Inject
+    BeanWithPrincipalFromEJBContext beanB;
+
+    @Inject
+    CallerWithIdentity callerWithIdentity;
+
     @Test
-    public void testAnonymousPrincipalInjected(BeanWithInjectedPrincipal beanA, BeanWithPrincipalFromEJBContext beanB) {
+    public void testAnonymousPrincipalInjected() {
         try {
             Assertions.assertEquals(ANONYMOUS_PRINCIPAL, beanA.getPrincipalName());
             Assertions.assertEquals(ANONYMOUS_PRINCIPAL, beanB.getPrincipalName());
@@ -52,7 +63,7 @@ public class InjectPrincipalTestCase {
     }
 
     @Test
-    public void testNonAnonymousPrincipalInjected(CallerWithIdentity callerWithIdentity) throws Exception {
+    public void testNonAnonymousPrincipalInjected() throws Exception {
         try {
             // Assert.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalInjected()); TODO see issue WFLY-12538
             Assertions.assertEquals(NON_ANONYMOUS_PRINCIPAL, callerWithIdentity.getCallerPrincipalFromEJBContext());

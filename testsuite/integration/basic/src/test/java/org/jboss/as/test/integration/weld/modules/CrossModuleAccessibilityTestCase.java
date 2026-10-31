@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -93,8 +94,20 @@ public class CrossModuleAccessibilityTestCase {
         return ShrinkWrap.create(EnterpriseArchive.class, "CrossModuleAccessibilityTestCase.ear").addAsModule(war);
     }
 
+    @Inject
+    AlphaLookup alpha;
+
+    @Inject
+    BravoLookup bravo;
+
+    @Inject
+    CharlieLookup charlie;
+
+    @Inject
+    DeltaLookup delta;
+
     @Test
-    public void testAlphaModule(AlphaLookup alpha) {
+    public void testAlphaModule() {
         Assertions.assertNotNull(alpha);
         Set<String> accessibleImplementations = getAccessibleImplementations(alpha.getInstance());
         Assertions.assertTrue(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
@@ -104,7 +117,7 @@ public class CrossModuleAccessibilityTestCase {
     }
 
     @Test
-    public void testBravoModule(BravoLookup bravo) {
+    public void testBravoModule() {
         Assertions.assertNotNull(bravo);
         Set<String> accessibleImplementations = getAccessibleImplementations(bravo.getInstance());
         Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
@@ -114,7 +127,7 @@ public class CrossModuleAccessibilityTestCase {
     }
 
     @Test
-    public void testCharlieModule(CharlieLookup charlie) {
+    public void testCharlieModule() {
         Assertions.assertNotNull(charlie);
         Set<String> accessibleImplementations = getAccessibleImplementations(charlie.getInstance());
         Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
@@ -124,7 +137,7 @@ public class CrossModuleAccessibilityTestCase {
     }
 
     @Test
-    public void testDeltaModule(DeltaLookup delta) {
+    public void testDeltaModule() {
         Assertions.assertNotNull(delta);
         Set<String> accessibleImplementations = getAccessibleImplementations(delta.getInstance());
         Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));

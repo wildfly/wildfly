@@ -106,23 +106,27 @@ public class PortableExtensionInExternalModuleTestCase {
 
     }
 
+    @Inject
+    PortableExtensionModuleLookup moduleInjectionTarget;
+
+    @Inject
+    PortableExtensionLibraryLookup libraryInjectionTarget;
+
     @Test
-    public void testInModule(PortableExtensionModuleLookup injectionTarget) {
-        assertPortableExtensionInjection(injectionTarget);
+    public void testInModule() {
+        assertPortableExtensionInjection(moduleInjectionTarget);
     }
 
     @Test
-    public void testInLibrary(PortableExtensionLibraryLookup injectionTarget) {
-        assertPortableExtensionInjection(injectionTarget);
+    public void testInLibrary() {
+        assertPortableExtensionInjection(libraryInjectionTarget);
     }
 
     /**
-     * The injectionTarget argument is not injected for EJB!
-     *
-     * @param injectionTarget
+     * The CDI-style injection target is not injected for EJB, so the {@link EJB} injected one is used.
      */
     @Test
-    public void testInEjbSubdeployment(PortableExtensionSubdeploymentLookup injectionTarget) {
+    public void testInEjbSubdeployment() {
         assertPortableExtensionInjection(this.ejbInjectionTarget);
     }
 
