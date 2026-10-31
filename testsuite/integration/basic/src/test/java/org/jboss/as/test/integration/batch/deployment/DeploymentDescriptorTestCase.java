@@ -101,7 +101,7 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
     }
 
     @Test
-    @Order(1)
+    @Order(Order.DEFAULT + 1)
     public void namedJdbcTest(@ArquillianResource @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT) final URL url) throws Exception {
         // This test runs after definedJdbcTest, and the two tests share the same data source.
         testCompletion(3L, url);
