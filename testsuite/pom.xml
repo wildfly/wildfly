@@ -265,6 +265,12 @@
                     <exclude>**/*.java</exclude>
                 </excludes>
             </testResource>
+            <testResource>
+                <directory>src/test/${additional.ee.test.source}/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
         </testResources>
 
         <pluginManagement>
