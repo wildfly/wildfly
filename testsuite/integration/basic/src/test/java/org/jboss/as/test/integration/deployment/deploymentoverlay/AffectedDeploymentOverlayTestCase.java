@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 
@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -106,7 +105,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
             Assertions.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            assertThat(ioex.getMessage()).contains("HTTP Status 500 Response:");
         }
         getModelControllerClient().execute(Operations.createOperation("redeploy-links", TEST_OVERLAY_ADDRESS.toModelNode()));
         response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
@@ -115,7 +114,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
             Assertions.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            assertThat(ioex.getMessage()).contains("HTTP Status 500 Response:");
         }
         //add the wildcard link
         getModelControllerClient().execute(Operations.createAddOperation(TEST_WILDCARD_ADDRESS.append(ModelDescriptionConstants.DEPLOYMENT, "*.war").toModelNode()));

@@ -14,7 +14,6 @@ import java.util.List;
 import org.aesh.complete.AeshCompleteOperation;
 import org.aesh.readline.completion.Completion;
 import org.aesh.readline.terminal.formatting.TerminalString;
-import org.hamcrest.CoreMatchers;
 
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.cli.CommandContext;
@@ -26,7 +25,7 @@ import org.jboss.as.cli.impl.aesh.cmd.security.model.ElytronUtil;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
@@ -372,7 +371,7 @@ public class SecurityAuthCommandsTestCase {
                     + "--file-system-realm-name=" + TEST_FS_REALM + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
             Assertions.fail("Enabling using mechanism should have failed");
         } catch (Exception e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+            assertThat(e.getMessage()).contains("Can't mix mechanism and referenced security domain");
         }
 
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
@@ -412,7 +411,7 @@ public class SecurityAuthCommandsTestCase {
                     + " --referenced-security-domain=" + ElytronUtil.OOTB_APPLICATION_DOMAIN);
             Assertions.fail("Enabling using referenced domain should have failed");
         } catch (Exception e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+            assertThat(e.getMessage()).contains("Can't mix mechanism and referenced security domain");
         }
     }
 

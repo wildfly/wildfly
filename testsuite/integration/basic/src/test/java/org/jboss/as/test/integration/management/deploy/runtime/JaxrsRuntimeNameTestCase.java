@@ -31,14 +31,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-import org.hamcrest.CoreMatchers;
 import org.jboss.as.controller.operations.common.Util;
 
 @ExtendWith(ArquillianExtension.class)
@@ -78,7 +76,7 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @Test
     public void testSubResource() throws Exception {
-        assertThat(performCall("hello"), is("Hello World!"));
+        assertThat(performCall("hello")).isEqualTo("Hello World!");
     }
 
     @Test
@@ -87,18 +85,18 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode readResource = Util.createOperation(READ_RESOURCE_OPERATION, deploymentAddress);
         ModelNode result = controllerClient.execute(readResource);
 
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
         PathAddress subsystemAddress = deploymentAddress.append(SUBSYSTEM, SUBSYSTEM_NAME);
         readResource = Util.createOperation(READ_RESOURCE_OPERATION, subsystemAddress);
         result = controllerClient.execute(readResource);
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
 
         readResource = Util.createOperation("show-resources", subsystemAddress);
         result = controllerClient.execute(readResource);
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
         List<ModelNode> jaxrsResources = Operations.readResult(result).asList();
-        assertThat(jaxrsResources, is(notNullValue()));
-        assertThat(jaxrsResources.size(), is(5));
+        assertThat(jaxrsResources).isNotNull();
+        assertThat(jaxrsResources.size()).isEqualTo(5);
         int count = 0;
         for (ModelNode jaxrsResource: jaxrsResources) {
             if (jaxrsResource.get(RESOURCE_CLASS).asString().equals(HelloResource.class.getName())) {
@@ -106,135 +104,135 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
                 String path = jaxrsResource.get(RESOURCE_PATH).asString();
                 switch (path) {
                     case "/update":
-                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)"));
+                        assertThat(jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString()).as(jaxrsResource.toString()).isEqualTo("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)");
                         break;
                     case "/json":
-                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()"));
+                        assertThat(jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString()).as(jaxrsResource.toString()).isEqualTo("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()");
                         break;
                     case "/xml":
-                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()"));
+                        assertThat(jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString()).as(jaxrsResource.toString()).isEqualTo("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()");
                         break;
                     case "/":
-                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()"));
+                        assertThat(jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString()).as(jaxrsResource.toString()).isEqualTo("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()");
                         break;
                     default:
-                        assertThat(jaxrsResource.toString(), false, is(true));
+                        fail(jaxrsResource.toString());
                 }
             } else if (jaxrsResource.get(RESOURCE_CLASS).asString().equals(PureProxyApiService.class.getName())) {
                 count++;
                 String path = jaxrsResource.get(RESOURCE_PATH).asString();
-                assertThat(jaxrsResource.toString(), path, is("pure/proxy/test/{a}/{b}"));
-                assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/pure/proxy/test/{a}/{b} - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService.test(...)"));
+                assertThat(path).as(jaxrsResource.toString()).isEqualTo("pure/proxy/test/{a}/{b}");
+                assertThat(jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString()).as(jaxrsResource.toString()).isEqualTo("GET /hello-rs/hello/pure/proxy/test/{a}/{b} - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService.test(...)");
             }
         }
-        assertThat(count, is(5));
+        assertThat(count).isEqualTo(5);
     }
 
     @Test
     public void testReadRestResource() throws Exception {
         ModelNode removeResource =  Util.createRemoveOperation(PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME).append(SUBSYSTEM, SUBSYSTEM_NAME));
-        assertThat(Operations.getFailureDescription(controllerClient.execute(removeResource)).asString(), CoreMatchers.containsString("WFLYCTL0031"));
+        assertThat(Operations.getFailureDescription(controllerClient.execute(removeResource)).asString()).contains("WFLYCTL0031");
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
                 .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, HelloResource.class.getCanonicalName()));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         ModelNode result = controllerClient.execute(readResource);
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
 
         ModelNode res = Operations.readResult(result);
-        assertThat(res.isDefined(), is(true));
+        assertThat(res.isDefined()).isTrue();
 
-        assertThat(res.get(RESOURCE_CLASS).asString(), is(HelloResource.class.getCanonicalName()));
+        assertThat(res.get(RESOURCE_CLASS).asString()).isEqualTo(HelloResource.class.getCanonicalName());
         List<ModelNode> subResList = res.get(RESOURCE_PATHS).asList();
-        assertThat(subResList.size(), is(4));
+        assertThat(subResList.size()).isEqualTo(4);
 
         ModelNode rootRes = subResList.get(0); // '/'
-        assertThat(rootRes.get(RESOURCE_PATH).asString(), is("/"));
-        assertThat(rootRes.get(JAVA_METHOD).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorld()"));
-        assertThat(rootRes.get(CONSUMES).isDefined(), is(false));
-        assertThat(rootRes.get(PRODUCES).asList().size(), is(1));
-        assertThat(rootRes.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
-        assertThat(rootRes.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/"));
+        assertThat(rootRes.get(RESOURCE_PATH).asString()).isEqualTo("/");
+        assertThat(rootRes.get(JAVA_METHOD).asString()).isEqualTo("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorld()");
+        assertThat(rootRes.get(CONSUMES).isDefined()).isFalse();
+        assertThat(rootRes.get(PRODUCES).asList().size()).isEqualTo(1);
+        assertThat(rootRes.get(PRODUCES).asList().get(0).asString()).isEqualTo("text/plain");
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/");
 
         ModelNode jsonRes = subResList.get(1);// '/json'
-        assertThat(jsonRes.get(RESOURCE_PATH).asString(), is("/json"));
-        assertThat(jsonRes.get(JAVA_METHOD).asString(), is("jakarta.json.JsonObject " + HelloResource.class.getCanonicalName() + ".getHelloWorldJSON()"));
-        assertThat(jsonRes.get(CONSUMES).isDefined(), is(false));
-        assertThat(jsonRes.get(PRODUCES).asList().size(), is(1));
-        assertThat(jsonRes.get(PRODUCES).asList().get(0).asString(), is("application/json"));
-        assertThat(jsonRes.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(jsonRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json"));
+        assertThat(jsonRes.get(RESOURCE_PATH).asString()).isEqualTo("/json");
+        assertThat(jsonRes.get(JAVA_METHOD).asString()).isEqualTo("jakarta.json.JsonObject " + HelloResource.class.getCanonicalName() + ".getHelloWorldJSON()");
+        assertThat(jsonRes.get(CONSUMES).isDefined()).isFalse();
+        assertThat(jsonRes.get(PRODUCES).asList().size()).isEqualTo(1);
+        assertThat(jsonRes.get(PRODUCES).asList().get(0).asString()).isEqualTo("application/json");
+        assertThat(jsonRes.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(jsonRes.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/json");
 
         ModelNode updateRes = subResList.get(2);// '/update'
-        assertThat(updateRes.get(RESOURCE_PATH).asString(), is("/update"));
-        assertThat(updateRes.get(JAVA_METHOD).asString(), is("void " + HelloResource.class.getCanonicalName() + ".updateMessage(@QueryParam java.lang.String content = 'Hello')"));
-        assertThat(updateRes.get(PRODUCES).isDefined(), is(false));
-        assertThat(updateRes.get(CONSUMES).asList().size(), is(1));
-        assertThat(updateRes.get(CONSUMES).asList().get(0).asString(), is("text/plain"));
-        assertThat(updateRes.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(updateRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update"));
+        assertThat(updateRes.get(RESOURCE_PATH).asString()).isEqualTo("/update");
+        assertThat(updateRes.get(JAVA_METHOD).asString()).isEqualTo("void " + HelloResource.class.getCanonicalName() + ".updateMessage(@QueryParam java.lang.String content = 'Hello')");
+        assertThat(updateRes.get(PRODUCES).isDefined()).isFalse();
+        assertThat(updateRes.get(CONSUMES).asList().size()).isEqualTo(1);
+        assertThat(updateRes.get(CONSUMES).asList().get(0).asString()).isEqualTo("text/plain");
+        assertThat(updateRes.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(updateRes.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("PUT /hello-rs/hello/update");
 
         ModelNode xmlRes = subResList.get(3);// '/xml'
-        assertThat(xmlRes.get(RESOURCE_PATH).asString(), is("/xml"));
-        assertThat(xmlRes.get(JAVA_METHOD).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorldXML()"));
-        assertThat(xmlRes.get(CONSUMES).isDefined(), is(false));
-        assertThat(xmlRes.get(PRODUCES).asList().size(), is(1));
-        assertThat(xmlRes.get(PRODUCES).asList().get(0).asString(), is("application/xml"));
-        assertThat(xmlRes.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(xmlRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml"));
+        assertThat(xmlRes.get(RESOURCE_PATH).asString()).isEqualTo("/xml");
+        assertThat(xmlRes.get(JAVA_METHOD).asString()).isEqualTo("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorldXML()");
+        assertThat(xmlRes.get(CONSUMES).isDefined()).isFalse();
+        assertThat(xmlRes.get(PRODUCES).asList().size()).isEqualTo(1);
+        assertThat(xmlRes.get(PRODUCES).asList().get(0).asString()).isEqualTo("application/xml");
+        assertThat(xmlRes.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(xmlRes.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/xml");
 
         List<ModelNode> subLocatorList = res.get(SUB_RESOURCE_LOCATORS).asList();
-        assertThat(subLocatorList.size(), is(1));
+        assertThat(subLocatorList.size()).isEqualTo(1);
         ModelNode subLocatorRes = subLocatorList.get(0);
-        assertThat(subLocatorRes.get(RESOURCE_CLASS).asString(), is(SubHelloResource.class.getCanonicalName()));
+        assertThat(subLocatorRes.get(RESOURCE_CLASS).asString()).isEqualTo(SubHelloResource.class.getCanonicalName());
         List<ModelNode> subResInsideSubLocator = subLocatorRes.get(RESOURCE_PATHS).asList();
-        assertThat(subResInsideSubLocator.size(), is(2));
+        assertThat(subResInsideSubLocator.size()).isEqualTo(2);
 
         ModelNode subRootHi = subResInsideSubLocator.get(0);
-        assertThat(subRootHi.get(RESOURCE_PATH).asString(), is("/sub/"));
-        assertThat(subRootHi.get(JAVA_METHOD).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".hi()"));
-        assertThat(subRootHi.get(CONSUMES).isDefined(), is(false));
-        assertThat(subRootHi.get(PRODUCES).asList().size(), is(1));
-        assertThat(subRootHi.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
-        assertThat(subRootHi.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(subRootHi.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/sub/"));
+        assertThat(subRootHi.get(RESOURCE_PATH).asString()).isEqualTo("/sub/");
+        assertThat(subRootHi.get(JAVA_METHOD).asString()).isEqualTo("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".hi()");
+        assertThat(subRootHi.get(CONSUMES).isDefined()).isFalse();
+        assertThat(subRootHi.get(PRODUCES).asList().size()).isEqualTo(1);
+        assertThat(subRootHi.get(PRODUCES).asList().get(0).asString()).isEqualTo("text/plain");
+        assertThat(subRootHi.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(subRootHi.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/sub/");
 
         ModelNode pingNode = subResInsideSubLocator.get(1);
-        assertThat(pingNode.get(RESOURCE_PATH).asString(), is("/sub/ping/{name}"));
-        assertThat(pingNode.get(JAVA_METHOD).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".ping(@PathParam java.lang.String name = 'JBoss')"));
-        assertThat(pingNode.get(CONSUMES).isDefined(), is(false));
-        assertThat(pingNode.get(PRODUCES).asList().size(), is(1));
-        assertThat(pingNode.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
-        assertThat(pingNode.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(pingNode.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/sub/ping/{name}"));
+        assertThat(pingNode.get(RESOURCE_PATH).asString()).isEqualTo("/sub/ping/{name}");
+        assertThat(pingNode.get(JAVA_METHOD).asString()).isEqualTo("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".ping(@PathParam java.lang.String name = 'JBoss')");
+        assertThat(pingNode.get(CONSUMES).isDefined()).isFalse();
+        assertThat(pingNode.get(PRODUCES).asList().size()).isEqualTo(1);
+        assertThat(pingNode.get(PRODUCES).asList().get(0).asString()).isEqualTo("text/plain");
+        assertThat(pingNode.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(pingNode.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/sub/ping/{name}");
 
     }
 
     @Test
     public void testReadRestEndPointIntf() throws Exception {
-        assertThat(performCall("hello/pure/proxy/test/Hello/World"), is("Hello World"));
+        assertThat(performCall("hello/pure/proxy/test/Hello/World")).isEqualTo("Hello World");
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
                 .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, PureProxyEndPoint.class.getCanonicalName()));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         ModelNode result = controllerClient.execute(readResource);
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
 
         ModelNode res = Operations.readResult(result);
-        assertThat(res.isDefined(), is(true));
+        assertThat(res.isDefined()).isTrue();
 
-        assertThat(res.get(RESOURCE_CLASS).asString(), is(PureProxyEndPoint.class.getCanonicalName()));
+        assertThat(res.get(RESOURCE_CLASS).asString()).isEqualTo(PureProxyEndPoint.class.getCanonicalName());
         List<ModelNode> subResList = res.get(RESOURCE_PATHS).asList();
-        assertThat(subResList.size(), is(1));
+        assertThat(subResList.size()).isEqualTo(1);
 
         ModelNode rootRes = subResList.get(0);
-        assertThat(rootRes.get(RESOURCE_PATH).asString(), is("pure/proxy/test/{a}/{b}"));
-        assertThat(rootRes.get(JAVA_METHOD).asString(), is("java.lang.String " + PureProxyEndPoint.class.getCanonicalName() + ".test(@PathParam java.lang.String a, @PathParam java.lang.String b)"));
-        assertThat(rootRes.get(CONSUMES).isDefined(), is(false));
-        assertThat(rootRes.get(PRODUCES).isDefined(), is(false));
-        assertThat(rootRes.get(RESOURCE_METHODS).asList().size(), is(1));
-        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/pure/proxy/test/{a}/{b}"));
+        assertThat(rootRes.get(RESOURCE_PATH).asString()).isEqualTo("pure/proxy/test/{a}/{b}");
+        assertThat(rootRes.get(JAVA_METHOD).asString()).isEqualTo("java.lang.String " + PureProxyEndPoint.class.getCanonicalName() + ".test(@PathParam java.lang.String a, @PathParam java.lang.String b)");
+        assertThat(rootRes.get(CONSUMES).isDefined()).isFalse();
+        assertThat(rootRes.get(PRODUCES).isDefined()).isFalse();
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().size()).isEqualTo(1);
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString()).isEqualTo("GET /hello-rs/hello/pure/proxy/test/{a}/{b}");
 
     }
 
@@ -244,7 +242,7 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         readResource.get(ModelDescriptionConstants.RECURSIVE).set(true);
         ModelNode result = controllerClient.execute(readResource);
-        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+        assertThat(Operations.isSuccessfulOutcome(result)).as("Failed to list resources: " + result).isTrue();
     }
 
 }

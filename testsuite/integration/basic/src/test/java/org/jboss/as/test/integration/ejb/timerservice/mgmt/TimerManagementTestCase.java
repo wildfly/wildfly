@@ -28,8 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -84,7 +83,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            assertThat(failureDescription.toString()).as("Wrong failure description").contains("WFLYCTL0216");
         }
     }
 
@@ -97,7 +96,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            assertThat(failureDescription.toString()).as("Wrong failure description").contains("WFLYCTL0216");
         }
     }
 
@@ -110,7 +109,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
         final ModelNode operation = Util.createOperation("suspend", address);
         ModelNode response = executeForResult(operation);
         Assertions.assertFalse(Operations.isSuccessfulOutcome(response));
-        assertThat("Wrong failure description", Operations.getFailureDescription(response).toString(), containsString("WFLYEJB0526"));
+        assertThat(Operations.getFailureDescription(response).toString()).as("Wrong failure description").contains("WFLYEJB0526");
         this.waitOverTimer();
     }
 

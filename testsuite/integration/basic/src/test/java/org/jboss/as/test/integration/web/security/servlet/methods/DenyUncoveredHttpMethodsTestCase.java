@@ -4,8 +4,7 @@
  */
 package org.jboss.as.test.integration.web.security.servlet.methods;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URL;
@@ -49,7 +48,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpGet httpGet = new HttpGet(getURL());
         HttpResponse response = getHttpResponse(httpGet);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_UNAUTHORIZED));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     @Test
@@ -57,7 +56,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpHead httpHead = new HttpHead(getURL());
         HttpResponse response = getHttpResponse(httpHead);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_UNAUTHORIZED));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     @Test
@@ -65,7 +64,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpTrace httpTrace = new HttpTrace(getURL());
         HttpResponse response = getHttpResponse(httpTrace);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
@@ -73,7 +72,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpPost httpPost = new HttpPost(getURL());
         HttpResponse response = getHttpResponse(httpPost);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_FORBIDDEN));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -81,7 +80,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpPut httpPut = new HttpPut(getURL());
         HttpResponse response = getHttpResponse(httpPut);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_FORBIDDEN));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -89,7 +88,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpDelete httpDelete = new HttpDelete(getURL());
         HttpResponse response = getHttpResponse(httpDelete);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_FORBIDDEN));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -97,7 +96,7 @@ public class DenyUncoveredHttpMethodsTestCase {
         HttpOptions httpOptions = new HttpOptions(getURL());
         HttpResponse response = getHttpResponse(httpOptions);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_FORBIDDEN));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
     }
 
     /**
@@ -119,7 +118,7 @@ public class DenyUncoveredHttpMethodsTestCase {
 
         HttpResponse response = getHttpResponse(request);
 
-        assertThat(statusCodeOf(response), is(HttpServletResponse.SC_FORBIDDEN));
+        assertThat(statusCodeOf(response)).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
     }
 
     private HttpResponse getHttpResponse(HttpUriRequest request) throws IOException {

@@ -4,12 +4,11 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
-import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
@@ -90,6 +89,6 @@ public class ModuleBeanDiscoveryModeTest {
     public void testBeanDiscovery() {
         Assertions.assertFalse(injected.isUnsatisfied());
         Assertions.assertFalse(injected.isAmbiguous());
-        assertThat(injected.get(), CoreMatchers.instanceOf(FooImplAnnotated.class));
+        assertThat(injected.get()).isInstanceOf(FooImplAnnotated.class);
     }
 }

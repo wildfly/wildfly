@@ -5,9 +5,7 @@
 
 package org.jboss.as.test.integration.batch.common;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.batch.api.BatchProperty;
 import jakarta.batch.api.Decider;
@@ -44,7 +42,7 @@ public class Decider1 implements Decider {
     public String decide(final StepExecution[] stepExecutions) throws Exception {
         Assertions.assertEquals("decision-prop", decisionProp);
         Assertions.assertEquals("job-prop", referencingJobProp);
-        assertThat(referencingStepProp, not(equalTo("step-prop")));
+        assertThat(referencingStepProp).isNotEqualTo("step-prop");
         Assertions.assertEquals(WildFlySecurityManager.getPropertyPrivileged("java.version", ""), referencingSystemProp);
         Assertions.assertEquals("job-param", referencingJobParam);
         return "next";

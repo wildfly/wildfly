@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
-import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -46,7 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -204,7 +203,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
-            assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            assertThat(t.getMessage()).as(t.getMessage()).contains("WFLYEJB0364");
         } finally {
             deployer.undeploy(STARTUP_SINGLETON_DEPLOYMENT);
         }
@@ -223,7 +222,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected EJB call fail because identity should not be propagated from @PostConstruct method", dex.getCause());
-            assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            assertThat(t.getMessage()).as(t.getMessage()).contains("WFLYEJB0364");
         }
     }
 

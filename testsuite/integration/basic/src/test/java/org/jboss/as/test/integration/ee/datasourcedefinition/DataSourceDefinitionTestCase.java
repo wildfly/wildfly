@@ -4,8 +4,7 @@
  */
 package org.jboss.as.test.integration.ee.datasourcedefinition;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.Connection;
@@ -126,6 +125,6 @@ public class DataSourceDefinitionTestCase {
                 Assertions.fail("Wrong exception is raised. The exception should be Connection is not associated with a managed connection: ... See JBJCA-1389.");
             }
         });
-        assertThat(exception.getMessage(), containsString("IJ031041"));
+        assertThat(exception.getMessage()).contains("IJ031041");
     }
 }

@@ -10,8 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -31,7 +29,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -95,7 +93,7 @@ public class DeployWithRuntimeNameTestCase {
 
     @AfterEach
     public void undeployAll() {
-        assertThat(warFile.delete(), is(true));
+        assertThat(warFile.delete()).isTrue();
         if(ctx != null) {
             ctx.handleSafe("undeploy " + APP_NAME);
             ctx.handleSafe("undeploy " +OTHER_APP_NAME);
@@ -113,7 +111,7 @@ public class DeployWithRuntimeNameTestCase {
         try {
         ctx.handle(buildDeployCommand(RUNTIME_NAME, OTHER_APP_NAME));
         } catch(CommandLineException ex) {
-            assertThat(ex.getMessage(), containsString("WFLYSRV0205"));
+            assertThat(ex.getMessage()).contains("WFLYSRV0205");
         }
         checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet",  false);
         checkURL("SimpleServlet/page.html", "Version1",  false);
@@ -164,7 +162,7 @@ public class DeployWithRuntimeNameTestCase {
         boolean failed = false;
         try {
             String response = HttpRequest.get(baseUrl + path, 10, TimeUnit.SECONDS);
-            assertThat(response, containsString(content));
+            assertThat(response).contains(content);
         } catch (Exception e) {
             failed = true;
             if (!shouldFail) {
@@ -172,7 +170,7 @@ public class DeployWithRuntimeNameTestCase {
             }
         }
         if (shouldFail) {
-            assertThat(baseUrl + path, failed, is(true));
+            assertThat(failed).as(baseUrl + path).isTrue();
         }
     }
 
