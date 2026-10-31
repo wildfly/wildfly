@@ -100,8 +100,7 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("war")
-    public void testWebPermissions(@ArquillianResource URL webAppURL) throws Exception {
+    public void testWebPermissions(@ArquillianResource @OperateOnDeployment("war") URL webAppURL) throws Exception {
         final Document doc = getPermissionDocument(webAppURL);
         testJACCWebPermissions(doc.selectSingleNode("/" + ListJACCPoliciesServlet.ROOT_ELEMENT
                 + "/ActiveContextPolicies/ContextPolicy[@contextID='jacc-test.war']"));
@@ -116,8 +115,7 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("war")
-    public void testEJBPermissions(@ArquillianResource URL webAppURL) throws Exception {
+    public void testEJBPermissions(@ArquillianResource @OperateOnDeployment("war") URL webAppURL) throws Exception {
         final Document doc = getPermissionDocument(webAppURL);
         testJACCEjbPermissions(doc.selectSingleNode("/" + ListJACCPoliciesServlet.ROOT_ELEMENT
                 + "/ActiveContextPolicies/ContextPolicy[@contextID='jar-jacc-test.jar']"));

@@ -74,8 +74,7 @@ public class CustomProvidersTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER)
-    public void testProvidersInTwoWars(@ArquillianResource URL webAppURL) throws Exception {
+    public void testProvidersInTwoWars(@ArquillianResource @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER) URL webAppURL) throws Exception {
         final String path = webAppURL.toExternalForm() + ExceptionMapperProvider.PATH_EXCEPTION.substring(1);
         LOGGER.trace("Requested path: " + path);
         assertEquals(ExceptionMapperProvider.ERROR_MESSAGE, HttpRequest.get(path, 10, TimeUnit.SECONDS));

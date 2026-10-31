@@ -133,28 +133,28 @@ public class DefaultDataSourceRemovedTestCase {
 
     @Test
     @OperateOnDeployment("with-default-ds")
-    public void testDeployDefaultDS(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDS(@ArquillianResource @OperateOnDeployment("with-default-ds") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDS", 10, TimeUnit.SECONDS);
         Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name")
-    public void testDeployDefaultDSWithName(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithName(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithName", 10, TimeUnit.SECONDS);
         Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name-and-lookup")
-    public void testDeployDefaultDSWithNameAndLookup(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithNameAndLookup(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name-and-lookup") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithName", 10, TimeUnit.SECONDS);
         Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name-and-ctx")
-    public void testDeployDefaultDSWithNameAndCtx(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithNameAndCtx(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name-and-ctx") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithCtxListener", 10, TimeUnit.SECONDS);
         Assertions.assertEquals("OK", response);
     }

@@ -38,8 +38,7 @@ public class JspWithUnusedDoubleTestCase {
 
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
-    public void testUnusedDoubleInJsp(@ArquillianResource URL url) throws TimeoutException, ExecutionException, IOException {
+    public void testUnusedDoubleInJsp(@ArquillianResource @OperateOnDeployment(DEPLOYMENT) URL url) throws TimeoutException, ExecutionException, IOException {
         String response = HttpRequest.get(url + "jsp-with-unused-double.jsp", 10, TimeUnit.SECONDS);
         Assertions.assertEquals("1.0", response.trim(), "Jsp doesn't contain valid output");
     }
