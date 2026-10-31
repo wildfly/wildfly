@@ -47,14 +47,14 @@ public class LazyTransactionEnlistmentUnitTestCase {
         long id = atm.createAccount(deposit);
         double baseBalance = atm.getBalance(id);
         Assertions.assertEquals(deposit,
-                baseBalance, Double.NaN, "Account should be created with input deposit");
+                baseBalance, "Account should be created with input deposit");
 
         double balanceOnDeposit = atm.depositTwice(id, increase1, increase2);
         Assertions.assertEquals(deposit + increase1 + increase2,
-                balanceOnDeposit, Double.NaN, "Deposit should be increased twice by " + increase1 + " and " + increase2);
+                balanceOnDeposit, "Deposit should be increased twice by " + increase1 + " and " + increase2);
         double balanceAfterDeposit = atm.getBalance(id);
         Assertions.assertEquals(deposit + increase1 + increase2,
-                balanceAfterDeposit, Double.NaN, "Balance got from ATM should be equal to base deposit plus two increased deposit amounts");
+                balanceAfterDeposit, "Balance got from ATM should be equal to base deposit plus two increased deposit amounts");
     }
 
     @Test
@@ -64,14 +64,14 @@ public class LazyTransactionEnlistmentUnitTestCase {
         long id = atm.createAccount(deposit);
         double baseBalance = atm.getBalance(id);
         Assertions.assertEquals(deposit,
-                baseBalance, Double.NaN, "Account should be created with input deposit");
+                baseBalance, "Account should be created with input deposit");
 
         double balanceOnDeposit = atm.depositTwiceRawSQL(id, increase1, increase2);
         Assertions.assertEquals(deposit + increase1 + increase2,
-                balanceOnDeposit, Double.NaN, "Deposit should be increased twice by " + increase1 + " and " + increase2);
+                balanceOnDeposit, "Deposit should be increased twice by " + increase1 + " and " + increase2);
         double balanceAfterDeposit = atm.getBalance(id);
         Assertions.assertEquals(deposit + increase1 + increase2,
-                balanceAfterDeposit, Double.NaN, "Balance got from ATM should be equal to base deposit plus two increased deposit amounts");
+                balanceAfterDeposit, "Balance got from ATM should be equal to base deposit plus two increased deposit amounts");
     }
 
     @Test
@@ -80,13 +80,13 @@ public class LazyTransactionEnlistmentUnitTestCase {
         // if only
         long id = atm.createAccount(1000000);
         double balance = atm.getBalance(id);
-        Assertions.assertEquals(1000000, balance, Double.NaN);
+        Assertions.assertEquals(1000000, balance);
 
         balance = atm.depositTwiceWithRollback(id, 125000, 250000);
         // the entity state itself won't be rolled back
-        Assertions.assertEquals(1375000, balance, Double.NaN);
+        Assertions.assertEquals(1375000, balance);
         balance = atm.getBalance(id);
-        Assertions.assertEquals(1125000, balance, Double.NaN);
+        Assertions.assertEquals(1125000, balance);
     }
 
     @Test
@@ -95,11 +95,11 @@ public class LazyTransactionEnlistmentUnitTestCase {
         // if only
         long id = atm.createAccount(1000000);
         double balance = atm.getBalance(id);
-        Assertions.assertEquals(1000000, balance, Double.NaN);
+        Assertions.assertEquals(1000000, balance);
 
         balance = atm.withdrawTwiceWithRollback(id, 125000, 250000);
         balance = atm.getBalance(id);
-        Assertions.assertEquals(875000, balance, Double.NaN);
+        Assertions.assertEquals(875000, balance);
     }
 
     private ATM getAtm() throws NamingException {
