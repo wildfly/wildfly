@@ -85,6 +85,13 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-test-runner</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <!-- Only the ManagementClient API is used by testsuite shared utilities, not the JUnit 4 runner -->
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -287,6 +294,13 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-test-framework</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <!-- Only the annotation processing is used, not the JUnit 4 runner -->
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -680,6 +694,13 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <!-- Only ChildFirstClassLoaderBuilder is used, which does not need JUnit 4 -->
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
