@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.test.preview.persistence.cdi;
+package org.wildfly.test.integration.persistence.cdi;
 
 import java.util.Set;
 
