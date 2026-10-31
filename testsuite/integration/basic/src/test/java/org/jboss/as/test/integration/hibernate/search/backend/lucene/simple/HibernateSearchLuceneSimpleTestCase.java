@@ -71,7 +71,7 @@ public class HibernateSearchLuceneSimpleTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
 
-        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        // TODO maybe just use managed=false and deploy in the @BeforeAll / undeploy in an @AfterAll
         if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
             return AssumeTestGroupUtil.emptyJar(JAR_ARCHIVE_NAME);
         }

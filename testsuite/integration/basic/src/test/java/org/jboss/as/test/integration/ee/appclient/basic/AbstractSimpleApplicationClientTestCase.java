@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
-import org.opentest4j.AssertionFailedError;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -56,7 +55,6 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         ear.addAsModule(ejb);
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
-        appClient.addClasses(org.junit.Assert.class, AssertionFailedError.class);
         appClient.addClasses(AppClientMain.class);
         if (!useCommonEjbInterface) {
             appClient.addClasses(AppClientSingletonRemote.class);

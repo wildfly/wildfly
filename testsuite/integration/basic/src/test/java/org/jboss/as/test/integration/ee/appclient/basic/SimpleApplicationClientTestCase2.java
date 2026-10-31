@@ -4,8 +4,6 @@
  */
 package org.jboss.as.test.integration.ee.appclient.basic;
 
-import org.opentest4j.AssertionFailedError;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -63,12 +61,10 @@ public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationC
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
         appClient.addClasses(AppClientMain.class);
-        appClient.addClasses(org.junit.Assert.class, AssertionFailedError.class);
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
         final JavaArchive clientOverride = ShrinkWrap.create(JavaArchive.class, "client-override.jar");
-        clientOverride.addClasses(org.junit.Assert.class, AssertionFailedError.class);
         clientOverride.addClasses(DescriptorClientMain.class);
         clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"),
                 "MANIFEST.MF");
