@@ -32,7 +32,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.ejb.security.AnnSBTest;
 import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;

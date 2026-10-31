@@ -33,7 +33,8 @@ import org.jboss.as.test.integration.jca.annorar.AnnoMessageListener;
 import org.jboss.as.test.integration.jca.annorar.AnnoMessageListener1;
 import org.jboss.as.test.integration.jca.annorar.AnnoResourceAdapter;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.metadata.spec.ConnectorImpl;
@@ -101,7 +102,7 @@ public class NoRaAnnoTestCase {
                 ResourceAdapterArchive.class, "ra16anno.rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class);
         ja.addClasses(NoRaAnnoTestCase.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()).addPackage(
                 AnnoConnectionFactory.class.getPackage());
         raa.addAsLibrary(ja)
                 .addAsManifestResource(

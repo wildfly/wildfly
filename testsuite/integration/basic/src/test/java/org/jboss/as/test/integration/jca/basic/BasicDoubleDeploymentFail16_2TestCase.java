@@ -25,7 +25,8 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -96,7 +97,7 @@ public class BasicDoubleDeploymentFail16_2TestCase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(BasicDoubleDeploymentFail16_2TestCase.class,
                 BasicDoubleDeploymentTestCaseSetup.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
 
         raa.addAsLibrary(ja);
 

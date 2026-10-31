@@ -17,7 +17,7 @@ import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
@@ -101,7 +101,7 @@ public class RarInsideEarReDeploymentTestCase extends
                 MgmtOperationException.class, XMLElementReader.class,
                 XMLElementWriter.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(
