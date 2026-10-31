@@ -15,7 +15,7 @@ import javax.naming.InitialContext;
 import jakarta.resource.cci.Connection;
 import jakarta.resource.cci.ConnectionFactory;
 
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
@@ -44,7 +44,7 @@ public abstract class AbstractModuleDeploymentTestCase extends
         ja.addClasses(MgmtOperationException.class, XMLElementReader.class,
                 XMLElementWriter.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage())
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage())
                 .addPackage(AbstractModuleDeploymentTestCase.class.getPackage());
 
         if (withDependencies) {

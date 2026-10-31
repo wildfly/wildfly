@@ -15,7 +15,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -114,7 +115,7 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClasses(DisableDefaultSecurityDomainSetupTask.class, AbstractMgmtTestBase.class)
-                .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
+                .addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsManifestResource(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class.getPackage(), "MANIFEST.MF-no-default-security-domain", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;

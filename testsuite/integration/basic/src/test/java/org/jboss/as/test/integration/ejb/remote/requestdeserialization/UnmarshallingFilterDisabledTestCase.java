@@ -15,7 +15,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.wildfly.test.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;

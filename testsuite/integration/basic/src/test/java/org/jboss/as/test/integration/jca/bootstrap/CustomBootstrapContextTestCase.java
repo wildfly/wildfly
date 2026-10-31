@@ -23,7 +23,8 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter2;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -95,7 +96,7 @@ public class CustomBootstrapContextTestCase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(CustomBootstrapContextTestCase.class,
                 JcaMgmtServerSetupTask.class, JcaMgmtBase.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(CustomBootstrapContextTestCase.class.getPackage(), "ra.xml", "ra.xml")

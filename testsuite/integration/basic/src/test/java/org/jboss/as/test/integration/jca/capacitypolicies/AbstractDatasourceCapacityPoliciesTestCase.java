@@ -33,7 +33,7 @@ import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
 import org.jboss.as.test.integration.jca.JcaTestsUtil;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
