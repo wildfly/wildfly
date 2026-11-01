@@ -22,6 +22,8 @@ import org.jboss.as.controller.PathAddress;
  *
  * The queue coalesces duplicate notifications and lets callers cancel work for
  * resources that are removed before collection completes.
+ *
+ * TODO: Moved to shared module when available
  */
 final class ResourceMetricsRetryQueue {
     private static final long RETRY_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(30);

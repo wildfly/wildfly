@@ -31,8 +31,9 @@
     <version>100000.0.1.TEST-SNAPSHOT</version>
 
     <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <skipPublishing>${maven.deploy.skip}</skipPublishing>
+        <!-- This is a test-only artifact with a never-changing version.
+                     DO NOT DEPLOY IT -->
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <build>
@@ -43,20 +44,6 @@
             </resource>
         </resources>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>injected-central-publishing</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <!--
@@ -101,15 +88,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nxrm3-maven-plugin</artifactId>
-                <configuration>
-                    <!-- This is a test-only artifact with a never-changing version.
-                         DO NOT DEPLOY IT! -->
-                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

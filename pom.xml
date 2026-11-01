@@ -143,9 +143,6 @@
         <!-- The EL API artifact has a different artifactId between EE 10 and 11. Make it easy to switch which we use. -->
         <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
 
-        <!-- Repository Deployment Settings -->
-        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
-        <nexus.staging.tag>wildfly-${project.version}</nexus.staging.tag>
         <!-- Nexus staging repository URL used to retrieve test component releases -->
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
@@ -327,7 +324,7 @@
         <version.ant.junit>1.10.18</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
-        <version.org.jacoco>0.8.15</version.org.jacoco>
+        <version.org.jacoco>0.8.16</version.org.jacoco>
         <version.org.jboss.galleon>7.0.11.Final</version.org.jboss.galleon>
         <version.org.wildfly.bom-builder-plugin>2.0.11.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
@@ -335,7 +332,7 @@
         <version.org.wildfly.galleon-plugins>8.2.3.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.glow>2.1.0.Final</version.org.wildfly.glow>
         <version.org.wildfly.licenses.plugin>2.4.6.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>6.1.0.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>6.2.0.Final</version.org.wildfly.plugin>
         <version.org.wildfly.plugin.wildfly-detach-plugin>1.0.0.Final</version.org.wildfly.plugin.wildfly-detach-plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.wildfly-channel-plugin>1.0.33</version.org.wildfly.wildfly-channel-plugin>
@@ -372,7 +369,7 @@
         <version.org.javassist>3.29.2-GA</version.org.javassist>
         <version.org.jboss.arquillian.core>1.11.0.CR1</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
-        <version.org.arquillian.testcontainers>1.0.0.Beta1</version.org.arquillian.testcontainers>
+        <version.org.arquillian.testcontainers>1.0.0.Beta2</version.org.arquillian.testcontainers>
         <version.org.jboss.byteman>4.0.28.1</version.org.jboss.byteman>
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itself  -->
@@ -441,7 +438,7 @@
         <version.io.reactivex.rxjava3>3.1.12</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>4.3.5</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-converters>3.0.3</version.io.smallrye.reactive-converters>
-        <version.io.smallrye.smallrye-config>4.0.0</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>4.2.0</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.11.4</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.3.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>5.0.0-RC2</version.io.smallrye.smallrye-jwt>
@@ -450,7 +447,7 @@
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.11.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.11</version.io.smallrye.smallrye-stork>
-        <version.io.smallrye.smallrye-reactive-messaging>4.37.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>4.37.1</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.vertx.vertx>4.5.35</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.9</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.4</version.jakarta.activation.jakarta.activation-api>
@@ -566,7 +563,7 @@
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>34.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>35.0.0.Beta1</version.org.wildfly.core>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
@@ -1532,6 +1529,24 @@
                     <artifactId>wildfly-detach-plugin</artifactId>
                     <version>${version.org.wildfly.plugin.wildfly-detach-plugin}</version>
                 </plugin>
+                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>${version.central.publishing.maven.plugin}</version>
+                </plugin>
+                <!-- Disable the classic maven-deploy-plugin -->
+                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -2095,16 +2110,6 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
                             <execution>
@@ -2130,7 +2135,6 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>${version.central.publishing.maven.plugin}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>${sonatype.server.id}</publishingServerId>

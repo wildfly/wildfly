@@ -29,8 +29,5 @@ public class OpenTelemetryWithCollectorSetupTask extends OpenTelemetrySetupTask 
         super.tearDown(managementClient, containerId);
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
-
-        // Stop the container last to avoid spurious connection errors from the GrpcExporter
-        otelCollectorContainer.stop();
     }
 }
