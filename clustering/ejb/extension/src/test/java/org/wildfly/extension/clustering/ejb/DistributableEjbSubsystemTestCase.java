@@ -100,19 +100,19 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         assertTrue("Subsystem boot failed!", ks.isSuccessfulBoot());
 
         final PathAddress distributableEjbAddress = PathAddress.pathAddress(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement());
-        final PathAddress infinispanClientMappingsRegistryProviderAddress = distributableEjbAddress.append(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN.getPathElement());
+        final PathAddress infinispanClientMappingsRegistryProviderAddress = distributableEjbAddress.append(EjbClientServicesProviderResourceRegistration.INFINISPAN.getPathElement());
 
         // add a new client-mappings-registry instance
         ModelNode addInfinispanClientMappingsRegistryProvider = Util.createAddOperation(infinispanClientMappingsRegistryProviderAddress);
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
-        addInfinispanClientMappingsRegistryProvider.get(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanEjbClientServicesProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getContainerAttribute().getName()).set("foo");
+        addInfinispanClientMappingsRegistryProvider.get(InfinispanEjbClientServicesProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getCacheAttribute().getName()).set("bar");
         ModelNode addResponse = ks.executeOperation(addInfinispanClientMappingsRegistryProvider);
         assertEquals(addResponse.toString(), ModelDescriptionConstants.SUCCESS, addResponse.get(ModelDescriptionConstants.OUTCOME).asString());
 
         // check that the old registry is no longer present and has been replaced by the new registry
         final ModelNode distributableEjbSubsystem = ks.readWholeModel().get(DistributableEjbSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKeyValuePair());
-        final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.LOCAL.getPathElement().getKeyValuePair());
-        final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN.getPathElement().getKeyValuePair());
+        final ModelNode localClientMappingsRegistryProvider = distributableEjbSubsystem.get(EjbClientServicesProviderResourceRegistration.LOCAL.getPathElement().getKeyValuePair());
+        final ModelNode infinispanClientMappingsRegistryProvider = distributableEjbSubsystem.get(EjbClientServicesProviderResourceRegistration.INFINISPAN.getPathElement().getKeyValuePair());
 
         assertFalse(localClientMappingsRegistryProvider.toString(), localClientMappingsRegistryProvider.isDefined());
         assertTrue(infinispanClientMappingsRegistryProvider.toString(), infinispanClientMappingsRegistryProvider.isDefined());
