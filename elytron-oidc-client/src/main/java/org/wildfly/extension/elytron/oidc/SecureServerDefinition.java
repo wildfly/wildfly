@@ -36,8 +36,10 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -97,6 +99,14 @@ class SecureServerDefinition extends SimpleResourceDefinition {
         }
 
         @Override
+        protected boolean requiresRuntime(OperationContext context) {
+            // this resource only publishes the configuration of the management console, which is not served in
+            // admin-only mode. On a server this is already covered by the default behaviour, but for a host
+            // controller the default behaviour does not take the running mode into account.
+            return super.requiresRuntime(context) && context.getRunningMode() == RunningMode.NORMAL;
+        }
+
+        @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             String clientId = CLIENT_ID.resolveModelAttribute(context, model).asStringOrNull();
@@ -112,9 +122,16 @@ class SecureServerDefinition extends SimpleResourceDefinition {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
 
+            String secureServerName = context.getCurrentAddressValue();
+            if (context.getProcessType() == ProcessType.DOMAIN_SERVER) {
+                // a server in a managed domain does not serve the management console, so there is no HTTP management
+                // interface the configuration could be published on
+                ROOT_LOGGER.secureServerIgnoredOnDomainServer(secureServerName);
+                return;
+            }
+
             ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
             InjectedValue<ExtensibleHttpManagement> extensibleHttpManagement = new InjectedValue<>();
-            String secureServerName = context.getCurrentAddressValue();
             ServiceName serviceName = ServiceName.of(SECURE_SERVER, secureServerName);
             serviceTarget.addService(serviceName.append(HTTP_MANAGEMENT_CONTEXT), createHttpManagementConfigContextService(secureServerName, extensibleHttpManagement))
                     .addDependency(context.getCapabilityServiceName(HTTP_MANAGEMENT_HTTP_EXTENSIBLE_CAPABILITY, ExtensibleHttpManagement.class),
