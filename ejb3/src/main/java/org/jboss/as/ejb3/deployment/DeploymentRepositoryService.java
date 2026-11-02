@@ -143,6 +143,45 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
             final Map<EJBModuleIdentifier, DeploymentHolder> modules = new HashMap<EJBModuleIdentifier, DeploymentHolder>(this.modules);
             AtomicReference<ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> registrationReference = new AtomicReference<>();
 
+            // do *not* register modules which are not yet confirmed as started
+
+            // update the local map of deployments
+            modules.put(moduleId, new DeploymentHolder(deployment, registrationReference));
+            this.modules = Collections.unmodifiableMap(modules);
+        }
+    }
+
+    /**
+     * Updates the metadata in the deployment repository holding information on deployed modules to reflect the fact that
+     * they have started.
+     * Information on deployments is held locally and globally:
+     * - a server-local map maps moduleId to DeploymentHolder
+     * - a cluster-wide service provider registry holds information on which modules are deployed on which servers in the cluster
+     *
+     * This method will always mark the deployment locally as started.
+     * It will only register the module's availability if the local server is not suspended.
+     *
+     * @param moduleId the moduleId of the newly started module
+     * @return true of the deployment has started
+     */
+    @Override
+    public boolean startDeployment(EJBModuleIdentifier moduleId) {
+        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
+            EjbLogger.DEPLOYMENT_LOGGER.tracef("Starting moduleId %s in DeploymentRepository (suspended = %s)", moduleId, isSuspended());
+
+        DeploymentHolder deployment;
+        synchronized (this) {
+            deployment = modules.get(moduleId);
+            if (deployment == null) return false;
+
+            // if the server is not suspended, we need to register this started module
+            AtomicReference<ServiceProviderRegistration<EJBModuleIdentifier, GroupMember>> registrationReference =
+                    deployment.registrationReference;
+
+            // validate that the module is not currently registered
+            ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> currentRegistration = registrationReference.get();
+            assert currentRegistration == null : "a non-started module has been registered - not supposed to happen!";
+
             if (!isSuspended()) {
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                     EjbLogger.DEPLOYMENT_LOGGER.tracef("Adding registration for moduleId %s to ServiceProviderRegistrar", moduleId);
@@ -156,22 +195,6 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                     EjbLogger.DEPLOYMENT_LOGGER.tracef("Skipping registration of moduleId %s to ServiceProviderRegistrar: server is suspended", moduleId);
             }
-
-            // update the local map of deployments
-            modules.put(moduleId, new DeploymentHolder(deployment, registrationReference));
-            this.modules = Collections.unmodifiableMap(modules);
-        }
-    }
-
-    @Override
-    public boolean startDeployment(EJBModuleIdentifier moduleId) {
-        if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
-            EjbLogger.DEPLOYMENT_LOGGER.tracef("Starting moduleId %s in DeploymentRepository (suspended = %s)", moduleId, isSuspended());
-
-        DeploymentHolder deployment;
-        synchronized (this) {
-            deployment = modules.get(moduleId);
-            if (deployment == null) return false;
             deployment.started = true;
         }
         return true;
