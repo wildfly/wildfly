@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:distributable-ejb:3.0">
+<subsystem xmlns="urn:jboss:domain:distributable-ejb:4.0">
     <bean-management default="default">
         <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}" idle-threshold="${exp.idle-threshold:PT10M}"/>
     </bean-management>
