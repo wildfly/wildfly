@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>51</version>
+        <version>55</version>
         <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
         <relativePath/>
     </parent>
@@ -147,12 +147,9 @@
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
 
-        <!-- Maven Central release properties -->
-        <repo.sonatype.url>https://central.sonatype.com</repo.sonatype.url>
-        <sonatype.server.id>central</sonatype.server.id>
-        <autoPublish>false</autoPublish>
-        <waitUntil>validated</waitUntil>
-        <skipPublishing>false</skipPublishing>
+        <!-- Maven Central release properties; overrides of jboss-parent's 'central-release' profile settings -->
+        <central.autoPublish>false</central.autoPublish>
+        <central.deploymentName>wildfly-${project.version}</central.deploymentName>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
@@ -185,6 +182,8 @@
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <!-- jboss-parent defaults to the latest LTS; we require only the compiler release level -->
+        <jdk.min.version>${maven.compiler.release}</jdk.min.version>
         <recommended.java.version>25</recommended.java.version>
         <recommended.java.version.legacy>21</recommended.java.version.legacy>
 
@@ -323,7 +322,8 @@
          -->
         <version.ant.junit>1.10.18</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
-        <version.central.publishing.maven.plugin>0.9.0</version.central.publishing.maven.plugin>
+        <!-- Overrides jboss-parent's Checkstyle runtime version, whose newer versions require a newer JDK than our minimum; see https://checkstyle.org/#JRE_and_JDK -->
+        <version.checkstyle>12.3.1</version.checkstyle>
         <version.org.jacoco>0.8.16</version.org.jacoco>
         <version.org.jboss.galleon>7.0.11.Final</version.org.jboss.galleon>
         <version.org.wildfly.bom-builder-plugin>2.0.11.Final</version.org.wildfly.bom-builder-plugin>
@@ -1529,24 +1529,6 @@
                     <artifactId>wildfly-detach-plugin</artifactId>
                     <version>${version.org.wildfly.plugin.wildfly-detach-plugin}</version>
                 </plugin>
-                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
-                <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>${version.central.publishing.maven.plugin}</version>
-                </plugin>
-                <!-- Disable the classic maven-deploy-plugin -->
-                <!-- TODO WFLY-22380 just inherit from jboss-parent -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>default-deploy</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -2060,20 +2042,12 @@
             </build>
         </profile>
 
+        <!--
+            Extends jboss-parent's 'central-release' profile (activated together with it, as both share the same id),
+            which handles distribution management, signing, javadoc and publishing via the central-publishing-maven-plugin.
+        -->
         <profile>
-            <id>maven-central-release</id>
-
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>${sonatype.server.id}</id>
-                    <url>${repo.sonatype.url}</url>
-                </snapshotRepository>
-                <repository>
-                    <id>${sonatype.server.id}</id>
-                    <url>${repo.sonatype.url}</url>
-                </repository>
-            </distributionManagement>
-
+            <id>central-release</id>
             <build>
                 <plugins>
                     <!-- Create a source-release artifact that contains the fully buildable
@@ -2107,42 +2081,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>gpg-sign</id>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <publishingServerId>${sonatype.server.id}</publishingServerId>
-                            <autoPublish>${autoPublish}</autoPublish>
-                            <waitUntil>${waitUntil}</waitUntil>
-                            <deploymentName>wildfly-${project.version}</deploymentName>
-                            <skipPublishing>${skipPublishing}</skipPublishing>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

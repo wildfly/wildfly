@@ -379,7 +379,7 @@
             </build>
         </profile>
         <profile>
-            <id>maven-central-release</id>
+            <id>central-release</id>
             <build>
                 <plugins>
                     <!--
