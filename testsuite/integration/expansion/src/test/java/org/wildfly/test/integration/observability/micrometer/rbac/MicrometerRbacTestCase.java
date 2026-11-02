@@ -7,16 +7,22 @@ package org.wildfly.test.integration.observability.micrometer.rbac;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.time.Duration;
 import java.util.List;
 
+import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.observability.MessagingSubsystemSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.RbacRealmSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -31,10 +37,13 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 @ServerSetup({
         StabilityServerSetupSnapshotRestoreTasks.Community.class,
         PrometheusSetupTask.class,
+        MessagingSubsystemSetupTask.class,
         RbacRealmSetupTask.class
 })
 public class MicrometerRbacTestCase extends BaseMicrometerTest {
     private static final String UNDERTOW_MODEL_METRIC = "undertow_bytes_sent";
+    private static final String QUEUE_NAME = "micrometer-resource-add-remove-rbac";
+    private static final String QUEUE_METRIC = "messaging_activemq_message_count";
 
     @Deployment
     public static Archive<?> deploy() {
@@ -67,8 +76,7 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
 
     /**
      * Negative test: an authenticated management user without at least the Monitor role must not see the
-     * RBAC-protected model metrics. The scrape authenticates, but the Undertow model metric is read under the
-     * caller's identity and, lacking read access, comes back absent or zeroed rather than carrying a real value.
+     * RBAC-protected model metrics, including the metric series labels.
      */
     @Test
     public void testPullMicrometerWithoutMonitorRole() throws Exception {
@@ -78,14 +86,46 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
         List<PrometheusMetric> metrics =
                 fetchPrometheusMetrics(RbacRealmSetupTask.USER_NOROLE, RbacRealmSetupTask.TEST_RBAC_PASSWORD);
 
-        double value = metrics.stream()
-                .filter(metric -> metric.getKey().startsWith(UNDERTOW_MODEL_METRIC))
-                .findFirst()
-                .map(metric -> Double.parseDouble(metric.getValue()))
-                .orElse(0.0);
+        Assertions.assertFalse(metrics.stream().anyMatch(metric ->
+                        metric.getKey().startsWith(UNDERTOW_MODEL_METRIC)),
+                "The Undertow model metric series must be omitted for a user without the Monitor role");
+    }
 
-        Assertions.assertEquals(0.0, value, 0.0, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
-                "' must not be visible to a user without the Monitor role, but was " + value);
+    /** Verifies dynamic resource discovery still registers Micrometer metrics when RBAC is enabled. */
+    @Test
+    public void testDynamicResourceMetricsWithAuthentication() throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+        boolean queueCreated = false;
+        try {
+            setAuthenticationEnabled(true);
+            jmsOperations.createJmsQueue(QUEUE_NAME, "java:/jms/queue/" + QUEUE_NAME);
+            queueCreated = true;
+
+            Awaitility.await("Micrometer did not register the dynamically added JMS queue under RBAC")
+                    .pollInterval(TimeoutUtil.adjust(Duration.ofSeconds(1)))
+                    .atMost(TimeoutUtil.adjust(Duration.ofSeconds(20)))
+                    .untilAsserted(() -> assertQueueMetric(true));
+
+            List<PrometheusMetric> unauthorizedMetrics = fetchPrometheusMetrics(
+                    RbacRealmSetupTask.USER_NOROLE, RbacRealmSetupTask.TEST_RBAC_PASSWORD);
+            Assertions.assertFalse(unauthorizedMetrics.stream().anyMatch(metric -> QUEUE_METRIC.equals(metric.getKey())
+                            && "jms-queue".equals(metric.getTags().get("type"))
+                            && QUEUE_NAME.equals(metric.getTags().get("name"))),
+                    "The dynamically added JMS queue series and its name label must be omitted without access");
+
+            jmsOperations.removeJmsQueue(QUEUE_NAME);
+            queueCreated = false;
+            Awaitility.await("Micrometer did not remove the JMS queue metric under RBAC")
+                    .pollInterval(TimeoutUtil.adjust(Duration.ofSeconds(1)))
+                    .atMost(TimeoutUtil.adjust(Duration.ofSeconds(20)))
+                    .untilAsserted(() -> assertQueueMetric(false));
+        } finally {
+            if (queueCreated) {
+                jmsOperations.removeJmsQueue(QUEUE_NAME);
+            }
+            jmsOperations.close();
+            setAuthenticationEnabled(false);
+        }
     }
 
     /**
@@ -151,6 +191,16 @@ public class MicrometerRbacTestCase extends BaseMicrometerTest {
         Assertions.assertTrue(value > 0, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
                 "' should be non-zero (authentication " + (authenticationEnabled ? "enabled" : "disabled") +
                 "), but was " + value);
+    }
+
+    /** Asserts whether the queue's runtime metric is present in an authenticated scrape. */
+    private void assertQueueMetric(boolean expected) throws Exception {
+        boolean found = fetchPrometheusMetrics(RbacRealmSetupTask.USER_MONITOR,
+                RbacRealmSetupTask.TEST_RBAC_PASSWORD).stream()
+                .anyMatch(metric -> QUEUE_METRIC.equals(metric.getKey())
+                        && "jms-queue".equals(metric.getTags().get("type"))
+                        && QUEUE_NAME.equals(metric.getTags().get("name")));
+        Assertions.assertEquals(expected, found, "Unexpected JMS queue metric state under RBAC");
     }
 
     /**
