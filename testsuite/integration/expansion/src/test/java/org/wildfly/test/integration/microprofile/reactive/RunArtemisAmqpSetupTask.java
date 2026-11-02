@@ -21,6 +21,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.IntermittentFailure;
+import org.jboss.as.test.shared.StaleDockerConnectionWorkaround;
 import org.jboss.dmr.ModelNode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -87,7 +88,7 @@ public class RunArtemisAmqpSetupTask implements ServerSetupTask {
             }
 
             try {
-                container.start();
+                StaleDockerConnectionWorkaround.start(container);
             } catch (Exception e) {
                 // Either throw an assumption exception because we are ignoring intermittent failures,
                 // or propagate the exception and fail

@@ -354,7 +354,6 @@
         <dependency>
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman-bmunit5</artifactId>
-            <version>${version.org.jboss.byteman}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -7,20 +7,23 @@ package org.wildfly.extension.micrometer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.junit.Test;
 
 /** Verifies retry-queue coalescing, cancellation, ordering, and generations. */
-public class ResourceMetricsRetryQueueTest {
+public class MicrometerResourceMetricsRetryQueueTest {
     private static final long TIMEOUT_SECONDS = 5;
     private static final long SHORT_TIMEOUT_MILLIS = 200;
 
@@ -86,33 +89,40 @@ public class ResourceMetricsRetryQueueTest {
         }
     }
 
-    /** Verifies retry attempts preserve round-robin ordering. */
+    /**
+     * Verifies that a failed address is retried behind other queued work.
+     *
+     * <p>The executor stores the drain task instead of running it immediately. After
+     * both addresses are queued, the test runs that task directly. The processor
+     * records each address, fails {@code first}'s initial attempt, and succeeds for
+     * {@code second} and the retry. Since the queue appends failed work at its tail,
+     * {@code second} must be processed before {@code first} is retried.
+     *
+     * <p>Running the stored task synchronously makes the queue order deterministic
+     * without coordinating worker threads with latches.
+     */
     @Test
     public void retriesAddressesRoundRobin() throws Exception {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        try {
-            PathAddress first = PathAddress.pathAddress("subsystem", "first");
-            PathAddress second = PathAddress.pathAddress("subsystem", "second");
-            CountDownLatch processed = new CountDownLatch(1);
-            List<PathAddress> attempts = new ArrayList<>();
-            ResourceMetricsRetryQueue queue = new ResourceMetricsRetryQueue(executor, (address, attempt) -> {
-                attempts.add(address.address());
-                if (address.address().equals(second)) {
-                    processed.countDown();
-                    return true;
-                }
-                return attempt > 1;
-            }, (address, attempt) -> { });
+        PathAddress first = PathAddress.pathAddress("subsystem", "first");
+        PathAddress second = PathAddress.pathAddress("subsystem", "second");
+        Queue<Runnable> submittedTasks = new ArrayDeque<>();
+        Executor executor = submittedTasks::add;
+        List<PathAddress> attempts = new ArrayList<>();
+        ResourceMetricsRetryQueue queue = new ResourceMetricsRetryQueue(
+                executor,
+                (address, attempt) -> {
+                    attempts.add(address.address());
+                    return address.address().equals(second) || attempt > 1;
+                },
+                (address, attempt) -> {});
 
-            queue.add(first);
-            queue.add(second);
+        queue.add(first);
+        queue.add(second);
 
-            assertTrue("Second address was not processed", processed.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
-            assertEquals("Initial retry order should be round robin", List.of(first, second), attempts.subList(0, 2));
-            queue.stop();
-        } finally {
-            executor.shutdownNow();
-        }
+        assertEquals("One drain task should be waiting", 1, submittedTasks.size());
+        submittedTasks.remove().run();
+        assertEquals("A failed address should be retried after other queued work", List.of(first, second, first), attempts);
+        queue.stop();
     }
 
     /** Verifies removing and re-adding an address creates a new generation. */

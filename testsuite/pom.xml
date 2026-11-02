@@ -207,8 +207,7 @@
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
 
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <skipPublishing>${maven.deploy.skip}</skipPublishing>
+        <skipPublishing>true</skipPublishing>
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
@@ -261,6 +260,12 @@
             </testResource>
             <testResource>
                 <directory>src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/${additional.ee.test.source}/java</directory>
                 <excludes>
                     <exclude>**/*.java</exclude>
                 </excludes>
@@ -469,13 +474,6 @@
                 </plugin>
 
                 <!-- Don't deploy -->
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nxrm3-maven-plugin</artifactId>
-                    <configuration>
-                        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
