@@ -35,8 +35,9 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_2_0(2, 0), // WildFly 36-39
     VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39-41
     VERSION_3_0(3, 0), // WildFly 42-present, EAP 8.2-present
+    VERSION_4_0(4, 0), // WildFly 43-present, EAP 8.2-present
     ;
-    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_3_0, VERSION_2_0_COMMUNITY);
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_4_0, VERSION_2_0_COMMUNITY);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
@@ -107,14 +108,14 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     SingletonResourceRegistrationXMLElement localEjbClientServicesElement() {
         return this.factory.singletonElement(EjbClientServicesProviderResourceRegistration.LOCAL)
                 // change name of element to indicate multiple client services provided
-                .withElementLocalName(this.since(VERSION_3_0) ? "local-ejb-client-services" : "local-client-mappings-registry")
+                .withElementLocalName(this.since(VERSION_4_0) ? "local-ejb-client-services" : "local-client-mappings-registry")
                 .build();
     }
 
     SingletonResourceRegistrationXMLElement infinispanEjbClientServicesElement() {
         return this.factory.singletonElement(EjbClientServicesProviderResourceRegistration.INFINISPAN)
                 // change name of element to indicate multiple client services provided
-                .withElementLocalName(this.since(VERSION_3_0) ? "infinispan-ejb-client-services" : "infinispan-client-mappings-registry")
+                .withElementLocalName(this.since(VERSION_4_0) ? "infinispan-ejb-client-services" : "infinispan-client-mappings-registry")
                 .addAttributes(InfinispanEjbClientServicesProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
                 .build();
     }
