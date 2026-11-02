@@ -443,8 +443,9 @@ final class DeploymentsAssociationImpl implements Association, AutoCloseable {
                     if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                         EjbLogger.DEPLOYMENT_LOGGER.trace("ModuleAvailabilityRegistrarListener: Sending empty initial module availability to connecting client: server is suspended");
                 }
-                // this may need to be true instead of !list.isEmpty(), we we need to send a topology
-                if (!list.isEmpty()) {
+                // when a channel connection request arrives, we must supply a module availability update to complete the request
+                // we set this to true as when a server is suspended, this module availability update may be empty
+                if (true) {
                     if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                         EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarListener: listenerAdded (%s): sending modules %s to client", currentNode, list);
 
