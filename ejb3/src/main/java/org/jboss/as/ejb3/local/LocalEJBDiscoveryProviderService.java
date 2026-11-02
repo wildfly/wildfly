@@ -95,30 +95,34 @@ public class LocalEJBDiscoveryProviderService implements Service {
              */
             @Override
             public void modulesAvailable(Map<EJBModuleIdentifier,List<GroupMember>> modules) {
-                for (Map.Entry<EJBModuleIdentifier,List<GroupMember>> entry : modules.entrySet()) {
-                    EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
-                    List<GroupMember> providers = entry.getValue();
-                    for (GroupMember provider : providers) {
-                        if (provider.getName().equals(ourNodeName)) {
-                            ourModules.add(ejbModuleIdentifier);
-                            cachedServiceURL = null;
+                synchronized (serviceLock) {
+                    for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                        EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
+                        List<GroupMember> providers = entry.getValue();
+                        for (GroupMember provider : providers) {
+                            if (provider.getName().equals(ourNodeName)) {
+                                ourModules.add(ejbModuleIdentifier);
+                                cachedServiceURL = null;
+                            }
                         }
                     }
                 }
             }
 
             /*
-             * Re,ove the locally undeployed modules from the cache
+             * Remove the locally undeployed modules from the cache
              */
             @Override
             public void modulesUnavailable(Map<EJBModuleIdentifier,List<GroupMember>> modules) {
-                for (Map.Entry<EJBModuleIdentifier,List<GroupMember>> entry : modules.entrySet()) {
-                    EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
-                    List<GroupMember> providers = entry.getValue();
-                    for (GroupMember provider : providers) {
-                        if (provider.getName().equals(ourNodeName)) {
-                            ourModules.remove(ejbModuleIdentifier);
-                            cachedServiceURL = null;
+                synchronized (serviceLock) {
+                    for (Map.Entry<EJBModuleIdentifier, List<GroupMember>> entry : modules.entrySet()) {
+                        EJBModuleIdentifier ejbModuleIdentifier = entry.getKey();
+                        List<GroupMember> providers = entry.getValue();
+                        for (GroupMember provider : providers) {
+                            if (provider.getName().equals(ourNodeName)) {
+                                ourModules.remove(ejbModuleIdentifier);
+                                cachedServiceURL = null;
+                            }
                         }
                     }
                 }
