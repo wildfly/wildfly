@@ -158,6 +158,24 @@
                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                         <optional-packages>passive+</optional-packages>
                     </galleon-options>
+                    <provisioning-dir>${project.build.directory}/wildfly-layers</provisioning-dir>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                            <version>${testsuite.full.feature.pack.version}</version>
+                            <inherit-configs>false</inherit-configs>
+                            <inherit-packages>false</inherit-packages>
+                        </feature-pack>
+                    </feature-packs>
+                    <layers>
+                        <layer>base-server</layer>
+                        <layer>elytron</layer>
+                        <layer>management</layer>
+                        <layer>core-tools</layer>
+                        <layer>web-server</layer>
+                        <layer>hashicorp-vault</layer>
+                    </layers>
                 </configuration>
                 <executions>
                     <execution>
@@ -166,26 +184,6 @@
                             <goal>provision</goal>
                         </goals>
                         <phase>${hashicorp.vault.provisioning.phase}</phase>
-                        <configuration>
-                            <provisioning-dir>${project.build.directory}/wildfly-layers</provisioning-dir>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.feature.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.feature.pack.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>base-server</layer>
-                                <layer>elytron</layer>
-                                <layer>management</layer>
-                                <layer>core-tools</layer>
-                                <layer>web-server</layer>
-                                <layer>hashicorp-vault</layer>
-                            </layers>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -223,5 +221,66 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>bootablejar.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable</name>
+                </property>
+            </activation>
+            <properties>
+                <hashicorp.vault.provisioning.phase>none</hashicorp.vault.provisioning.phase>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.arquillian</groupId>
+                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bootable-jar-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <bootableJar>true</bootableJar>
+                                    <skipDeployment>true</skipDeployment>
+                                    <bootableJarName>test-wildfly.jar</bootableJarName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <!-- The imported TLS setup writes stores into the running server's configuration directory. -->
+                                <jboss.home>${project.build.directory}/wildfly-bootable</jboss.home>
+                                <install.dir>${project.build.directory}/wildfly-bootable</install.dir>
+                                <bootable.jar>${project.build.directory}/test-wildfly.jar</bootable.jar>
+                                <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                <!-- Embedded subsystem tests need modules before Arquillian extracts the JAR. -->
+                                <module.path>${project.build.directory}/wildfly-layers/modules</module.path>
+                            </systemPropertyVariables>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.wildfly.arquillian:wildfly-arquillian-container-managed</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
