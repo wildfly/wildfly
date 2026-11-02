@@ -583,6 +583,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
             <scope>test</scope>
@@ -3288,6 +3293,7 @@
                                         <jboss.home.dir>${project.build.directory}/wildfly-ejb-remote-broker</jboss.home.dir>
                                         <jbossas.dist>${project.build.directory}/wildfly-ejb-remote-broker</jbossas.dist>
                                         <jboss.dist>${project.build.directory}/wildfly-ejb-remote-broker</jboss.dist>
+                                        <!-- n.b. also instruments ArtemisLauncherSessionListener to start and stop the remote broker -->
                                         <artemis.home>${project.build.directory}/artemis</artemis.home>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly-ejb-remote-broker/modules${path.separator}${basedir}/target/modules</module.path>
@@ -3316,13 +3322,6 @@
                                         <exclude>org/jboss/as/test/integration/messaging/jms/naming/JndiLookupMessagingDeploymentTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/deployment/SingleConnectionActivationPropertyTestCase.java</exclude>
                                     </excludes>
-                                    <!-- Starting and stopping the remote broker -->
-                                    <properties>
-                                        <property>
-                                            <name>listener</name>
-                                            <value>org.jboss.as.test.integration.common.jms.ArtemisRunListener</value>
-                                        </property>
-                                    </properties>
                                 </configuration>
                             </execution>
 
