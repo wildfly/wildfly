@@ -341,8 +341,13 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                     EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarServiceProviderRegistrationListener: Calling modulesAvailable with map = %s", map);
 
+                // copy the listeners under lock (addListener/removeListener concurrent with providersChanged)
+                final List<ModuleAvailabilityRegistrarListener> listeners;
+                synchronized (DeploymentRepositoryService.this) {
+                    listeners = new ArrayList<>(this.listeners);
+                }
                 // call the listeners
-                for (ModuleAvailabilityRegistrarListener listener : this.listeners) {
+                for (ModuleAvailabilityRegistrarListener listener : listeners) {
                     listener.modulesAvailable(map);
                 }
             }
@@ -355,8 +360,13 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                     EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarServiceProviderRegistrationListener: Calling modulesUnavailable with map = %s", map);
 
+                // copy the listeners under lock (addListener/removeListener concurrent with providersChanged)
+                final List<ModuleAvailabilityRegistrarListener> listeners;
+                synchronized (DeploymentRepositoryService.this) {
+                    listeners = new ArrayList<>(this.listeners);
+                }
                 // call the listeners
-                for (ModuleAvailabilityRegistrarListener listener : this.listeners) {
+                for (ModuleAvailabilityRegistrarListener listener : listeners) {
                     listener.modulesUnavailable(map);
                 }
             }
