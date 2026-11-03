@@ -942,7 +942,6 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                        <stability-level>preview</stability-level>
                                     </galleon-options>
                                     <provisioning-file>target/glow-scan/jakarta-data-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
@@ -1020,7 +1019,6 @@
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly-jakarta-data/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.args>${jboss.args} --stability=preview</jboss.args>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-jakarta-data</JBOSS_HOME>
