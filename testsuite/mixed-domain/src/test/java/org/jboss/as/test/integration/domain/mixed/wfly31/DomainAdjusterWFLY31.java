@@ -5,14 +5,17 @@
 
 package org.jboss.as.test.integration.domain.mixed.wfly31;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
@@ -22,12 +25,14 @@ import org.jboss.dmr.ModelNode;
 public class DomainAdjusterWFLY31 extends DomainAdjuster {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) throws IOException {
         List<ModelNode> operations = new LinkedList<>();
 
         if (profileAddress.getElement(0).getValue().equals("full-ha")) {
             adjustJGroups(operations, profileAddress.append(SUBSYSTEM, "jgroups"));
         }
+
+        removeJakartaData(operations, profileAddress);
 
         return operations;
     }
@@ -37,5 +42,10 @@ public class DomainAdjusterWFLY31 extends DomainAdjuster {
         for (String stack : Arrays.asList("tcp", "udp")) {
             // Reverted stack changes
         }
+    }
+
+    private static void removeJakartaData(List<ModelNode> operations, PathAddress profileAddress) {
+        operations.add(Util.createRemoveOperation(profileAddress.append(SUBSYSTEM, "jakarta-data")));
+        operations.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.jakarta.data")));
     }
 }

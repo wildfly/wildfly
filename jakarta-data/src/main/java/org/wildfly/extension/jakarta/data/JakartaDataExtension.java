@@ -58,7 +58,7 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
      * The name of our subsystem within the model.
      */
     static final String SUBSYSTEM_NAME = "jakarta-data";
-    private static final Stability FEATURE_STABILITY = Stability.COMMUNITY;
+    private static final Stability FEATURE_STABILITY = Stability.DEFAULT;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -100,9 +100,10 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
 
         VERSION_1_0_PREVIEW(1, 0, Stability.PREVIEW),
         VERSION_1_0_COMMUNITY(1, 0, Stability.COMMUNITY),
+        VERSION_1_0(1, 0, Stability.DEFAULT),
         ;
 
-        static final JakartaDataSubsystemSchema CURRENT = VERSION_1_0_COMMUNITY;
+        static final JakartaDataSubsystemSchema CURRENT = VERSION_1_0;
 
         private final VersionedNamespace<IntVersion, JakartaDataSubsystemSchema> namespace;
 
@@ -154,7 +155,7 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
         private static void registerDeploymentUnitProcessors(DeploymentProcessorTarget processorTarget) {
             processorTarget.addDeploymentProcessor(JakartaDataExtension.SUBSYSTEM_NAME,
                     Phase.DEPENDENCIES,
-                    Phase.DEPENDENCIES_JPA + 1, // TODO https://issues.redhat.com/browse/WFLY-21271
+                    Phase.DEPENDENCIES_JAKARTA_DATA,
                     new DeploymentUnitProcessor() {
                         @Override
                         public void deploy(DeploymentPhaseContext phaseContext) {
@@ -169,7 +170,7 @@ public class JakartaDataExtension extends SubsystemExtension<JakartaDataExtensio
                     });
             processorTarget.addDeploymentProcessor(JakartaDataExtension.SUBSYSTEM_NAME,
                     Phase.POST_MODULE,
-                    Phase.POST_MODULE_JMS_CDI_EXTENSIONS + 1, // TODO https://issues.redhat.com/browse/WFLY-21271
+                    Phase.POST_MODULE_JAKARTA_DATA_CDI_EXTENSIONS,
                     new JakartaDataDeploymentProcessor());
         }
     }
