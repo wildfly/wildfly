@@ -20,7 +20,7 @@ This article is not a tutorial on application client development, rather
 it covers the specifics of the WildFly application client. There are
 tutorials available elsewhere that cover application client basics, such
 as
-https://jasondl.ee/2011/java-ees-buried-treasure-the-application-client-container[this one].
+https://jasondl.ee/2011/java-ee-039-s-buried-treasure-the-application-client-container[this one].
 
 [IMPORTANT]
 
