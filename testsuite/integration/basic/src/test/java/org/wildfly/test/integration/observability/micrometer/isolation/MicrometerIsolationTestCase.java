@@ -4,7 +4,7 @@
  */
 package org.wildfly.test.integration.observability.micrometer.isolation;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -18,7 +18,8 @@ import org.arquillian.testcontainers.api.Testcontainer;
 import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -26,12 +27,9 @@ import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorC
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 
 /**
@@ -48,9 +46,8 @@ import org.wildfly.test.integration.observability.JaxRsActivator;
  *   - The client-side test verifies that the endpoint returns the 200. This is the expected result.
  *   - A 500 response indicates that one app can see the other's meters, which should not be allowed.
  */
-@ExtendWith(ArquillianExtension.class)
+@RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestcontainersRequired
 @RunAsClient
 public class MicrometerIsolationTestCase {
@@ -75,15 +72,15 @@ public class MicrometerIsolationTestCase {
     private OpenTelemetryCollectorContainer otelCollector;
 
     @Test
-    @Order(0)
+    @InSequence
     public void initializeApps() throws MalformedURLException, InterruptedException {
         makeRequests(getDeploymentUrl(SERVICE_ONE));
         makeRequests(getDeploymentUrl(SERVICE_TWO));
 
         otelCollector.assertMetrics(metrics ->
                 Arrays.asList("app1_counter", "app2_counter")
-                        .forEach(metric -> assertTrue(metrics.stream().anyMatch(m -> m.getKey().contains(metric)),
-                                "Missing metric: " + metric)));
+                        .forEach(metric -> assertTrue("Missing metric: " + metric,
+                                metrics.stream().anyMatch(m -> m.getKey().contains(metric)))));
 
     }
 
@@ -91,7 +88,7 @@ public class MicrometerIsolationTestCase {
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(url);
             for (int i = 0; i < 5; i++) {
-                Assertions.assertEquals(200, target.request().get().getStatus());
+                Assert.assertEquals(200, target.request().get().getStatus());
             }
         }
     }
@@ -105,43 +102,43 @@ public class MicrometerIsolationTestCase {
     }
 
     @Test
-    @Order(1)
+    @InSequence(1)
     public void testCounters() throws MalformedURLException {
         testService("counter");
     }
 
     @Test
-    @Order(2)
+    @InSequence(2)
     public void testTimers() throws MalformedURLException {
         testService("timer");
     }
 
     @Test
-    @Order(3)
+    @InSequence(3)
     public void testGauges() throws MalformedURLException {
         testService("gauge");
     }
 
     @Test
-    @Order(4)
+    @InSequence(4)
     public void testSummaries() throws MalformedURLException {
         testService("summary");
     }
 
     @Test
-    @Order(5)
+    @InSequence(5)
     public void testFind() throws MalformedURLException {
         testService("find");
     }
 
     @Test
-    @Order(6)
+    @InSequence(6)
     public void testGetMeters() throws MalformedURLException {
         testService("getMeters");
     }
 
     @Test
-    @Order(7)
+    @InSequence(7)
     public void testForEachMeter() throws MalformedURLException {
         testService("forEachMeter");
     }
@@ -153,8 +150,8 @@ public class MicrometerIsolationTestCase {
                 WebTarget target = client.target(url);
                 Response response = target.request().get();
                 String body = response.readEntity(String.class);
-                Assertions.assertEquals(200,
-                        response.getStatus(), "The server returned an error, indicating that metrics are leaking between deployments.");
+                Assert.assertEquals("The server returned an error, indicating that metrics are leaking between deployments.",
+                        200, response.getStatus());
             }
         });
     }
