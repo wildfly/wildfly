@@ -69,6 +69,7 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.AttributeValueMetaData;
 import org.jboss.metadata.web.spec.CookieConfigMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
@@ -336,6 +337,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     config.setPath(cookieConfig.getPath());
                     config.setMaxAge(cookieConfig.getMaxAge());
                     config.setHttpOnly(cookieConfig.getHttpOnly());
+                    if(cookieConfig.getAttributes() != null) {
+                        for(AttributeValueMetaData attrib : cookieConfig.getAttributes()) {
+                            config.setAttribute(attrib.getAttributeName(), attrib.getAttributeValue());
+                        }
+                    }
                 }
                 List<SessionTrackingModeType> modes = sessionConfig.getSessionTrackingModes();
                 if (modes != null && !modes.isEmpty()) {
