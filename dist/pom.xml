@@ -56,6 +56,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <galleon.offline>false</galleon.offline>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
