@@ -54,6 +54,8 @@ public class DomainScriptTestCase extends ScriptTestCase {
         args.add("domain.xml");
         args.add("--host-config");
         args.add("host-primary.xml");
+        args.add("--stability=" + ServerHelper.resolveStabilityLevel());
+
         script.start(HOST_CONTROLLER_CHECK, env, args.toArray(String[]::new));
 
         Assert.assertNotNull("The process is null and may have failed to start.", script);

@@ -40,6 +40,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.version.ProductConfig;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -372,6 +374,13 @@ public class ServerHelper {
         } catch (RuntimeException | IOException e) {
             Assert.fail("input-args check failed -- " + e);
         }
+    }
+
+    public static Stability resolveStabilityLevel() {
+        ProductConfig productConfig = ProductConfig.fromFilesystemSlot(null, null, null);
+        Stability stability = productConfig.getStabilitySet().contains(Stability.PREVIEW) ? Stability.PREVIEW : Stability.DEFAULT;
+
+        return stability;
     }
 
     private static boolean isNullOrEmpty(final String value) {
