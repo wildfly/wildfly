@@ -57,6 +57,10 @@ public class StandaloneScriptTestCase extends ScriptTestCase {
         List<String> args = new ArrayList<>(Arrays.asList(ServerHelper.DEFAULT_SERVER_JAVA_OPTS));
         args.add("-c");
         args.add("standalone-full-ha.xml");
+        final String stabilityLevel = System.getProperty("jboss.test.stability.level");
+        if (stabilityLevel != null) {
+            args.add("--stability=" + stabilityLevel);
+        }
         script.start(STANDALONE_CHECK, env, args.toArray(String[]::new));
 
         ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();

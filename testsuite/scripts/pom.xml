@@ -189,6 +189,7 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <jboss.test.stability.level>preview</jboss.test.stability.level>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
