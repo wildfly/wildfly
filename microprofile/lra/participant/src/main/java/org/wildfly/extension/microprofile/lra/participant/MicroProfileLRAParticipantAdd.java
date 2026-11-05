@@ -22,10 +22,9 @@ import org.wildfly.extension.microprofile.lra.participant.service.LRAParticipant
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
-
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME;
 import static org.wildfly.extension.microprofile.lra.participant.MicroProfileLRAParticipantSubsystemDefinition.ATTRIBUTES;
@@ -66,11 +65,11 @@ class MicroProfileLRAParticipantAdd extends AbstractBoottimeAddStepHandler {
             .addCapability(MicroProfileLRAParticipantSubsystemDefinition.LRA_PARTICIPANT_CAPABILITY);
 
         builder.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
-        String serverModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_SERVER.resolveModelAttribute(context, model).asString();
-        String hostModelValue = MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST.resolveModelAttribute(context, model).asString();
-        Supplier<Host> hostSupplier = builder.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverModelValue, hostModelValue);
 
-        final LRAParticipantService lraParticipantProxyService = new LRAParticipantService(hostSupplier);
+        ServiceDependency<Host> host = MicroProfileLRAParticipantSubsystemDefinition.PROXY_HOST.resolve(context, model);
+
+
+        final LRAParticipantService lraParticipantProxyService = new LRAParticipantService(host);
 
         builder.setInstance(lraParticipantProxyService);
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();

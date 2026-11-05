@@ -28,9 +28,9 @@ public class MicroProfileLRAParticipantExtension implements Extension {
      */
     static final String SUBSYSTEM_NAME = "microprofile-lra-participant";
 
-    private static final MicroProfileLRAParticipantSubsystemModel CURRENT_MODEL = MicroProfileLRAParticipantSubsystemModel.VERSION_1_0_0;
+    private static final MicroProfileLRAParticipantSubsystemModel CURRENT_MODEL = MicroProfileLRAParticipantSubsystemModel.VERSION_2_0_0;
 
-    static final MicroProfileLRAParticipantSubsystemSchema CURRENT_SCHEMA = MicroProfileLRAParticipantSubsystemSchema.VERSION_1_0;
+    static final MicroProfileLRAParticipantSubsystemSchema CURRENT_SCHEMA = MicroProfileLRAParticipantSubsystemSchema.VERSION_2_0;
 
     private final PersistentResourceXMLDescription currentDescription = CURRENT_SCHEMA.getXMLDescription();
 

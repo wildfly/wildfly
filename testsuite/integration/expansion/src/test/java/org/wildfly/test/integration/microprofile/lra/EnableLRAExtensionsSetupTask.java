@@ -31,13 +31,19 @@ public class EnableLRAExtensionsSetupTask extends SnapshotServerSetupTask {
             builder.addStep(Operations.createAddOperation(Operations.createAddress("extension", MODULE_LRA_COORDINATOR)));
         }
         if (!subsystems.contains(SUBSYSTEM_LRA_COORDINATOR)) {
-            builder.addStep(Operations.createAddOperation(Operations.createAddress("subsystem", SUBSYSTEM_LRA_COORDINATOR)));
+            final ModelNode addOp = Operations.createAddOperation(Operations.createAddress("subsystem", SUBSYSTEM_LRA_COORDINATOR));
+            addOp.get("server").set("default-server");
+            addOp.get("host").set("default-host");
+            builder.addStep(addOp);
         }
         if (!extensions.contains(MODULE_LRA_PARTICIPANT)) {
             builder.addStep(Operations.createAddOperation(Operations.createAddress("extension", MODULE_LRA_PARTICIPANT)));
         }
         if (!subsystems.contains(SUBSYSTEM_LRA_PARTICIPANT)) {
-            builder.addStep(Operations.createAddOperation(Operations.createAddress("subsystem", SUBSYSTEM_LRA_PARTICIPANT)));
+            final ModelNode addParticipantOp = Operations.createAddOperation(Operations.createAddress("subsystem", SUBSYSTEM_LRA_PARTICIPANT));
+            addParticipantOp.get("proxy-server").set("default-server");
+            addParticipantOp.get("proxy-host").set("default-host");
+            builder.addStep(addParticipantOp);
         }
         executeOperation(managementClient, builder.build());
     }
