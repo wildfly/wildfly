@@ -67,7 +67,7 @@ The table below lists the versions of the Jakarta technologies available in Wild
 
 |Jakarta Contexts and Dependency Injection  |4.1|4.0 |X |X
 
-|Jakarta Data^xref:#spec_note_1[1]^
+|Jakarta Data
 | 1.0 |1.0 |X | X
 
 |Jakarta Debugging Support for Other Languages  |2.0 |2.0 |X |X
@@ -90,7 +90,7 @@ The table below lists the versions of the Jakarta technologies available in Wild
 
 |Jakarta Messaging  |3.1 |3.1 |X |--
 
-|Jakarta MVC^xref:#spec_note_2[2]^ |2.1|2.1|--|--
+|Jakarta MVC^xref:#spec_note_1[1]^ |2.1|2.1|--|--
 
 |Jakarta Pages  |3.1 |3.1 |X |X
 
@@ -102,7 +102,7 @@ The table below lists the versions of the Jakarta technologies available in Wild
 
 |Jakarta Servlet  |6.1 |6.0 |X |X
 
-|Jakarta SOAP with Attachments^xref:#spec_note_3[3]^ |3.0 |3.0 |X |X
+|Jakarta SOAP with Attachments^xref:#spec_note_2[2]^ |3.0 |3.0 |X |X
 
 |Jakarta Standard Tag Library  |3.0 |3.0 |X |X
 
@@ -112,16 +112,15 @@ The table below lists the versions of the Jakarta technologies available in Wild
 
 |Jakarta WebSocket  |2.2 |2.1 |X |X
 
-|Jakarta XML Binding^xref:#spec_note_3[3]^  |4.0 |4.0 |X |X
+|Jakarta XML Binding^xref:#spec_note_2[2]^  |4.0 |4.0 |X |X
 
-|Jakarta XML Web Services^xref:#spec_note_3[3]^  |4.0 |4.0 |X |X
+|Jakarta XML Web Services^xref:#spec_note_2[2]^  |4.0 |4.0 |X |X
 |=======================================================================
 
 Notes:
 
-. [[spec_note_1]]Jakarta Data is provided at `community` xref:Admin_Guide.adoc#Feature_stability_levels[stability]. While it is not part of EE 10, the WildFly EE 10 variant does support it, although it does not provide it in any out-of-the-box configuration.
-. [[spec_note_2]]Jakarta MVC is provided at `preview` xref:Admin_Guide.adoc#Feature_stability_levels[stability].
-. [[spec_note_3]]This specification is optional in EE 10 and was removed from EE 11. However, WildFly still supports it.
+. [[spec_note_1]]Jakarta MVC is provided at `preview` xref:Admin_Guide.adoc#Feature_stability_levels[stability].
+. [[spec_note_2]]This specification is optional in EE 10 and was removed from EE 11. However, WildFly still supports it.
 
 [NOTE]
 ====
