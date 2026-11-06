@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:iiop="urn:iiop"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                  http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd
+                  urn:iiop jboss-ejb-iiop_1_0.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <iiop:iiop>
+            <ejb-name>*</ejb-name>
+        </iiop:iiop>
+    </assembly-descriptor>
+</jboss:ejb-jar>
