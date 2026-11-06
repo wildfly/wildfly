@@ -14,24 +14,25 @@ import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jmx.sar.TestMBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 /**
  * @author Kabir Khan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JMXFilterTestCase {
 
@@ -51,12 +52,12 @@ public class JMXFilterTestCase {
     private ManagementClient managementClient;
 
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         connection = setupAndGetConnection();
     }
 
-    @After
+    @AfterEach
     public void closeConnection() throws Exception {
         IoUtils.safeClose(connector);
     }
@@ -67,34 +68,34 @@ public class JMXFilterTestCase {
         // Check the non-management JMX domain
         final ObjectName sarMbeanName = new ObjectName("jboss:name=test-sar-1234567890,type=jmx-sar");
         Set<ObjectName> names = connection.queryNames(new ObjectName("*:name=test-sar-1234567890,*"), null);
-        Assert.assertEquals(1, names.size());
-        Assert.assertTrue(names.contains(sarMbeanName));
+        Assertions.assertEquals(1, names.size());
+        Assertions.assertTrue(names.contains(sarMbeanName));
         // Check that names with no pattern work
         names = connection.queryNames(sarMbeanName, null);
-        Assert.assertEquals(1, names.size());
-        Assert.assertTrue(names.contains(sarMbeanName));
+        Assertions.assertEquals(1, names.size());
+        Assertions.assertTrue(names.contains(sarMbeanName));
         // Check getMBeanInfo
-        Assert.assertNotNull(connection.getMBeanInfo(sarMbeanName));
+        Assertions.assertNotNull(connection.getMBeanInfo(sarMbeanName));
 
         // Check the management JMX domains
         final ObjectName asMbeanName = new ObjectName("jboss.as:subsystem=sar");
         final ObjectName asExprMbeanName = new ObjectName("jboss.as.expr:subsystem=sar");
         names = connection.queryNames(new ObjectName("*:subsystem=sar,*"), null);
-        Assert.assertEquals(names.toString(), 4, names.size());
-        Assert.assertTrue(names.contains(asExprMbeanName));
-        Assert.assertTrue(names.contains(asMbeanName));
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.sar,subsystem=sar")));
-        Assert.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.sar,subsystem=sar")));
+        Assertions.assertEquals(4, names.size(), names.toString());
+        Assertions.assertTrue(names.contains(asExprMbeanName));
+        Assertions.assertTrue(names.contains(asMbeanName));
+        Assertions.assertTrue(names.contains(new ObjectName("jboss.as.expr:extension=org.jboss.as.sar,subsystem=sar")));
+        Assertions.assertTrue(names.contains(new ObjectName("jboss.as:extension=org.jboss.as.sar,subsystem=sar")));
         // Check that names with no pattern work
         names = connection.queryNames(asMbeanName, null);
-        Assert.assertEquals(1, names.size());
-        Assert.assertTrue(names.contains(asMbeanName));
+        Assertions.assertEquals(1, names.size());
+        Assertions.assertTrue(names.contains(asMbeanName));
         names = connection.queryNames(asExprMbeanName, null);
-        Assert.assertEquals(1, names.size());
-        Assert.assertTrue(names.contains(asExprMbeanName));
+        Assertions.assertEquals(1, names.size());
+        Assertions.assertTrue(names.contains(asExprMbeanName));
         // Check getMBeanInfo
-        Assert.assertNotNull(connection.getMBeanInfo(asMbeanName));
-        Assert.assertNotNull(connection.getMBeanInfo(asExprMbeanName));
+        Assertions.assertNotNull(connection.getMBeanInfo(asMbeanName));
+        Assertions.assertNotNull(connection.getMBeanInfo(asExprMbeanName));
     }
 
     private MBeanServerConnection setupAndGetConnection() throws Exception {

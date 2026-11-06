@@ -4,15 +4,18 @@
  */
 package org.jboss.as.test.integration.jca.basic;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.List;
+
 import jakarta.annotation.Resource;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -22,22 +25,23 @@ import org.jboss.as.test.integration.jca.basic.BasicDeployment16TestCase.BasicDe
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test failure of activation for non ID-ed RAs
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(BasicDoubleDeploymentFail16_1TestCase.BasicDoubleDeploymentTestCaseSetup.class)
 public class BasicDoubleDeploymentFail16_1TestCase {
 
@@ -64,9 +68,9 @@ public class BasicDoubleDeploymentFail16_1TestCase {
                     new ResourceAdapterSubsystemParser());
 
             final ModelNode result = executeOperation(operationListToCompositeOperation(operations), false);
-            Assert.assertTrue(!Operations.isSuccessfulOutcome(result));
+            Assertions.assertTrue(!Operations.isSuccessfulOutcome(result));
             final String failureDescription = result.get("result").get("step-1").get("failure-description").asString();
-            Assert.assertTrue(failureDescription.startsWith("WFLYCTL0212: Duplicate resource"));
+            Assertions.assertTrue(failureDescription.startsWith("WFLYCTL0212: Duplicate resource"));
         }
 
         @Override
@@ -94,7 +98,7 @@ public class BasicDoubleDeploymentFail16_1TestCase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(BasicDoubleDeploymentFail16_1TestCase.class,
                 BasicDeploymentTestCaseSetup.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
 
         raa.addAsLibrary(ja);
 
@@ -115,19 +119,23 @@ public class BasicDoubleDeploymentFail16_1TestCase {
      */
     @Test
     public void testConfiguration() throws Throwable {
-        assertNotNull("CF1 not found", connectionFactory1);
-        assertNotNull("AO1 not found", adminObject1);
+        assertNotNull(connectionFactory1, "CF1 not found");
+        assertNotNull(adminObject1, "AO1 not found");
     }
 
-    @Test(expected = NameNotFoundException.class)
+    @Test
     public void testNonExistingConfig_1() throws Exception {
-        InitialContext initialContext = new InitialContext();
-        initialContext.lookup("java:jboss/name1-2");
+        assertThrows(NameNotFoundException.class, () -> {
+            InitialContext initialContext = new InitialContext();
+            initialContext.lookup("java:jboss/name1-2");
+        });
     }
 
-    @Test(expected = NameNotFoundException.class)
+    @Test
     public void testNonExistingConfig_2() throws Exception {
-        InitialContext initialContext = new InitialContext();
-        initialContext.lookup("java:jboss/Name3-2");
+        assertThrows(NameNotFoundException.class, () -> {
+            InitialContext initialContext = new InitialContext();
+            initialContext.lookup("java:jboss/Name3-2");
+        });
     }
 }

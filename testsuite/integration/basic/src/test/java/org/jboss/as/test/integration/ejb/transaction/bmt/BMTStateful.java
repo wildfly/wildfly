@@ -4,8 +4,6 @@
  */
 package org.jboss.as.test.integration.ejb.transaction.bmt;
 
-import org.junit.Assert;
-
 import jakarta.annotation.Resource;
 import jakarta.ejb.EJBContext;
 import jakarta.ejb.Stateful;
@@ -15,6 +13,8 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Stateful session bean that uses the same transaction over two method invocations
@@ -31,7 +31,7 @@ public class BMTStateful {
     public void createTransaction() {
         try {
             final UserTransaction userTransaction = ejbContext.getUserTransaction();
-            Assert.assertEquals(Status.STATUS_NO_TRANSACTION, userTransaction.getStatus());
+            Assertions.assertEquals(Status.STATUS_NO_TRANSACTION, userTransaction.getStatus());
             userTransaction.begin();
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -43,7 +43,7 @@ public class BMTStateful {
     public void rollbackTransaction() {
         try {
             final UserTransaction userTransaction = ejbContext.getUserTransaction();
-            Assert.assertEquals(Status.STATUS_ACTIVE, userTransaction.getStatus());
+            Assertions.assertEquals(Status.STATUS_ACTIVE, userTransaction.getStatus());
             userTransaction.rollback();
         } catch (SystemException e) {
             throw new RuntimeException(e);

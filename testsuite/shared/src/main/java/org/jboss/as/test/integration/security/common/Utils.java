@@ -7,6 +7,7 @@ package org.jboss.as.test.integration.security.common;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.wildfly.test.security.common.CoreUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

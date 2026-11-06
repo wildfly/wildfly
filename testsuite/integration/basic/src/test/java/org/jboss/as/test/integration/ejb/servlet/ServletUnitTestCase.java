@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -24,9 +24,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.permission.ElytronPermission;
 
 /**
@@ -35,7 +36,7 @@ import org.wildfly.security.permission.ElytronPermission;
  *
  * @author William DeCoste, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ServletUnitTestCase {
     private static final Logger log = Logger.getLogger(ServletUnitTestCase.class.getName());
@@ -130,12 +131,12 @@ public class ServletUnitTestCase {
     @Test
     public void testEJBServletEar() throws Exception {
         String res = HttpRequest.get( servletUrl.toExternalForm() + "EJBServlet", 4, TimeUnit.SECONDS);
-        Assert.assertEquals("EJBServlet OK", res);
+        Assertions.assertEquals("EJBServlet OK", res);
     }
 
     @Test
     public void testEJBServlet() throws Exception {
         String res = HttpRequest.get( ejbServletUrl.toExternalForm() + "EJBServlet", 4, TimeUnit.SECONDS);
-        Assert.assertEquals("EJBServlet OK", res);
+        Assertions.assertEquals("EJBServlet OK", res);
     }
 }

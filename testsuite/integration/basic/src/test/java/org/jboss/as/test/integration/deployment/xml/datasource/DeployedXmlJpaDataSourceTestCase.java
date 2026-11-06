@@ -10,21 +10,21 @@ import java.util.Set;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test deployment of -ds.xml files as Jakarta Persistence data sources
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DeployedXmlJpaDataSourceTestCase {
 
 
@@ -54,9 +54,9 @@ public class DeployedXmlJpaDataSourceTestCase {
         remote.addEmployee("Bob");
         remote.addEmployee("Sue");
         final Set<String> emps = remote.getEmployees();
-        Assert.assertEquals(2, emps.size());
-        Assert.assertTrue(emps.contains("Bob"));
-        Assert.assertTrue(emps.contains("Sue"));
+        Assertions.assertEquals(2, emps.size());
+        Assertions.assertTrue(emps.contains("Bob"));
+        Assertions.assertTrue(emps.contains("Sue"));
     }
 
 

@@ -10,7 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -31,7 +32,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.ejb.security.AnnSBTest;
 import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
@@ -42,8 +43,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
@@ -52,7 +55,7 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
  *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class})
 public class SecurityAuditingTestCase extends AnnSBTest {
@@ -142,7 +145,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         }
     }
 
-    @Deployment
+    @Deployment(name = "form-auth.war")
     public static WebArchive deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
         war.setWebXML("org/jboss/as/test/integration/security/auditing/form-auth/web.xml");
@@ -179,8 +182,8 @@ public class SecurityAuditingTestCase extends AnnSBTest {
     @Test
     public void testSingleMethodAnnotationsUser1Template() throws Exception {
 
-        assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
-        assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
+        assertTrue(auditLog.exists(), "Audit log file has not been created (" + auditLog.getAbsolutePath() + ")");
+        assertTrue(auditLog.canRead(), "Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")");
 
         BufferedReader reader = Files.newBufferedReader(auditLog.toPath(), StandardCharsets.UTF_8);
 
@@ -200,10 +203,10 @@ public class SecurityAuditingTestCase extends AnnSBTest {
      * @throws Exception
      */
     @Test
-    public void test(@ArquillianResource URL url) throws Exception {
+    public void test(@ArquillianResource @OperateOnDeployment("form-auth.war") URL url) throws Exception {
 
-        assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
-        assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
+        assertTrue(auditLog.exists(), "Audit log file has not been created (" + auditLog.getAbsolutePath() + ")");
+        assertTrue(auditLog.canRead(), "Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")");
 
         BufferedReader reader = Files.newBufferedReader(auditLog.toPath(), StandardCharsets.UTF_8);
 

@@ -13,18 +13,18 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AS7-1110
@@ -35,24 +35,24 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ScriptAssertTestCase {
 
     private static final Logger logger = Logger.getLogger(ScriptAssertTestCase.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         // https://issues.redhat.com/browse/WFLY-15719
         AssumeTestGroupUtil.assumeJDKVersionBefore(15);
     }
 
-    @Before
+    @BeforeEach
     public void runOnlyAgainstSunJDK() {
         // Since this test apparently fails (https://issues.jboss.org/browse/AS7-2166) against OpenJDK, due to missing Javascript engine, let's just enable this test against Sun/Oracle JDK (which is known/expected to pass).
-        // If an org.junit.Assume fails, then the @Test(s) are ignored http://stackoverflow.com/questions/1689242/conditionally-ignoring-tests-in-junit-4
+        // If an assumption fails, then the @Test(s) are skipped
         final boolean compatibleJRE = isCompatibleJRE();
         logger.trace("Current JRE is " + (compatibleJRE ? "compatible, running " : "incompatible, skipping ") + " tests in " + ScriptAssertTestCase.class.getSimpleName());
-        Assume.assumeTrue(compatibleJRE);
+        Assumptions.assumeTrue(compatibleJRE);
     }
 
     @Deployment
@@ -68,7 +68,7 @@ public class ScriptAssertTestCase {
     public void testScriptAssert() throws NamingException, SQLException {
         Validator validator = (Validator) new InitialContext().lookup("java:comp/Validator");
         final Set<ConstraintViolation<ScriptAssertBean>> result = validator.validate(new ScriptAssertBean());
-        Assert.assertEquals(1, result.size());
+        Assertions.assertEquals(1, result.size());
     }
 
     /**

@@ -9,20 +9,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that bridge methods are correctly intercepted, and the correct method object is used in the invocation context
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EjbBridgeMethodsTestCase {
 
     @Deployment
@@ -36,15 +36,15 @@ public class EjbBridgeMethodsTestCase {
     @Test
     public void testInterceptedBridgeMethod() throws NamingException {
         ConcreteInterface ejb = (ConcreteInterface)new InitialContext().lookup("java:module/" + BridgeMethodEjb.class.getSimpleName() + "!" + ConcreteInterface.class.getName());
-        Assert.assertEquals(1, (int) ejb.method(false));
-        Assert.assertEquals(1, ((GenericInterface)ejb).method(false));
+        Assertions.assertEquals(1, (int) ejb.method(false));
+        Assertions.assertEquals(1, ((GenericInterface)ejb).method(false));
     }
 
     @Test
     public void testCdiInterceptedBridgeMethod() throws NamingException {
         ConcreteInterface ejb = (ConcreteInterface)new InitialContext().lookup("java:module/" + BridgeMethodEjb.class.getSimpleName() + "!" + ConcreteInterface.class.getName());
-        Assert.assertEquals(1, (int)ejb.cdiMethod(false));
-        Assert.assertEquals(1, ((GenericInterface) ejb).cdiMethod(false));
+        Assertions.assertEquals(1, (int)ejb.cdiMethod(false));
+        Assertions.assertEquals(1, ((GenericInterface) ejb).cdiMethod(false));
     }
 
 }

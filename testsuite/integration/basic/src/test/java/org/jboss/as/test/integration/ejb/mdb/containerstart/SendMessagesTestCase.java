@@ -8,9 +8,9 @@ package org.jboss.as.test.integration.ejb.mdb.containerstart;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.PropertyPermission;
 import java.util.Set;
@@ -36,7 +36,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -55,9 +55,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Part of migration EJB testsuite (JBAS-7922) to AS7 [JIRA JBQA-5483]. This test covers jira AS7-687 which aims to migrate this
@@ -87,7 +87,7 @@ import org.junit.runner.RunWith;
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(SendMessagesTestCase.SendMessagesTestCaseSetup.class)
 public class SendMessagesTestCase {
@@ -126,7 +126,7 @@ public class SendMessagesTestCase {
     @ContainerResource
     private InitialContext ctx;
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         executor.shutdown();
     }
@@ -236,8 +236,8 @@ public class SendMessagesTestCase {
             Set<String> received = new TreeSet<String>();
             for (int i = 1; i <= (1 + 50 + 10 + 1); i++) {
                 Message msg = receiver.receive(SECONDS.toMillis(RECEIVE_WAIT_S));
-                assertNotNull("did not receive message with ordered number " + i +
-                        " in " + SECONDS.toMillis(RECEIVE_WAIT_S) + " seconds", msg);
+                assertNotNull(msg, "did not receive message with ordered number " + i +
+                        " in " + SECONDS.toMillis(RECEIVE_WAIT_S) + " seconds");
                 String text = ((TextMessage) msg).getText();
                 received.add(text);
                 log.trace(i + ": " + text);

@@ -5,27 +5,28 @@
 
 package org.jboss.as.test.integration.jpa.entitylistener;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * EntityListeners tests
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EntityListenersTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_EntityListeners";
@@ -87,9 +88,8 @@ public class EntityListenersTestCase {
     @Test
     public void testCDICallbackInvoked() throws Exception {
         SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
-        assertEquals("MyListener should of been created by the BeanManager instance passed into the " +
-                        "persistence provider via property 'javax.persistence.bean.manager'. "
-                , 1, MyListener.getPostCtorInvocationCount());
+        assertEquals(1, MyListener.getPostCtorInvocationCount(), "MyListener should of been created by the BeanManager instance passed into the " +
+                        "persistence provider via property 'javax.persistence.bean.manager'. ");
 
     }
 
@@ -160,8 +160,8 @@ public class EntityListenersTestCase {
         bmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
         Employee emp = bmtBean.getEmployeeNoTX(empId);
         bmtBean.updateEmployee(emp);
-        assertTrue("could not load added employee", emp != null);
-        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+        assertTrue(emp != null, "could not load added employee");
+        assertTrue(2 == MyListener.getInvocationCount(), "EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount());
     }
 
     /**
@@ -175,7 +175,7 @@ public class EntityListenersTestCase {
         cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
         Employee emp = cmtBean.getEmployeeNoTX(empId);
         cmtBean.updateEmployee(emp);
-        assertTrue("could not load added employee", emp != null);
-        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+        assertTrue(emp != null, "could not load added employee");
+        assertTrue(2 == MyListener.getInvocationCount(), "EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount());
     }
 }

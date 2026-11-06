@@ -15,7 +15,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -29,19 +29,19 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (asynchronous) to AS7 [JIRA JBQA-5483].
  *
  * Test if asynchronous calls and security check works.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({AsynchronousSecurityTestCase.AsynchronousSecurityTestCaseSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class AsynchronousSecurityTestCase {
     private static final Logger log = Logger.getLogger(AsynchronousSecurityTestCase.class);
     private static final String ARCHIVE_NAME = "AsyncSecurityTestCase";
@@ -101,7 +101,7 @@ public class AsynchronousSecurityTestCase {
             return future.get();
         };
         result = Util.switchIdentity("somebody", "password", callable);
-        Assert.assertTrue(result);
+        Assertions.assertTrue(result);
 
         // Test 2
         SecuredStatelessBean.reset();
@@ -115,12 +115,12 @@ public class AsynchronousSecurityTestCase {
             result = Util.switchIdentity("rolefail", "password", callable);
         } catch (ExecutionException ee) {
             if(!(ee.getCause() instanceof EJBAccessException)) {
-                Assert.fail("Exception cause was not EJBAccessException and was " + ee);
+                Assertions.fail("Exception cause was not EJBAccessException and was " + ee);
             }
         } catch (EJBAccessException ejbe) {
             // it's ok too
         }
-        Assert.assertFalse(result);
+        Assertions.assertFalse(result);
 
         // Test 3
         SecuredStatelessBean.reset();
@@ -134,12 +134,12 @@ public class AsynchronousSecurityTestCase {
             result = Util.switchIdentity("nosuchuser", "password", callable);
         } catch (ExecutionException ee) {
             if(!(ee.getCause() instanceof EJBAccessException) && ! (ee.getCause() instanceof SecurityException)) {
-                Assert.fail("Exception cause was not EJBAccessException or SecurityException and was " + ee);
+                Assertions.fail("Exception cause was not EJBAccessException or SecurityException and was " + ee);
             }
         } catch (EJBAccessException | SecurityException ejbe) {
             // it's ok too
         }
-        Assert.assertFalse(result);
+        Assertions.assertFalse(result);
     }
 
 
@@ -154,7 +154,7 @@ public class AsynchronousSecurityTestCase {
             Future<Boolean> future = securedBean.uncheckedMethod();
             SecuredStatelessBean.startLatch.countDown();
             boolean test1Result = future.get();
-            Assert.assertTrue(test1Result);
+            Assertions.assertTrue(test1Result);
 
             // Test 2
             future = null;
@@ -167,11 +167,11 @@ public class AsynchronousSecurityTestCase {
             result = Util.switchIdentity("rolefail", "password", callable);
         } catch (ExecutionException ee) {
             if(!(ee.getCause() instanceof EJBAccessException)) {
-                Assert.fail("Exception cause was not EJBAccessException and was " + ee);
+                Assertions.fail("Exception cause was not EJBAccessException and was " + ee);
             }
         } catch (EJBAccessException ejbe) {
             // it's ok too
         }
-        Assert.assertFalse(result);
+        Assertions.assertFalse(result);
     }
 }

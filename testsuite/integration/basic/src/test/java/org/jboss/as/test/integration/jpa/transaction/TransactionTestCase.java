@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.integration.jpa.transaction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 
@@ -18,21 +18,25 @@ import javax.naming.NamingException;
 import jakarta.persistence.TransactionRequiredException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Transaction tests
  *
  * @author Scott Marlow and Zbynek Roubalik
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TransactionTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_transaction";
@@ -70,7 +74,7 @@ public class TransactionTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testMultipleNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);   // For each call in, we will use a transactional entity manager
@@ -81,18 +85,18 @@ public class TransactionTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testQueryNonTXTransactionalEntityManagerInvocations() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         String name = sfsb1.queryEmployeeNameNoTX(1);
-        assertEquals("Query should of thrown NoResultException, which we indicate by returning 'success'", "success", name);
+        assertEquals("success", name, "Query should of thrown NoResultException, which we indicate by returning 'success'");
     }
 
     // Test that the queried Employee is detached as required by JPA 2.0 section 3.8.6
     // For a transaction scoped persistence context non Jakarta Transactions tx invocation, entities returned from Query
     // must be detached.
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testQueryNonTXTransactionalDetach() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Jill", "54 Country Lane", 2);
@@ -100,7 +104,7 @@ public class TransactionTestCase {
         assertNotNull(employee);
 
         boolean detached = sfsb1.isQueryEmployeeDetached(2);
-        assertTrue("JPA 2.0 section 3.8.6 violated, query returned entity in non-tx that wasn't detached ", detached);
+        assertTrue(detached, "JPA 2.0 section 3.8.6 violated, query returned entity in non-tx that wasn't detached ");
     }
 
     /**
@@ -109,7 +113,7 @@ public class TransactionTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testTransactionRequiredException() throws Exception {
         Throwable error = null;
         try {
@@ -125,8 +129,8 @@ public class TransactionTestCase {
             error = error.getCause();
         }
         assertTrue(
-                "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
-                        + " but we instead got a " + error, error instanceof TransactionRequiredException);
+                error instanceof TransactionRequiredException, "attempting to persist entity with transactional entity manager and no transaction, should fail with a TransactionRequiredException"
+                        + " but we instead got a " + error);
     }
 
 
@@ -138,44 +142,44 @@ public class TransactionTestCase {
      * 3) The transaction fails after the DAO calls and the Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testFailInDAOCalls() throws Exception {
         SLSB1 slsb1 = lookup("SLSB1", SLSB1.class);
         slsb1.addEmployee();
 
         String message = slsb1.failInFirstCall();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
 
         message = slsb1.failInSecondCall();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
 
         message = slsb1.failAfterCalls();
-        assertEquals("DB should be unchanged, which we indicate by returning 'success'", "success", message);
+        assertEquals("success", message, "DB should be unchanged, which we indicate by returning 'success'");
     }
 
     @Test
-    @InSequence(6)
+    @Order(6)
     public void testUserTxRollbackDiscardsChanges() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 10);  // create the employee but leave in xpc
         Employee employee = sfsbxpc.lookup(10);
-        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (not yet saved to db)");
 
         // rollback any changes that haven't been saved yet
         sfsbxpc.forceRollbackAndLosePendingChanges(10, false);
 
         employee = sfsbxpc.lookup(10);
-        assertNull("employee record should not be found in db after rollback", employee);
+        assertNull(employee, "employee record should not be found in db after rollback");
 
     }
 
     @Test
-    @InSequence(7)
+    @Order(7)
     public void testEnlistXPCInUserTx() throws Exception {
         SFSBXPC sfsbxpc = lookup("SFSBXPC", SFSBXPC.class);
         sfsbxpc.createEmployeeNoTx("Amory Lorch", "Lannister House", 20);  // create the employee but leave in xpc
         Employee employee = sfsbxpc.lookup(20);
-        assertNotNull("could read employee record from extended persistence context (not yet saved to db)", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (not yet saved to db)");
 
         // start/end a user transaction without invoking the (extended) entity manager, which should cause the
         // pending changes to be saved to db
@@ -184,7 +188,7 @@ public class TransactionTestCase {
         sfsbxpc.forceRollbackAndLosePendingChanges(20, true);
 
         employee = sfsbxpc.lookup(20);
-        assertNotNull("could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())", employee);
+        assertNotNull(employee, "could read employee record from extended persistence context (wasn't saved to db during savePendingChanges())");
 
     }
 
@@ -196,62 +200,62 @@ public class TransactionTestCase {
 
 
     @Test
-    @InSequence(8)
+    @Order(8)
     public void testUnsynchronized() throws Exception {
         UnsynchronizedSFSB unsynchronizedSFSB = lookup("UnsynchronizedSFSB", UnsynchronizedSFSB.class);
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
         Employee employee = unsynchronizedSFSB.createAndFind("New England Revolution", "Gillette Stadium", 50);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same persistence context", employee);    // we should see new employee in unsynchronized persistence context
+        assertNotNull(employee, "SynchronizationType.UNSYNCHRONIZED should be visible in the same persistence context");    // we should see new employee in unsynchronized persistence context
 
         employee = sfsb1.getEmployeeNoTX(50);
-        assertNull("SynchronizationType.UNSYNCHRONIZED change is visible to separate persistence context", employee);       // other persistence context shouldn't see unsynchronized (pending) changes
+        assertNull(employee, "SynchronizationType.UNSYNCHRONIZED change is visible to separate persistence context");       // other persistence context shouldn't see unsynchronized (pending) changes
 
         unsynchronizedSFSB.createAndJoin("New England Revolution", "Gillette Stadium", 50);
         employee = sfsb1.getEmployeeNoTX(50);   // so that other persistence context can also see new entity
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to Jakarta Transactions transaction",
-                employee);
+        assertNotNull(employee,
+                "SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to Jakarta Transactions transaction");
 
         // check that propagation of UNSYNCHRONIZED persistence context happens during call to inner bean and that
         // inner bean sees new entity that hasn't been saved to the database
         employee = unsynchronizedSFSB.createAndPropagatedFind("Catherine Stark", "Winterfell", 55);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4",
-                employee);
+        assertNotNull(employee,
+                "SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4");
 
         unsynchronizedSFSB.createAndPropagatedJoin("Jon Snow", "knows nothing", 56);
         employee = unsynchronizedSFSB.find(56);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4 and " +
-                        "pending changes saved when inner bean calls EntityManager.joinTransaction",
-                employee);
+        assertNotNull(employee,
+                "SynchronizationType.UNSYNCHRONIZED should be propagated across bean invocations as per JPA 2.1 section 7.6.4 and " +
+                        "pending changes saved when inner bean calls EntityManager.joinTransaction");
     }
 
 
     @Test
-    @InSequence(9)
+    @Order(9)
     public void testUnsynchronizedXPC() throws Exception {
         UnsynchronizedSFSBXPC unsynchronizedSFSBXPC = lookup("UnsynchronizedSFSBXPC", UnsynchronizedSFSBXPC.class);
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
 
         // create entity in UNSYNCHRONIZED persistence context which shouldn't be stored in the database until after em.joinTransaction()
         Employee employee = unsynchronizedSFSBXPC.createAndFind("Tom Jones", "Singer", 500);
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible in the same extended persistence context within same tx", employee);    // we should see new employee in unsynchronized persistence context
+        assertNotNull(employee, "SynchronizationType.UNSYNCHRONIZED should be visible in the same extended persistence context within same tx");    // we should see new employee in unsynchronized persistence context
 
         employee = sfsb1.getEmployeeNoTX(500);
-        assertNull("entity created in SynchronizationType.UNSYNCHRONIZED XPC should not of been saved to database", employee);       // same extended persistence context
+        assertNull(employee, "entity created in SynchronizationType.UNSYNCHRONIZED XPC should not of been saved to database");       // same extended persistence context
 
     }
 
     @Test
-    @InSequence(10)
+    @Order(10)
     public void testQueryNonTXTransactionalDetachIsDeferred() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.createEmployee("Mad", "368 Mad Country Lane", 204);
-        assertTrue("expecting that lazily fetched association is still attached, so that we can verify its lazy fetched collection size of one", sfsb1.isLazyAssociationAccessibleWithDeferredDetach(204));
+        assertTrue(sfsb1.isLazyAssociationAccessibleWithDeferredDetach(204), "expecting that lazily fetched association is still attached, so that we can verify its lazy fetched collection size of one");
     }
 
     @Test
-    @InSequence(11)
+    @Order(11)
     public void testSyncUnsynchMixedErrorExpected() throws Exception {
         UnsynchronizedSFSB unsynchronizedSFSB = lookup("UnsynchronizedSFSB", UnsynchronizedSFSB.class);
 
@@ -262,7 +266,7 @@ public class TransactionTestCase {
                     "type SynchronizationType.SYNCHRONIZED, the IllegalStateException is\n" +
                     "thrown by the container.");
         } catch (/*EJBTransactionRolledbackException*/ Exception expected) {
-            assertTrue("should of been caused by IllegalStateException", expected.getCause() instanceof IllegalStateException);
+            assertTrue(expected.getCause() instanceof IllegalStateException, "should of been caused by IllegalStateException");
         }
     }
 
@@ -279,7 +283,7 @@ public class TransactionTestCase {
      * @throws Exception
      */
     @Test
-    @InSequence(12)
+    @Order(12)
     public void testQueryLazyFetch() throws Exception {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         Company company = sfsb1.createEmployee("Mad", "57343 LazilyFetched Lane", 205);
@@ -293,7 +297,7 @@ public class TransactionTestCase {
                 lazyProxy = true;
             }
         }
-        assertTrue("Customer class must be lazy proxy (org.hibernate.engine.spi.ManagedEntity) but actually Customer class interfaces are = " + Arrays.toString(company.getClass().getInterfaces()), lazyProxy);
+        assertTrue(lazyProxy, "Customer class must be lazy proxy (org.hibernate.engine.spi.ManagedEntity) but actually Customer class interfaces are = " + Arrays.toString(company.getClass().getInterfaces()));
     }
 
 }

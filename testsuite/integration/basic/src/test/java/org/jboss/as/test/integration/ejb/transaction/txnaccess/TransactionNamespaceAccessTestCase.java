@@ -6,11 +6,13 @@
 package org.jboss.as.test.integration.ejb.transaction.txnaccess;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.common.context.ContextPermission;
 
 import javax.naming.InitialContext;
@@ -20,7 +22,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TransactionNamespaceAccessTestCase {
 
     private static final String MODULE_NAME = "transaction-namespace-access-test-case";

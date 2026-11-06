@@ -20,7 +20,7 @@ import jakarta.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -33,10 +33,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
@@ -46,9 +47,9 @@ import org.wildfly.security.permission.ElytronPermission;
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({RunAsMDBUnitTestCase.JmsQueueSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class RunAsMDBUnitTestCase {
     private static final Logger log = Logger.getLogger(RunAsMDBUnitTestCase.class.getName());
     private static final String queueName = "queue/mdbtest";
@@ -110,14 +111,14 @@ public class RunAsMDBUnitTestCase {
         producer.send(msg);
         MessageConsumer consumer = session.createConsumer(replyQueue);
         Message replyMsg = consumer.receive(5000);
-        Assert.assertNotNull(replyMsg);
+        Assertions.assertNotNull(replyMsg);
         if (replyMsg instanceof ObjectMessage) {
             Exception e = (Exception) ((ObjectMessage) replyMsg).getObject();
             throw e;
         }
-        Assert.assertTrue(replyMsg instanceof TextMessage);
+        Assertions.assertTrue(replyMsg instanceof TextMessage);
         String actual = ((TextMessage) replyMsg).getText();
-        Assert.assertEquals("SUCCESS", actual);
+        Assertions.assertEquals("SUCCESS", actual);
 
         consumer.close();
         producer.close();

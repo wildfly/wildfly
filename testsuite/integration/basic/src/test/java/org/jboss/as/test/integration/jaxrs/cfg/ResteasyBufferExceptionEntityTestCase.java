@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -27,8 +26,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-buffer-exception-entity} attribute works as expected.
@@ -41,6 +43,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyBufferExceptionEntityTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -57,28 +60,28 @@ public class ResteasyBufferExceptionEntityTestCase extends AbstractResteasyAttri
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.text("checkDefault"))) {
-                Assert.assertEquals(500, response.getStatus());
+                Assertions.assertEquals(500, response.getStatus());
                 // Note, we use the RESTEasy internal ClientInvocation here so we can test that the entity was buffered.
-                Assert.assertThrows(WebApplicationException.class, () -> ClientInvocation.extractResult(new GenericType<>(String.class), response, null));
-                Assert.assertEquals("checkDefault", response.readEntity(String.class));
+                Assertions.assertThrows(WebApplicationException.class, () -> ClientInvocation.extractResult(new GenericType<>(String.class), response, null));
+                Assertions.assertEquals("checkDefault", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkFalse() throws Exception {
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.text("checkFalse"))) {
-                Assert.assertEquals(500, response.getStatus());
+                Assertions.assertEquals(500, response.getStatus());
                 // Note, we use the RESTEasy internal ClientInvocation here so we can test that the entity was buffered.
-                Assert.assertThrows(WebApplicationException.class, () -> ClientInvocation.extractResult(new GenericType<>(String.class), response, null));
-                Assert.assertThrows(ProcessingException.class, () -> response.readEntity(String.class));
+                Assertions.assertThrows(WebApplicationException.class, () -> ClientInvocation.extractResult(new GenericType<>(String.class), response, null));
+                Assertions.assertThrows(ProcessingException.class, () -> response.readEntity(String.class));
             }
         }
     }

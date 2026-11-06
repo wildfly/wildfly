@@ -5,17 +5,16 @@
 
 package org.jboss.as.test.integration.jpa.hibernate.entitytest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.EntityTest;
 import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
@@ -25,8 +24,12 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Hibernate entity tests (based on the EAP 5 test), using {@link EntityTest} bean. Tests relations between entities,
@@ -37,7 +40,8 @@ import org.junit.runner.RunWith;
  *
  * @author Zbyněk Roubalík
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class EntityTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_entitytest";
@@ -64,7 +68,7 @@ public class EntityTestCase {
 
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testOneToMany() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -82,7 +86,7 @@ public class EntityTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testManyToOne() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
@@ -96,23 +100,23 @@ public class EntityTestCase {
         assertEquals(f.getCompany().getName(), f2.getCompany().getName());
 
         Company c = test.findCompanyById(f.getCompany().getId());
-        assertNotNull("Company has one flight.", c.getFlights());
+        assertNotNull(c.getFlights(), "Company has one flight.");
         assertEquals(f.getCompany().getFlights().size(), c.getFlights().size());
 
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testManyToMany() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
         test.manyToManyCreate();
 
         Flight f1 = test.findFlightById(new Long(1));
-        assertTrue("Name read from Hibernate is Airline 1", f1.getCompany().getName().equals("Airline 1"));
+        assertTrue(f1.getCompany().getName().equals("Airline 1"), "Name read from Hibernate is Airline 1");
 
         Flight f2 = test.findFlightById(new Long(2));
-        assertTrue("Name read from Hibernate is Airline 1", f2.getCompany().getName().equals("Airline 2"));
+        assertTrue(f2.getCompany().getName().equals("Airline 2"), "Name read from Hibernate is Airline 1");
 
         assertEquals(1, f1.getCustomers().size());
         assertEquals(2, f2.getCustomers().size());
@@ -120,19 +124,19 @@ public class EntityTestCase {
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testNamedQueries() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);
         int count = test.testAllCustomersQuery();
-        assertEquals("Number returned for allCustomers query", 4, count);
+        assertEquals(4, count, "Number returned for allCustomers query");
 
         Customer c = test.testCustomerByIdQuery();
-        assertNotNull("One object should be returned by customerById query", c);
+        assertNotNull(c, "One object should be returned by customerById query");
     }
 
     @Test
-    @InSequence(5)
+    @Order(5)
     public void testFlush() throws Exception {
 
         EntityTest test = lookup("EntityTest", EntityTest.class);

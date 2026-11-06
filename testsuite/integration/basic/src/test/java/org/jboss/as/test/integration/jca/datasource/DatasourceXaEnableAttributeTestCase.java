@@ -14,20 +14,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Running tests from {@link DatasourceEnableAttributeTestBase} with XA datsource.
  *
  * @author <a href="mailto:ochaloup@redhat.com>Ondra Chaloupka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DatasourceXaEnableAttributeTestCase extends DatasourceEnableAttributeTestBase {
     private static final Logger log = Logger.getLogger(DatasourceXaEnableAttributeTestCase.class);

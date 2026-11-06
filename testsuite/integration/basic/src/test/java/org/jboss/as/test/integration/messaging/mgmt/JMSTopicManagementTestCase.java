@@ -10,7 +10,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import jakarta.jms.Connection;
@@ -23,7 +23,7 @@ import jakarta.jms.TopicSubscriber;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -34,11 +34,11 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the management API for Jakarta Messaging topics.
@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JMSTopicManagementTestCase {
 
     private static final String EXPORTED_PREFIX = "java:jboss/exported/";
@@ -69,7 +69,7 @@ public class JMSTopicManagementTestCase {
     private Connection consumerConn;
     private Session consumerSession;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
 
@@ -114,7 +114,7 @@ public class JMSTopicManagementTestCase {
         applyUpdate(op, managementClient.getControllerClient());
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
 
         removeSecuritySetting();
@@ -187,7 +187,7 @@ public class JMSTopicManagementTestCase {
 
         result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asList().size());
+        Assertions.assertEquals(2, result.asList().size());
 
     }
 
@@ -211,7 +211,7 @@ public class JMSTopicManagementTestCase {
 
         result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertEquals(2, result.asInt());
     }
 
     @Test
@@ -221,7 +221,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asList().size());
+        Assertions.assertEquals(2, result.asList().size());
     }
 
     @Test
@@ -231,7 +231,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-all-subscriptions-as-json"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
     }
 
     @Test
@@ -241,7 +241,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-durable-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asList().size());
+        Assertions.assertEquals(1, result.asList().size());
     }
 
     @Test
@@ -251,7 +251,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-durable-subscriptions-as-json"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
     }
 
     @Test
@@ -261,7 +261,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-non-durable-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asList().size());
+        Assertions.assertEquals(1, result.asList().size());
     }
 
     @Test
@@ -271,7 +271,7 @@ public class JMSTopicManagementTestCase {
 
         final ModelNode result = execute(getTopicOperation("list-non-durable-subscriptions-as-json"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
     }
 
     @Test
@@ -282,17 +282,17 @@ public class JMSTopicManagementTestCase {
 
         ModelNode result = execute(getTopicOperation("list-durable-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asList().size());
+        Assertions.assertEquals(1, result.asList().size());
 
         ModelNode op = getTopicOperation("drop-durable-subscription");
         op.get("client-id").set("consumer");
         op.get("subscription-name").set("testDropDurableSubscription");
         result = execute(op, true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(getTopicOperation("list-durable-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asList().size());
+        Assertions.assertEquals(0, result.asList().size());
     }
 
     @Test
@@ -304,14 +304,14 @@ public class JMSTopicManagementTestCase {
 
         ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asList().size());
+        Assertions.assertEquals(2, result.asList().size());
 
         result = execute(getTopicOperation("drop-all-subscriptions"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(getTopicOperation("list-all-subscriptions"), true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asList().size());
+        Assertions.assertEquals(0, result.asList().size());
     }
 
     @Test
@@ -321,7 +321,7 @@ public class JMSTopicManagementTestCase {
         op.get("jndi-binding").set(jndiName);
 
         ModelNode result = execute(op, true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         op = getTopicOperation("read-attribute");
         op.get("name").set("entries");
@@ -330,7 +330,7 @@ public class JMSTopicManagementTestCase {
         for (ModelNode binding : result.asList()) {
             if (binding.asString().equals(jndiName)) { return; }
         }
-        Assert.fail(jndiName + " was not found");
+        Assertions.fail(jndiName + " was not found");
     }
 
     @Test
@@ -340,20 +340,20 @@ public class JMSTopicManagementTestCase {
         op.get("jndi-binding").set(jndiName);
 
         ModelNode result = execute(op, true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         op = getTopicOperation("remove-jndi");
         op.get("jndi-binding").set(jndiName);
         result = execute(op, true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         op = getTopicOperation("read-attribute");
         op.get("name").set("entries");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         for (ModelNode binding : result.asList()) {
             if (binding.asString().equals(jndiName)) {
-                Assert.fail("found " + jndiName + " while it must be removed");
+                Assertions.fail("found " + jndiName + " while it must be removed");
             }
         }
     }
@@ -369,11 +369,11 @@ public class JMSTopicManagementTestCase {
         op = getTopicOperation("read-attribute");
         op.get("name").set("entries");
         ModelNode result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.isDefined());
         for (ModelNode binding : result.asList()) {
             if (binding.asString().equals(EXPORTED_PREFIX + getTopicJndiName())) { return; }
         }
-        Assert.fail(getTopicJndiName() + " was not found");
+        Assertions.fail(getTopicJndiName() + " was not found");
     }
 
     @Test
@@ -388,14 +388,14 @@ public class JMSTopicManagementTestCase {
         producer.send(session.createTextMessage("A"));
 
         TextMessage  message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
-        Assert.assertNull("The message was received by the consumer, this is wrong as the connection is stopped", message);
+        Assertions.assertNull(message, "The message was received by the consumer, this is wrong as the connection is stopped");
         ModelNode operation = getTopicOperation("count-messages-for-subscription");
         operation.get("client-id").set(consumerConn.getClientID());
         operation.get("subscription-name").set(subscriptionName);
 
         ModelNode result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        Assertions.assertEquals(1, result.asInt());
 
         // remove the topic
         adminSupport.removeJmsTopic(getTopicName());
@@ -407,7 +407,7 @@ public class JMSTopicManagementTestCase {
 
         result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asInt());
+        Assertions.assertEquals(0, result.asInt());
     }
 
     @Test
@@ -417,15 +417,15 @@ public class JMSTopicManagementTestCase {
         readAttr.get("name").set("paused");
 
         ModelNode result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertFalse(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertFalse(result.asBoolean());
 
         result = execute(getTopicOperation("pause"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asBoolean());
 
         final String subscriptionName = "pauseJMSTopic";
         TopicSubscriber consumer = consumerSession.createDurableSubscriber(topic, subscriptionName);
@@ -433,31 +433,31 @@ public class JMSTopicManagementTestCase {
         producer.send(session.createTextMessage("A"));
 
         TextMessage message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
-        Assert.assertNull("The message was received by the consumer, this is wrong as the connection is paused", message);
+        Assertions.assertNull(message, "The message was received by the consumer, this is wrong as the connection is paused");
         ModelNode operation = getTopicOperation("count-messages-for-subscription");
         operation.get("client-id").set(consumerConn.getClientID());
         operation.get("subscription-name").set(subscriptionName);
         result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        Assertions.assertEquals(1, result.asInt());
 
         result = execute(getTopicOperation("resume"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertFalse(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertFalse(result.asBoolean());
 
         message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
-        Assert.assertNotNull("The message was not received by the consumer, this is wrong as the connection is resumed", message);
-        Assert.assertEquals("A", message.getText());
+        Assertions.assertNotNull(message, "The message was not received by the consumer, this is wrong as the connection is resumed");
+        Assertions.assertEquals("A", message.getText());
         Thread.sleep(TimeoutUtil.adjust(500));
         operation = getTopicOperation("count-messages-for-subscription");
         operation.get("client-id").set(consumerConn.getClientID());
         operation.get("subscription-name").set(subscriptionName);
         result = execute(operation, true);
         assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asInt());
+        Assertions.assertEquals(0, result.asInt());
     }
 
     private ModelNode getTopicOperation(String operationName) {
@@ -470,10 +470,10 @@ public class JMSTopicManagementTestCase {
         ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
-            Assert.assertEquals("success", outcome);
+            Assertions.assertEquals("success", outcome);
             return response.get("result");
         } else {
-            Assert.assertEquals("failed", outcome);
+            Assertions.assertEquals("failed", outcome);
             return response.get("failure-description");
         }
     }

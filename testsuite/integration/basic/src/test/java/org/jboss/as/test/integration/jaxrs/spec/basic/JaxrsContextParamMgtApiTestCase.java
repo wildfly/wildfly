@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.jaxrs.spec.basic;
 import java.io.IOException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -19,9 +19,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 /**
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JaxrsContextParamMgtApiTestCase  extends ContainerResourceMgmtTestBase {
 
@@ -60,10 +60,10 @@ public class JaxrsContextParamMgtApiTestCase  extends ContainerResourceMgmtTestB
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
 
         ModelNode result = executeOperation(op);
-        Assert.assertFalse("Subsystem is empty.", result.keys().size() == 0);
+        Assertions.assertFalse(result.keys().size() == 0, "Subsystem is empty.");
         ModelNode resClass = result.get("resource-class");
-        Assert.assertNotNull("No resource-class present.", resClass);
-        Assert.assertTrue("Expected resource-class not found.",
-            resClass.toString().contains(JaxrsAppResource.class.getSimpleName()));
+        Assertions.assertNotNull(resClass, "No resource-class present.");
+        Assertions.assertTrue(resClass.toString().contains(JaxrsAppResource.class.getSimpleName()),
+            "Expected resource-class not found.");
     }
 }

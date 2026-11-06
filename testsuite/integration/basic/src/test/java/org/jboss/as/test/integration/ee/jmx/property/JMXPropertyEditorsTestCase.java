@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ee.jmx.property;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
@@ -16,11 +16,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 import javax.management.MBeanServerConnection;
@@ -44,15 +45,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JMXPropertyEditorsTestCase {
 
@@ -65,13 +63,13 @@ public class JMXPropertyEditorsTestCase {
     private MBeanServerConnection connection;
     private JMXConnector connector;
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         connection = getMBeanServerConnection();
-        Assert.assertNotNull(connection);
+        Assertions.assertNotNull(connection);
     }
 
-    @After
+    @AfterEach
     public void closeConnection() throws Exception {
         connection = null;
         IoUtils.safeClose(connector);
@@ -389,12 +387,12 @@ public class JMXPropertyEditorsTestCase {
     private void performTest(String attributeName, Object expectedValue, Comparator comparator) throws Exception {
         ObjectName oname = new ObjectName("test:service=WithProperties");
         Object attributeValue = connection.getAttribute(oname, attributeName);
-        assertThat("Found null attribute value for '" + attributeName + "'", attributeValue, is(notNullValue()));
+        assertThat(attributeValue).as("Found null attribute value for '" + attributeName + "'").isNotNull();
         if (comparator == null) {
-            assertThat("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'", expectedValue, equalTo(attributeValue));
+            assertThat(expectedValue).as("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'").isEqualTo(attributeValue);
         } else {
             boolean equal = comparator.compare(expectedValue, attributeValue) == 0;
-            assertThat("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'", equal, equalTo(true));
+            assertThat(equal).as("Found wrong attribute value for '" + attributeName + "', value: '" + attributeValue + "' expected: '" + expectedValue + "'").isTrue();
         }
     }
 }

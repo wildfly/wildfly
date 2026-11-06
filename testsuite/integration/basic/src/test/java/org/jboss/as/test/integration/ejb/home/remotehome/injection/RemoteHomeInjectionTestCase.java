@@ -8,20 +8,20 @@ package org.jboss.as.test.integration.ejb.home.remotehome.injection;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteHomeInjectionTestCase {
 
     private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
@@ -42,7 +42,7 @@ public class RemoteHomeInjectionTestCase {
     @Test
     public void testRemoteHomeInjection() throws Exception {
         final InjectingEjb ejb = (InjectingEjb) iniCtx.lookup("java:module/" + InjectingEjb.class.getSimpleName());
-        Assert.assertEquals("OtherEjb", ejb.getMessage());
+        Assertions.assertEquals("OtherEjb", ejb.getMessage());
     }
 
 }

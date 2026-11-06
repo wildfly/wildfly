@@ -9,21 +9,21 @@ import java.io.Serializable;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.wildfly.test.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(UnmarshallingFilterDisabledTestCase.ServerSetup.class)
 public class UnmarshallingFilterDisabledTestCase extends AbstactUnmarshallingFilterTestCase {
 
@@ -73,6 +73,6 @@ public class UnmarshallingFilterDisabledTestCase extends AbstactUnmarshallingFil
         HelloRemote bean = lookup(HelloBean.class.getSimpleName(), HelloRemote.class, http);
         Serializable blocklisted = getTemplatesImpl();
         Response response = bean.sayHello(new Request(blocklisted));
-        Assert.assertTrue(response.getGreeting(), response.getGreeting().contains("TemplatesImpl"));
+        Assertions.assertTrue(response.getGreeting().contains("TemplatesImpl"), response.getGreeting());
     }
 }

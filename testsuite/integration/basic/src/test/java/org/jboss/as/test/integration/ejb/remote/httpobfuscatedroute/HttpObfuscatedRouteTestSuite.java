@@ -8,9 +8,8 @@ package org.jboss.as.test.integration.ejb.remote.httpobfuscatedroute;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.as.arquillian.api.ServerSetup;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runners.Suite;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Test suite for running some http invocation tests with Undertow obfuscated-session-route set to true.
@@ -18,16 +17,14 @@ import org.junit.runners.Suite;
  * @author Flavia Rainone
  */
 @RunAsClient
-@Suite.SuiteClasses({HttpObfuscatedRouteTestSuite.HttpRemoteEJBJndiBasedInvocationTest.class,
-                     HttpObfuscatedRouteTestSuite.HttpRemoteIdentityTestCase.class})
 public class HttpObfuscatedRouteTestSuite {
 
     private static Throwable failure = null;
 
     @ServerSetup(UndertowObfuscatedSessionRouteServerSetup.class)
     public static class HttpRemoteEJBJndiBasedInvocationTest extends org.jboss.as.test.integration.ejb.remote.jndi.HttpRemoteEJBJndiBasedInvocationTestCase {
-        @BeforeClass
-        @AfterClass
+        @BeforeAll
+        @AfterAll
         public static void checkFailure() throws Throwable {
             if (failure != null) {
                 throw failure;
@@ -37,8 +34,8 @@ public class HttpObfuscatedRouteTestSuite {
 
     @ServerSetup(UndertowObfuscatedSessionRouteServerSetup.class)
     public static class HttpRemoteIdentityTestCase extends org.jboss.as.test.integration.ejb.remote.security.HttpRemoteIdentityTestCase {
-        @BeforeClass
-        @AfterClass
+        @BeforeAll
+        @AfterAll
         public static void checkFailure() throws Throwable {
             if (failure != null) {
                 throw failure;

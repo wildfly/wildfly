@@ -6,18 +6,18 @@ package org.jboss.as.test.integration.ejb.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.client.Client;
@@ -29,13 +29,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.net.URL;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  * */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EjbBeanValidationTestCase {
 
@@ -57,12 +57,12 @@ public class EjbBeanValidationTestCase {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClient() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -71,7 +71,7 @@ public class EjbBeanValidationTestCase {
     @Test
     public void testValidation() {
         Response response = client.target(url.toExternalForm() + "validate/1").request().get();
-        Assert.assertNotNull("Request should have been negatively validated", response.getMetadata().getFirst("validation-exception"));
+        Assertions.assertNotNull(response.getMetadata().getFirst("validation-exception"), "Request should have been negatively validated");
     }
 
     /**
@@ -82,7 +82,7 @@ public class EjbBeanValidationTestCase {
     public void testProxyNormalization() {
         String result = client.target(url.toExternalForm() + "put/list")
                 .request(MediaType.APPLICATION_JSON).post(Entity.json("[\"a\",\"b\",\"c\"]"), String.class);
-        Assert.assertEquals("a, b, c", result);
+        Assertions.assertEquals("a, b, c", result);
     }
 
     @Test
@@ -105,10 +105,10 @@ public class EjbBeanValidationTestCase {
         Response response = customerResource.validateEchoThroughClass(validDummyClass);
 
         // Verify that we received a Bad Request Code from HTTP
-        assertTrue(String.format("Return code should be 200. It was %d", response.getStatus()), 200 == response.getStatus());
+        assertTrue(200 == response.getStatus(), String.format("Return code should be 200. It was %d", response.getStatus()));
 
         // Verify that the service call has not been executed (flag set to false)
-        assertTrue("Executed flag should be true", dummyFlag.getExecutedServiceCallFlag());
+        assertTrue(dummyFlag.getExecutedServiceCallFlag(), "Executed flag should be true");
 
         // Reset flag
         dummyFlag.clearExecution();
@@ -116,10 +116,10 @@ public class EjbBeanValidationTestCase {
         Response response2 = customerResource.validateEchoThroughClass(invalidDummyClass);
 
         // Verify that we received a Bad Request Code from HTTP
-        assertTrue(String.format("Return code should either be 400 or 500, it was %d", response2.getStatus()), 400 == response2.getStatus() || 500 == response2.getStatus());
+        assertTrue(400 == response2.getStatus() || 500 == response2.getStatus(), String.format("Return code should either be 400 or 500, it was %d", response2.getStatus()));
 
         // Verify that the service call has not been executed (flag set to false)
-        assertFalse("Executed flag should be false", dummyFlag.getExecutedServiceCallFlag());
+        assertFalse(dummyFlag.getExecutedServiceCallFlag(), "Executed flag should be false");
     }
 
     @Test
@@ -143,20 +143,20 @@ public class EjbBeanValidationTestCase {
         Response response = customerResource.validateEchoThroughAbstractClass(validDummySubclass);
 
         // Verify that we received a Bad Request Code from HTTP
-        assertTrue(String.format("Return code should be 200. It was %d", response.getStatus()), 200 == response.getStatus());
+        assertTrue(200 == response.getStatus(), String.format("Return code should be 200. It was %d", response.getStatus()));
 
         // Verify that the service call has not been executed (flag set to false)
-        assertTrue("Executed flag should be true", dummyFlag.getExecutedServiceCallFlag());
+        assertTrue(dummyFlag.getExecutedServiceCallFlag(), "Executed flag should be true");
 
         dummyFlag.clearExecution();
 
         Response response2 = customerResource.validateEchoThroughAbstractClass(invalidDummySubclass);
 
         // Verify that we received a Bad Request Code from HTTP
-        assertTrue(String.format("Return code should either be 400 or 500. It was %d", response2.getStatus()), 400 == response2.getStatus() || 500 == response2.getStatus());
+        assertTrue(400 == response2.getStatus() || 500 == response2.getStatus(), String.format("Return code should either be 400 or 500. It was %d", response2.getStatus()));
 
         // Verify that the service call has not been executed (flag set to false)
-        assertFalse("Executed flag should be false", dummyFlag.getExecutedServiceCallFlag());
+        assertFalse(dummyFlag.getExecutedServiceCallFlag(), "Executed flag should be false");
     }
 
 

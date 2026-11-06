@@ -7,8 +7,8 @@ package org.jboss.as.test.integration.messaging.mgmt;
 
 import static java.util.UUID.randomUUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,18 +23,18 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the management API for Artemis core queues.
@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CoreQueueManagementTestCase {
 
     private static long count = System.currentTimeMillis();
@@ -56,7 +56,7 @@ public class CoreQueueManagementTestCase {
     private ClientSession session;
     private ClientSession consumerSession;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
 
         count++;
@@ -80,7 +80,7 @@ public class CoreQueueManagementTestCase {
         consumerSession = sessionFactory.createSession("guest", "guest", false, false, false, false, 1);
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws Exception {
 
         if (consumerSession != null) {
@@ -111,15 +111,15 @@ public class CoreQueueManagementTestCase {
 
         // resource does not exist
         ModelNode result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
+        assertTrue(result.asString().contains("WFLYCTL0216"), result.toJSONString(false));
         result = execute(readRuntimeQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
+        assertTrue(result.asString().contains("WFLYCTL0216"), result.toJSONString(false));
 
         session.createQueue(address, queueName, false);
 
         // resource does not exist for core queue...
         result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
+        assertTrue(result.asString().contains("WFLYCTL0216"), result.toJSONString(false));
         // ... but it does for runtime-queue
         result = execute(readRuntimeQueueResourceOp, true);
         assertTrue(result.isDefined());
@@ -129,9 +129,9 @@ public class CoreQueueManagementTestCase {
 
         // resource no longer exists
         result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
+        assertTrue(result.asString().contains("WFLYCTL0216"), result.toJSONString(false));
         result = execute(readRuntimeQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
+        assertTrue(result.asString().contains("WFLYCTL0216"), result.toJSONString(false));
     }
 
     @Test
@@ -146,8 +146,8 @@ public class CoreQueueManagementTestCase {
 
         listMessages(2);
         ModelNode result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(2, result.asInt());
     }
 
     private ModelNode listMessages(int expectedSize) throws IOException, InterruptedException {
@@ -157,14 +157,14 @@ public class CoreQueueManagementTestCase {
         ModelNode result = null;
         while (end > System.currentTimeMillis()) {
             result = execute(listMessagesOperation, true);
-            Assert.assertTrue(result.isDefined());
+            Assertions.assertTrue(result.isDefined());
             passed = result.asList().size() == expectedSize;
             if (passed) {
                 break;
             }
             Thread.sleep(100);
         }
-        Assert.assertTrue("Here is what  we got instead of the " + expectedSize + " messages " + result, passed);
+        Assertions.assertTrue(passed, "Here is what  we got instead of the " + expectedSize + " messages " + result);
         return result;
     }
 
@@ -176,27 +176,27 @@ public class CoreQueueManagementTestCase {
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
 
         ModelNode result = execute(getQueueOperation("list-message-counter-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
 
         result = execute(getQueueOperation("list-message-counter-as-html"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
 
         result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
 
         result = execute(getQueueOperation("list-message-counter-history-as-html"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
 
         result = execute(getQueueOperation("reset-message-counter"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(getQueueOperation("list-message-counter-history-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
 
     }
 
@@ -207,25 +207,24 @@ public class CoreQueueManagementTestCase {
         readAttr.get("name").set("paused");
 
         ModelNode result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertFalse(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertFalse(result.asBoolean());
 
         result = execute(getQueueOperation("pause"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asBoolean());
 
         result = execute(getQueueOperation("resume"), true);
-        Assert.assertFalse(result.isDefined());
+        Assertions.assertFalse(result.isDefined());
 
         result = execute(readAttr, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertFalse(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertFalse(result.asBoolean());
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageRemoval() throws Exception {
 
@@ -239,20 +238,20 @@ public class CoreQueueManagementTestCase {
         op.get("message-id").set(findMessageID());
 
         ModelNode result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asBoolean());
 
         result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(2, result.asInt());
 
         result = execute(getQueueOperation("remove-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(2, result.asInt());
 
         result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(0, result.asInt());
 
     }
 
@@ -261,7 +260,6 @@ public class CoreQueueManagementTestCase {
         return result.get(0).get("messageID").asLong();
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testMessageMovement() throws Exception {
 
@@ -276,27 +274,26 @@ public class CoreQueueManagementTestCase {
         op.get("other-queue-name").set(getOtherQueueName());
 
         ModelNode result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asBoolean());
 
         result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(2, result.asInt());
 
         op = getQueueOperation("move-messages");
         op.get("other-queue-name").set(getOtherQueueName());
 
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(2, result.asInt());
 
         result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(0, result.asInt());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(0, result.asInt());
 
     }
 
-//    @org.junit.Ignore("AS7-2480")
     @Test
     public void testChangeMessagePriority() throws Exception {
         final int priority = 3;
@@ -308,7 +305,7 @@ public class CoreQueueManagementTestCase {
 
         ModelNode result = listMessages(3);
         for (ModelNode node : result.asList()) {
-            Assert.assertEquals("Priority should be " + priority, priority, node.get("priority").asInt());
+            Assertions.assertEquals(priority, node.get("priority").asInt(), "Priority should be " + priority);
         }
         int newPriority = 5;
         ModelNode op = getQueueOperation("change-message-priority");
@@ -316,30 +313,30 @@ public class CoreQueueManagementTestCase {
         op.get("new-priority").set(newPriority);
 
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asBoolean());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asBoolean());
 
         result = listMessages(3);
         boolean found = false;
         for (ModelNode node : result.asList()) {
             if (id == node.get("messageID").asLong()) {
-                Assert.assertEquals("Message should have the new priority", newPriority, node.get("priority").asInt());
+                Assertions.assertEquals(newPriority, node.get("priority").asInt(), "Message should have the new priority");
                 found = true;
             } else {
-                Assert.assertEquals("Message should have the set priority", priority, node.get("priority").asInt());
+                Assertions.assertEquals(priority, node.get("priority").asInt(), "Message should have the set priority");
             }
         }
-        Assert.assertTrue("We should have found the updated message", found);
+        Assertions.assertTrue(found, "We should have found the updated message");
 
         op = getQueueOperation("change-messages-priority");
         op.get("new-priority").set(newPriority);
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertTrue(result.asInt() > 1 && result.asInt() < 4);
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertTrue(result.asInt() > 1 && result.asInt() < 4);
 
         result = listMessages(3);
         for (ModelNode node : result.asList()) {
-            Assert.assertEquals("Message should have the new priority", newPriority, node.get("priority").asInt());
+            Assertions.assertEquals(newPriority, node.get("priority").asInt(), "Message should have the new priority");
         }
 
     }
@@ -350,8 +347,8 @@ public class CoreQueueManagementTestCase {
         consumerSession.createConsumer(getQueueName());
 
         ModelNode result = execute(getQueueOperation("list-consumers-as-json"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(ModelType.STRING, result.getType());
+        Assertions.assertTrue(result.isDefined());
+        Assertions.assertEquals(ModelType.STRING, result.getType());
     }
 
     private ModelNode getQueueOperation(String operationName, String queueName) {
@@ -378,10 +375,10 @@ public class CoreQueueManagementTestCase {
         ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
-            Assert.assertEquals("success", outcome);
+            Assertions.assertEquals("success", outcome);
             return response.get("result");
         } else {
-            Assert.assertEquals("failed", outcome);
+            Assertions.assertEquals("failed", outcome);
             return response.get("failure-description");
         }
     }

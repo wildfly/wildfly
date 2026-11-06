@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.naming.remote.simple;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 import java.util.Properties;
@@ -15,16 +15,17 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.naming.java.permission.JndiPermission;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -34,7 +35,7 @@ import org.wildfly.security.auth.client.MatchRule;
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RemoteNamingHTTPTestCase {
 
@@ -66,7 +67,7 @@ public class RemoteNamingHTTPTestCase {
     }
 
     private static AuthenticationContext old;
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         AuthenticationConfiguration config = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
         AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, config);
@@ -74,7 +75,7 @@ public class RemoteNamingHTTPTestCase {
         AuthenticationContext.getContextManager().setGlobalDefault(context);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         AuthenticationContext.getContextManager().setGlobalDefault(old);
     }

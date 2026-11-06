@@ -4,7 +4,7 @@
  */
 package org.jboss.as.test.integration.security.jacc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -15,7 +15,7 @@ import java.net.URL;
 import org.apache.http.client.ClientProtocolException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
@@ -30,18 +30,18 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests, which checks run-as identity handling in EJB JACC authorization module.
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@Ignore("See WFLY-4989")
+@Disabled("See WFLY-4989")
 public class JACCAuthzPropagationTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(JACCAuthzPropagationTestCase.class);
@@ -117,8 +117,8 @@ public class JACCAuthzPropagationTestCase {
     private void assertAccessAllowed(URL webAppURL, String beanName, String methodName, String roleName)
             throws IOException, URISyntaxException {
         final URL testUrl = getTestURL(webAppURL, beanName, methodName);
-        assertEquals("Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be allowed.",
-                Manage.RESULT, Utils.makeCallWithBasicAuthn(testUrl, roleName, roleName, 200));
+        assertEquals(Manage.RESULT,
+                Utils.makeCallWithBasicAuthn(testUrl, roleName, roleName, 200), "Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be allowed.");
     }
 
     /**
@@ -135,9 +135,9 @@ public class JACCAuthzPropagationTestCase {
     private void assertAccessDenied(URL webAppURL, String beanName, String methodName, String roleName)
             throws IOException, URISyntaxException {
         final URL testUrl = getTestURL(webAppURL, beanName, methodName);
-        assertEquals("Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be denied.",
-                PropagationTestServlet.RESULT_EJB_ACCESS_EXCEPTION,
-                Utils.makeCallWithBasicAuthn(testUrl, roleName, roleName, 200));
+        assertEquals(PropagationTestServlet.RESULT_EJB_ACCESS_EXCEPTION,
+                Utils.makeCallWithBasicAuthn(testUrl, roleName, roleName, 200),
+                "Access of role " + roleName + " to " + methodName + " method in " + beanName + " should be denied.");
     }
 
     /**

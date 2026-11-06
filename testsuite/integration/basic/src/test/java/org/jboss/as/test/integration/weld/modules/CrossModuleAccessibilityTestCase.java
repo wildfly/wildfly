@@ -12,9 +12,10 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -24,10 +25,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -47,7 +48,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class CrossModuleAccessibilityTestCase {
 
     private static final List<TestModule> testModules = new ArrayList<>();
@@ -71,7 +72,7 @@ public class CrossModuleAccessibilityTestCase {
         testModule.create(true);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         for (TestModule testModule : testModules) {
             testModule.remove();
@@ -93,44 +94,56 @@ public class CrossModuleAccessibilityTestCase {
         return ShrinkWrap.create(EnterpriseArchive.class, "CrossModuleAccessibilityTestCase.ear").addAsModule(war);
     }
 
+    @Inject
+    AlphaLookup alpha;
+
+    @Inject
+    BravoLookup bravo;
+
+    @Inject
+    CharlieLookup charlie;
+
+    @Inject
+    DeltaLookup delta;
+
     @Test
-    public void testAlphaModule(AlphaLookup alpha) {
-        Assert.assertNotNull(alpha);
+    public void testAlphaModule() {
+        Assertions.assertNotNull(alpha);
         Set<String> accessibleImplementations = getAccessibleImplementations(alpha.getInstance());
-        Assert.assertTrue(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
-        Assert.assertTrue(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
     }
 
     @Test
-    public void testBravoModule(BravoLookup bravo) {
-        Assert.assertNotNull(bravo);
+    public void testBravoModule() {
+        Assertions.assertNotNull(bravo);
         Set<String> accessibleImplementations = getAccessibleImplementations(bravo.getInstance());
-        Assert.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
-        Assert.assertTrue(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
-        Assert.assertTrue(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
     }
 
     @Test
-    public void testCharlieModule(CharlieLookup charlie) {
-        Assert.assertNotNull(charlie);
+    public void testCharlieModule() {
+        Assertions.assertNotNull(charlie);
         Set<String> accessibleImplementations = getAccessibleImplementations(charlie.getInstance());
-        Assert.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
-        Assert.assertTrue(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
     }
 
     @Test
-    public void testDeltaModule(DeltaLookup delta) {
-        Assert.assertNotNull(delta);
+    public void testDeltaModule() {
+        Assertions.assertNotNull(delta);
         Set<String> accessibleImplementations = getAccessibleImplementations(delta.getInstance());
-        Assert.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
-        Assert.assertFalse(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
-        Assert.assertTrue(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
+        Assertions.assertFalse(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
+        Assertions.assertTrue(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
     }
 
     private Set<String> getAccessibleImplementations(Instance<Comparable<Integer>> instance) {

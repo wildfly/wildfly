@@ -12,15 +12,15 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migrated from EJB3 testsuite [JBQA-5483] from ejbthree454.
@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SharedBeanInEarsUnitTestCase {
     private static final Logger log = Logger.getLogger(SharedBeanInEarsUnitTestCase.class);
@@ -82,9 +82,9 @@ public class SharedBeanInEarsUnitTestCase {
     @Test
     public void testScopedClassLoaders() throws Exception {
         AEJB aremote = (AEJB) getInitialContext().lookup("ejb:" + APP_A + "/" + MOD_A + "//" + AEJBBean.class.getSimpleName() + "!" + AEJB.class.getName());
-        Assert.assertEquals("A", aremote.doit());
+        Assertions.assertEquals("A", aremote.doit());
 
         BEJB bremote = (BEJB) getInitialContext().lookup("ejb:" + APP_B + "/" + MOD_B + "//" + BEJBBean.class.getSimpleName() + "!" + BEJB.class.getName());
-        Assert.assertEquals("B", bremote.doit());
+        Assertions.assertEquals("B", bremote.doit());
     }
 }

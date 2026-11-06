@@ -23,7 +23,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  *
@@ -79,14 +79,14 @@ public abstract class AbstractTimerManagementTestCase {
         assertNoTimers();
         this.bean.createTimer();
         ModelNode timerDetails = getTimerDetails();
-        Assert.assertEquals("Persistent", this.isPersistent(), this.isPersistent(timerDetails));
-        Assert.assertEquals("Serializable Info", this.getInfo(), this.getInfo(timerDetails));
-        Assert.assertTrue("Active", this.isActive(timerDetails));
+        Assertions.assertEquals(this.isPersistent(), this.isPersistent(timerDetails), "Persistent");
+        Assertions.assertEquals(this.getInfo(), this.getInfo(timerDetails), "Serializable Info");
+        Assertions.assertTrue(this.isActive(timerDetails), "Active");
         assertCalendar(timerDetails);
 
         final int left = this.getTimeRemaining(timerDetails);
         final int to = getDelay();
-        Assert.assertTrue("Not enough time? '"+left+"'<='"+to+"'", left <= to);
+        Assertions.assertTrue(left <= to, "Not enough time? '"+left+"'<='"+to+"'");
         if(this.isCalendarTimer(timerDetails)){
             final ModelNode schedule = timerDetails.get("schedule");
             checkCalendardSchedule("year", "*", true, schedule);
@@ -111,7 +111,7 @@ public abstract class AbstractTimerManagementTestCase {
         final long ticksCount = this.bean.getTimerTicks();
         this.waitOverTimer();
 
-        Assert.assertEquals("Timer ticks should not change after suspension!", ticksCount, this.bean.getTimerTicks());
+        Assertions.assertEquals(ticksCount, this.bean.getTimerTicks(), "Timer ticks should not change after suspension!");
         this.activateTimer();
         this.bean.waitOnTimeout();
     }
@@ -126,35 +126,35 @@ public abstract class AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertTrue(failureDescription.toString(), failureDescription.toString().contains("WFLYCTL0216"));
+            Assertions.assertTrue(failureDescription.toString().contains("WFLYCTL0216"), failureDescription.toString());
         }
     }
 
     public void testTrigger() throws Exception {
         assertNoTimers();
         this.bean.createTimer();
-        Assert.assertEquals("Wrong initial timer ticks!", 0, this.bean.getTimerTicks());
+        Assertions.assertEquals(0, this.bean.getTimerTicks(), "Wrong initial timer ticks!");
         triggerTimer();
-        Assert.assertEquals("Wrong after trigger timer ticks!", 1, this.bean.getTimerTicks());
+        Assertions.assertEquals(1, this.bean.getTimerTicks(), "Wrong after trigger timer ticks!");
         this.bean.waitOnTimeout();
-        Assert.assertEquals("Timer should fire twice!", 2, this.bean.getTimerTicks());
+        Assertions.assertEquals(2, this.bean.getTimerTicks(), "Timer should fire twice!");
     }
 
     public void testSuspendAndTrigger() throws Exception {
         assertNoTimers();
         this.bean.createTimer();
-        Assert.assertEquals("Wrong initial timer ticks!", 0, this.bean.getTimerTicks());
+        Assertions.assertEquals(0, this.bean.getTimerTicks(), "Wrong initial timer ticks!");
         triggerTimer();
         this.suspendTimer();
         int ticksCount = this.bean.getTimerTicks();
-        Assert.assertTrue("Timer should fire at least once!", ticksCount >= 1);
+        Assertions.assertTrue(ticksCount >= 1, "Timer should fire at least once!");
         this.waitOverTimer();
-        Assert.assertEquals("The tick count should not increase while the timer was suspended!",
-                ticksCount, this.bean.getTimerTicks());
+        Assertions.assertEquals(ticksCount,
+                this.bean.getTimerTicks(), "The tick count should not increase while the timer was suspended!");
         this.activateTimer();
         this.bean.waitOnTimeout();
-        Assert.assertTrue("Number of ticks should increase after timer activation!",
-                this.bean.getTimerTicks() > ticksCount);
+        Assertions.assertTrue(this.bean.getTimerTicks() > ticksCount,
+                "Number of ticks should increase after timer activation!");
     }
 
     protected void suspendTimer() throws Exception {
@@ -205,11 +205,11 @@ public abstract class AbstractTimerManagementTestCase {
         operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         final ModelNode result = managementClient.getControllerClient().execute(operation);
 
-        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME)
-                .asString());
+        Assertions.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME)
+                .asString(), result.toString());
         final ModelNode tmp = result.get("result").get("timer");
         final Set<String> lst = tmp.keys();
-        Assert.assertEquals(1, lst.size());
+        Assertions.assertEquals(1, lst.size());
         this.timerId = lst.iterator().next();
         this.timerAddress = PathAddress.pathAddress(address, PathElement.pathElement("timer", this.timerId));
         return this.timerAddress;
@@ -243,9 +243,9 @@ public abstract class AbstractTimerManagementTestCase {
     protected void checkCalendardSchedule(final String name, final String expected, final boolean mustBeDefined, final ModelNode schedule ){
         final ModelNode target = schedule.get(name);
         if(mustBeDefined){
-            Assert.assertEquals("The '"+name+"' has wrong value!",expected, target.asString());
+            Assertions.assertEquals(expected,target.asString(), "The '"+name+"' has wrong value!");
         } else {
-            Assert.assertEquals("The '"+name+"' should be undefined!",ModelType.UNDEFINED, target.getType());
+            Assertions.assertEquals(ModelType.UNDEFINED,target.getType(), "The '"+name+"' should be undefined!");
         }
     }
 
@@ -258,7 +258,7 @@ public abstract class AbstractTimerManagementTestCase {
     }
 
     protected void assertNoTimers() {
-        Assert.assertEquals("No timers should be present!", 0, this.bean.getTimerCount());
+        Assertions.assertEquals(0, this.bean.getTimerCount(), "No timers should be present!");
     }
 
     protected abstract Serializable getInfo();

@@ -15,7 +15,7 @@ import jakarta.jms.ObjectMessage;
 import jakarta.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -31,9 +31,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -42,7 +42,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ObjectMessageTestCase.JmsQueueSetup.class})
 public class ObjectMessageTestCase {
 
@@ -148,9 +148,9 @@ public class ObjectMessageTestCase {
         // wait for an reply
         final Message reply = this.jmsUtil.receiveMessage(objectMessageOfArrayTypeReplyQueue, 5000);
         // test the reply
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.objectMessageOfArrayTypeReplyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.objectMessageOfArrayTypeReplyQueue);
         final SimpleMessageInEarLibJar[] replyMessage = (SimpleMessageInEarLibJar[]) ((ObjectMessage) reply).getObject();
-        Assert.assertTrue("Unexpected reply message on reply queue: " + this.objectMessageOfArrayTypeReplyQueue, Arrays.equals(replyMessage, multipleGreetings));
+        Assertions.assertTrue(Arrays.equals(replyMessage, multipleGreetings), "Unexpected reply message on reply queue: " + this.objectMessageOfArrayTypeReplyQueue);
 
     }
 
@@ -170,9 +170,9 @@ public class ObjectMessageTestCase {
         // wait for an reply
         final Message reply = this.jmsUtil.receiveMessage(objectMessageReplyQueue, 5000);
         // test the reply
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.objectMessageReplyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.objectMessageReplyQueue);
         final SimpleMessageInEarLibJar replyMessage = (SimpleMessageInEarLibJar) ((ObjectMessage) reply).getObject();
-        Assert.assertEquals("Unexpected reply message on reply queue: " + this.objectMessageReplyQueue, message, replyMessage);
+        Assertions.assertEquals(message, replyMessage, "Unexpected reply message on reply queue: " + this.objectMessageReplyQueue);
 
     }
 

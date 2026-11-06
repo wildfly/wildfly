@@ -5,8 +5,8 @@
 package org.jboss.as.test.integration.messaging.jms.external.prefix;
 
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.SocketPermission;
@@ -23,7 +23,7 @@ import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -42,17 +42,17 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test the creation of destination on a 'remote' Artemis broker via @JMSDestinationDefinition.
  * @author Emmanuel Hugonnet (c) 2021 Red Hat, Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.SetupTask.class)
 public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
@@ -164,7 +164,7 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
             ModelNode response = managementClient.getControllerClient().execute(op);
             final String outcome = response.get("outcome").asString();
             if (expectSuccess) {
-                assertEquals(response.toString(), "success", outcome);
+                assertEquals("success", outcome, response.toString());
                 return response.get("result");
             } else {
                 assertEquals("failed", outcome);
@@ -221,7 +221,7 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         if (initialQueues == null) {
             initialQueues = listRuntimeQueues(managementClient);
@@ -229,7 +229,7 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
         deployer.deploy("external-queues");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         deployer.undeploy("external-queues");
     }
@@ -266,10 +266,10 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
             op.get("child-type").set("runtime-queue");
             List<ModelNode> runtimeQueues = Operations.readResult(managementClient.getControllerClient().execute(op)).asList();
             Set<String> queues = runtimeQueues.stream().map(ModelNode::asString).collect(Collectors.toSet());
-            Assert.assertTrue("We should have myExternalQueue queue in " + queues, queues.contains("myExternalQueue"));
+            Assertions.assertTrue(queues.contains("myExternalQueue"), "We should have myExternalQueue queue in " + queues);
             queues.removeAll(initialQueues);
             queues.remove("myExternalQueue");
-            Assert.assertEquals("Too many queues in " + queues, 1, queues.size());
+            Assertions.assertEquals(1, queues.size(), "Too many queues in " + queues);
             String topicId = queues.iterator().next();
             checkRuntimeQueue(ops, "myExternalQueue", "ANYCAST", "myExternalQueue");
             checkRuntimeQueue(ops, topicId, "MULTICAST", "myExternalTopic");
@@ -281,7 +281,7 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
         op.get("include-runtime").set(true);
         op.get("include-defaults").set(true);
         ModelNode result = Operations.readResult(managementClient.getControllerClient().execute(op));
-        Assert.assertEquals(expectedRoutingType, result.require("routing-type").asString());
-        Assert.assertEquals(expectedQueueAddress, result.require("queue-address").asString());
+        Assertions.assertEquals(expectedRoutingType, result.require("routing-type").asString());
+        Assertions.assertEquals(expectedQueueAddress, result.require("queue-address").asString());
     }
 }

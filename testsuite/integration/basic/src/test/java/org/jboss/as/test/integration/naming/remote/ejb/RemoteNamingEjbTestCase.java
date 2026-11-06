@@ -6,11 +6,11 @@
 package org.jboss.as.test.integration.naming.remote.ejb;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -25,7 +25,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -35,9 +35,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -46,7 +47,7 @@ import org.jboss.as.controller.operations.common.Util;
 /**
  * @author John Bailey, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RemoteNamingEjbTestCase {
     private static final String ARCHIVE_NAME = "test";
@@ -104,11 +105,11 @@ public class RemoteNamingEjbTestCase {
             while (e.hasMore()) {
                 NameClassPair binding = e.next();
                 if (!expected.remove(binding.getName())) {
-                    Assert.fail("unknown binding " + binding.getName());
+                    Assertions.fail("unknown binding " + binding.getName());
                 }
             }
             if (!expected.isEmpty()) {
-                Assert.fail("bindings not found " + expected);
+                Assertions.fail("bindings not found " + expected);
             }
 
         } finally {
@@ -204,19 +205,19 @@ public class RemoteNamingEjbTestCase {
             try {
 
                 Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
-                Assert.fail();
+                Assertions.fail();
             } catch (NamingException expected) {
             }
 
             try {
                 Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
-                Assert.fail();
+                Assertions.fail();
             } catch (NamingException expected) {
             }
 
             try {
                 Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
-                Assert.fail();
+                Assertions.fail();
             } catch (NamingException expected) {
             }
         } finally {
@@ -260,7 +261,7 @@ public class RemoteNamingEjbTestCase {
         ModelNode node = res.get("java: contexts", "java:jboss/exported", "test", "children",
                 "Bean!org.jboss.as.test.integration.naming.remote.ejb.Remote", "class-name");
 
-        Assert.assertEquals("org.jboss.as.test.integration.naming.remote.ejb.Remote", node.asString());
+        Assertions.assertEquals("org.jboss.as.test.integration.naming.remote.ejb.Remote", node.asString());
 
     }
 

@@ -8,13 +8,14 @@ package org.jboss.as.test.integration.jca.datasource;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -23,7 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  *
  * @author <a href="mailto:ochaloup@redhat.com>Ondra Chaloupka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttributeTestBase {
     private static final Logger log = Logger.getLogger(DatasourceEnableAttributeTestBase.class);

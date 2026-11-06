@@ -14,22 +14,22 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test if certain response code wont erase content-type
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ResponseCodeTestCase {
     private static final HttpClient HTTP_CLIENT = HttpClients.createDefault();
@@ -103,13 +103,13 @@ public class ResponseCodeTestCase {
     }
 
     public void doContentTypeChecks(final HttpResponse response, final int code, final boolean expectContent) throws Exception {
-        Assert.assertEquals("Wrong response code!", code, response.getStatusLine().getStatusCode());
-        Assert.assertEquals("Missing content type!", 1, response.getHeaders("Content-Type").length);
+        Assertions.assertEquals(code, response.getStatusLine().getStatusCode(), "Wrong response code!");
+        Assertions.assertEquals(1, response.getHeaders("Content-Type").length, "Missing content type!");
         if (expectContent) {
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Null entity!", entity);
+            Assertions.assertNotNull(entity, "Null entity!");
             final String content = EntityUtils.toString(response.getEntity());
-            Assert.assertEquals("Wrong content!", RSCodeResponder.CONTENT, content);
+            Assertions.assertEquals(RSCodeResponder.CONTENT, content, "Wrong content!");
         }
     }
 

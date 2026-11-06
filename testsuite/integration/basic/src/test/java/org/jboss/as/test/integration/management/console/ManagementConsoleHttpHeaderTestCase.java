@@ -23,24 +23,25 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.Authentication;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests presence of X-Frame-Options header in response from management console
  *
  * @author Jan Kasik <jkasik@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ManagementConsoleHttpHeaderTestCase {
 
@@ -70,14 +71,14 @@ public class ManagementConsoleHttpHeaderTestCase {
             HttpResponse response = httpClient.execute(httpGet, httpContext);
 
             int statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Wrong response code: " + statusCode + " for url '" + url.toString() + "'.",
-                    HttpURLConnection.HTTP_OK, statusCode);
+            assertEquals(HttpURLConnection.HTTP_OK,
+                    statusCode, "Wrong response code: " + statusCode + " for url '" + url.toString() + "'.");
 
             Header[] headers = response.getHeaders(headerName);
-            assertNotNull("Unexpected behaviour of HttpResponse#getHeaders() returned null!", headers);
-            assertTrue("There is no '" + headerName + "' header present! Headers present: " +
-                            Arrays.toString(response.getAllHeaders()),
-                    headers.length > 0);
+            assertNotNull(headers, "Unexpected behaviour of HttpResponse#getHeaders() returned null!");
+            assertTrue(headers.length > 0,
+                    "There is no '" + headerName + "' header present! Headers present: " +
+                            Arrays.toString(response.getAllHeaders()));
             for (Header header : headers) {
                 if (header.getValue().equals(expectedHeaderValue)) {
                     return;

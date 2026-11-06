@@ -17,7 +17,8 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
     private static final PathAddress JCA_SUBSYSTEM_ADDRESS = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, "jca");
@@ -34,7 +35,7 @@ public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
         ModelNode addWMOperation = Operations.createAddOperation(getWorkManagerAddress().toModelNode());
         addWMOperation.get("name").set(getWorkManagerName());
         ModelNode response = execute(addWMOperation, client);
-        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
     }
 
     private void addThreadPool(ModelControllerClient client) throws IOException {
@@ -45,7 +46,7 @@ public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
         addShortRunningThreadsOperation.get("max-threads").set("20");
 
         ModelNode response = execute(addShortRunningThreadsOperation, client);
-        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
     }
 
     private void addBootstrapContext(ModelControllerClient client) throws IOException {
@@ -54,7 +55,7 @@ public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
         addBootstrapCtxOperation.get("workmanager").set(getWorkManagerName());
 
         ModelNode response = execute(addBootstrapCtxOperation, client);
-        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
     }
 
     private ModelNode execute(ModelNode operation, ModelControllerClient client) throws IOException {

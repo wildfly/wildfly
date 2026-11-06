@@ -12,9 +12,10 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.Assertions;
 import org.jboss.as.controller.client.helpers.Operations;
 
 /**
@@ -32,7 +33,7 @@ class JMSThreadPoolMetricsSetup implements ServerSetupTask {
         op.get("name").set("connectors");
 
         ModelNode execute = client.getControllerClient().execute(op);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(execute));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(execute));
         return Operations.readResult(execute);
     }
 

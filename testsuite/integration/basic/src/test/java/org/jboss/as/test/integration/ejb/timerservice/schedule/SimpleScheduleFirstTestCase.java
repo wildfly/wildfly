@@ -8,20 +8,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that an @Timout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SimpleScheduleFirstTestCase {
 
     @Deployment
@@ -41,15 +41,15 @@ public class SimpleScheduleFirstTestCase {
     public void testScheduleAnnotation() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean) ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
-        Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
+        Assertions.assertTrue(SimpleScheduleBean.awaitTimerCall());
 
-        Assert.assertEquals("info", bean.getTimerInfo());
-        Assert.assertEquals("Europe/Prague", bean.getTimezone());
-        Assert.assertTrue(bean.isCalendar());
-        Assert.assertFalse(bean.isPersistent());
+        Assertions.assertEquals("info", bean.getTimerInfo());
+        Assertions.assertEquals("Europe/Prague", bean.getTimezone());
+        Assertions.assertTrue(bean.isCalendar());
+        Assertions.assertFalse(bean.isPersistent());
 
         final SingletonScheduleBean singletonBean = (SingletonScheduleBean) ctx.lookup("java:module/" + SingletonScheduleBean.class.getSimpleName());
-        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
+        Assertions.assertTrue(SingletonScheduleBean.awaitTimerCall());
     }
 
     @Test
@@ -63,12 +63,12 @@ public class SimpleScheduleFirstTestCase {
     public void testSchedulesAnnotation() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleSchedulesBean bean = (SimpleSchedulesBean) ctx.lookup("java:module/" + SimpleSchedulesBean.class.getSimpleName());
-        Assert.assertTrue(SimpleSchedulesBean.awaitTimerCall());
-        Assert.assertEquals(5, bean.getTimers().size());
+        Assertions.assertTrue(SimpleSchedulesBean.awaitTimerCall());
+        Assertions.assertEquals(5, bean.getTimers().size());
 
-        Assert.assertEquals("info", bean.getTimerInfo());
-        Assert.assertTrue(bean.isCalendar());
-        Assert.assertTrue(bean.isPersistent());
+        Assertions.assertEquals("info", bean.getTimerInfo());
+        Assertions.assertTrue(bean.isCalendar());
+        Assertions.assertTrue(bean.isPersistent());
     }
 
 

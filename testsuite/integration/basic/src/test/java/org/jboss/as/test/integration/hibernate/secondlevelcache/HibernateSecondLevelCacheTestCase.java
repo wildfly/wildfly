@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import javax.naming.InitialContext;
@@ -14,7 +14,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -23,16 +23,16 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that Hibernate second level cache is working native Hibernate
  *
  * @author Scott Marlow (based on Madhumita's Hibernate test)
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateSecondLevelCacheTestCase {
 
     private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v6.InfinispanRegionFactory</property>";
@@ -63,7 +63,7 @@ public class HibernateSecondLevelCacheTestCase {
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
@@ -131,18 +131,18 @@ public class HibernateSecondLevelCacheTestCase {
 
             Connection conn = ds.getConnection();
             int updated = conn.prepareStatement("update Student set first_name='hacked' where student_id=1").executeUpdate();
-            assertTrue("was able to update added Student.  update count=" + updated, updated > 0);
+            assertTrue(updated > 0, "was able to update added Student.  update count=" + updated);
             conn.close();
             // read updated (dirty) data from second level cache
             s2 = sfsb.getStudent(1);
-            assertTrue("was able to read updated Student entity", s2 != null);
-            assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
+            assertTrue(s2 != null, "was able to read updated Student entity");
+            assertEquals("MADHUMITA", s2.getFirstName(), "Student first name was read from second level cache = " + s2.getFirstName());
 
             // clear dirty data from second level cache and verify that updated data is read from database
             sfsb.clearCache();
             s2 = sfsb.getStudent(1);
-            assertTrue("was able to read updated Student entity from database after clearing cache", s2 != null);
-            assertEquals("Updated Student first name was read from database = " + s2.getFirstName(), "hacked", s2.getFirstName());
+            assertTrue(s2 != null, "was able to read updated Student entity from database after clearing cache");
+            assertEquals("hacked", s2.getFirstName(), "Updated Student first name was read from database = " + s2.getFirstName());
 
         } finally {
             Connection conn = ds.getConnection();
@@ -167,12 +167,12 @@ public class HibernateSecondLevelCacheTestCase {
 
             Connection conn = ds.getConnection();
             int updated = conn.prepareStatement("delete from Student where student_id=1").executeUpdate();
-            assertTrue("was able to delete row from Student.  update count=" + updated, updated > 0);
+            assertTrue(updated > 0, "was able to delete row from Student.  update count=" + updated);
             conn.close();
             // read updated (dirty) data from second level cache
             s2 = sfsb.getStudent(1);
-            assertTrue("was able to read deleted Student entity", s2 != null);
-            assertEquals("deleted Student first name was read from second level cache = " + s2.getFirstName(), "Hope", s2.getFirstName());
+            assertTrue(s2 != null, "was able to read deleted Student entity");
+            assertEquals("Hope", s2.getFirstName(), "deleted Student first name was read from second level cache = " + s2.getFirstName());
         } finally {
             Connection conn = ds.getConnection();
             conn.prepareStatement("delete from Student").executeUpdate();

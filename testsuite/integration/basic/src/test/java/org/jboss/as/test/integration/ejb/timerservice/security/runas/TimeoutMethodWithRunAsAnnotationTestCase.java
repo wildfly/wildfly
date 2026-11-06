@@ -9,21 +9,19 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-/**
- *  @author Tomasz Adamski
- */
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimeoutMethodWithRunAsAnnotationTestCase {
     private static final Logger log = Logger.getLogger(TimeoutMethodWithRunAsAnnotationTestCase.class.getName());
 
@@ -42,8 +40,8 @@ public class TimeoutMethodWithRunAsAnnotationTestCase {
     public void testTimeoutMethodWithRunAsAnnotation() throws Exception {
         final TimerBean timerBean = InitialContext.doLookup("java:module/TimerBean");
         timerBean.startTimer();
-        Assert.assertTrue(TimerBean.awaitTimerCall());
-        Assert.assertTrue(SecureBean.getSecureMethodRun());
+        Assertions.assertTrue(TimerBean.awaitTimerCall());
+        Assertions.assertTrue(SecureBean.getSecureMethodRun());
     }
 
 }

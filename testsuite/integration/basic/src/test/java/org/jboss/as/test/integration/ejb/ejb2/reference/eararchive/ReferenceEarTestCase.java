@@ -8,22 +8,22 @@ package org.jboss.as.test.integration.ejb.ejb2.reference.eararchive;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (reference21_30) to AS7 [JIRA JBQA-5483]. Test for EJB3.0/EJB2.1 references
  *
  * @author William DeCoste, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ReferenceEarTestCase {
 
     @ArquillianResource
@@ -61,13 +61,13 @@ public class ReferenceEarTestCase {
 
         Test3Home test3Home = (Test3Home) ctx.lookup("java:app/multideploy-ejb3/Test3!" + Test3Home.class.getName());
         Test3 test3 = test3Home.create();
-        Assert.assertNotNull(test3);
+        Assertions.assertNotNull(test3);
         test3.testAccess();
 
         Test2Home home = (Test2Home) ctx.lookup("java:app/multideploy-ejb2/ejb_Test2!" + Test2Home.class.getName());
-        Assert.assertNotNull(home);
+        Assertions.assertNotNull(home);
         Test2 test2 = home.create();
-        Assert.assertNotNull(test2);
+        Assertions.assertNotNull(test2);
         test2.testAccess();
     }
 
@@ -75,13 +75,13 @@ public class ReferenceEarTestCase {
     public void testEjbInjection3() throws Exception {
 
         Test3Business test3 = (Test3Business) ctx.lookup("java:app/multideploy-ejb3/Test3!" + Test3Business.class.getName());
-        Assert.assertNotNull(test3);
+        Assertions.assertNotNull(test3);
         test3.testAccess();
 
         Test2Home home = (Test2Home) ctx.lookup("java:app/multideploy-ejb2/ejb_Test2!" + Test2Home.class.getName());
-        Assert.assertNotNull(home);
+        Assertions.assertNotNull(home);
         Test2 test2 = home.create();
-        Assert.assertNotNull(test2);
+        Assertions.assertNotNull(test2);
         test2.testAccess();
     }
 }

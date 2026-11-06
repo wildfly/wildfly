@@ -17,7 +17,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -35,9 +35,9 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests various scenarios for class access between subdeployments within a .ear.
@@ -45,7 +45,7 @@ import org.junit.runner.RunWith;
  * @see https://issues.jboss.org/browse/AS7-306
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SubDeploymentAvailableInClassPathTestCase {
 
@@ -134,8 +134,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("ear-with-single-war")
-    public void testEjbClassAvailableInServlet(@ArquillianResource(HelloWorldServlet.class) URL baseUrl) throws Exception {
+    public void testEjbClassAvailableInServlet(@ArquillianResource(HelloWorldServlet.class) @OperateOnDeployment("ear-with-single-war") URL baseUrl) throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String message = "JBossAS7";
 
@@ -143,9 +142,9 @@ public class SubDeploymentAvailableInClassPathTestCase {
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Unexpected echo message from servlet", message, responseMessage);
+            Assertions.assertEquals(message, responseMessage, "Unexpected echo message from servlet");
         }
     }
 
@@ -165,25 +164,24 @@ public class SubDeploymentAvailableInClassPathTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("ear-with-exploded-war")
-    public void testExplodedWarInEar(@ArquillianResource(HelloWorldServlet.class) URL baseUrl) throws Exception {
+    public void testExplodedWarInEar(@ArquillianResource(HelloWorldServlet.class) @OperateOnDeployment("ear-with-exploded-war") URL baseUrl) throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             String message = "OK!";
             String requestURL = baseUrl.toURI() + "/index.jsp";
             HttpGet request = new HttpGet(requestURL);
             HttpResponse response = httpClient.execute(request);
             HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Unexpected echo message from servlet", message, responseMessage);
+            Assertions.assertEquals(message, responseMessage, "Unexpected echo message from servlet");
             message = "JBossAS7";
             requestURL = baseUrl.toURI() + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
             request = new HttpGet(requestURL);
             response = httpClient.execute(request);
             entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Unexpected echo message from servlet", message, responseMessage);
+            Assertions.assertEquals(message, responseMessage, "Unexpected echo message from servlet");
         }
     }
 
@@ -201,17 +199,16 @@ public class SubDeploymentAvailableInClassPathTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("ear-with-single-war")
-    public void testServletClassNotAvailableToEjbInEar(@ArquillianResource(EjbInvokingServlet.class) URL baseUrl) throws Exception {
+    public void testServletClassNotAvailableToEjbInEar(@ArquillianResource(EjbInvokingServlet.class) @OperateOnDeployment("ear-with-single-war") URL baseUrl) throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String classInWar = HelloWorldServlet.class.getName();
             final String requestURL = baseUrl.toURI() + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Unexpected echo message from servlet", EjbInvokingServlet.SUCCESS_MESSAGE, responseMessage);
+            Assertions.assertEquals(EjbInvokingServlet.SUCCESS_MESSAGE, responseMessage, "Unexpected echo message from servlet");
         }
     }
 
@@ -233,20 +230,19 @@ public class SubDeploymentAvailableInClassPathTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("ear-with-war-and-jar")
-    public void testWarSeeJarAndJarSeeImplicitModulesFirst(@ArquillianResource(EjbInvokeClassloaderToStringServlet.class) URL baseUrl) throws Exception {
+    public void testWarSeeJarAndJarSeeImplicitModulesFirst(@ArquillianResource(EjbInvokeClassloaderToStringServlet.class) @OperateOnDeployment("ear-with-war-and-jar") URL baseUrl) throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String requestURL = baseUrl.toURI() + EjbInvokeClassloaderToStringServlet.URL_PATTERN
                     + "?" + EjbInvokeClassloaderToStringServlet.CLASS_NAME_PARAMETER + "=javax.naming.InitialContext";
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
 
             // expected is that class is loaded from implicit module
             // app's class loader toString returns: ModuleClassLoader for Module deployment.war-access-to-jar.ear:main from Service Module Loader
-            Assert.assertEquals("Unexpected response from servlet", "bootstrap class loader", responseMessage);
+            Assertions.assertEquals("bootstrap class loader", responseMessage, "Unexpected response from servlet");
         }
     }
 
@@ -273,9 +269,9 @@ public class SubDeploymentAvailableInClassPathTestCase {
             final HttpGet request = new HttpGet(requestURL);
             final HttpResponse response = httpClient.execute(request);
             final HttpEntity entity = response.getEntity();
-            Assert.assertNotNull("Response message from servlet was null", entity);
+            Assertions.assertNotNull(entity, "Response message from servlet was null");
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertEquals("Unexpected echo message from servlet", ServletInOtherWar.SUCCESS_MESSAGE, responseMessage);
+            Assertions.assertEquals(ServletInOtherWar.SUCCESS_MESSAGE, responseMessage, "Unexpected echo message from servlet");
         }
     }
 

@@ -10,21 +10,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Scott Marlow
  * @author Jan Martiska
  * @Remove tests
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoveTestCase {
 
     private static final String ARCHIVE_NAME = "RemoveTestCase";
@@ -57,12 +57,12 @@ public class RemoveTestCase {
         sfsb1.done();   // first call is expected to work
         try {
             sfsb1.done();   // second call is expected to fail since we are calling a destroyed bean
-            Assert.fail("Expecting NoSuchEJBException");
+            Assertions.fail("Expecting NoSuchEJBException");
         } catch (NoSuchEJBException expectedException) {
             // good
         }
 
-        Assert.assertTrue(SFSB1.preDestroyCalled);
+        Assertions.assertTrue(SFSB1.preDestroyCalled);
     }
 
     /**
@@ -77,12 +77,12 @@ public class RemoveTestCase {
         sfsb1.doneAndDenyDestruction();   // first call is expected to work
         try {
             sfsb1.doneAndDenyDestruction();   // second call is expected to fail since we are calling a destroyed bean
-            Assert.fail("Expecting NoSuchEJBException");
+            Assertions.fail("Expecting NoSuchEJBException");
         } catch (NoSuchEJBException expectedException) {
             // good
         }
 
-        Assert.assertTrue(SFSB1.preDestroyCalled);
+        Assertions.assertTrue(SFSB1.preDestroyCalled);
     }
 
 }
