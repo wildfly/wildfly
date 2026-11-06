@@ -1,0 +1,13 @@
+<subsystem xmlns="urn:jboss:domain:undertow:15.0">
+    <buffer-cache name="default" buffers-per-region="1024" buffer-size="1024" max-regions="10"/>
+    <server name="some-server" default-host="other-host">
+        <http-listener name="default" socket-binding="http" redirect-socket="https"/>
+        <host name="other-host" alias="localhost">
+        </host>
+    </server>
+    <servlet-container name="myContainer"/>
+    <filters>
+        <!-- mod-cluster with NO affinity child — the parser must auto-create single-affinity -->
+        <mod-cluster name="no-affinity-mc" management-socket-binding="http"/>
+    </filters>
+</subsystem>
