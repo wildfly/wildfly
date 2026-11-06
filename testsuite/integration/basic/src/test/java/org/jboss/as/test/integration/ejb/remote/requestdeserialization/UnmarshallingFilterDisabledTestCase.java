@@ -17,7 +17,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
@@ -28,37 +27,29 @@ import org.junit.runner.RunWith;
 @ServerSetup(UnmarshallingFilterDisabledTestCase.ServerSetup.class)
 public class UnmarshallingFilterDisabledTestCase extends AbstactUnmarshallingFilterTestCase {
 
-    // Disables unmarshalling blocklisting.
+    // Disables EJB unmarshalling blocklisting and re-enables JDK deserialization of TemplatesImpl.
     public static class ServerSetup implements ServerSetupTask {
-        private static final PathAddress DESERIALTEMPLATE_ADDRESS =  PathAddress.pathAddress("system-property", "jdk.xml.enableTemplatesImplDeserialization");
-        private static final PathAddress PROP_ADDRESS = PathAddress.pathAddress("system-property", "jboss.ejb.unmarshalling.filter.disabled");
+        // WFLY-22374 Deserialization of TemplatesImpl is disabled by default since JDK 17.0.21, 21.0.13 and 25.0.5 (see JDK-8384654)
+        private static final PathAddress ENABLE_TEMPLATES_IMPL_DESERIALIZATION_PROPERTY_ADDRESS = PathAddress.pathAddress("system-property", "jdk.xml.enableTemplatesImplDeserialization");
+        private static final PathAddress UNMARSHALLING_FILTER_DISABLED_PROPERTY_ADDRESS = PathAddress.pathAddress("system-property", "jboss.ejb.unmarshalling.filter.disabled");
 
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
-            if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
-                //When SM is enabled, deserializing TemplatesImpl in JDK is disabled and
-                //set the jdk.xml.enableTemplatesImplDeserialization system property
-                //to enable it
-                ModelNode templateOp = Util.createAddOperation(DESERIALTEMPLATE_ADDRESS);
-                templateOp.get("value").set("true");
-                CoreUtils.applyUpdate(templateOp, managementClient.getControllerClient());
-            }
+            ModelNode templatesImplOp = Util.createAddOperation(ENABLE_TEMPLATES_IMPL_DESERIALIZATION_PROPERTY_ADDRESS);
+            templatesImplOp.get("value").set("true");
+            CoreUtils.applyUpdate(templatesImplOp, managementClient.getControllerClient());
 
-            ModelNode op = Util.createAddOperation(PROP_ADDRESS);
-            op.get("value").set("true");
-            CoreUtils.applyUpdate(op, managementClient.getControllerClient());
+            ModelNode filterOp = Util.createAddOperation(UNMARSHALLING_FILTER_DISABLED_PROPERTY_ADDRESS);
+            filterOp.get("value").set("true");
+            CoreUtils.applyUpdate(filterOp, managementClient.getControllerClient());
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
-            if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
-                CoreUtils.applyUpdate(Util.createRemoveOperation(DESERIALTEMPLATE_ADDRESS),
-                        managementClient.getControllerClient());
-            }
-            ModelNode removeOp = Util.createRemoveOperation(PROP_ADDRESS);
-            CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
+            CoreUtils.applyUpdate(Util.createRemoveOperation(ENABLE_TEMPLATES_IMPL_DESERIALIZATION_PROPERTY_ADDRESS), managementClient.getControllerClient());
+            CoreUtils.applyUpdate(Util.createRemoveOperation(UNMARSHALLING_FILTER_DISABLED_PROPERTY_ADDRESS), managementClient.getControllerClient());
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
