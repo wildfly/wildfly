@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.jboss.resteasy.util.AcceptParser;
 
 import io.smallrye.openapi.api.OpenApiConfig;
+import io.smallrye.openapi.api.SmallRyeOpenAPI;
 import io.smallrye.openapi.runtime.io.Format;
 import io.smallrye.openapi.runtime.io.IOContext;
 import io.smallrye.openapi.runtime.io.JsonIO;
@@ -69,7 +70,7 @@ public class OpenAPIHttpHandler implements HttpHandler {
     }
 
     private String format(Format format) throws IOException {
-        return format(JsonIO.newInstance(this.config), this.modelFactory.get(), format);
+        return format(JsonIO.newInstance(SmallRyeOpenAPI.JsonProvider.JACKSON2, this.config), this.modelFactory.get(), format);
     }
 
     private static <V, A extends V, O extends V, AB, OB> String format(JsonIO<V, A, O, AB, OB> jsonIO, OpenAPI model, Format format) throws IOException {
