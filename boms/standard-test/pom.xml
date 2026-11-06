@@ -86,6 +86,13 @@
             </dependency>
 
             <dependency>
+                <groupId>com.googlecode.plist</groupId>
+                <artifactId>dd-plist</artifactId>
+                <version>${version.com.googlecode.plist.dd-plist}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.mvc</groupId>
                 <artifactId>jakarta.mvc-api</artifactId>
                 <version>${version.jakarta.mvc}</version>
@@ -101,6 +108,13 @@
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${version.io.rest-assured}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.certs</groupId>
+                <artifactId>smallrye-certificate-generator</artifactId>
+                <version>${version.io.smallrye.certs}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -381,6 +395,36 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-maven-resolver</artifactId>
                 <version>${version.org.wildfly.glow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-subsystem</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
+                <type>test-jar</type>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-tests</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
+                <type>test-jar</type>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- The below BOM's are imported last as to not override any dependencies above -->

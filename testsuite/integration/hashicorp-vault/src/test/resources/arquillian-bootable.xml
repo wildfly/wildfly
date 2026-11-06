@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <container qualifier="wildfly" default="true">
+        <configuration>
+            <property name="installDir">${install.dir}</property>
+            <property name="jarFile">${bootable.jar}</property>
+            <property name="javaHome">${java.home}</property>
+            <property name="javaVmArguments">${server.jvm.args}</property>
+            <property name="jbossArguments">${server.jboss.args}</property>
+            <property name="allowConnectingToRunningServer">false</property>
+            <property name="managementAddress">${node0:127.0.0.1}</property>
+            <property name="managementPort">9990</property>
+        </configuration>
+    </container>
+
+</arquillian>
