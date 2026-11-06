@@ -84,6 +84,8 @@ public abstract class AbstractClusteringTestCase {
 
     // Undertow-based WildFly load-balancer
     public static final String LOAD_BALANCER_1 = "load-balancer-1";
+    public static final int LOAD_BALANCER_1_PORT_OFFSET = 500;
+    public static final int LOAD_BALANCER_1_MCMP_PORT = 8090 + LOAD_BALANCER_1_PORT_OFFSET;
 
     // H2 database
     public static final String DB_PORT = System.getProperty("dbport", "9092");
@@ -300,6 +302,7 @@ public abstract class AbstractClusteringTestCase {
             case NODE_2 -> 100;
             case NODE_3 -> 200;
             case NODE_4 -> 300;
+            case LOAD_BALANCER_1 -> LOAD_BALANCER_1_PORT_OFFSET;
             default -> throw new IllegalArgumentException();
         };
     }
