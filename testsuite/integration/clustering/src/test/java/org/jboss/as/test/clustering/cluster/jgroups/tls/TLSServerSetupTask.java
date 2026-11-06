@@ -40,6 +40,8 @@ public interface TLSServerSetupTask {
                             .setupScript(createScriptBuilder()
                                     // n.b. cannot batch: key-store must be STARTED before generate-key-pair
                                     .add("/subsystem=elytron/key-store=jgroupsKS:add(path=server.keystore.pkcs12, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=PKCS12)")
+                                    // n.b. key store files outlive a failed tear down and generating an existing alias fails, so clear it first; removing an alias that does not exist succeeds
+                                    .add("/subsystem=elytron/key-store=jgroupsKS:remove-alias(alias=jgroups)")
                                     .add("/subsystem=elytron/key-store=jgroupsKS:generate-key-pair(alias=jgroups, algorithm=RSA, key-size=2048, validity=365, credential-reference={clear-text=secret}, distinguished-name=\"CN=jgroups\")")
                                     .add("/subsystem=elytron/key-store=jgroupsKS:store")
                                     .startBatch()
@@ -97,12 +99,15 @@ public interface TLSServerSetupTask {
             ScriptBuilder builder = createScriptBuilder();
             for (String node : nodes) {
                 builder.add("/subsystem=elytron/key-store=jgroupsKS-%s:add(path=../../../server-%s.keystore.pkcs12, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=PKCS12)", node, node);
+                // n.b. key store files outlive a failed tear down and generating or importing an existing alias fails, so clear each alias first; removing an alias that does not exist succeeds
+                builder.add("/subsystem=elytron/key-store=jgroupsKS-%s:remove-alias(alias=%s)", node, node);
                 builder.add("/subsystem=elytron/key-store=jgroupsKS-%s:generate-key-pair(alias=%s, algorithm=RSA, key-size=2048, validity=365, credential-reference={clear-text=secret}, distinguished-name=\"CN=%s\")", node, node, node);
                 builder.add("/subsystem=elytron/key-store=jgroupsKS-%s:store", node);
                 builder.add("/subsystem=elytron/key-store=jgroupsKS-%s:export-certificate(alias=%s, path=server-%s.keystore.pem, relative-to=jboss.server.config.dir, pem=true)", node, node, node);
             }
             builder.add("/subsystem=elytron/key-store=jgroupsTS-shared:add(path=../../../server.truststore.pkcs12, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=PKCS12)");
             for (String node : nodes) {
+                builder.add("/subsystem=elytron/key-store=jgroupsTS-shared:remove-alias(alias=%s)", node);
                 builder.add("/subsystem=elytron/key-store=jgroupsTS-shared:import-certificate(alias=%s, path=server-%s.keystore.pem, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, trust-cacerts=true, validate=false)", node, node);
             }
             builder.add("/subsystem=elytron/key-store=jgroupsTS-shared:store");
