@@ -18,6 +18,7 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.input.Tailer;
+import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -29,11 +30,13 @@ import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.MessagingSubsystemSetupTask;
 import org.jboss.as.test.shared.observability.NotificationProbeServlet;
 import org.jboss.as.test.shared.observability.ResourceMetricsCheck;
 import org.jboss.as.test.shared.observability.ServerLogTailerListener;
+import org.jboss.as.test.shared.observability.setuptasks.RbacRealmSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +62,8 @@ import org.wildfly.plugin.tools.server.ServerManager;
 @RunWith(Arquillian.class)
 @ServerSetup({SnapshotServerSetupTask.class,
         MetricsSubsystemSetupTask.class,
-        MessagingSubsystemSetupTask.class})
+        MessagingSubsystemSetupTask.class,
+        RbacRealmSetupTask.class})
 @RunAsClient
 public class MetricsResourceAddRemoveTestCase {
     private static final String DEPLOYMENT = "metrics-notification-probe.war";
@@ -67,7 +71,6 @@ public class MetricsResourceAddRemoveTestCase {
     private static final String QUEUE_JNDI_NAME = "java:/jms/queue/" + QUEUE_NAME;
     private static final int MESSAGE_COUNT = 10;
     private static final String METRIC_NAME = "wildfly_messaging_activemq_message_count";
-    private static final String METRICS_CONTEXT = "/metrics";
     private static final String FAILED_READ = "WFLYCTL0216";
     private static final String FAILED_OPERATION = "WFLYCTL0013";
     private static final String MANIFEST = "Dependencies: org.jboss.as.controller,org.jboss.as.server,org.jboss.msc\n";
@@ -114,6 +117,42 @@ public class MetricsResourceAddRemoveTestCase {
     /** Verifies metrics appear for a queue added after boot and disappear after removal. */
     @Test
     public void addsAndRemovesResourceMetrics() throws Exception {
+        runAddRemoveCycle(true);
+    }
+
+    /** Verifies the retry queue processes resources only when their subsystem is exposed. */
+    @Test
+    public void onlyHandlesResourcesFromExposedSubsystems() throws Exception {
+        try {
+            setExposedSubsystems(List.of("undertow"));
+            runAddRemoveCycle(false);
+            setExposedSubsystems(List.of("messaging-activemq"));
+            runAddRemoveCycle(true);
+        } finally {
+            setExposedSubsystems(List.of("*"));
+        }
+    }
+
+    /**
+     * Verifies dynamic resource metrics with RBAC enabled. The scrape authenticates as Monitor so this test checks
+     * background resource discovery without asking an anonymous caller to read RBAC-protected metric values.
+     */
+    @Test
+    public void addsAndRemovesResourceMetricsUnderRbac() throws Exception {
+        try {
+            MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, true);
+            runAddRemoveCycle(true);
+        } finally {
+            MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, false);
+        }
+    }
+
+    /**
+     * Adds a JMS queue, checks whether its metric matches the exposure setting, and removes it.
+     *
+     * @param queueMetricExpected {@code true} if the JMS subsystem is exposed
+     */
+    private void runAddRemoveCycle(boolean queueMetricExpected) throws Exception {
         ServerLogTailerListener listener = new ServerLogTailerListener();
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         boolean queueCreated = false;
@@ -129,9 +168,16 @@ public class MetricsResourceAddRemoveTestCase {
             assertEventually(() -> assertNotification("resource-added"),
                     "JMS did not emit a resource-added notification for " + QUEUE_NAME);
             sendMessages();
-            assertEventually(() -> assertQueueMetric(fetchMetrics(), true),
-                    "JMS queue metric was not exported for " + QUEUE_NAME);
-            listener.logs.clear();
+            if (queueMetricExpected) {
+                assertEventually(() -> assertQueueMetric(fetchMetrics(), true),
+                        "JMS queue metric was not exported for " + QUEUE_NAME);
+            } else {
+                Awaitility.await("JMS queue metric should remain absent for " + QUEUE_NAME)
+                        .pollInterval(TimeoutUtil.adjust(Duration.ofMillis(500)))
+                        .during(TimeoutUtil.adjust(Duration.ofSeconds(5)))
+                        .atMost(TimeoutUtil.adjust(Duration.ofSeconds(10)))
+                        .untilAsserted(() -> assertQueueMetric(fetchMetrics(), false));
+            }
 
             jmsOperations.removeJmsQueue(QUEUE_NAME);
             queueCreated = false;
@@ -147,6 +193,24 @@ public class MetricsResourceAddRemoveTestCase {
         }
         listener.assertNoFailure();
         assertNoQueueReadErrors(listener);
+    }
+
+    /**
+     * Changes the exposed subsystem list and reloads so the collector uses the new setting.
+     *
+     * @param subsystems the subsystem names to expose
+     */
+    private void setExposedSubsystems(List<String> subsystems) throws Exception {
+        ModelNode value = new ModelNode();
+        value.setEmptyList();
+        subsystems.forEach(value::add);
+        ModelNode operation = Operations.createWriteAttributeOperation(
+                Operations.createAddress("subsystem", "metrics"), "exposed-subsystems", value);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new IllegalStateException(Operations.getFailureDescription(result).asString());
+        }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     /** Sends probe messages so the queue metric has a non-zero value. */
@@ -211,27 +275,15 @@ public class MetricsResourceAddRemoveTestCase {
 
     /** Fetches and parses the WildFly Metrics endpoint. */
     private List<PrometheusMetric> fetchMetrics() throws Exception {
-        try (Client client = ClientBuilder.newClient();
-             Response response = client.target(String.format("http://%s:%s%s", managementClient.getMgmtAddress(),
-                     managementClient.getMgmtPort(), METRICS_CONTEXT)).request().get()) {
-            assertEquals("Metrics endpoint returned an unexpected status", 200, response.getStatus());
-            return PrometheusMetric.buildPrometheusMetrics(response.readEntity(String.class));
-        }
+        return MetricsRbacTestSupport.fetchMetrics(managementClient, RbacRealmSetupTask.USER_MONITOR,
+                RbacRealmSetupTask.TEST_RBAC_PASSWORD);
     }
 
     /** Repeats an eventually-consistent assertion until it succeeds or times out. */
     private static void assertEventually(ResourceMetricsCheck check, String message) throws Exception {
-        AssertionError failure = new AssertionError(message);
-        long end = System.currentTimeMillis() + TimeoutUtil.adjust(30_000);
-        while (System.currentTimeMillis() < end) {
-            try {
-                check.evaluate();
-                return;
-            } catch (AssertionError e) {
-                failure = e;
-                Thread.sleep(TimeoutUtil.adjust(1_000));
-            }
-        }
-        throw failure;
+        Awaitility.await(message)
+                .pollInterval(TimeoutUtil.adjust(Duration.ofSeconds(1)))
+                .atMost(TimeoutUtil.adjust(Duration.ofSeconds(30)))
+                .untilAsserted(check::evaluate);
     }
 }
