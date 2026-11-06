@@ -11,6 +11,8 @@ import java.rmi.RemoteException;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import javax.management.MBeanException;
@@ -46,6 +48,7 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
+import org.wildfly.iiop.openjdk.csiv2.SASCurrentImpl;
 import org.wildfly.iiop.openjdk.rmi.RmiIdlUtil;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -57,6 +60,7 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.auth.server.ServerAuthenticationContext;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -276,12 +280,15 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         if (identityPrincipal != null) {
                             // we have an identity token principal - check if the TLS identity, if available,
                             // has permission to run as the identity token principal.
-                            // TODO use the TLS identity when that becomes available to us.
-
-                            // no TLS identity found, check if an initial context token was also sent. If it was,
-                            // authenticate the incoming username/password and check if the resulting identity has
-                            // permission to run as the identity token principal.
-                            if (principal != null) {
+                            if (this.sasCurrent instanceof SASCurrentImpl
+                                    && ((SASCurrentImpl) this.sasCurrent).tls_client_authenticated()) {
+                                Certificate[] peerCerts = ((SASCurrentImpl) this.sasCurrent).get_incoming_peer_certificates();
+                                SecurityIdentity authenticatedIdentity = this.authenticateWithCertificate(peerCerts);
+                                identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
+                            } else if (principal != null) {
+                                // no TLS identity found, check if an initial context token was also sent. If it was,
+                                // authenticate the incoming username/password and check if the resulting identity has
+                                // permission to run as the identity token principal.
                                 char[] password = (char[]) credential;
                                 authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
                                         .usePassword(password);
@@ -461,6 +468,33 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
             throw e;
         } finally {
             evidence.destroy();
+        }
+    }
+
+    private SecurityIdentity authenticateWithCertificate(final Certificate[] chain) throws Exception {
+        final ServerAuthenticationContext context = this.securityDomain.createNewAuthenticationContext();
+        final X509Certificate[] x509Chain = new X509Certificate[chain.length];
+        for (int i = 0; i < chain.length; i++) {
+            x509Chain[i] = (X509Certificate) chain[i];
+        }
+        final X509PeerCertificateChainEvidence evidence = new X509PeerCertificateChainEvidence(x509Chain);
+        try {
+            context.setAuthenticationPrincipal(x509Chain[0].getSubjectX500Principal());
+            if (context.verifyEvidence(evidence)) {
+                if (context.authorize()) {
+                    context.succeed();
+                    return context.getAuthorizedIdentity();
+                } else {
+                    context.fail();
+                    throw EjbLogger.ROOT_LOGGER.authorizationFailed();
+                }
+            } else {
+                context.fail();
+                throw EjbLogger.ROOT_LOGGER.authenticationFailed();
+            }
+        } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
+            context.fail();
+            throw e;
         }
     }
 }
