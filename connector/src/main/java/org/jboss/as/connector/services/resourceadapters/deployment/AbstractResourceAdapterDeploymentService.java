@@ -59,9 +59,11 @@ import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
+import org.jboss.jca.core.api.connectionmanager.pool.FlushMode;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.security.Callback;
@@ -185,7 +187,22 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             if (value.getDeployment() != null && value.getDeployment().getConnectionManagers() != null) {
                 for (ConnectionManager cm : value.getDeployment().getConnectionManagers()) {
-                    cm.shutdown();
+                    try {
+                        cm.prepareShutdown();
+
+                        Pool pool = cm.getPool();
+                        if (pool != null) {
+                            pool.flush(FlushMode.ALL);
+                        }
+                    } catch (Throwable t) {
+                        DEPLOYMENT_CONNECTOR_LOGGER.debug("Error during ConnectionManager prepareShutdown / pool flush", t);
+                    } finally {
+                        try {
+                            cm.shutdown();
+                        } catch (Throwable t) {
+                            DEPLOYMENT_CONNECTOR_LOGGER.debug("Error during ConnectionManager shutdown", t);
+                        }
+                    }
                 }
             }
 
