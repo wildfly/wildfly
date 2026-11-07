@@ -50,6 +50,8 @@ public class ElytronOidcExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ElytronOidcClientSubsystemModel.CURRENT.getVersion());
+        // the subsystem can also be configured on a host controller in order to secure the management console of a managed domain
+        subsystem.setHostCapable();
         subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(ElytronOidcSubsystemSchema.CURRENT.get(context.getStability())));
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ElytronOidcSubsystemDefinition());
