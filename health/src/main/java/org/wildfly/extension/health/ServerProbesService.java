@@ -6,8 +6,8 @@ package org.wildfly.extension.health;
 
 import static org.wildfly.extension.health.HealthSubsystemDefinition.SERVER_HEALTH_PROBES_CAPABILITY;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -29,7 +29,7 @@ public class ServerProbesService implements Service {
     private final Supplier<Executor> managementExecutor;
     private LocalModelControllerClient modelControllerClient;
 
-    private final Set<ServerProbe> serverProbes = new HashSet<>();
+    private final Set<ServerProbe> serverProbes = new CopyOnWriteArraySet<>();
 
     static void install(OperationContext context) {
         CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(SERVER_HEALTH_PROBES_CAPABILITY);
