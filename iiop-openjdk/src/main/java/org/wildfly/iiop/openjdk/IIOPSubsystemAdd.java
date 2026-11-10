@@ -136,8 +136,18 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // set the ORBUseDynamicStub system property.
         WildFlySecurityManager.setPropertyPrivileged("org.jboss.com.sun.CORBA.ORBUseDynamicStub", "true");
-        // set useCodebaseOnly to true for security - prevents remote codebase loading
-        WildFlySecurityManager.setPropertyPrivileged("com.sun.CORBA.ORBUseCodebaseOnly", "true");
+        // Default useCodebaseOnly to true for security - this prevents remote codebase loading.
+        // This is the property actually honored by com.sun.corba.se.impl.util.JDKBridge (and the
+        // underlying RMIClassLoader); com.sun.CORBA.ORBUseCodebaseOnly is not read by the ORB.
+        // Only apply the default when the operator has not set the property explicitly, so an
+        // operator who deliberately wants remote codebase loading can still opt in with
+        // -Djava.rmi.server.useCodebaseOnly=false.
+        if (WildFlySecurityManager.getPropertyPrivileged("java.rmi.server.useCodebaseOnly", null) == null) {
+            WildFlySecurityManager.setPropertyPrivileged("java.rmi.server.useCodebaseOnly", "true");
+        }
+        // JDKBridge caches this flag in a static field populated in its class initializer, so force
+        // it to re-read the property in case the class was already loaded before it was set.
+        com.sun.corba.se.impl.util.JDKBridge.setCodebaseProperties();
         // we set the same stub factory to both the static and dynamic stub factory. As there is no way to dynamically change
         // the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         // called before this property is set.
