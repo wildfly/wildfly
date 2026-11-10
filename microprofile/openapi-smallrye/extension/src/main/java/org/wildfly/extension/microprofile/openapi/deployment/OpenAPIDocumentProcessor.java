@@ -28,7 +28,6 @@ import org.jboss.as.jaxrs.JaxrsAnnotations;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.msc.service.DuplicateServiceException;
@@ -89,7 +88,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext context) {
         DeploymentUnit unit = context.getDeploymentUnit();
 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
