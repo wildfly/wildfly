@@ -446,7 +446,7 @@
         <version.io.smallrye.smallrye-mutiny>3.1.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.23.1</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.1</version.io.smallrye.smallrye-mutiny-zero>
-        <version.io.smallrye.smallrye-opentelemetry>2.16.0.CR2</version.io.smallrye.smallrye-opentelemetry>
+        <version.io.smallrye.smallrye-opentelemetry>2.16.0</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-stork>2.7.11</version.io.smallrye.smallrye-stork>
         <version.io.smallrye.smallrye-reactive-messaging>4.37.1</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.vertx.vertx>4.5.35</version.io.vertx.vertx>
@@ -1011,22 +1011,6 @@
             <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
-        <!-- ========================= Temporary ========================================== -->
-        <!-- Eclipse MicroProfile Telemetry Staging Repository -->
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>microprofile-telemetry-maven2-staging</id>
-            <name>Eclipse MicroProfile Telemetry Staging Repository</name>
-            <url>https://repo.eclipse.org/content/repositories/microprofile-telemetry-maven2-staging/</url>
-            <layout>default</layout>
-        </repository>
-        <!-- ======================== /Temporary ========================================== -->
     </repositories>
 
     <pluginRepositories>
