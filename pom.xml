@@ -144,6 +144,7 @@
         <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
 
         <!-- Nexus staging repository URL used to retrieve test component releases -->
+        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
         <nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url> <!-- duplicated from jboss-parent, but Maven 4 wants to know it before accessing jboss-parent -->
         <nexus.repository.staging.url>${nexus.repository.url}repository/${nexus.repository.staging}</nexus.repository.staging.url>
 
@@ -331,7 +332,7 @@
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>8.2.3.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.glow>2.1.0.Final</version.org.wildfly.glow>
-        <version.org.wildfly.licenses.plugin>2.4.6.Final</version.org.wildfly.licenses.plugin>
+        <version.org.wildfly.licenses.plugin>2.5.1.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>6.2.0.Final</version.org.wildfly.plugin>
         <version.org.wildfly.plugin.wildfly-detach-plugin>1.0.0.Final</version.org.wildfly.plugin.wildfly-detach-plugin>
         <version.org.wildfly.unstable.annotation.api>1.0.2.Final</version.org.wildfly.unstable.annotation.api>
@@ -369,7 +370,7 @@
         <version.org.javassist>3.29.2-GA</version.org.javassist>
         <version.org.jboss.arquillian.core>1.11.0.CR1</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
-        <version.org.arquillian.testcontainers>1.0.0.Beta2</version.org.arquillian.testcontainers>
+        <version.org.arquillian.testcontainers>1.0.0.Beta3</version.org.arquillian.testcontainers>
         <version.org.jboss.byteman>4.0.28.1</version.org.jboss.byteman>
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itself  -->
@@ -406,7 +407,7 @@
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
-        <version.com.github.luben.zstd-jni>1.5.7-23</version.com.github.luben.zstd-jni>
+        <version.com.github.luben.zstd-jni>1.5.7-25</version.com.github.luben.zstd-jni>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.14.0</version.com.google.code.gson>
         <version.com.google.guava>33.7.2-jre</version.com.google.guava>
@@ -513,7 +514,7 @@
         <standard.version.org.hibernate>7.4.13.Final</standard.version.org.hibernate>
         <version.org.hibernate.models>1.1.2</version.org.hibernate.models>
         <version.org.hornetq>2.4.11.Final</version.org.hornetq>
-        <version.org.infinispan>16.3.0</version.org.infinispan>
+        <version.org.infinispan>16.3.1</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>3.2.0.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>2.0.7.Final</version.org.jboss.activemq.artemis.integration>
@@ -559,11 +560,11 @@
         <version.org.opensaml.opensaml>5.1.6</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.11.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.clustering>12.0.2.Final</version.org.wildfly.clustering>
+        <version.org.wildfly.clustering>12.0.5.Final</version.org.wildfly.clustering>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
-        <version.org.wildfly.core>35.0.0.Beta1</version.org.wildfly.core>
+        <version.org.wildfly.core>35.0.0.Beta2</version.org.wildfly.core>
         <!--
             Maintain separation between these two frequently updated artifacts to avoid merge conflicts.
         -->
