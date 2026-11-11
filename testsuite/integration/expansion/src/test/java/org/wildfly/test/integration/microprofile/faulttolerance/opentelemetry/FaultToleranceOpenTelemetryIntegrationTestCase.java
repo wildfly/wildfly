@@ -6,6 +6,7 @@
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
+import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
 
 /**
  * Test case to verify basic SmallRye Fault Tolerance integration with MicroProfile Telemetry Metrics.
@@ -67,6 +69,11 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     @ArquillianResource
     private URL url;
 
+    /**
+     * Verifies native OpenTelemetry counters while Micrometer is also enabled, so its exports cannot mask failures.
+     *
+     * @throws Exception if a request or metric collection fails
+     */
     @Test
     public void test() throws Exception {
         // First make requests
@@ -75,16 +82,26 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
         }
 
         otelCollector.assertMetrics(metrics -> {
+            // OpenTelemetry 1.67 adds service.instance.id (Prometheus "instance"), changing series order.
+            // Micrometer exports the same names with zero-valued outcomes, so select the native scope and method explicitly.
+            List<PrometheusMetric> timeoutServiceMetrics = metrics.stream()
+                    .filter(metric -> "io.smallrye.opentelemetry".equals(metric.getTags().get("otel_scope_name")))
+                    .filter(metric -> (TimeoutService.class.getName() + ".alwaysTimeout").equals(metric.getTags().get("method")))
+                    .toList();
             Optional<PrometheusMetric> prometheusMetric;
 
             // First verify total invocation count for the method + value returned + fallback applied
-            prometheusMetric = metrics.stream().filter(metric -> metric.getKey().equals("ft_invocations_total")).findFirst();
+            prometheusMetric = timeoutServiceMetrics.stream()
+                    .filter(metric -> metric.getKey().equals("ft_invocations_total"))
+                    .filter(metric -> "valueReturned".equals(metric.getTags().get("result")))
+                    .filter(metric -> "applied".equals(metric.getTags().get("fallback")))
+                    .findFirst();
             Assertions.assertTrue(prometheusMetric.isPresent());
             Assertions.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
 
 
             // Verify the number of timeouts being equal to the number of invocations
-            prometheusMetric = metrics.stream()
+            prometheusMetric = timeoutServiceMetrics.stream()
                     .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
                     .filter(metric -> Boolean.TRUE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
                     .findFirst();
@@ -92,13 +109,12 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
             Assertions.assertEquals(INVOCATION_COUNT, Integer.parseInt(prometheusMetric.get().getValue()), 0);
 
 
-            // Verify the number of successful invocations to be none, since it always fails
-            prometheusMetric = metrics.stream()
+            // OpenTelemetry may omit unused label combinations, so an absent timedOut=false series also means zero.
+            prometheusMetric = timeoutServiceMetrics.stream()
                     .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
                     .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
                     .findFirst();
-            Assertions.assertTrue(prometheusMetric.isPresent());
-            Assertions.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
+            prometheusMetric.ifPresent(metric -> Assertions.assertEquals(0, Integer.parseInt(metric.getValue())));
         });
     }
 
