@@ -27,6 +27,14 @@
                 </injection-target>
                 <lookup-name>corbaname:ssliop:1.2@${node1}:3629#CallerPropDefaultDomainBean</lookup-name>
             </ejb-ref>
+            <ejb-ref>
+                <ejb-ref-name>bothAuthHome</ejb-ref-name>
+                <injection-target>
+                    <injection-target-class>org.jboss.as.test.iiopssl.callerid.ClientEjb</injection-target-class>
+                    <injection-target-name>bothAuthHome</injection-target-name>
+                </injection-target>
+                <lookup-name>corbaname:ssliop:1.2@${node1}:3629#CallerPropGssupAndTlsBean</lookup-name>
+            </ejb-ref>
         </session>
     </enterprise-beans>
 </ejb-jar>

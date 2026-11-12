@@ -32,7 +32,7 @@ import org.wildfly.security.permission.ElytronPermission;
 /**
  * Tests CSIv2 identity assertion (caller propagation) enforcement with TLS.
  *
- * Two server beans are deployed, both requiring TLS mutual authentication
+ * Three server beans are deployed, all requiring TLS mutual authentication
  * and supporting caller propagation:
  * <ul>
  *   <li>{@code CallerPropBean} — uses the {@code iiopCert} security domain which
@@ -40,7 +40,17 @@ import org.wildfly.security.permission.ElytronPermission;
  *   <li>{@code CallerPropDefaultDomainBean} — uses the default security domain
  *       (ApplicationDomain) which cannot verify X.509 evidence. TLS handshake
  *       succeeds (the client certificate is trusted), but evidence verification
- *       in {@code EjbCorbaServant} fails.</li>
+ *       in {@code EjbCorbaServant} fails since the client sends no GSSUP credentials
+ *       for this bean.</li>
+ *   <li>{@code CallerPropGssupAndTlsBean} — uses the {@code gssupRunAs} security domain,
+ *       which can authenticate GSSUP and grants {@code RunAsPrincipalPermission} but, like
+ *       the default domain, cannot verify X.509 evidence. It additionally requires GSSUP
+ *       ({@code as-context required="true"}). The client therefore sends both a TLS client
+ *       certificate and GSSUP credentials; since the domain cannot verify the certificate,
+ *       the GSSUP credentials must be used to authenticate the asserting entity for the
+ *       call to succeed. It is deployed separately from the other two beans since a single
+ *       deployment unit may only be associated with one explicit Elytron security domain
+ *       (see {@code WFLYEJB0490}).</li>
  * </ul>
  */
 @RunWith(Arquillian.class)
@@ -53,6 +63,15 @@ public class IIOPCallerPropagationWithSSLTestCase {
         jar.addClasses(CallerPropBean.class, CallerPropDefaultDomainBean.class,
                         CallerPropHome.class, CallerPropRemote.class)
                 .addAsManifestResource(IIOPCallerPropagationWithSSLTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        return jar;
+    }
+
+    @Deployment(name = "gssup-server", testable = false)
+    @TargetsContainer("iiop-server")
+    public static Archive<?> gssupDeployment() {
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "gssup-server.jar");
+        jar.addClasses(CallerPropGssupAndTlsBean.class, CallerPropHome.class, CallerPropRemote.class)
+                .addAsManifestResource(IIOPCallerPropagationWithSSLTestCase.class.getPackage(), "jboss-ejb3-gssup.xml", "jboss-ejb3.xml");
         return jar;
     }
 
@@ -96,6 +115,17 @@ public class IIOPCallerPropagationWithSSLTestCase {
             Assert.fail("Expected identity propagation to fail when server security domain cannot verify TLS certificate");
         } catch (Exception expected) {
         }
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testCallerPropagationWithGssupAndTlsSucceeds() throws Exception {
+        // the client presents a TLS client certificate (the domain cannot verify it) *and* GSSUP
+        // credentials. The GSSUP credentials must still be used to authenticate the asserting
+        // entity, so the call succeeds despite the certificate being unverifiable by this domain.
+        final String result = Util.switchIdentity("user1", "password1",
+                (Callable<String>) () -> client().callGssupAndTlsServer());
+        Assert.assertEquals("hello", result);
     }
 
     private ClientEjb client() throws NamingException {
