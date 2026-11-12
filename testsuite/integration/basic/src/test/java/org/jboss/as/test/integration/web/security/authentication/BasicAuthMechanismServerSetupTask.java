@@ -5,6 +5,16 @@
 
 package org.jboss.as.test.integration.web.security.authentication;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
+import java.io.File;
+import java.util.List;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -13,13 +23,6 @@ import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
-
-import java.io.File;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * Server setup task for test BasicAuthenticationMechanismPicketboxRemovedTestCase.
@@ -74,8 +77,9 @@ public class BasicAuthMechanismServerSetupTask extends SnapshotRestoreSetupTask 
         // core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
         ModelNode writeAttrOp4 = createOpNode("core-service=management/management-interface=http-interface", WRITE_ATTRIBUTE_OPERATION);
         writeAttrOp4.get(ClientConstants.NAME).set("http-upgrade");
-        writeAttrOp4.get(ClientConstants.VALUE).add("enabled", true);
-        writeAttrOp4.get(ClientConstants.VALUE).add("sasl-authentication-factory", getSecurityDomainName());
+        ModelNode mods = writeAttrOp4.get(ClientConstants.VALUE);
+        mods.get("enabled").set(true);
+        mods.get("sasl-authentication-factory").set(getSecurityDomainName());
 
         // core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
         ModelNode writeAttrOp5 = createOpNode("core-service=management/management-interface=http-interface", WRITE_ATTRIBUTE_OPERATION);
@@ -86,5 +90,6 @@ public class BasicAuthMechanismServerSetupTask extends SnapshotRestoreSetupTask 
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
+
     }
 }
