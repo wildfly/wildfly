@@ -334,7 +334,7 @@ public class JWTIdentityPropagationTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try (CLIWrapper cli =  new CLIWrapper(true)) {
-                rlsSetupDebugLog(cli); // rls tmp debug
+                setupTraceLogging(cli);
                 createFilesystemRealm(cli, EJB_SECURITY_DOMAIN, EJB_SECURITY_REALM, EJB_SECURITY_REALM_PATH, EJB_SECURITY_REALM_USER, EJB_SECURITY_REALM_ADMIN_ROLE);
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:add(auth-method=MP-JWT,outflow-security-domains=[%s])",
                         SINGLE_DEPLOYMENT + ".ear", EJB_SECURITY_DOMAIN)); // outflow config (corresponding trust config is below)
@@ -358,8 +358,22 @@ public class JWTIdentityPropagationTestCase {
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
 
-        // rls start
-        private void rlsSetupDebugLog(CLIWrapper cli){
+        /**
+         * Enable TRACE logging for the security/EJB packages needed to diagnose intermittent
+         * JWT identity propagation failures. The loggers are configured before the server reload
+         * so they are persisted in standalone.xml and active during EAR deployment processing.
+         *
+         * Key log entries to look for in server.log on failure:
+         * - "EJBDefaultSecurityDomainProcessor resolving Elytron security domain for EJB component"
+         *   with knownApplicationSecurityDomains.apply()=null indicates the race condition
+         * - "EJBSecurityDomainService starting" with applicationSecurityDomain=null indicates
+         *   the VirtualDomain path was taken instead of the BusinessDomain path
+         * - "IdentityInterceptor: running as identity from current security domain" shows the
+         *   TCCL-based domain and the identity used for outflow
+         * - "EJBComponent.getCallerSecurityIdentity" shows ejb.securityDomain and the returned
+         *   caller identity — if realmInfo is 'default/EMPTY_REALM' the wrong domain is used
+         */
+        private void setupTraceLogging(CLIWrapper cli) {
             cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:add()");
             cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:write-attribute(name=level, value=DEBUG)");
             cli.sendLine("/subsystem=logging/logger=org.jboss.as.ejb3:add()");
@@ -369,13 +383,13 @@ public class JWTIdentityPropagationTestCase {
             cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:add()");
             cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:write-attribute(name=level, value=TRACE)");
         }
-        private void rlsTearDownDebugLog(CLIWrapper cli){
+
+        private void tearDownTraceLogging(CLIWrapper cli) {
             cli.sendLine("/subsystem=logging/logger=org.wildfly.extension.elytron:remove()");
             cli.sendLine("/subsystem=logging/logger=org.jboss.as.ejb3:remove()");
             cli.sendLine("/subsystem=logging/logger=org.wildfly.security:remove()");
             cli.sendLine("/subsystem=logging/logger=org.jboss.as.ee:remove()");
         }
-        // rls end
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -394,7 +408,7 @@ public class JWTIdentityPropagationTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", ANOTHER_EJB_SECURITY_DOMAIN));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", ANOTHER_EJB_SECURITY_REALM));
 
-                rlsTearDownDebugLog(cli); // rls debug
+                tearDownTraceLogging(cli);
             }
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }

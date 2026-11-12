@@ -8,6 +8,7 @@ package org.jboss.as.ejb3.deployment;
 import static java.security.AccessController.doPrivileged;
 import static org.wildfly.security.auth.server.SecurityDomain.unregisterClassLoader;
 import static org.wildfly.security.manager.WildFlySecurityManager.isChecking;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 import java.security.PrivilegedAction;
 import java.util.function.BiFunction;
@@ -58,6 +59,14 @@ public class EJBSecurityDomainService implements Service<Void> {
         final ClassLoader classLoader = module.getClassLoader();
 
         ApplicationSecurityDomain applicationSecurityDomain = this.applicationSecurityDomain.getOptionalValue();
+        if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+            EjbLogger.ROOT_LOGGER.trace("EJBSecurityDomainService starting"
+                    + " deployment=" + deploymentName
+                    + " classLoader=" + classLoader
+                    + " applicationSecurityDomain=" + (applicationSecurityDomain != null
+                        ? "non-null, securityDomain=" + applicationSecurityDomain.getSecurityDomain()
+                        : "null — will use direct securityDomain injector (virtual domain path)"));
+        }
         if (applicationSecurityDomain != null) {
             BiFunction<String, ClassLoader, Registration> securityFunction = applicationSecurityDomain.getSecurityFunction();
             if (securityFunction != null) {
@@ -66,6 +75,12 @@ public class EJBSecurityDomainService implements Service<Void> {
             }
         } else {
             final SecurityDomain securityDomain = this.securityDomain.getValue(); // At least one must be injected.
+            if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+                EjbLogger.ROOT_LOGGER.trace("EJBSecurityDomainService registering securityDomain with classLoader directly (virtual domain path)"
+                        + " deployment=" + deploymentName
+                        + " securityDomain=" + securityDomain
+                        + " classLoader=" + classLoader);
+            }
 
             if (isChecking()) {
                 doPrivileged((PrivilegedAction<Void>) () -> {

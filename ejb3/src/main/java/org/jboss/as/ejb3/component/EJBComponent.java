@@ -608,11 +608,19 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             return !identity.isAnonymous();
         }
         Roles roles = identity.getRoles("ejb", true);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("EJBComponent.checkCallerSecurityIdentityRole"
+                    + " component=" + getComponentName()
+                    + " roleName=" + roleName
+                    + " identity.principal=" + identity.getPrincipal().getName()
+                    + " identity.anonymous=" + identity.isAnonymous()
+                    + " roles=" + roles);
+        }
         if(roles != null) {
             if(roles.contains(roleName)) {
                 if (ROOT_LOGGER.isTraceEnabled()) {
-                    ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: " + roleName
-                            + "   found in identity.roles   principal: " + identity.getPrincipal().getName());
+                    ROOT_LOGGER.trace("EJBComponent.checkCallerSecurityIdentityRole: role '" + roleName
+                            + "' found for principal " + identity.getPrincipal().getName());
                 }
                 return true;
             }
@@ -622,9 +630,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
                     for (String role : roles) {
                         if (linked.contains(role)) {
                             if (ROOT_LOGGER.isTraceEnabled()) {
-                                ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole roleName: "
-                                        + roleName + "  found in securityMetaData.getSecurityRoleLinks(),"
-                                        + "  runAsPrincipal: " + securityMetaData.getRunAsPrincipal());
+                                ROOT_LOGGER.trace("EJBComponent.checkCallerSecurityIdentityRole: role '" + roleName
+                                        + "' found via securityRoleLinks for principal " + identity.getPrincipal().getName());
                             }
                             return true;
                         }
@@ -633,8 +640,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             }
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: "
-                    + roleName + "  no role found    Principal: " + identity.getPrincipal().getName());
+            ROOT_LOGGER.trace("EJBComponent.checkCallerSecurityIdentityRole: role '" + roleName
+                    + "' not found for principal " + identity.getPrincipal().getName()
+                    + " anonymous=" + identity.isAnonymous());
         }
         return false;
     }
@@ -642,18 +650,29 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private SecurityIdentity getCallerSecurityIdentity() {
         InvocationType invocationType = CurrentInvocationContext.get().getPrivateData(InvocationType.class);
         boolean isRemote = invocationType != null && invocationType.equals(InvocationType.REMOTE);
+        final SecurityIdentity callerIdentity;
         if (legacyCompliantPrincipalPropagation && !isRemote) {
-            return (getIncomingRunAsIdentity() == null) ? securityDomain.getCurrentSecurityIdentity() : getIncomingRunAsIdentity();
+            callerIdentity = (getIncomingRunAsIdentity() == null) ? securityDomain.getCurrentSecurityIdentity() : getIncomingRunAsIdentity();
         } else {
             if (getIncomingRunAsIdentity() != null) {
-                return getIncomingRunAsIdentity();
+                callerIdentity = getIncomingRunAsIdentity();
             } else if (securityRequired) {
-                return securityDomain.getCurrentSecurityIdentity();
+                callerIdentity = securityDomain.getCurrentSecurityIdentity();
             } else {
                 // unsecured Jakarta Enterprise Beans
-                return securityDomain.getAnonymousSecurityIdentity();
+                callerIdentity = securityDomain.getAnonymousSecurityIdentity();
             }
         }
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("EJBComponent.getCallerSecurityIdentity"
+                    + " component=" + getComponentName()
+                    + " ejb.securityDomain=" + securityDomain
+                    + " caller.principal=" + callerIdentity.getPrincipal().getName()
+                    + " caller.anonymous=" + callerIdentity.isAnonymous()
+                    + " caller.anonymous=" + callerIdentity.isAnonymous()
+                    + " classLoader=" + Thread.currentThread().getContextClassLoader());
+        }
+        return callerIdentity;
     }
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {

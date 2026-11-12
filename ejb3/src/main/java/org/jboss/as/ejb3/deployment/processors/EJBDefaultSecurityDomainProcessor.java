@@ -77,6 +77,12 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
         // If we have a ServiceName for a security domain it should be used for all components.
         ServiceName elytronDomainServiceName = securityMetaData != null ? securityMetaData.getSecurityDomain() : null;
+        if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+            EjbLogger.ROOT_LOGGER.trace("EJBDefaultSecurityDomainProcessor processing deployment unit"
+                    + " du=" + deploymentUnit.getName()
+                    + " securityMetaData=" + securityMetaData
+                    + " elytronDomainServiceName=" + elytronDomainServiceName);
+        }
 
         final ServiceName ejbSecurityDomainServiceName = deploymentUnit.getServiceName().append(EJBSecurityDomainService.SERVICE_NAME);
 
@@ -109,6 +115,16 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                     String definedSecurityDomain = ejbComponentDescription.getDefinedSecurityDomain();
                     defaultRequired = defaultRequired || definedSecurityDomain == null;
                     ApplicationSecurityDomainConfig definedDomainMapping = definedSecurityDomain != null ? this.apply(definedSecurityDomain) : null;
+                    if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+                        EjbLogger.ROOT_LOGGER.trace("EJBDefaultSecurityDomainProcessor resolving Elytron security domain for EJB component"
+                                + " du=" + deploymentUnit.getName()
+                                + " ejb=" + ejbComponentDescription.getComponentName()
+                                + " definedSecurityDomain=" + definedSecurityDomain
+                                + " knownApplicationSecurityDomains.apply(definedSecurityDomain)=" + (definedDomainMapping == null
+                                    ? "null (definedSecurityDomain not registered in knownApplicationSecurityDomains — will fall through to legacy or virtual domain path)"
+                                    : "non-null (Elytron application-security-domain found)"));
+                    }
+
 
                     if (definedDomainMapping != null) {
                         if (selectedElytronDomainName == null) {
@@ -159,6 +175,15 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             }
 
             // If this Jakarta Enterprise Beans deployment is associated with an Elytron security domain, set up the security domain mapping
+            if (EjbLogger.ROOT_LOGGER.isTraceEnabled()) {
+                EjbLogger.ROOT_LOGGER.trace("EJBDefaultSecurityDomainProcessor selecting security domain path for EJB deployment"
+                        + " du=" + deploymentUnit.getName()
+                        + " selectedElytronDomainConfig=" + (selectedElytronDomainConfig != null
+                            ? "non-null — will use Elytron application-security-domain (expected path)"
+                            : "null — will use elytronDomainServiceName directly or legacy domain")
+                        + " elytronDomainServiceName=" + elytronDomainServiceName
+                        + " defaultRequired=" + defaultRequired);
+            }
             if (selectedElytronDomainConfig != null) {
                 final EJBSecurityDomainService ejbSecurityDomainService = new EJBSecurityDomainService(deploymentUnit);
 
