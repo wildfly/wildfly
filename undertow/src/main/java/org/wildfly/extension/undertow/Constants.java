@@ -58,6 +58,7 @@ public interface Constants {
     String SCHEME = "scheme";
     String MAX_POST_SIZE = "max-post-size";
     String DEFAULT_RESPONSE_CODE = "default-response-code";
+    String MEMORY_STORAGE_THRESHOLD = "memory-storage-threshold";
     /*Jakarta Server Pages config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
