@@ -184,7 +184,7 @@ public class Host implements Service<Host>, FilterLocation, SuspendableActivity 
             } else {
                 int statusCode = defaultResponseCode;
                 if (queueRequestsOnStart == null || Boolean.TRUE.equals(queueRequestsOnStart)) {
-                    UndertowLogger.ROOT_LOGGER.info("Queuing requests.");
+                    UndertowLogger.ROOT_LOGGER.debug("Queuing requests.");
                     statusCode = -1;
                 }
 
