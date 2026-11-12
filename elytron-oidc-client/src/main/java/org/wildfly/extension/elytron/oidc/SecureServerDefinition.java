@@ -36,6 +36,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -111,6 +112,13 @@ class SecureServerDefinition extends SimpleResourceDefinition {
             }
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
+
+            if (context.getProcessType() == ProcessType.DOMAIN_SERVER) {
+                // a server in a managed domain does not serve the management console, so there is no HTTP management
+                // interface the configuration could be published on. The resource is still valid configuration there,
+                // the configuration registered above is simply not exposed over HTTP.
+                return;
+            }
 
             ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
             InjectedValue<ExtensibleHttpManagement> extensibleHttpManagement = new InjectedValue<>();
