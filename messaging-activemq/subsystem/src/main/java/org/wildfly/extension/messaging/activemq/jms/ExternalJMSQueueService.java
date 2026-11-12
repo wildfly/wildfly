@@ -4,7 +4,6 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
-import java.util.Collection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
@@ -13,7 +12,6 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.api.core.client.TopologyMember;
-import org.apache.activemq.artemis.core.client.impl.TopologyMemberImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory;
@@ -71,6 +69,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
                     final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
                     final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
                     final ClientProtocolManagerFactory protocolManagerFactory = locator.getProtocolManagerFactory();
+                    sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
@@ -102,12 +101,8 @@ public class ExternalJMSQueueService implements Service<Queue> {
                         public void nodeDown(long eventUID, String nodeID) {
                         }
                     };
+                    config.createQueue(cf, managementQueue, queueName);
                     locator.addClusterTopologyListener(listener);
-                    sessionFactory = locator.createSessionFactory();
-                    Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
-                    if (members == null || members.isEmpty()) {
-                        config.createQueue(cf, managementQueue, queueName);
-                    }
                 } else {
                     config.createQueue(cf, managementQueue, queueName);
                 }
