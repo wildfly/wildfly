@@ -1,4 +1,4 @@
-# Schema-driven controller subsystems
+# Persistent-schema subsystems
 
 Use this route when a direct `org.jboss.as.controller.Extension` implementation registers the model itself and uses a `PersistentSubsystemSchema` enum for XML. Apply the shared [subsystem checklist](subsystem-development.md). The [Undertow extension](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowExtension.java) and [schema](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowSubsystemSchema.java) show the wiring in this tree.
 

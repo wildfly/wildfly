@@ -8,9 +8,9 @@ Read the guide that matches the affected code, then use the shared checklist bel
 
 | Route | Recognize it by | Guide |
 | --- | --- | --- |
-| `SubsystemExtension` and resource registrars | `SubsystemConfiguration`, `SubsystemPersistence`, `ManagementResourceRegistrar` | [Registrar-based subsystems](subsystem-pattern-new.md) |
-| Direct `Extension` with a schema enum | `initialize`/`initializeParsers`, `PersistentSubsystemSchema` | [Schema-driven controller subsystems](subsystem-pattern-intermediate.md) |
-| Direct `Extension` with versioned parser classes | `setSubsystemXmlMapping` per namespace, `PersistentResourceXMLParser` or manual StAX | [Versioned-parser subsystems](subsystem-pattern-legacy.md) |
+| `SubsystemExtension` and resource registrars | `SubsystemConfiguration`, `SubsystemPersistence`, `ManagementResourceRegistrar` | [Registrar-based subsystems](subsystem-registrar.md) |
+| Direct `Extension` with a schema enum | `initialize`/`initializeParsers`, `PersistentSubsystemSchema` | [Persistent-schema subsystems](subsystem-persistent-schema.md) |
+| Direct `Extension` with versioned parser classes | `setSubsystemXmlMapping` per namespace, `PersistentResourceXMLParser` or manual StAX | [Versioned-parser subsystems](subsystem-versioned-parsers.md) |
 
 ## Find the contract
 
@@ -19,11 +19,12 @@ Read the guide that matches the affected code, then use the shared checklist bel
 3. Locate the registered XML reader and writer, the current namespace or schema enum, any `src/main/resources/schema/*.xsd`, and test XML. Some subsystems use `SubsystemResourceXMLSchema`, some use `PersistentSubsystemSchema` or `PersistentResourceXMLParser`, and some have hand-written versioned parsers. Inspect actual registration before editing; a class name alone does not prove which parser or writer is active.
 4. Locate `ExtensionTransformerRegistration` or a subsystem transformer factory, including service registration, and search `src/test/` and `testsuite/` for the subsystem name, management addresses, and namespace. Follow the module's existing test harness and version targets.
 
-## Management change checklist
+## Implement and inspect a management change
 
 For each new or changed attribute, child resource, operation, default, capability, description, or persistence rule, verify:
 
-- The definition, validators, expression support, alternatives/requirements, access constraints, flags, defaults, add/write/remove behavior, runtime service updates, and capability references agree. For new cross-subsystem dependencies, check the declared capability reference or service descriptor rather than reaching into another subsystem's internal service name. Check the add operation and writes separately. For a child, check its registration and lifecycle; for an operation, check parameters, reply, handler, and whether it is runtime only.
+- The definition has the intended type, validators, expressions, alternatives/requirements, access constraints, flags, and default. Check add and write behavior separately, including the runtime service update.
+- Child resources have the intended registration and add/remove lifecycle. Operations have the intended parameters, reply, handler, and runtime-only behavior. For new cross-subsystem dependencies, check the declared capability reference or service descriptor rather than reaching into another subsystem's internal service name.
 - Management descriptions and localized property keys cover what clients can read or invoke. Tests assert the meaningful model and runtime behavior, including non-default values and failure cases.
 - Persistence matches intent: persistent configuration is parsed and written back; runtime-only attributes or operations do not accidentally enter XML or persisted model. A management-only change need not change XML if no persisted XML representation changes.
 - If the change touches a preview, community, or experimental feature, check the applicable stability on the extension, resources, attributes, operations, and XML schema. Make sure the intended server stability can register and parse the feature, and that a lower stability does not expose it accidentally.
@@ -36,7 +37,13 @@ For each new or changed attribute, child resource, operation, default, capabilit
 
 **XML namespace/schema version** identifies the syntax accepted and emitted for configuration. Find the current namespace and writer separately. A new XML element/attribute or changed XML meaning may require a new namespace, parser gating, and a corresponding XSD when the subsystem maintains XSDs. A management-only change does not itself require a namespace bump. Published old namespaces should retain their old grammar; never let a shared attribute list silently add a new field to old parsers. Conversely, changing only XML mapping need not imply a different management model version.
 
-Make the two decisions independently against the last release on the current stream. Inspect release tags, the subsystem's version constants, and parser/schema history with `git log <release-tag>..HEAD -- <subsystem-path>` and `git show <release-tag>:<path>`. If the management model version has already changed since that release, do not bump it again for another model change on the same stream; use the new version's compatibility boundary. Apply the same rule separately to the XML namespace/schema version: if it has already changed since that release, do not bump it again for another XML change. If a version has not changed since the release and the new contract needs a version change, bump it and add the required compatibility work. Where the current stream has no release tag yet, use the latest applicable preceding release as the baseline. In every case, check that new XML syntax is gated away from published old namespaces and that transformations cover the supported older model targets. Record the release tag and version comparison in the review.
+Make the two decisions independently against the last release on the current stream:
+
+1. Find the relevant release tag and compare the subsystem's model and schema version constants at that tag with current source, for example using `git log <release-tag>..HEAD -- <subsystem-path>` and `git show <release-tag>:<path>`. Where the current stream has no release tag yet, use the latest applicable preceding release as the baseline.
+2. If the management model version already changed since the baseline, do not bump it again for another model change on this stream; use its compatibility boundary. Apply the same rule independently to the XML namespace/schema version. Otherwise, decide whether the changed contract requires a version change and its compatibility work.
+3. If a shallow checkout lacks tags or history, obtain the relevant upstream tag and history before making a definitive version claim. The `-SNAPSHOT` project version alone does not establish the subsystem's release baseline. If the baseline remains unavailable, or it is unclear whether a prerelease tag counts, note the uncertainty in the PR description or review rather than asserting that a bump is or is not required.
+
+In every case, gate new XML syntax away from published old namespaces and check transformers for supported older model targets.
 
 ## Older model compatibility
 
@@ -52,10 +59,10 @@ Verify that any transformer registration is discoverable: check the `ExtensionTr
 
 ## XML compatibility
 
-For persistent XML changes, update the active reader and writer and gate new syntax to the intended namespace. Check both directions: current XML parses to the expected model, and the model marshals to current XML that parses again. Test an old namespace with its old configuration and, where relevant, that it rejects new syntax. If versioned parsers share `ALL_ATTRIBUTES` or equivalent, check old versions explicitly. Update the matching XSD when the subsystem has schema files, and validate current XML against it; retain old schema behavior. XML changes and management model changes have separate version decisions even when both are required by one feature.
+For persistent XML changes:
+
+1. Update the active reader and writer. Check that current XML parses to the expected model and the model marshals to current XML that parses again.
+2. Gate new syntax to the intended namespace. Test an old namespace with its old configuration and, where relevant, that it rejects new syntax. If versioned parsers share `ALL_ATTRIBUTES` or equivalent, check old versions explicitly.
+3. Update the matching XSD when the subsystem has schema files and validate current XML against it; retain old schema behavior. Decide the XML and management model versions separately even when one feature affects both.
 
 If the change affects a packaged default configuration, also check the [distribution XML validation tests](../dist/src/test/java/org/wildfly/dist/subsystem/xml/StandardConfigsXMLValidationUnitTestCase.java) and [XSD validation test](../dist/src/test/java/org/wildfly/dist/subsystem/xml/XSDValidationUnitTestCase.java), or their preview counterparts when applicable. These complement the module's subsystem tests; they do not replace old-namespace checks.
-
-## Review finding format
-
-Point to the changed definition or parser/registration line, name the missing compatibility step and the affected older model or namespace, and explain the observable failure or silent behavior change. Ask the author to add the version/transformer/parser/XSD/test change, or provide evidence that the existing contract already handles it. Do not treat a green module or integration run as a substitute for this assessment.
