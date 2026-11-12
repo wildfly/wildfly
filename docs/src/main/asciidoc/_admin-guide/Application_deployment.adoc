@@ -767,6 +767,67 @@ different, the server is using the file you want to replace. You should
 undeploy the deployment, replace the content, and then deploy again. Or
 you can stop the server, replace the deployment and deploy again.
 
+[[deployment-content-source-restrictions]]
+== Deployment content source restrictions
+
+When a deployment operation reads content from a URL or filesystem path
+using the server process permissions, WildFly applies some default restrictions
+to configure the permitted sources.
+
+By default, sources using the `http`, `https`, `file`, and `ftp` schemes
+are allowed, except files inside protected server directories such as those
+defined by `jboss.server.config.dir`, `jboss.server.data.dir`,
+`jboss.server.log.dir`, and `jboss.server.temp.dir` properties. There is no default
+file-extension restriction: `.war`, `.jar`, and other extensions are
+allowed, subject to the source restrictions.
+HTTP and HTTPS sources resolving to link-local addresses are also blocked
+by default.
+
+Two system properties control this policy. Configure them on the
+standalone or managed domain to override the defaults.
+
+=== Configuring allowed sources
+
+The `jboss.deployment.source.allow` system property is unset by default.
+Set it to a Java regular expression to replace the default scheme and
+directory restrictions. The expression must match the entire source URL
+or resolved filesystem path.
+
+For example, starting the server with the following JVM option permits only sources ending in
+`.war`:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow=".*[.]war"
+----
+
+This permits URLs in the deployment operations as `https://example.org/app.war` but rejects
+`https://example.org/app.jar`.
+
+=== Allowing link-local addresses
+
+The `jboss.deployment.source.allow.link-local.address` system property
+defaults to `false`. HTTP and HTTPS sources resolving to link-local
+addresses are blocked, even when they match a configured
+`jboss.deployment.source.allow` expression.
+
+To allow these sources, set the following JVM option:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow.link-local.address=true
+----
+
+For example, this permits `http://169.254.10.20/app.war`, provided it also
+matches any configured `jboss.deployment.source.allow` expression.
+
+[IMPORTANT]
+====
+Use overrides carefully. Replacing the default source restrictions can
+allow users to upload sensitive content files to the server, which can be exposed back
+by using read-content operations.
+====
+
 :leveloffset: +1
 
 include::Deployment_Overlays.adoc[]
