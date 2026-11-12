@@ -172,6 +172,16 @@ The link:Installation_Guide{outfilesuffix}[Installation Guide]
 helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide
 we'll focus on the common approach of installing the download zip of standard WildFly.
 
+[[creating-new-jakarta-ee-application]]
+=== Creating a New Jakarta EE Application
+
+The Jakarta EE Starter https://start.jakarta.ee simplifies the creation of new projects based on Jakarta EE.
+Following some simple steps can get a basic Jakarta EE application with WildFly.
+
+This tutorial can be a complement to the guide: https://www.wildfly.org/get-started/ .
+
+NOTE: For experienced developers, it may be wise to use the Maven archetype to create a project instead of a UI like Jakarta EE Starter. Junior developers may find the starter to be a good fit for proof of concept (POC).
+
 [[download]]
 === Download
 
