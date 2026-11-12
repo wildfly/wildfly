@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -44,7 +44,7 @@
             <!--Optional:-->
             <is-same-rm-override>true</is-same-rm-override>
             <!--Optional:-->
-            <interleaving>false</interleaving>
+            <interleaving/>
             <!--Optional:-->
             <no-tx-separate-pools />
             <!--Optional:-->
@@ -79,9 +79,7 @@
           <!--Optional:-->
           <recovery no-recovery="false">
             <!--Optional:-->
-            <recover-credential user-name="userName" password="pwd">
-              <!--Optional:-->
-            </recover-credential>
+            <recover-credential user-name="userName" password="pwd"/>
             <!--Optional:-->
             <recover-plugin class-name="aClass">
               <config-property name="config3">value</config-property>
