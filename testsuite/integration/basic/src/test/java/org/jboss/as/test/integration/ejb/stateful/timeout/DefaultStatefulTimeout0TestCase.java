@@ -7,21 +7,21 @@ package org.jboss.as.test.integration.ejb.stateful.timeout;
 
 import jakarta.ejb.NoSuchEJBException;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the default stateful timeout value 0 configured in the server works.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DefaultStatefulTimeout0TestCase.ServerSetup.class)
 public class DefaultStatefulTimeout0TestCase extends StatefulTimeoutTestBase2 {
     private static final int CONFIGURED_TIMEOUT = 0;
@@ -77,7 +77,7 @@ public class DefaultStatefulTimeout0TestCase extends StatefulTimeoutTestBase2 {
      */
     @Test
     public void testNoTimeoutByApplication() throws Exception {
-        Assert.assertEquals(CONFIGURED_TIMEOUT, readAttribute().asLong());
+        Assertions.assertEquals(CONFIGURED_TIMEOUT, readAttribute().asLong());
 
         TimeoutNotConfiguredBean timeoutNotConfiguredBean = lookup(TimeoutNotConfiguredBean.class);
         try {
@@ -90,7 +90,7 @@ public class DefaultStatefulTimeout0TestCase extends StatefulTimeoutTestBase2 {
         //re-configure the server default-stateful-bean-session-timeout to 600,000, and then 0 milliseconds,
         try {
             writeAttribute(600_000);
-            Assert.assertEquals(600_000, readAttribute().asLong());
+            Assertions.assertEquals(600_000, readAttribute().asLong());
         } finally {
             writeAttribute(CONFIGURED_TIMEOUT);
         }

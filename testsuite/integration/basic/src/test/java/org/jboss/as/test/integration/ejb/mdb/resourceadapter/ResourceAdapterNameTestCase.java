@@ -12,7 +12,7 @@ import jakarta.jms.Queue;
 import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -24,9 +24,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.PropertyPermission;
 
@@ -35,7 +35,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 /**
  * User: jpai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ResourceAdapterNameTestCase.JmsQueueSetup.class})
 public class ResourceAdapterNameTestCase {
 
@@ -94,8 +94,8 @@ public class ResourceAdapterNameTestCase {
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
         // test the reply
         final TextMessage textMessage = (TextMessage) reply;
-        Assert.assertNotNull(textMessage);
-        Assert.assertEquals("Unexpected reply message on reply queue: " + this.replyQueue, OverriddenResourceAdapterNameMDB.REPLY, textMessage.getText());
+        Assertions.assertNotNull(textMessage);
+        Assertions.assertEquals(OverriddenResourceAdapterNameMDB.REPLY, textMessage.getText(), "Unexpected reply message on reply queue: " + this.replyQueue);
     }
 
 }

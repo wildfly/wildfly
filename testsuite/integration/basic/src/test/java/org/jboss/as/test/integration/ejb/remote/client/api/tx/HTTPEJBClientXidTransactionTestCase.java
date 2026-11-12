@@ -20,7 +20,7 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -36,11 +36,12 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
@@ -53,7 +54,7 @@ import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvid
  * @author Jaikiran Pai
  * @author Flavia Rainone
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({GracefulTxnShutdownSetup.class})
 public class HTTPEJBClientXidTransactionTestCase {
@@ -102,7 +103,7 @@ public class HTTPEJBClientXidTransactionTestCase {
      *
      * @throws Exception
      */
-    @BeforeClass
+    @BeforeAll
     public static void beforeTestClass() throws Exception {
         // These system properties are required or else we end up picking up JTS transaction manager,
         // which is not what we want
@@ -134,7 +135,7 @@ public class HTTPEJBClientXidTransactionTestCase {
         AuthenticationContext.getContextManager().setGlobalDefault(context);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         AuthenticationContext.getContextManager().setGlobalDefault(old);
     }
@@ -184,8 +185,8 @@ public class HTTPEJBClientXidTransactionTestCase {
 
         // fetch the batch and make sure it contains the right state
         final Batch batchAfterCreation = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch was null after creation", batchAfterCreation);
-        Assert.assertNull("Unexpected steps in batch, after creation", batchAfterCreation.getStepNames());
+        Assertions.assertNotNull(batchAfterCreation, "Batch was null after creation");
+        Assertions.assertNull(batchAfterCreation.getStepNames(), "Unexpected steps in batch, after creation");
 
         // add step1 to the batch
         final String step1 = "Simple step1";
@@ -202,8 +203,8 @@ public class HTTPEJBClientXidTransactionTestCase {
 
         // fetch the batch and make sure it contains the right state
         final Batch batchAfterStep1 = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after step1 was null", batchAfterStep1);
-        Assert.assertEquals("Unexpected steps in batch, after step1", successFullyCompletedSteps, batchAfterStep1.getStepNames());
+        Assertions.assertNotNull(batchAfterStep1, "Batch after step1 was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterStep1.getStepNames(), "Unexpected steps in batch, after step1");
 
 
         // now add a failing step2
@@ -211,15 +212,15 @@ public class HTTPEJBClientXidTransactionTestCase {
         txManager.begin();
         try {
             batchBean.appExceptionFailingStep2(batchName, appExceptionStep2);
-            Assert.fail("Expected an application exception");
+            Assertions.fail("Expected an application exception");
         } catch (SimpleAppException sae) {
             // expected
             txManager.rollback();
         }
 
         final Batch batchAfterAppExceptionStep2 = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after app exception step2 was null", batchAfterAppExceptionStep2);
-        Assert.assertEquals("Unexpected steps in batch, after app exception step2", successFullyCompletedSteps, batchAfterAppExceptionStep2.getStepNames());
+        Assertions.assertNotNull(batchAfterAppExceptionStep2, "Batch after app exception step2 was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterAppExceptionStep2.getStepNames(), "Unexpected steps in batch, after app exception step2");
 
         // now add a successful step2
         final String step2 = "Simple Step 2";
@@ -232,8 +233,8 @@ public class HTTPEJBClientXidTransactionTestCase {
         }
         // don't yet commit and try and retrieve the batch
         final Batch batchAfterStep2BeforeCommit = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after step2, before commit was null", batchAfterStep2BeforeCommit);
-        Assert.assertEquals("Unexpected steps in batch, after step2 before commit", successFullyCompletedSteps, batchAfterStep2BeforeCommit.getStepNames());
+        Assertions.assertNotNull(batchAfterStep2BeforeCommit, "Batch after step2, before commit was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterStep2BeforeCommit.getStepNames(), "Unexpected steps in batch, after step2 before commit");
 
         // now commit
         txManager.commit();
@@ -242,8 +243,8 @@ public class HTTPEJBClientXidTransactionTestCase {
 
         // now retrieve and check the batch
         final Batch batchAfterStep2 = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after step2 was null", batchAfterStep2);
-        Assert.assertEquals("Unexpected steps in batch, after step2", successFullyCompletedSteps, batchAfterStep2.getStepNames());
+        Assertions.assertNotNull(batchAfterStep2, "Batch after step2 was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterStep2.getStepNames(), "Unexpected steps in batch, after step2");
 
         // now add independent Step3 (i.e. the bean method has a REQUIRES_NEW semantics, so that the
         // client side tx doesn't play a role)
@@ -257,8 +258,8 @@ public class HTTPEJBClientXidTransactionTestCase {
 
         // now retrieve and check the batch
         final Batch batchAfterStep3 = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after step3 was null", batchAfterStep3);
-        Assert.assertEquals("Unexpected steps in batch, after step3", successFullyCompletedSteps, batchAfterStep3.getStepNames());
+        Assertions.assertNotNull(batchAfterStep3, "Batch after step3 was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterStep3.getStepNames(), "Unexpected steps in batch, after step3");
 
         // now add step4 but don't commit
         final String step4 = "Simple Step 4";
@@ -269,7 +270,7 @@ public class HTTPEJBClientXidTransactionTestCase {
         final String sysExceptionStep2 = "Sys exception step2";
         try {
             batchBean.systemExceptionFailingStep2(batchName, sysExceptionStep2);
-            Assert.fail("Expected a system exception");
+            Assertions.fail("Expected a system exception");
         } catch (Exception e) {
             // expected
             //Assert.assertEquals("Unexpected transaction state", Status.STATUS_ROLLEDBACK, userTransaction.getStatus());
@@ -278,8 +279,8 @@ public class HTTPEJBClientXidTransactionTestCase {
 
         // now retrieve and check the batch
         final Batch batchAfterSysException = batchRetriever.fetchBatch(batchName);
-        Assert.assertNotNull("Batch after system exception was null", batchAfterSysException);
-        Assert.assertEquals("Unexpected steps in batch, after system exception", successFullyCompletedSteps, batchAfterSysException.getStepNames());
+        Assertions.assertNotNull(batchAfterSysException, "Batch after system exception was null");
+        Assertions.assertEquals(successFullyCompletedSteps, batchAfterSysException.getStepNames(), "Unexpected steps in batch, after system exception");
 
     }
 
@@ -372,7 +373,7 @@ public class HTTPEJBClientXidTransactionTestCase {
         txManager.begin();
         try {
             cmtRemoteBean.mandatoryTxOp();
-            Assert.fail("Exception expected, server is shutdown");
+            Assertions.fail("Exception expected, server is shutdown");
         } catch (Exception expected) {
             // expected
         } finally {

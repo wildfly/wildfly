@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -15,7 +15,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -24,9 +25,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import java.security.Principal;
@@ -35,9 +36,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests that when the default security domain is disabled at EJB3 subsystem level then the security API
@@ -46,9 +47,9 @@ import static org.junit.Assert.fail;
  * @author Jaikiran Pai
  * @see https://issues.jboss.org/browse/AS7-5581
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.DisableDefaultSecurityDomainSetupTask.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
     private static final Logger LOGGER = Logger.getLogger(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class);
 
@@ -114,7 +115,7 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClasses(DisableDefaultSecurityDomainSetupTask.class, AbstractMgmtTestBase.class)
-                .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
+                .addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsManifestResource(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class.getPackage(), "MANIFEST.MF-no-default-security-domain", "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
@@ -129,8 +130,8 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
         try {
             ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) initialContext.lookup("ejb:/" + MODULE_NAME + "//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
             final Principal principal = bean.getCallerPrincipal();
-            assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
-                    principal);
+            assertNotNull(principal,
+                    "EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.");
             assertEquals(ANONYMOUS, principal.getName());
         } catch (RuntimeException e) {
             LOGGER.error("EJB 3.1 FR 17.6.5", e);

@@ -6,14 +6,14 @@ package org.jboss.as.test.integration.ejb.log;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InvalidTransactionAttributeTestCase {
 
     private static final String ARCHIVE_NAME = "InvalidTransactionAttribute";
@@ -52,8 +52,8 @@ public class InvalidTransactionAttributeTestCase {
             try {
                 System.setOut(oldOut);
                 String output = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-                Assert.assertFalse(output, output.contains("WFLYEJB0463"));
-                Assert.assertFalse(output, output.contains("ERROR"));
+                Assertions.assertFalse(output.contains("WFLYEJB0463"), output);
+                Assertions.assertFalse(output.contains("ERROR"), output);
             } finally {
                 deployer.undeploy("invalidtransactionattribute");
             }

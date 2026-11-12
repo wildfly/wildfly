@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -26,8 +25,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-providers} attribute works as expected.
@@ -40,6 +42,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyProvidersTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -61,7 +64,7 @@ public class ResteasyProvidersTestCase extends AbstractResteasyAttributeTest {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -69,15 +72,15 @@ public class ResteasyProvidersTestCase extends AbstractResteasyAttributeTest {
                             .request()
                             .post(Entity.json(new SimpleText("default")))
             ) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final SimpleText text = response.readEntity(SimpleText.class);
-                Assert.assertEquals("default", text.getText());
+                Assertions.assertEquals("default", text.getText());
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkUnregisteredProvider() throws Exception {
         final ModelNode providers = new ModelNode().setEmptyList();
         providers.add(UnregisteredProvider.class.getName());
@@ -89,8 +92,8 @@ public class ResteasyProvidersTestCase extends AbstractResteasyAttributeTest {
                             .request()
                             .post(Entity.json(new SimpleText("abort")))
             ) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals(UnregisteredProvider.class.getName(), response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(UnregisteredProvider.class.getName(), response.readEntity(String.class));
             }
         }
     }

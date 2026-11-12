@@ -8,20 +8,20 @@ package org.jboss.as.test.integration.mail.providers;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import jakarta.mail.Provider;
 import jakarta.mail.Session;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MailSessionCustomProviderTestCase {
 
     @Resource(lookup = "java:jboss/mail/Default")
@@ -44,9 +44,9 @@ public class MailSessionCustomProviderTestCase {
 
     @Test
     public void testCustomProvidersInApplication() {
-        Assert.assertNotNull(sessionOne);
-        Assert.assertNotNull(sessionTwo);
-        Assert.assertNotNull(sessionThree);
+        Assertions.assertNotNull(sessionOne);
+        Assertions.assertNotNull(sessionTwo);
+        Assertions.assertNotNull(sessionThree);
 
         List<Session> sessions = List.of(sessionOne, sessionTwo, sessionThree);
 
@@ -63,7 +63,7 @@ public class MailSessionCustomProviderTestCase {
                 }
             }
 
-            Assert.assertTrue("The expected custom providers cannot be found on the default Mail Session", found == 2);
+            Assertions.assertTrue(found == 2, "The expected custom providers cannot be found on the default Mail Session");
         }
     }
 }

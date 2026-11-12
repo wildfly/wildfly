@@ -8,7 +8,7 @@ package org.jboss.as.test.integration.ejb.transaction.bmt.timeout;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.transactions.RemoteLookups;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
@@ -18,10 +18,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 import java.util.PropertyPermission;
@@ -34,7 +35,7 @@ import jakarta.transaction.TransactionManager;
  * BMT test where transaction timeout is involved.
  * The bean uses mock XAResources to simulate to get 2PC happen.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StatelessTimeoutTestCase {
 
     @ArquillianResource
@@ -56,7 +57,7 @@ public class StatelessTimeoutTestCase {
         return jar;
     }
 
-    @Before
+    @BeforeEach
     public void startUp() throws NamingException {
         checker.resetAll();
     }
@@ -82,8 +83,8 @@ public class StatelessTimeoutTestCase {
         StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(3, 1);
 
-        Assert.assertEquals("Two times two XA resources - for each commit happened", 4, checker.getCommitted());
-        Assert.assertEquals("One time two XA resources - for each rollback happened", 2, checker.getRolledback());
+        Assertions.assertEquals(4, checker.getCommitted(), "Two times two XA resources - for each commit happened");
+        Assertions.assertEquals(2, checker.getRolledback(), "One time two XA resources - for each rollback happened");
     }
 
     /**
@@ -97,8 +98,8 @@ public class StatelessTimeoutTestCase {
         StatelessBmtBean bean = RemoteLookups.lookupModule(initCtx, StatelessBmtBean.class);
         bean.testTransaction(4, 3);
 
-        Assert.assertEquals("One time two XA resources - for each commit happened", 2, checker.getCommitted());
-        Assert.assertEquals("Three times two XA resources - for each rollback happened", 6, checker.getRolledback());
+        Assertions.assertEquals(2, checker.getCommitted(), "One time two XA resources - for each commit happened");
+        Assertions.assertEquals(6, checker.getRolledback(), "Three times two XA resources - for each rollback happened");
     }
 
     /**
@@ -119,13 +120,13 @@ public class StatelessTimeoutTestCase {
 
         int transactionTimeoutToSet = 42;
         tm.setTransactionTimeout(transactionTimeoutToSet);
-        Assert.assertEquals("Expecting transaction timeout has to be the same as it was written by setter",
-                transactionTimeoutToSet, getTransactionTimeout(tm));
+        Assertions.assertEquals(transactionTimeoutToSet,
+                getTransactionTimeout(tm), "Expecting transaction timeout has to be the same as it was written by setter");
 
         bean.testTransaction(0, 0);
 
-        Assert.assertEquals("The transaction timeout has to be the same as before BMT call",
-            transactionTimeoutToSet, getTransactionTimeout(tm));
+        Assertions.assertEquals(transactionTimeoutToSet,
+            getTransactionTimeout(tm), "The transaction timeout has to be the same as before BMT call");
     }
 
     private int getTransactionTimeout(TransactionManager tmTimeout) {

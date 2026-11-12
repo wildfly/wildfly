@@ -5,13 +5,13 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,9 +20,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class Hibernate4NativeAPIProviderTestCase {
     private static final String ARCHIVE_NAME = "hibernate4native_test";
 
@@ -58,7 +58,7 @@ public class Hibernate4NativeAPIProviderTestCase {
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
@@ -117,7 +117,7 @@ public class Hibernate4NativeAPIProviderTestCase {
             Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ");
             Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide");
             Student st = sfsb.getStudent(s1.getStudentId());
-            assertTrue("name read from hibernate session is MADHUMITA", "MADHUMITA".equals(st.getFirstName()));
+            assertTrue("MADHUMITA".equals(st.getFirstName()), "name read from hibernate session is MADHUMITA");
         } finally {
             sfsb.cleanup();
         }

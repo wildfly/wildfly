@@ -6,8 +6,8 @@
 package org.jboss.as.test.integration.ejb.singleton.concurrency;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import jakarta.ejb.ConcurrentAccessTimeoutException;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -30,16 +30,16 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testcase for testing the basic functionality of an EJB3 singleton session bean.
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SingletonBeanTestCase.AllowPropertyReplacementSetup.class)
 public class SingletonBeanTestCase {
 
@@ -149,7 +149,7 @@ public class SingletonBeanTestCase {
         }
         for (int i = 0; i < NUM_THREADS; i++) {
             String result = results[i].get(10, TimeUnit.SECONDS);
-            Assert.assertEquals("Unexpected value from singleton bean", String.valueOf(i), result);
+            Assertions.assertEquals(String.valueOf(i), result, "Unexpected value from singleton bean");
         }
     }
 
@@ -190,10 +190,10 @@ public class SingletonBeanTestCase {
             }
         }
         // only one call succeeded, so count should be 1
-        Assert.assertEquals("Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ", 1, this.longWritesSingletonBean.getCount());
+        Assertions.assertEquals(1, this.longWritesSingletonBean.getCount(), "Unexpected count on singleton bean after invocation on method with WRITE lock semantic: ");
 
         for (Throwable t : throwables) {
-            assertTrue(t.toString(), t instanceof ConcurrentAccessTimeoutException);
+            assertTrue(t instanceof ConcurrentAccessTimeoutException, t.toString());
         }
 
         assertEquals(1, passed.size());

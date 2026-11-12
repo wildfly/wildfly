@@ -4,6 +4,9 @@
  */
 package org.jboss.as.test.integration.management.cli;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.wildfly.test.management.cli.CliProcessWrapper;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +18,7 @@ import org.aesh.complete.AeshCompleteOperation;
 import org.aesh.readline.completion.Completion;
 import org.aesh.readline.terminal.formatting.TerminalString;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandLineException;
@@ -27,21 +30,19 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  *
  * @author jdenise@redhat.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SecurityCommandsTestCase {
 
     private static final String TEST_SOCKET_BINDING="foo";
@@ -79,10 +80,10 @@ public class SecurityCommandsTestCase {
     private static File clientKeyStore;
     private static File clientCertificate;
 
-    @ClassRule
-    public static final TemporaryFolder temporaryUserHome = new TemporaryFolder();
+    @TempDir
+    public static File temporaryUserHome;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
@@ -134,7 +135,7 @@ public class SecurityCommandsTestCase {
 
     }
 
-    @After
+    @AfterEach
     public void cleanupTest() throws Exception {
         try {
             removeTLS();
@@ -144,7 +145,7 @@ public class SecurityCommandsTestCase {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         if (serverKeyStore != null) {
             serverKeyStore.delete();
@@ -176,7 +177,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
 
@@ -191,7 +192,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
 
@@ -205,7 +206,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
         {
@@ -218,7 +219,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
         {
@@ -230,7 +231,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
         {
@@ -251,7 +252,7 @@ public class SecurityCommandsTestCase {
             } finally {
                 ctx.handle("/subsystem=elytron/key-store=foo:remove()");
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
 
@@ -282,7 +283,7 @@ public class SecurityCommandsTestCase {
             } finally {
                 ctx.handle("/subsystem=elytron/key-store=foo:remove()");
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
 
@@ -297,7 +298,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
 
@@ -312,7 +313,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
     }
@@ -329,7 +330,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
         {
@@ -341,7 +342,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
         {
@@ -353,7 +354,7 @@ public class SecurityCommandsTestCase {
                 failed = true;
                 // XXX OK, expected
             }
-            Assert.assertTrue(failed);
+            Assertions.assertTrue(failed);
             assertEmptyModel(null);
         }
     }
@@ -379,7 +380,7 @@ public class SecurityCommandsTestCase {
         } catch (Exception ex) {
             failed = true;
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
 
         // Call the command without validation and no-reload.
         ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
@@ -401,7 +402,7 @@ public class SecurityCommandsTestCase {
             // Check that the trustStore has been generated.
             genTrustStore = new File(TestSuiteEnvironment.getSystemProperty("jboss.home") + File.separator + "standalone"
                     + File.separator + "configuration" + File.separator + GENERATED_TRUST_STORE_FILE_NAME);
-            Assert.assertTrue(genTrustStore.exists());
+            Assertions.assertTrue(genTrustStore.exists());
 
             // Check the model contains the provided values.
             checkModel(null, SERVER_KEY_STORE_FILE, Util.JBOSS_SERVER_CONFIG_DIR,
@@ -442,15 +443,15 @@ public class SecurityCommandsTestCase {
                     + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
                     + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
                     + " --add-https-listener --https-listener-name=" + listenerName + " --https-listener-socket-binding-name=" + TEST_SOCKET_BINDING);
-            Assert.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
-            Assert.assertTrue(getHTTPSListeners().contains(listenerName));
+            Assertions.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+            Assertions.assertTrue(getHTTPSListeners().contains(listenerName));
             ctx.handle("security disable-ssl-http-server --https-listener-name=" + listenerName);
-            Assert.assertTrue(getHTTPSListeners().contains(listenerName));
-            Assert.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
-            Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+            Assertions.assertTrue(getHTTPSListeners().contains(listenerName));
+            Assertions.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
+            Assertions.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
             ctx.handle("security disable-ssl-http-server --remove-https-listener --https-listener-name=" + listenerName);
-            Assert.assertFalse(getHTTPSListeners().contains(listenerName));
-            Assert.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
+            Assertions.assertFalse(getHTTPSListeners().contains(listenerName));
+            Assertions.assertTrue(getHTTPSListeners().contains(Util.HTTPS));
         } finally {
             ctx.handle("/socket-binding-group=standard-sockets/socket-binding=" + TEST_SOCKET_BINDING + ":remove");
         }
@@ -463,11 +464,11 @@ public class SecurityCommandsTestCase {
                 + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to="
                 + Util.JBOSS_SERVER_CONFIG_DIR + " --no-reload"
                 + " --override-ssl-context --add-https-listener");
-        Assert.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
-        Assert.assertNotEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+        Assertions.assertNotNull(getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+        Assertions.assertNotEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
         ctx.handle("security disable-ssl-http-server --https-listener-name=" + listenerName);
-        Assert.assertTrue(getHTTPSListeners().contains(listenerName));
-        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
+        Assertions.assertTrue(getHTTPSListeners().contains(listenerName));
+        Assertions.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, DEFAULT_SERVER, listenerName));
     }
 
     @Test
@@ -494,7 +495,7 @@ public class SecurityCommandsTestCase {
     public void testEnableSSLInteractiveNoConfirm() throws Exception {
         assertEmptyModel(null);
         CliProcessWrapper cli = new CliProcessWrapper().
-                addJavaOption("-Duser.home=" + temporaryUserHome.getRoot().toPath().toString()).
+                addJavaOption("-Duser.home=" + temporaryUserHome.toPath().toString()).
                 addCliArgument("--controller=remote+http://"
                         + TestSuiteEnvironment.getServerAddress() + ":"
                         + TestSuiteEnvironment.getServerPort()).
@@ -502,52 +503,52 @@ public class SecurityCommandsTestCase {
         try {
             cli.executeInteractive();
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload", "Key-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Password"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload", "Key-store file name"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Password"));
 
             //Loop until DN has been provided.
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is your first and last name? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is your first and last name? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("n", "What is your first and last name? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("foo", "What is the name of your organizational unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("bar", "What is the name of your organization? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("foofoo", "What is the name of your City or Locality? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("barbar", "What is the name of your State or Province? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("toto", "What is the two-letter country code for this unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("TO", "Is CN=foo, OU=bar, O=foofoo, L=barbar, ST=toto, C=TO correct y/n [y]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("n", "What is your first and last name? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("foo", "What is the name of your organizational unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("bar", "What is the name of your organization? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("foofoo", "What is the name of your City or Locality? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("barbar", "What is the name of your State or Province? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("toto", "What is the two-letter country code for this unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("TO", "Is CN=foo, OU=bar, O=foofoo, L=barbar, ST=toto, C=TO correct y/n [y]"));
             //Loop until value is valid.
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("Hello", "Validity"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("Hello", "Validity"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Enable SSL Mutual Authentication"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Enable SSL Mutual Authentication"));
             cli.clearOutput();
             // Loop until value is y or n.
-            Assert.assertTrue(cli.pushLineAndWaitForResults("TT", "Enable SSL Mutual Authentication"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("TT", "Enable SSL Mutual Authentication"));
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("COCO", "Enable SSL Mutual Authentication"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("COCO", "Enable SSL Mutual Authentication"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
             cli.clearOutput();
             //Loop until certificate file exists
-            Assert.assertTrue(cli.pushLineAndWaitForResults("foo.bar", "Client certificate (path to pem file)"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("foo.bar", "Client certificate (path to pem file)"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Trust-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Password"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Do you confirm"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Trust-store file name"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Password"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Do you confirm"));
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("PP", "Do you confirm"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("PP", "Do you confirm"));
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("COCO", "Do you confirm"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("COCO", "Do you confirm"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("n", null));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("n", null));
             assertEmptyModel(null);
         } catch (Throwable ex) {
             throw new Exception(cli.getOutput(), ex);
@@ -679,9 +680,9 @@ public class SecurityCommandsTestCase {
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("--add-https-listener", "--https-listener-name=",
                     "--interactive", "--key-store-name=", "--key-store-path=", "--override-ssl-context", "--server-name=");
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -691,9 +692,9 @@ public class SecurityCommandsTestCase {
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("--https-listener-name=",  "--https-listener-socket-binding-name=",
                     "--interactive", "--key-store-name=", "--key-store-path=", "--override-ssl-context", "--server-name=");
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -702,9 +703,9 @@ public class SecurityCommandsTestCase {
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("https");
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -712,9 +713,9 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
             candidates = complete(ctx, cmd, null);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
         }
 
         {
@@ -722,9 +723,9 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
             candidates = complete(ctx, cmd, null);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
         }
 
         {
@@ -732,11 +733,11 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertFalse(candidates.isEmpty());
-            Assert.assertTrue(candidates.contains("https"));
+            Assertions.assertFalse(candidates.isEmpty());
+            Assertions.assertTrue(candidates.contains("https"));
             candidates = complete(ctx, cmd, null);
-            Assert.assertFalse(candidates.isEmpty());
-            Assert.assertTrue(candidates.contains("https"));
+            Assertions.assertFalse(candidates.isEmpty());
+            Assertions.assertTrue(candidates.contains("https"));
         }
 
         {
@@ -746,9 +747,9 @@ public class SecurityCommandsTestCase {
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("--default-server-ssl-context=", "--https-listener-name=",
                     "--no-reload", "--remove-https-listener", "--server-name=");
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            Assert.assertEquals(candidates.toString(), res, candidates);
+            Assertions.assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -756,11 +757,11 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertFalse(candidates.isEmpty());
-            Assert.assertTrue(candidates.contains("https"));
+            Assertions.assertFalse(candidates.isEmpty());
+            Assertions.assertTrue(candidates.contains("https"));
             candidates = complete(ctx, cmd, null);
-            Assert.assertFalse(candidates.isEmpty());
-            Assert.assertTrue(candidates.contains("https"));
+            Assertions.assertFalse(candidates.isEmpty());
+            Assertions.assertTrue(candidates.contains("https"));
         }
 
         {
@@ -768,9 +769,9 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
             candidates = complete(ctx, cmd, null);
-            Assert.assertTrue(candidates.isEmpty());
+            Assertions.assertTrue(candidates.isEmpty());
         }
 
         {
@@ -778,11 +779,11 @@ public class SecurityCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            Assert.assertEquals(1, candidates.size());
-            Assert.assertTrue(candidates.contains("applicationSSC"));
+            Assertions.assertEquals(1, candidates.size());
+            Assertions.assertTrue(candidates.contains("applicationSSC"));
             candidates = complete(ctx, cmd, null);
-            Assert.assertEquals(1, candidates.size());
-            Assert.assertTrue(candidates.contains("applicationSSC"));
+            Assertions.assertEquals(1, candidates.size());
+            Assertions.assertTrue(candidates.contains("applicationSSC"));
         }
 
     }
@@ -797,42 +798,42 @@ public class SecurityCommandsTestCase {
 
         // A new key-store
         List<String> ks = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + 1, ks.size());
+        Assertions.assertEquals(DEFAULT_NUM_KEY_STORES + 1, ks.size());
         // A new keyManager
         List<String> km = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 1, km.size());
+        Assertions.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 1, km.size());
         // A new SSLContext
         List<String> sslCtx = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 1, sslCtx.size());
+        Assertions.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 1, sslCtx.size());
         // Http-interface is secured.
         String usedSslCtx = getSSLContextName(ctx, serverName);
-        Assert.assertNotNull(usedSslCtx);
-        Assert.assertTrue(sslCtx.contains(usedSslCtx));
+        Assertions.assertNotNull(usedSslCtx);
+        Assertions.assertTrue(sslCtx.contains(usedSslCtx));
 
         // Disable ssl, resources shouldn't be deleted
         ctx.handle("security disable-ssl-http-server --no-reload"
                 + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx2 = getSSLContextName(ctx, serverName);
-        Assert.assertEquals(DEFAULT_SSL_CONTEXT, usedSslCtx2);
+        Assertions.assertEquals(DEFAULT_SSL_CONTEXT, usedSslCtx2);
         List<String> ks2 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(ks, ks2);
+        Assertions.assertEquals(ks, ks2);
         List<String> km2 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(km, km2);
+        Assertions.assertEquals(km, km2);
         List<String> sslCtx2 = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(sslCtx, sslCtx2);
+        Assertions.assertEquals(sslCtx, sslCtx2);
 
         // Re-enable, no new resources should be created.
         ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-path=" + SERVER_KEY_STORE_FILE
                 + " --key-store-password=" + KEY_STORE_PASSWORD + " --key-store-path-relative-to=" + Util.JBOSS_SERVER_CONFIG_DIR
                 + " --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx3 = getSSLContextName(ctx, serverName);
-        Assert.assertNotNull(usedSslCtx3);
+        Assertions.assertNotNull(usedSslCtx3);
         List<String> ks3 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(ks, ks3);
+        Assertions.assertEquals(ks, ks3);
         List<String> km3 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(km, km3);
+        Assertions.assertEquals(km, km3);
         List<String> sslCtx3 = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(sslCtx, sslCtx3);
+        Assertions.assertEquals(sslCtx, sslCtx3);
 
         // Try to enable again, exception should be thrown.
         boolean failed = false;
@@ -845,7 +846,7 @@ public class SecurityCommandsTestCase {
             failed = true;
             // XXX OK, expected
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
 
         // Disable ssl
         ctx.handle("security disable-ssl-http-server --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
@@ -854,13 +855,13 @@ public class SecurityCommandsTestCase {
         ctx.handle("security enable-ssl-http-server --override-ssl-context --key-store-name=" + ks.get(1)
                 + " --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx4 = getSSLContextName(ctx, serverName);
-        Assert.assertNotNull(usedSslCtx4);
+        Assertions.assertNotNull(usedSslCtx4);
         List<String> ks4 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(ks, ks4);
+        Assertions.assertEquals(ks, ks4);
         List<String> km4 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(km, km4);
+        Assertions.assertEquals(km, km4);
         List<String> sslCtx4 = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(sslCtx, sslCtx4);
+        Assertions.assertEquals(sslCtx, sslCtx4);
 
         // Disable ssl
         ctx.handle("security disable-ssl-http-server --no-reload"
@@ -873,16 +874,16 @@ public class SecurityCommandsTestCase {
                 + KEY_MANAGER_NAME + " --new-ssl-context-name=" + SSL_CONTEXT_NAME + " --no-reload"
                 + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx5 = getSSLContextName(ctx, serverName);
-        Assert.assertEquals(SSL_CONTEXT_NAME, usedSslCtx5);
+        Assertions.assertEquals(SSL_CONTEXT_NAME, usedSslCtx5);
         List<String> ks5 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + 2, ks5.size());
-        Assert.assertTrue(ks5.contains(KEY_STORE_NAME));
+        Assertions.assertEquals(DEFAULT_NUM_KEY_STORES + 2, ks5.size());
+        Assertions.assertTrue(ks5.contains(KEY_STORE_NAME));
         List<String> km5 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 2, km5.size());
-        Assert.assertTrue(km5.contains(KEY_MANAGER_NAME));
+        Assertions.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 2, km5.size());
+        Assertions.assertTrue(km5.contains(KEY_MANAGER_NAME));
         List<String> sslCtx5 = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 2, sslCtx5.size());
-        Assert.assertTrue(sslCtx5.contains(SSL_CONTEXT_NAME));
+        Assertions.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 2, sslCtx5.size());
+        Assertions.assertTrue(sslCtx5.contains(SSL_CONTEXT_NAME));
 
         checkModel(serverName, SERVER_KEY_STORE_FILE, Util.JBOSS_SERVER_CONFIG_DIR,
                 KEY_STORE_PASSWORD, null,
@@ -903,9 +904,9 @@ public class SecurityCommandsTestCase {
             // XXX OK expected
             failed = true;
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
+        Assertions.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
 
         // Enable SSL, provide same new-key-manager-name, exception thrown because already exists
         failed = false;
@@ -918,9 +919,9 @@ public class SecurityCommandsTestCase {
             // XXX OK expected
             failed = true;
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
+        Assertions.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
 
         // Enable SSL, provide same new-key-manager-name, exception thrown because already exists
         failed = false;
@@ -933,15 +934,15 @@ public class SecurityCommandsTestCase {
             // XXX OK expected
             failed = true;
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
         // Check that it has not been enabled.
-        Assert.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
+        Assertions.assertEquals(DEFAULT_SSL_CONTEXT, getSSLContextName(ctx, serverName));
     }
 
     private void testEnableSSLInteractiveConfirm(String mgmtInterface) throws Exception {
         assertEmptyModel(mgmtInterface);
         CliProcessWrapper cli = new CliProcessWrapper().
-                addJavaOption("-Duser.home=" + temporaryUserHome.getRoot().toPath().toString()).
+                addJavaOption("-Duser.home=" + temporaryUserHome.toPath().toString()).
                 addCliArgument("--controller=remote+http://"
                         + TestSuiteEnvironment.getServerAddress() + ":"
                         + TestSuiteEnvironment.getServerPort()).
@@ -953,41 +954,41 @@ public class SecurityCommandsTestCase {
         try {
             cli.executeInteractive();
             cli.clearOutput();
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, "Password"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, "Password"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
 
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_ALIAS, "Enable SSL Mutual Authentication"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("n", "Trust-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_TRUST_STORE_FILE_NAME, "Password"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "Do you confirm"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", null));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_ALIAS, "Enable SSL Mutual Authentication"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("n", "Trust-store file name"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_TRUST_STORE_FILE_NAME, "Password"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "Do you confirm"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", null));
             assertTLSNumResources(2, 1, 1, 1);
             // Check that the files have been generated.
             genKeyStore = new File(TestSuiteEnvironment.getSystemProperty("jboss.home") + File.separator + "standalone"
                     + File.separator + "configuration" + File.separator + GENERATED_KEY_STORE_FILE_NAME);
-            Assert.assertTrue(genKeyStore.exists());
+            Assertions.assertTrue(genKeyStore.exists());
             genTrustStore = new File(TestSuiteEnvironment.getSystemProperty("jboss.home") + File.separator + "standalone"
                     + File.separator + "configuration" + File.separator + GENERATED_TRUST_STORE_FILE_NAME);
-            Assert.assertTrue(genTrustStore.exists());
+            Assertions.assertTrue(genTrustStore.exists());
             genServerCertificate = new File(TestSuiteEnvironment.getSystemProperty("jboss.home") + File.separator + "standalone"
                     + File.separator + "configuration" + File.separator + GENERATED_PEM_FILE_NAME);
-            Assert.assertTrue(genServerCertificate.exists());
+            Assertions.assertTrue(genServerCertificate.exists());
             genCsr = new File(TestSuiteEnvironment.getSystemProperty("jboss.home") + File.separator + "standalone"
                     + File.separator + "configuration" + File.separator + GENERATED_CSR_FILE_NAME);
-            Assert.assertTrue(genCsr.exists());
+            Assertions.assertTrue(genCsr.exists());
             // Check the model contains the provided values.
             List<String> ksList = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
             List<String> kmList = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
@@ -1003,28 +1004,28 @@ public class SecurityCommandsTestCase {
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface));
 
             // Test that existing key-store file makes the command to abort.
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, null));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_FILE_NAME, null));
 
             //Test that existing trust-store file makes command to abort
-            Assert.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("security enable-ssl-http-server --override-ssl-context --interactive --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface), "Key-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("foo", "Password"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_ALIAS, "Enable SSL Mutual Authentication"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults("n", "Trust-store file name"));
-            Assert.assertTrue(cli.pushLineAndWaitForResults(GENERATED_TRUST_STORE_FILE_NAME, null));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("foo", "Password"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_PASSWORD, "What is your first and last name? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organizational unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your organization? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your City or Locality? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the name of your State or Province? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "What is the two-letter country code for this unit? [Unknown]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Validity"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("", "Alias"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_KEY_STORE_ALIAS, "Enable SSL Mutual Authentication"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("y", "Client certificate (path to pem file)"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(clientCertificate.getAbsolutePath(), "Validate certificate"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults("n", "Trust-store file name"));
+            Assertions.assertTrue(cli.pushLineAndWaitForResults(GENERATED_TRUST_STORE_FILE_NAME, null));
 
         } catch (Throwable ex) {
             throw new Exception(cli.getOutput(), ex);
@@ -1172,13 +1173,13 @@ public class SecurityCommandsTestCase {
 
     private static void assertTLSNumResources(int numKS, int numKeyManager, int numTrustManager, int numSSLContext) throws Exception {
         List<String> ks = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + numKS, ks.size());
+        Assertions.assertEquals(DEFAULT_NUM_KEY_STORES + numKS, ks.size());
         List<String> km = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + numKeyManager, km.size());
+        Assertions.assertEquals(DEFAULT_NUM_KEY_MANAGERS + numKeyManager, km.size());
         List<String> tm = getNames(ctx.getModelControllerClient(), Util.TRUST_MANAGER);
-        Assert.assertEquals(DEFAULT_NUM_TRUST_MANAGERS + numTrustManager, tm.size());
+        Assertions.assertEquals(DEFAULT_NUM_TRUST_MANAGERS + numTrustManager, tm.size());
         List<String> sslCtx = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + numSSLContext, sslCtx.size());
+        Assertions.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + numSSLContext, sslCtx.size());
     }
 
     private static void assertTLSEmpty() throws Exception {
@@ -1277,23 +1278,23 @@ public class SecurityCommandsTestCase {
             tManager = getResource(Util.TRUST_MANAGER, trustManagerName, null);
             ModelNode expectedTrustStore = buildKeyStoreResource(new File(trustStoreFile), relativeTo, tsPassword, "JKS", false, null);
             ModelNode ts = getResource(Util.KEY_STORE, tManager.get(Util.KEY_STORE).asString(), expectedTrustStore);
-            Assert.assertEquals(trustStoreName, tManager.get(Util.KEY_STORE).asString());
-            Assert.assertEquals(expectedTrustStore, ts);
+            Assertions.assertEquals(trustStoreName, tManager.get(Util.KEY_STORE).asString());
+            Assertions.assertEquals(expectedTrustStore, ts);
         }
 
-        Assert.assertEquals(keyStoreName, kManager.get(Util.KEY_STORE).asString());
+        Assertions.assertEquals(keyStoreName, kManager.get(Util.KEY_STORE).asString());
         ModelNode ks = getResource(Util.KEY_STORE, kManager.get(Util.KEY_STORE).asString(), expectedKeyStore);
 
-        Assert.assertEquals(expectedKeyStore, ks);
+        Assertions.assertEquals(expectedKeyStore, ks);
 
         //Check that the SSLContext properly references both km and ts
         ModelNode expectedSSLContext = buildSSLContextResource(trustManagerName, keyManagerName, false, trustManagerName != null);
         ModelNode actualSSLContext = getResource(Util.SERVER_SSL_CONTEXT, sslContextName, expectedSSLContext);
-        Assert.assertEquals(expectedSSLContext, actualSSLContext);
+        Assertions.assertEquals(expectedSSLContext, actualSSLContext);
 
         //Check that the sslContext is referenced from the interface
         String usedSslCtx = getSSLContextName(ctx, serverName);
-        Assert.assertEquals(usedSslCtx, sslContextName);
+        Assertions.assertEquals(usedSslCtx, sslContextName);
     }
 
     // This completion is what aesh-readline completion is calling, so more

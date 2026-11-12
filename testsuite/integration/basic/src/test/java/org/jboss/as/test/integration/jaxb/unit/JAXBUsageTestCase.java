@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.JAXBUsageServlet;
 import org.jboss.as.test.integration.jaxb.bindings.Items;
@@ -28,16 +28,16 @@ import org.jboss.as.test.integration.jaxb.bindings.USAddress;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that JAXB is usable from a WAR
  *
  * @author Jason T. Greene
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JAXBUsageTestCase {
 
@@ -72,10 +72,10 @@ public class JAXBUsageTestCase {
         final HttpGet request = new HttpGet(requestURL);
         final HttpResponse response = httpClient.execute(request);
         int statusCode = response.getStatusLine().getStatusCode();
-        Assert.assertEquals("Unexpected status code", 200, statusCode);
+        Assertions.assertEquals(200, statusCode, "Unexpected status code");
         final HttpEntity entity = response.getEntity();
-        Assert.assertNotNull("Response message from servlet was null", entity);
+        Assertions.assertNotNull(entity, "Response message from servlet was null");
         final String responseMessage = EntityUtils.toString(entity);
-        Assert.assertEquals("Wrong return value", "Mill Valley", responseMessage.trim());
+        Assertions.assertEquals("Mill Valley", responseMessage.trim(), "Wrong return value");
     }
 }

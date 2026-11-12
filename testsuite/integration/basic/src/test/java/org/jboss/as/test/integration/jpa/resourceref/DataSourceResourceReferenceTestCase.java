@@ -8,20 +8,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verify that persistence unit using DataSource resource reference can work with entity class enhancement enabled.
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DataSourceResourceReferenceTestCase {
 
     private static final String ARCHIVE_NAME = "DataSourceResourceReferenceTestCase.ear";
@@ -56,7 +56,7 @@ public class DataSourceResourceReferenceTestCase {
     @Test
     public void testPostConstruct() throws NamingException {
         MyEjb myEjb = (MyEjb) new InitialContext().lookup("java:module/" + MyEjb.class.getSimpleName());
-        Assert.assertEquals(null,  myEjb.queryEmployeeName(100));
+        Assertions.assertEquals(null,  myEjb.queryEmployeeName(100));
     }
 
 }

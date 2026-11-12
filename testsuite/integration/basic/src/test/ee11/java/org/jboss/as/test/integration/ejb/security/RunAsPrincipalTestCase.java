@@ -12,12 +12,10 @@ import java.util.concurrent.Callable;
 import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -40,13 +38,14 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -55,9 +54,9 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({EjbSecurityDomainSetup.class, RunAsPrincipalTestCase.TestLogHandlerSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class RunAsPrincipalTestCase  {
 
     private static final Logger log = Logger.getLogger(RunAsPrincipalTestCase.class);
@@ -74,7 +73,7 @@ public class RunAsPrincipalTestCase  {
                 .addClass(WhoAmI.class)
                 .addClass(StatelessBBean.class)
                 .addClass(SingletonStartupBean.class)
-                .addPackage(Assert.class.getPackage())
+                .addPackage(Assertions.class.getPackage())
                 .addClass(Util.class)
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
@@ -146,7 +145,7 @@ public class RunAsPrincipalTestCase  {
         final Callable<Void> callable = () -> {
             WhoAmI bean =  lookupCallerWithIdentity();
             String actual = bean.getCallerPrincipal();
-            Assert.assertEquals("jackinabox", actual);
+            Assertions.assertEquals("jackinabox", actual);
             return null;
         };
         Util.switchIdentitySCF("user1", "password1", callable);
@@ -157,7 +156,7 @@ public class RunAsPrincipalTestCase  {
         final Callable<Void> callable = () -> {
             WhoAmI bean = lookupSingleCallerWithIdentity();
             String actual = bean.getCallerPrincipal();
-            Assert.assertEquals("Helloween", actual);
+            Assertions.assertEquals("Helloween", actual);
             return null;
         };
         Util.switchIdentitySCF("user1", "password1", callable);
@@ -173,10 +172,10 @@ public class RunAsPrincipalTestCase  {
         WhoAmI bean = lookupCallerRunAsPrincipal();
         try {
             String actual = bean.getCallerPrincipal();
-            Assert.fail("Expected EJBAccessException and it was get identity: " + actual);
+            Assertions.fail("Expected EJBAccessException and it was get identity: " + actual);
         } catch (EJBAccessException e) {
             // good
-            Assert.assertTrue("@RunAs warning not found", LoggingUtil.hasLogMessage(TEST_LOG_FILE_NAME, LOG_MESSAGE));
+            Assertions.assertTrue(LoggingUtil.hasLogMessage(TEST_LOG_FILE_NAME, LOG_MESSAGE), "@RunAs warning not found");
         }
     }
 
@@ -189,7 +188,7 @@ public class RunAsPrincipalTestCase  {
         final Callable<Void> callable = () -> {
             WhoAmI bean = lookupCaller();
             String actual = bean.getCallerPrincipal();
-            Assert.assertEquals("Admin", actual); // EE11: @RunAs role name becomes principal per Jakarta Authorization 3.0
+            Assertions.assertEquals("Admin", actual); // EE11: @RunAs role name becomes principal per Jakarta Authorization 3.0
             return null;
         };
         Util.switchIdentitySCF("user1", "password1", callable);
@@ -200,11 +199,11 @@ public class RunAsPrincipalTestCase  {
     public void testStartupSingletonPostconstructSecurityNotPropagating() {
         try {
             deployer.deploy(STARTUP_SINGLETON_DEPLOYMENT);
-            Assert.fail("Deployment should fail");
+            Assertions.fail("Deployment should fail");
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
-            MatcherAssert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            assertThat(t.getMessage()).as(t.getMessage()).contains("WFLYEJB0364");
         } finally {
             deployer.undeploy(STARTUP_SINGLETON_DEPLOYMENT);
         }
@@ -215,7 +214,7 @@ public class RunAsPrincipalTestCase  {
         final Callable<Void> callable = () -> {
             WhoAmI bean = lookupSingletonUseBeanWithIdentity(); //To load the singleton
             bean.getCallerPrincipal();
-            Assert.fail("EJB call should fail - identity should not be propagated from @PostConstruct method");
+            Assertions.fail("EJB call should fail - identity should not be propagated from @PostConstruct method");
             return null;
         };
         try {
@@ -223,7 +222,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected EJB call fail because identity should not be propagated from @PostConstruct method", dex.getCause());
-            MatcherAssert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            assertThat(t.getMessage()).as(t.getMessage()).contains("WFLYEJB0364");
         }
     }
 

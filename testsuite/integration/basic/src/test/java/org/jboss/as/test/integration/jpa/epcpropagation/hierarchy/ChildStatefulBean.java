@@ -8,7 +8,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateful;
 import javax.naming.InitialContext;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -26,8 +26,8 @@ public class ChildStatefulBean extends BeanParent {
         //the XPC should propagate
         simpleStatefulBean.noop();
         injectedSimpleStatefulBean.noop();
-        Assert.assertTrue(simpleStatefulBean.contains(b));
-        Assert.assertTrue(injectedSimpleStatefulBean.contains(b));
-        Assert.assertTrue(entityManager.contains(b));
+        Assertions.assertTrue(simpleStatefulBean.contains(b));
+        Assertions.assertTrue(injectedSimpleStatefulBean.contains(b));
+        Assertions.assertTrue(entityManager.contains(b));
     }
 }

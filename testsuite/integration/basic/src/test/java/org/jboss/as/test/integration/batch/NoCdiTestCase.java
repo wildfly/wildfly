@@ -5,24 +5,26 @@
 
 package org.jboss.as.test.integration.batch;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchRuntime;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:brent.n.douglas@gmail.com">Brent Douglas</a>
  * @since 9.0
  */
-@RunWith(Arquillian.class)
-public class NoCdiTestCase extends Assert {
+@ExtendWith(ArquillianExtension.class)
+public class NoCdiTestCase {
 
     @Deployment
     public static Archive<?> deploy() {

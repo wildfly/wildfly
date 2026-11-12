@@ -11,8 +11,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
 import static org.wildfly.test.security.common.SecureExpressionUtil.getDeploymentPropertiesAsset;
 import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStore;
 import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStoreExpressions;
@@ -32,7 +32,7 @@ import jakarta.jms.JMSException;
 import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -43,14 +43,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.SecureExpressionUtil;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(VaultedInjectedJMSContextTestCase.StoreVaultedPropertyTask.class)
 public class VaultedInjectedJMSContextTestCase {
 

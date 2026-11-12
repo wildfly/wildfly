@@ -6,28 +6,30 @@
 package org.jboss.as.test.integration.jca.metrics;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Resource adapters configuration and metrics unit test.
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
@@ -77,14 +79,16 @@ public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeRa();
     }
 
-    @Test(expected = Exception.class)
-    public void test2Archives() throws Exception {
-        setBadModel("wrong-2-archives");
+    @Test
+    public void test2Archives() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-archives"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNoArchives() throws Exception {
-        setBadModel("wrong-no-archives");
+    @Test
+    public void testNoArchives() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-no-archives"));
     }
 
     @Test
@@ -101,9 +105,10 @@ public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeRa();
     }
 
-    @Test(expected = Exception.class)
-    public void testConfPropWithEqualNames() throws Exception {
-        setBadModel("wrong-equal-conf-prop");
+    @Test
+    public void testConfPropWithEqualNames() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-equal-conf-prop"));
     }
 
     // no excepton sent because it's like omit the tag
@@ -112,54 +117,64 @@ public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
         setBadModel("wrong-empty-trans");
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongTrans() throws Exception {
-        setBadModel("wrong-trans");
+    @Test
+    public void testWrongTrans() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-trans"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrong2Trans() throws Exception {
-        setBadModel("wrong-2-trans");
+    @Test
+    public void testWrong2Trans() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-trans"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongXAPoolWithTrans() throws Exception {
-        setBadModel("wrong-xa-pool-trans");
+    @Test
+    public void testWrongXAPoolWithTrans() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-xa-pool-trans"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongPoolWithXATrans() throws Exception {
-        setBadModel("wrong-pool-xa-trans");
+    @Test
+    public void testWrongPoolWithXATrans() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-pool-xa-trans"));
     }
 
-    @Test(expected = Exception.class)
-    public void test2Pools() throws Exception {
-        setBadModel("wrong-2-pools");
+    @Test
+    public void test2Pools() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-pools"));
     }
 
-    @Test(expected = Exception.class)
-    public void test2XaPools() throws Exception {
-        setBadModel("wrong-2-xa-pools");
+    @Test
+    public void test2XaPools() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-xa-pools"));
     }
 
-    @Test(expected = Exception.class)
-    public void testPoolAndXaPool() throws Exception {
-        setBadModel("wrong-pool-and-xa-pool");
+    @Test
+    public void testPoolAndXaPool() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-pool-and-xa-pool"));
     }
 
-    @Test(expected = Exception.class)
-    public void testMinPoolSize() throws Exception {
-        setBadModel("wrong-min-pool-size");
+    @Test
+    public void testMinPoolSize() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-min-pool-size"));
     }
 
-    @Test(expected = Exception.class)
-    public void testMaxPoolSize() throws Exception {
-        setBadModel("wrong-max-pool-size");
+    @Test
+    public void testMaxPoolSize() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-max-pool-size"));
     }
 
-    @Test(expected = Exception.class)
-    public void testMinGtMaxPoolSize() throws Exception {
-        setBadModel("wrong-min-max-pool-size");
+    @Test
+    public void testMinGtMaxPoolSize() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-min-max-pool-size"));
     }
 
     @Test
@@ -211,78 +226,93 @@ public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeRa();
     }
 
-    @Test(expected = Exception.class)
-    public void testSecurity1() throws Exception {
-        setBadModel("wrong-security-1");
+    @Test
+    public void testSecurity1() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-security-1"));
     }
 
-    @Test(expected = Exception.class)
-    public void testSecurity2() throws Exception {
-        setBadModel("wrong-security-2");
+    @Test
+    public void testSecurity2() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-security-2"));
     }
 
-    @Test(expected = Exception.class)
-    public void testSecurity3() throws Exception {
-        setBadModel("wrong-security-3");
+    @Test
+    public void testSecurity3() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-security-3"));
     }
 
-    @Test(expected = Exception.class)
-    public void testSecurity4() throws Exception {
-        setBadModel("wrong-security-4");
+    @Test
+    public void testSecurity4() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-security-4"));
     }
 
-    @Test(expected = Exception.class)
-    public void test2SecurityDomains() throws Exception {
-        setBadModel("wrong-2-security-domains");
+    @Test
+    public void test2SecurityDomains() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-security-domains"));
     }
 
-    @Test(expected = Exception.class)
-    public void testFlushStrategy() throws Exception {
-        setBadModel("wrong-flush-strategy");
+    @Test
+    public void testFlushStrategy() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-flush-strategy"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegBlckgTmt() throws Exception {
-        setBadModel("wrong-blck-tmt");
+    @Test
+    public void testNegBlckgTmt() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-blck-tmt"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegIdleTmt() throws Exception {
-        setBadModel("wrong-idle-tmt");
+    @Test
+    public void testNegIdleTmt() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-idle-tmt"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegAllocRetry() throws Exception {
-        setBadModel("wrong-alloc-retry");
+    @Test
+    public void testNegAllocRetry() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-alloc-retry"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegAllocRetryWait() throws Exception {
-        setBadModel("wrong-alloc-retry-wait");
+    @Test
+    public void testNegAllocRetryWait() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-alloc-retry-wait"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegXaResTmt() throws Exception {
-        setBadModel("wrong-xa-res-tmt");
+    @Test
+    public void testNegXaResTmt() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-xa-res-tmt"));
     }
 
-    @Test(expected = Exception.class)
-    public void testNegBckgValid() throws Exception {
-        setBadModel("wrong-bckg-tmt");
+    @Test
+    public void testNegBckgValid() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-bckg-tmt"));
     }
 
-    @Test(expected = Exception.class)
-    public void testRecoverPlugin() throws Exception {
-        setBadModel("wrong-recover-plugin");
+    @Test
+    public void testRecoverPlugin() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-recover-plugin"));
     }
 
-    @Test(expected = Exception.class)
-    public void testConDefWoClass() throws Exception {
-        setBadModel("wrong-2-con-def-wo-class");
+    @Test
+    public void testConDefWoClass() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-con-def-wo-class"));
     }
 
-    @Test(expected = Exception.class)
-    public void testAoWoClass() throws Exception {
-        setBadModel("wrong-2-ao-wo-class");
+    @Test
+    public void testAoWoClass() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-2-ao-wo-class"));
     }
 }

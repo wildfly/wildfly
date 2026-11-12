@@ -8,13 +8,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that lifecycle interceptors are handed correctly,
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AroundConstructSimpleTestCase {
 
     @Deployment
@@ -37,14 +37,14 @@ public class AroundConstructSimpleTestCase {
     public void testSimpleAroundConstruct() throws NamingException {
         InitialContext ctx = new InitialContext();
         AroundConstructSLSB bean = (AroundConstructSLSB) ctx.lookup("java:module/" + AroundConstructSLSB.class.getSimpleName());
-        Assert.assertEquals("AroundConstructPostConstruct", bean.getMessage());
+        Assertions.assertEquals("AroundConstructPostConstruct", bean.getMessage());
     }
 
     @Test
     public void testSimpleAroundConstructWhichReturnsObject() throws NamingException {
         InitialContext ctx = new InitialContext();
         AroundConstructInterceptorWithObjectReturnTypeSLSB bean = (AroundConstructInterceptorWithObjectReturnTypeSLSB) ctx.lookup("java:module/" + AroundConstructInterceptorWithObjectReturnTypeSLSB.class.getSimpleName());
-        Assert.assertEquals("AroundConstructPostConstruct", bean.getMessage());
+        Assertions.assertEquals("AroundConstructPostConstruct", bean.getMessage());
     }
 
 }

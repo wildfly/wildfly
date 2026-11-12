@@ -11,13 +11,13 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the {@link org.jboss.ejb.client.annotation.CompressionHint} on remote view classes and the view methods is taken into account during EJB invocations
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
  * @author: Jaikiran Pai
  * @see https://issues.jboss.org/browse/EJBCLIENT-76
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class CompressionTestCase {
 
@@ -58,15 +58,15 @@ public class CompressionTestCase {
 
             // only request compression
             final String echoWithRequestCompressed = bean.echoWithRequestCompress(message);
-            Assert.assertEquals("Unexpected response for invocation with only request compressed", message, echoWithRequestCompressed);
+            Assertions.assertEquals(message, echoWithRequestCompressed, "Unexpected response for invocation with only request compressed");
 
             // only response compressed
             final String echoWithResponseCompressed = bean.echoWithResponseCompress(message);
-            Assert.assertEquals("Unexpected response for invocation with only response compressed", message, echoWithResponseCompressed);
+            Assertions.assertEquals(message, echoWithResponseCompressed, "Unexpected response for invocation with only response compressed");
 
             // both request and response compressed based on the annotation at the view class level
             final String echoWithRequestAndResponseCompressed = bean.echoWithNoExplicitDataCompressionHintOnMethod(message);
-            Assert.assertEquals("Unexpected response for invocation with both request and response compressed", message, echoWithRequestAndResponseCompressed);
+            Assertions.assertEquals(message, echoWithRequestAndResponseCompressed, "Unexpected response for invocation with both request and response compressed");
 
         } finally {
             // remove the system property which enables annotation scan on the client view

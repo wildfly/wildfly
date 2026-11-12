@@ -35,7 +35,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -212,7 +213,7 @@ public abstract class AbstractBatchTestCase {
         static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
             ModelNode result = client.execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                Assert.assertTrue(Operations.getFailureDescription(result).toString(), false);
+                Assertions.assertTrue(false, Operations.getFailureDescription(result).toString());
             }
             return result;
         }

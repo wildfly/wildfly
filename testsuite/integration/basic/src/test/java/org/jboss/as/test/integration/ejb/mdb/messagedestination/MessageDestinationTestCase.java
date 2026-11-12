@@ -9,7 +9,7 @@ import jakarta.ejb.EJB;
 import jakarta.jms.Message;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -19,15 +19,15 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests message-destination resolution
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MessageDestinationTestCase.JmsQueueSetup.class})
 public class MessageDestinationTestCase {
 
@@ -76,6 +76,6 @@ public class MessageDestinationTestCase {
     public void testMEssageDestinationResolution() throws Exception {
         this.messagingMdb.sendTextMessage("Say hello to " + MessagingEjb.class.getName());
         final Message reply = this.messagingMdb.receiveMessage(5000);
-        Assert.assertNotNull("Reply message was null on reply queue", reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue");
     }
 }

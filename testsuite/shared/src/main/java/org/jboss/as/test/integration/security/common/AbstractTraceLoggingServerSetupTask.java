@@ -7,6 +7,7 @@ package org.jboss.as.test.integration.security.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import org.wildfly.test.security.common.CoreUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

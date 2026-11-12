@@ -17,29 +17,29 @@ import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class IIOPNamingTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupDynamicStub() {
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
     }
@@ -71,7 +71,7 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
     @Test
@@ -83,12 +83,12 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("IIOPStatefulNamingBean");
         final IIOPStatefulNamingHome object = (IIOPStatefulNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPStatefulNamingHome.class);
         final IIOPStatefulRemote result = object.create(10);
-        Assert.assertEquals(11, result.increment());
-        Assert.assertEquals(12, result.increment());
+        Assertions.assertEquals(11, result.increment());
+        Assertions.assertEquals(12, result.increment());
         result.remove();
         try {
             result.increment();
-            Assert.fail("Expected NoSuchObjectException");
+            Assertions.fail("Expected NoSuchObjectException");
         } catch (NoSuchObjectException expected) {
 
         }
@@ -103,7 +103,7 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() +":3528#IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
     @Test
@@ -115,12 +115,12 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("IIOPStatefulNamingBean");
         final IIOPStatefulNamingHome object = (IIOPStatefulNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPStatefulNamingHome.class);
         final IIOPStatefulRemote result = object.create(10);
-        Assert.assertEquals(11, result.increment());
-        Assert.assertEquals(12, result.increment());
+        Assertions.assertEquals(11, result.increment());
+        Assertions.assertEquals(12, result.increment());
         result.remove();
         try {
             result.increment();
-            Assert.fail("Expected NoSuchObjectException");
+            Assertions.fail("Expected NoSuchObjectException");
         } catch (NoSuchObjectException expected) {
 
         }
@@ -135,7 +135,7 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
     @Test
@@ -147,12 +147,12 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("IIOPStatefulNamingBean");
         final IIOPStatefulNamingHome object = (IIOPStatefulNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPStatefulNamingHome.class);
         final IIOPStatefulRemote result = object.create(10);
-        Assert.assertEquals(11, result.increment());
-        Assert.assertEquals(12, result.increment());
+        Assertions.assertEquals(11, result.increment());
+        Assertions.assertEquals(12, result.increment());
         result.remove();
         try {
             result.increment();
-            Assert.fail("Expected NoSuchObjectException");
+            Assertions.fail("Expected NoSuchObjectException");
         } catch (NoSuchObjectException expected) {
         }
     }
@@ -176,7 +176,7 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("bean/custom/name/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
     /**
@@ -198,7 +198,7 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() +":3528#bean/custom/name/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
     /**
@@ -220,6 +220,6 @@ public class IIOPNamingTestCase {
         final Object iiopObj = context.lookup("bean/custom/name/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 }

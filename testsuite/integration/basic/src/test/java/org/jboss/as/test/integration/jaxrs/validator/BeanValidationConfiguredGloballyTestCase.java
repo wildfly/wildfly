@@ -16,23 +16,23 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for Jakarta RESTful Web Services taking the global Jakarta Bean Validation configuration into account (META-INF/validation.xml).
  *
  * @author Gunnar Morling
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class BeanValidationConfiguredGloballyTestCase {
 
@@ -70,11 +70,11 @@ public class BeanValidationConfiguredGloballyTestCase {
         HttpGet get = new HttpGet(url + "myjaxrs/globally-configured-validate/3/disabled");
         HttpResponse result = client.execute(get);
 
-        Assert.assertEquals("No constraint violated", 200, result.getStatusLine().getStatusCode());
+        Assertions.assertEquals(200, result.getStatusLine().getStatusCode(), "No constraint violated");
         EntityUtils.consume(result.getEntity());
 
         get = new HttpGet(url + "myjaxrs/globally-configured-validate/3/enabled");
         result = client.execute(get);
-        Assert.assertEquals("Parameter constraint violated", 400, result.getStatusLine().getStatusCode());
+        Assertions.assertEquals(400, result.getStatusLine().getStatusCode(), "Parameter constraint violated");
     }
 }

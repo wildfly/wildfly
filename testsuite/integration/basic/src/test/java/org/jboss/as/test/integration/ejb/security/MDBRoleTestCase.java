@@ -6,8 +6,8 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.PropertyPermission;
 import jakarta.jms.Destination;
@@ -25,7 +25,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.MDBRole;
@@ -38,9 +38,10 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
@@ -52,9 +53,9 @@ import org.wildfly.security.permission.ElytronPermission;
  *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({CreateQueueSetupTask.class, EjbSecurityDomainSetup.class})
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class MDBRoleTestCase {
 
    Logger logger = Logger.getLogger(MDBRoleTestCase.class);

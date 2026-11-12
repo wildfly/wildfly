@@ -15,16 +15,17 @@ import org.jboss.logging.Logger;
 import jakarta.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.security.permission.ElytronPermission;
 
 /**
@@ -33,8 +34,8 @@ import org.wildfly.security.permission.ElytronPermission;
  *
  * @author Jaikiran Pai, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
-@Category(CommonCriteria.class)
+@ExtendWith(ArquillianExtension.class)
+@Tag("CommonCriteria")
 public class SingletonSecurityTestCase {
     private static final Logger log = Logger.getLogger(SingletonSecurityTestCase.class.getName());
 
@@ -81,7 +82,7 @@ public class SingletonSecurityTestCase {
         final Callable<Void> callable = () -> {
             // expects role1, so should fail
             securedSingleton.allowedForRole1();
-            Assert.fail("Call to secured method, with incorrect role, was expected to fail");
+            Assertions.fail("Call to secured method, with incorrect role, was expected to fail");
             return null;
         };
         try {
@@ -102,7 +103,7 @@ public class SingletonSecurityTestCase {
         final SingletonSecurity securedSingleton = InitialContext.doLookup("java:module/" + SecuredSingletonBean.class.getSimpleName());
         try {
             securedSingleton.allowedForRole1();
-            Assert.fail("Call to secured method was expected to fail");
+            Assertions.fail("Call to secured method was expected to fail");
         } catch (EJBAccessException ejbae) {
             // expected
         }

@@ -10,14 +10,14 @@ import org.hibernate.stat.QueryStatistics;
 import org.hibernate.stat.Statistics;
 
 import jakarta.ejb.Stateless;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
 import jakarta.persistence.Query;
-
-import static org.junit.Assert.assertEquals;
 
 @Stateless
 public class SFSB4LC {
@@ -69,13 +69,13 @@ public class SFSB4LC {
 
             // query - this call should fill the cache
             query.getResultList();
-            assertEquals("Expected 1 miss in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCacheMissCount());
-            assertEquals("Expected 1 put in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCachePutCount());
-            assertEquals("Expected no hits in cache" + generateQueryCacheStats(queryStats), 0, queryStats.getCacheHitCount());
+            assertEquals(1, queryStats.getCacheMissCount(), "Expected 1 miss in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(1, queryStats.getCachePutCount(), "Expected 1 put in cache" + generateQueryCacheStats(queryStats));
+            assertEquals(0, queryStats.getCacheHitCount(), "Expected no hits in cache" + generateQueryCacheStats(queryStats));
 
             // query - second call should hit cache
             query.getResultList();
-            assertEquals("Expected 1 hit in cache" + generateQueryCacheStats(queryStats), 1, queryStats.getCacheHitCount());
+            assertEquals(1, queryStats.getCacheHitCount(), "Expected 1 hit in cache" + generateQueryCacheStats(queryStats));
 
 
         } catch (AssertionError e) {

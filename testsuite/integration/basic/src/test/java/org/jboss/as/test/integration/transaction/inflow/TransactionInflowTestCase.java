@@ -18,7 +18,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
@@ -29,10 +29,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testcase running Jakarta Connectors inflow transaction from deployed RAR.
@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class TransactionInflowTestCase {
 
@@ -101,7 +101,7 @@ public class TransactionInflowTestCase {
         return getEjbDeployment(ROLLBACK);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         deployer.undeploy(EJB_MODULE_NAME + COMMIT);
         deployer.undeploy(EJB_MODULE_NAME + ROLLBACK);
@@ -114,12 +114,12 @@ public class TransactionInflowTestCase {
         TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + COMMIT);
 
         try {
-            Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
-            Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
-                    TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
-            Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
-            Assert.assertEquals("Two XAResources are expected to be committed", 2, checker.getCommitted());
-            Assert.assertEquals("Two XAResources were were committed thus not rolled-back", 0, checker.getRolledback());
+            Assertions.assertEquals(1, checker.getMessages().size(), "Expecting one message was passed from RAR to MDB");
+            Assertions.assertEquals(TransactionInflowResourceAdapter.MSG,
+                    checker.getMessages().iterator().next(), "Expecting message with the content was passed from RAR to MDB");
+            Assertions.assertEquals(2, checker.getPrepared(), "Two XAResources were enlisted thus expected to be prepared");
+            Assertions.assertEquals(2, checker.getCommitted(), "Two XAResources are expected to be committed");
+            Assertions.assertEquals(0, checker.getRolledback(), "Two XAResources were were committed thus not rolled-back");
         } finally {
             checker.resetAll();
         }
@@ -132,12 +132,12 @@ public class TransactionInflowTestCase {
         TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + ROLLBACK);
 
         try {
-            Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
-            Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
-                    TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
-            Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
-            Assert.assertEquals("Two XAResources are expected to be rolled-back", 2, checker.getRolledback());
-            Assert.assertEquals("Two XAResources were were rolled-bck thus not committed", 0, checker.getCommitted());
+            Assertions.assertEquals(1, checker.getMessages().size(), "Expecting one message was passed from RAR to MDB");
+            Assertions.assertEquals(TransactionInflowResourceAdapter.MSG,
+                    checker.getMessages().iterator().next(), "Expecting message with the content was passed from RAR to MDB");
+            Assertions.assertEquals(2, checker.getPrepared(), "Two XAResources were enlisted thus expected to be prepared");
+            Assertions.assertEquals(2, checker.getRolledback(), "Two XAResources are expected to be rolled-back");
+            Assertions.assertEquals(0, checker.getCommitted(), "Two XAResources were were rolled-bck thus not committed");
         } finally {
             checker.resetAll();
         }

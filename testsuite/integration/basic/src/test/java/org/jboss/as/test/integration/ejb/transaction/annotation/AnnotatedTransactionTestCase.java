@@ -14,16 +14,16 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AnnotatedTransactionTestCase {
 
     @ArquillianResource
@@ -43,7 +43,7 @@ public class AnnotatedTransactionTestCase {
         final AnnotatedTx bean = (AnnotatedTx) initialContext.lookup("java:module/" + AnnotatedTxBean.class.getSimpleName() + "!" + AnnotatedTx.class.getName());
         userTransaction.begin();
         try {
-            Assert.assertEquals(Status.STATUS_ACTIVE, bean.getActiveTransaction());
+            Assertions.assertEquals(Status.STATUS_ACTIVE, bean.getActiveTransaction());
         } finally {
             userTransaction.rollback();
         }
@@ -55,14 +55,14 @@ public class AnnotatedTransactionTestCase {
         final AnnotatedTx bean = (AnnotatedTx) initialContext.lookup("java:module/" + AnnotatedTxBean.class.getSimpleName() + "!" + AnnotatedTx.class.getName());
 
         bean.getNonActiveTransaction();
-        Assert.assertEquals(Status.STATUS_NO_TRANSACTION, bean.getNonActiveTransaction());
+        Assertions.assertEquals(Status.STATUS_NO_TRANSACTION, bean.getNonActiveTransaction());
 
         try {
             userTransaction.begin();
             bean.getNonActiveTransaction();
-            Assert.fail();
+            Assertions.fail();
         } catch (EJBException e) {
-            Assert.assertTrue(true);
+            Assertions.assertTrue(true);
         } finally {
             userTransaction.rollback();
         }

@@ -14,23 +14,23 @@ import java.util.regex.Pattern;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Resource adapter statistics testCase
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
 
@@ -43,12 +43,12 @@ public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
     @ArquillianResource
     Deployer deployer;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         jndiCount = 0;
     }
 
-    @After
+    @AfterEach
     public void closeAndUndeploy() {
         String name;
         while (archiveCount > 0) {

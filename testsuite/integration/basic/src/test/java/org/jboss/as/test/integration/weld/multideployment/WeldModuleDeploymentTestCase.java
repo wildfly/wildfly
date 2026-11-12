@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
@@ -26,17 +26,17 @@ import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that beans definied in a static can be used by a deployment
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WeldModuleDeploymentTestCase {
 
     public static void doSetup() throws Exception {
@@ -48,7 +48,7 @@ public class WeldModuleDeploymentTestCase {
         createTestModule(testModuleRoot);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         File testModuleRoot = new File(getModulePath(), "org/jboss/test/weldModule");
         File file = testModuleRoot;
@@ -151,7 +151,7 @@ public class WeldModuleDeploymentTestCase {
 
     @Test
     public void testSimpleBeanInjected() throws Exception {
-        Assert.assertNotNull(bean);
-        Assert.assertNotNull(moduleEjb);
+        Assertions.assertNotNull(bean);
+        Assertions.assertNotNull(moduleEjb);
     }
 }

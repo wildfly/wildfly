@@ -18,7 +18,7 @@ import jakarta.ejb.EJBException;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -29,9 +29,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests {@link org.jboss.ejb3.annotation.Pool} annotation usage and the &lt;pool&gt;
@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({PoolOverrideTestCase.PoolOverrideTestCaseSetup.class,
         PoolOverrideTestCase.AllowPropertyReplacementSetup.class})
 public class PoolOverrideTestCase {
@@ -215,11 +215,11 @@ public class PoolOverrideTestCase {
         }
         // if both failed, then it's an error
         if (firstInvocationFailed && secondInvocationFailed) {
-            Assert.fail("Both first and second invocations to EJB failed. Only one was expected to fail");
+            Assertions.fail("Both first and second invocations to EJB failed. Only one was expected to fail");
         }
         // if none failed, then it's an error too
         if (!firstInvocationFailed && !secondInvocationFailed) {
-            Assert.fail("Both first and second invocations to EJB passed. Only one was expected to pass");
+            Assertions.fail("Both first and second invocations to EJB passed. Only one was expected to pass");
         }
     }
 

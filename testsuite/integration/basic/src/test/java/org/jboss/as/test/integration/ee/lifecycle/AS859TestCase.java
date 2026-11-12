@@ -4,19 +4,20 @@
  */
 package org.jboss.as.test.integration.ee.lifecycle;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.common.Naming;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * [AS7-859] On same named private lifecycle callbacks the super class callback is not called
@@ -25,7 +26,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AS859TestCase {
 
     @Deployment
@@ -41,8 +42,8 @@ public class AS859TestCase {
     public void testPostConstruct() throws NamingException {
         final Child bean = Naming.lookup("java:global/as859/Child", Child.class);
         assertNotNull(bean);
-        assertTrue("Child @PostConstruct has not been called", Child.postConstructCalled);
-        assertTrue("Parent @PostConstruct has not been called", Parent.postConstructCalled);
+        assertTrue(Child.postConstructCalled, "Child @PostConstruct has not been called");
+        assertTrue(Parent.postConstructCalled, "Parent @PostConstruct has not been called");
     }
 
 }

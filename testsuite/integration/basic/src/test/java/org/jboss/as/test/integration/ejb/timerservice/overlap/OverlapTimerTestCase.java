@@ -7,19 +7,19 @@ package org.jboss.as.test.integration.ejb.timerservice.overlap;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author <a href="mailto:wfink@redhat.com">Wolf-Dieter Fink</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class OverlapTimerTestCase {
 
     private static final int TIMER_CALL_WAITING1_S = 3;
@@ -34,7 +34,7 @@ public class OverlapTimerTestCase {
 
     @Test
     public void testContinuedAfterOverlap() throws Exception {
-        Assert.assertTrue("Schedule timeout method was not invoked within 3 seconds!", ScheduleRetryFailSingletonBean.startLatch().await(TIMER_CALL_WAITING1_S, TimeUnit.SECONDS));
-        Assert.assertTrue("Schedule timer is not alive after overlapped invocation!",ScheduleRetryFailSingletonBean.aliveLatch().await(TIMER_CALL_WAITING2_S, TimeUnit.SECONDS));
+        Assertions.assertTrue(ScheduleRetryFailSingletonBean.startLatch().await(TIMER_CALL_WAITING1_S, TimeUnit.SECONDS), "Schedule timeout method was not invoked within 3 seconds!");
+        Assertions.assertTrue(ScheduleRetryFailSingletonBean.aliveLatch().await(TIMER_CALL_WAITING2_S, TimeUnit.SECONDS),"Schedule timer is not alive after overlapped invocation!");
     }
 }

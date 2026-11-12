@@ -27,18 +27,18 @@ import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that JMX Connector work properly from container.
@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
  * @author Eduardo Martins
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JMXConnectorTestCase {
     // NOTE: this test may fail on Ubuntu, since it has definition of localhost as 127.0.1.1
@@ -64,7 +64,7 @@ public class JMXConnectorTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         LocateRegistry.createRegistry(port);
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -83,7 +83,7 @@ public class JMXConnectorTestCase {
         connectorServer.start();
     }
 
-    @After
+    @AfterEach
     public void afterTest() throws Exception {
         if (connectorServer != null) {
             connectorServer.stop();
@@ -117,7 +117,7 @@ public class JMXConnectorTestCase {
             log.trace("MBean server count from jndi: " + mBeanCountFromJNDI);
             int mBeanCountFromConnector = connectedBean.getMBeanCountFromConnector(jmxServiceURL);
             log.trace("MBean server count from connector: " + mBeanCountFromConnector);
-            Assert.assertEquals(mBeanCountFromConnector, mBeanCountFromJNDI);
+            Assertions.assertEquals(mBeanCountFromConnector, mBeanCountFromJNDI);
         } finally {
             initialContext.close();
         }

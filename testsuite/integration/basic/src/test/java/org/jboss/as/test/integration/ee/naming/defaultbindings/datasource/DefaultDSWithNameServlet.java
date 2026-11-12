@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import jakarta.annotation.Resource;
 import javax.naming.InitialContext;
@@ -54,16 +54,16 @@ public class DefaultDSWithNameServlet extends HttpServlet {
 
         if (hasLookup) {
             try {
-                Assert.assertNotNull(new InitialContext().lookup("java:comp/env/ds"));
+                Assertions.assertNotNull(new InitialContext().lookup("java:comp/env/ds"));
             } catch (NamingException e) {
                 throw new IOException("Cannot lookup java:comp/env/ds when has lookup specified", e);
             }
         } else {
             try {
                 new InitialContext().lookup("java:comp/env/ds");
-                Assert.fail("lookup should fail when no lookup specified for 'java:comp/env/ds'");
+                Assertions.fail("lookup should fail when no lookup specified for 'java:comp/env/ds'");
             } catch (NamingException e) {
-                Assert.assertTrue(e.getMessage().contains("env/ds"));
+                Assertions.assertTrue(e.getMessage().contains("env/ds"));
             }
         }
         out.print("OK");

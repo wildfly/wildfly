@@ -11,22 +11,22 @@ import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Martin Kouba
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EnterpriseBeanDiscoveryTest {
 
     private static final String ALPHA_JAR = "alpha.jar";
@@ -133,14 +133,14 @@ public class EnterpriseBeanDiscoveryTest {
         CreationalContext<?> ctx = manager.createCreationalContext(bean);
         @SuppressWarnings("unchecked")
         T instance = (T) manager.getReference(bean, beanType, ctx);
-        Assert.assertNotNull(instance);
-        Assert.assertTrue(extension.getObservedAnnotatedTypes().contains(beanClazz));
+        Assertions.assertNotNull(instance);
+        Assertions.assertTrue(extension.getObservedAnnotatedTypes().contains(beanClazz));
         instance.pong();
     }
 
     private <T extends Ping, B extends Ping> void assertNotDiscoveredAndNotAvailable(Class<T> beanType, Class<B> beanClazz) {
-        Assert.assertFalse(extension.getObservedAnnotatedTypes().contains(beanClazz));
-        Assert.assertTrue(manager.getBeans(beanType).isEmpty());
+        Assertions.assertFalse(extension.getObservedAnnotatedTypes().contains(beanClazz));
+        Assertions.assertTrue(manager.getBeans(beanType).isEmpty());
     }
 
     private static StringAsset newBeans11Descriptor(String mode) {

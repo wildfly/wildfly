@@ -11,7 +11,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceUnit;
 import jakarta.persistence.metamodel.EntityType;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -27,7 +27,7 @@ public class JpaTestSlsb {
 
     public void testMainArchiveEntity() {
         final EntityType<MainArchiveEntity> meta = emf.getMetamodel().entity(MainArchiveEntity.class);
-        Assert.assertNotNull("class must be an entity", meta);
+        Assertions.assertNotNull(meta, "class must be an entity");
         MainArchiveEntity entity = new MainArchiveEntity();
         entity.setId(1);
         entity.setName("Bob");
@@ -38,7 +38,7 @@ public class JpaTestSlsb {
 
     public void testJarFileEntity() {
         final EntityType<JarFileEntity> meta = emf.getMetamodel().entity(JarFileEntity.class);
-        Assert.assertNotNull("class must be an entity", meta);
+        Assertions.assertNotNull(meta, "class must be an entity");
         JarFileEntity entity = new JarFileEntity();
         entity.setId(1);
         entity.setName("Bob");

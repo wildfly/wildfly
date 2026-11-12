@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.integration.jsf.injection;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -21,12 +23,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,16 +38,16 @@ import org.jboss.shrinkwrap.descriptor.api.beans11.BeansDescriptor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for a FacesConverter injected using annotation=true.
  *
  * @author rmartinc
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class FacesConverterInjectionTestCase {
 
@@ -79,11 +79,11 @@ public class FacesConverterInjectionTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpUriRequest getRequest = new HttpGet(url.toExternalForm() + "faces/url.xhtml");
             try (CloseableHttpResponse getResponse = client.execute(getRequest)) {
-                MatcherAssert.assertThat("GET success", getResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(HttpURLConnection.HTTP_OK));
+                assertThat(getResponse.getStatusLine().getStatusCode()).as("GET success").isEqualTo(HttpURLConnection.HTTP_OK);
                 String text = EntityUtils.toString(getResponse.getEntity());
                 Document doc = Jsoup.parse(text);
                 Element form = doc.select("form").first();
-                MatcherAssert.assertThat("form is included in the response", form, CoreMatchers.notNullValue());
+                assertThat(form).as("form is included in the response").isNotNull();
                 List<NameValuePair> params = new ArrayList<>();
                 for (Element input : form.select("input")) {
                     String value = input.attr("value");
@@ -93,16 +93,16 @@ public class FacesConverterInjectionTestCase {
                         params.add(new BasicNameValuePair(input.attr("name"), urlToCheck));
                     }
                 }
-                Assert.assertFalse("Form paramaters are filled", params.isEmpty());
+                Assertions.assertFalse(params.isEmpty(), "Form paramaters are filled");
                 URI uri = new URIBuilder().setScheme(url.getProtocol())
                         .setHost(url.getHost()).setPort(url.getPort())
                         .setPath(form.attr("action")).build();
                 HttpPost postRequest = new HttpPost(uri);
                 postRequest.setEntity(new UrlEncodedFormEntity(params));
                 try (CloseableHttpResponse postResponse = client.execute(postRequest)) {
-                    MatcherAssert.assertThat("POST success", postResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(HttpURLConnection.HTTP_OK));
+                    assertThat(postResponse.getStatusLine().getStatusCode()).as("POST success").isEqualTo(HttpURLConnection.HTTP_OK);
                     text = EntityUtils.toString(postResponse.getEntity());
-                    MatcherAssert.assertThat("Expected text is in POST response", text, CoreMatchers.containsString(containsText));
+                    assertThat(text).as("Expected text is in POST response").contains(containsText);
                 }
             }
         }

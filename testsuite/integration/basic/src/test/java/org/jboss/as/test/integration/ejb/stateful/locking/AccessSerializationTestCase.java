@@ -11,22 +11,22 @@ import java.util.concurrent.Future;
 
 import javax.naming.InitialContext;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that multiple calls to a SFSB are serialized correctly in both the presence and the absence of a transaction
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AccessSerializationTestCase {
 
     private static final String ARCHIVE_NAME = "AccessSerializationTestCase";
@@ -56,7 +56,7 @@ public class AccessSerializationTestCase {
         for(int i = 0; i < NUM_THREADS; ++i) {
             results[i].get();
         }
-        Assert.assertEquals(NUM_THREADS * SUM_AMOUNT, sfsb.getCounter());
+        Assertions.assertEquals(NUM_THREADS * SUM_AMOUNT, sfsb.getCounter());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class AccessSerializationTestCase {
         for(int i = 0; i < NUM_THREADS; ++i) {
             results[i].get();
         }
-        Assert.assertEquals(NUM_THREADS * SUM_AMOUNT, sfsb.getCounter());
+        Assertions.assertEquals(NUM_THREADS * SUM_AMOUNT, sfsb.getCounter());
     }
 
     private class CallingClassTransaction implements Runnable {

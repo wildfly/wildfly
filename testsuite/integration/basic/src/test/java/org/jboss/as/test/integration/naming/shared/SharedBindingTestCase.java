@@ -7,14 +7,15 @@ package org.jboss.as.test.integration.naming.shared;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.java.permission.JndiPermission;
 
 import javax.naming.InitialContext;
@@ -27,7 +28,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  * A test case which verifies proper release of shared binds, i.e., automated unbind only after every deployment that shares the bind is undeployed.
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SharedBindingTestCase {
 
     private static final String BEAN_ONE_JAR_NAME = "BEAN_ONE";
@@ -91,9 +92,9 @@ public class SharedBindingTestCase {
         // lookup bean three and assert test results
         final TestResults testResults = (TestResults) initialContext.lookup("java:global/"+ TEST_RESULTS_BEAN_JAR_NAME +"/"+TestResultsBean.class.getSimpleName()+"!"+TestResults.class.getName());
         testResults.await(5, TimeUnit.SECONDS);
-        Assert.assertTrue(testResults.isPostContructOne());
-        Assert.assertTrue(testResults.isPostContructTwo());
-        Assert.assertTrue(testResults.isPreDestroyOne());
-        Assert.assertTrue(testResults.isPreDestroyTwo());
+        Assertions.assertTrue(testResults.isPostContructOne());
+        Assertions.assertTrue(testResults.isPostContructTwo());
+        Assertions.assertTrue(testResults.isPreDestroyOne());
+        Assertions.assertTrue(testResults.isPreDestroyTwo());
     }
 }

@@ -5,26 +5,28 @@
 
 package org.jboss.as.test.integration.jca.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.jboss.arquillian.junit5.ArquillianExtension;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Datasource configuration and metrics unit test.
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         setBaseAddress("data-source", "DS");
     }
@@ -39,14 +41,16 @@ public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeDs();
     }
 
-    @Test(expected = Exception.class)
-    public void testDsWithNoDriver() throws Exception {
-        setBadModel("wrong-no-driver.xml");
+    @Test
+    public void testDsWithNoDriver() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-no-driver.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testDsWithWrongTransactionIsolationType() throws Exception {
-        setBadModel("wrong-transaction-isolation-type.xml");
+    @Test
+    public void testDsWithWrongTransactionIsolationType() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-transaction-isolation-type.xml"));
     }
 
     @Test
@@ -56,9 +60,10 @@ public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeDs();
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongValidationProperties() throws Exception {
-        setBadModel("wrong-validation-properties.xml");
+    @Test
+    public void testWrongValidationProperties() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-validation-properties.xml"));
     }
 
     @Test
@@ -68,24 +73,28 @@ public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeDs();
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongBlckgTimeoutProperty() throws Exception {
-        setBadModel("wrong-blckg-timeout-property.xml");
+    @Test
+    public void testWrongBlckgTimeoutProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-blckg-timeout-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongIdleMinsProperty() throws Exception {
-        setBadModel("wrong-idle-mins-property.xml");
+    @Test
+    public void testWrongIdleMinsProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-idle-mins-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongAllocRetryProperty() throws Exception {
-        setBadModel("wrong-alloc-retry-property.xml");
+    @Test
+    public void testWrongAllocRetryProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-alloc-retry-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongAllocRetryWaitProperty() throws Exception {
-        setBadModel("wrong-alloc-retry-wait-property.xml");
+    @Test
+    public void testWrongAllocRetryWaitProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-alloc-retry-wait-property.xml"));
     }
 
     @Test
@@ -96,34 +105,40 @@ public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
         removeDs();
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongTrckStmtProperty() throws Exception {
-        setBadModel("wrong-trck-stmt-property.xml");
+    @Test
+    public void testWrongTrckStmtProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-trck-stmt-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongStmtCacheSizeProperty() throws Exception {
-        setBadModel("wrong-stmt-cache-size-property.xml");
+    @Test
+    public void testWrongStmtCacheSizeProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-stmt-cache-size-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongFlushStrategyProperty() throws Exception {
-        setBadModel("wrong-flush-strategy-property.xml");
+    @Test
+    public void testWrongFlushStrategyProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-flush-strategy-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongMinPoolSizeProperty() throws Exception {
-        setBadModel("wrong-min-pool-size-property.xml");
+    @Test
+    public void testWrongMinPoolSizeProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-min-pool-size-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongMaxPoolSizeProperty() throws Exception {
-        setBadModel("wrong-max-pool-size-property.xml");
+    @Test
+    public void testWrongMaxPoolSizeProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-max-pool-size-property.xml"));
     }
 
-    @Test(expected = Exception.class)
-    public void testWrongMaxLessMinPoolSizeProperty() throws Exception {
-        setBadModel("wrong-max-less-min-pool-size-property.xml");
+    @Test
+    public void testWrongMaxLessMinPoolSizeProperty() {
+        assertThrows(Exception.class, () ->
+            setBadModel("wrong-max-less-min-pool-size-property.xml"));
     }
 
     @Test

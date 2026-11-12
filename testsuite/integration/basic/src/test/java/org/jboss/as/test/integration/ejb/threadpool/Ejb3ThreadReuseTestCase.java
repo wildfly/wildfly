@@ -5,15 +5,15 @@
 
 package org.jboss.as.test.integration.ejb.threadpool;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Ejb3ThreadReuseTestCase - start EJB singleton with 1 sec timer and check that single thread is reused
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
  *
  * @author Miroslav Novak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(Ejb3ThreadReuseTestCase.ServerSetup.class)
 public class Ejb3ThreadReuseTestCase extends Ejb3ThreadPoolBase {
 
@@ -38,12 +38,12 @@ public class Ejb3ThreadReuseTestCase extends Ejb3ThreadPoolBase {
         // check that at least 3 tasks were processed by thread pool and then verify that there is still just one thread
         waitUntilThreadPoolProcessedAtLeast(2, 10000);
 
-        Assert.assertEquals("Number of threads in pool must be 1.", 1,
-                readAttribute("current-thread-count").asInt());
+        Assertions.assertEquals(1, readAttribute("current-thread-count").asInt(),
+                "Number of threads in pool must be 1.");
 
         // verify that it's still the same thread
-        Assert.assertEquals("There is always different thread processing tasks but it should be one.",
-                1, scheduleSingletonLocal.getThreadNames().size());
+        Assertions.assertEquals(1,
+                scheduleSingletonLocal.getThreadNames().size(), "There is always different thread processing tasks but it should be one.");
     }
 
     public static class ServerSetup extends SnapshotRestoreSetupTask {

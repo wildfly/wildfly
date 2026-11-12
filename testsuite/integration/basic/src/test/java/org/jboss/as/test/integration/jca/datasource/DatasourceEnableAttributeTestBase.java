@@ -10,6 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
@@ -18,8 +19,8 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * A basic testing of setting/unsetting "enable" attribute of datasource.
@@ -45,18 +46,20 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         }
     }
 
-    @Test(expected = MgmtOperationException.class)
+    @Test
     public void addDatasourceDisabled() throws Exception {
-        Datasource ds = Datasource.Builder("testDatasourceDisabled")
-                .enabled(false)
-                .build();
+        assertThrows(MgmtOperationException.class, () -> {
+            Datasource ds = Datasource.Builder("testDatasourceDisabled")
+                    .enabled(false)
+                    .build();
 
-        try {
-            createDataSource(ds);
-            testConnection(ds);
-        } finally {
-            removeDataSourceSilently(ds);
-        }
+            try {
+                createDataSource(ds);
+                testConnection(ds);
+            } finally {
+                removeDataSourceSilently(ds);
+            }
+        });
     }
 
     @Test
@@ -70,7 +73,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
 
             try {
                 testConnection(ds);
-                Assert.fail("Datasource " + ds + " is disabled. Test connection can't succeed.");
+                Assertions.fail("Datasource " + ds + " is disabled. Test connection can't succeed.");
             } catch (MgmtOperationException moe) {
                 // expecting that datasource won't be available 'online'
             }
@@ -99,20 +102,22 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         }
     }
 
-    @Test(expected = MgmtOperationException.class)
+    @Test
     public void disableBySystemProperty() throws Exception {
-        Datasource ds = Datasource.Builder("testDatasourceDisableBySystem")
-                .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
-                .build();
+        assertThrows(MgmtOperationException.class, () -> {
+            Datasource ds = Datasource.Builder("testDatasourceDisableBySystem")
+                    .enabled(wrapProp(DS_ENABLED_SYSTEM_PROPERTY_NAME))
+                    .build();
 
-        try {
-            addSystemProperty(DS_ENABLED_SYSTEM_PROPERTY_NAME, "false");
-            createDataSource(ds);
-            testConnection(ds);
-        } finally {
-            removeSystemPropertySilently(DS_ENABLED_SYSTEM_PROPERTY_NAME);
-            removeDataSourceSilently(ds);
-        }
+            try {
+                addSystemProperty(DS_ENABLED_SYSTEM_PROPERTY_NAME, "false");
+                createDataSource(ds);
+                testConnection(ds);
+            } finally {
+                removeSystemPropertySilently(DS_ENABLED_SYSTEM_PROPERTY_NAME);
+                removeDataSourceSilently(ds);
+            }
+        });
     }
 
     @Test

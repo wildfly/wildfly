@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ejb.annotationprocessing;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -18,11 +18,11 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ResourceAnnotationsProcessingIgnoreUnusedResourceBindingTestCase.ServerSetup.class)
 public class ResourceAnnotationsProcessingIgnoreUnusedResourceBindingTestCase {
 
@@ -38,7 +38,7 @@ public class ResourceAnnotationsProcessingIgnoreUnusedResourceBindingTestCase {
             ModelNode op = Util.createAddOperation(PROP_ADDRESS);
             op.get("value").set("true");
             ModelNode response = managementClient.getControllerClient().execute(op);
-            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+            Assertions.assertEquals("success", response.get("outcome").asString(), response.toString());
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
@@ -47,7 +47,7 @@ public class ResourceAnnotationsProcessingIgnoreUnusedResourceBindingTestCase {
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             ModelNode op = Util.createRemoveOperation(PROP_ADDRESS);
             ModelNode response = managementClient.getControllerClient().execute(op);
-            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+            Assertions.assertEquals("success", response.get("outcome").asString(), response.toString());
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }

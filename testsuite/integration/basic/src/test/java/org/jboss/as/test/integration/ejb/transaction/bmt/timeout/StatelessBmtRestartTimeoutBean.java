@@ -14,7 +14,8 @@ import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 @Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
@@ -38,7 +39,7 @@ public class StatelessBmtRestartTimeoutBean {
             try {
                 log.tracef("Rollbacking transaction '%s'", txnAsString);
                 tm.rollback();
-                Assert.fail("Rollback should throw IllegalStateException: BaseTransaction.rollback - ARJUNA016074: no transaction!"
+                Assertions.fail("Rollback should throw IllegalStateException: BaseTransaction.rollback - ARJUNA016074: no transaction!"
                     + " as the original transaction should be aborted by transaction manager");
             } catch (Exception rollbacke) {
                 // expected transaction as there is no txn to rollback - it was aborted by TM

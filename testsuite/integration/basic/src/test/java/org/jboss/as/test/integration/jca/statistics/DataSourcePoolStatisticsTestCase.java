@@ -10,20 +10,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Data source statistics testCase
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
@@ -92,12 +92,12 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
     private AutoCloseable snapshot;
 
-    @Before
+    @BeforeEach
     public void snapshot() {
         snapshot = ServerSnapshot.takeSnapshot(getManagementClient());
     }
 
-    @After
+    @AfterEach
     public void closeDataSources() throws Exception {
         snapshot.close();
         snapshot = null;

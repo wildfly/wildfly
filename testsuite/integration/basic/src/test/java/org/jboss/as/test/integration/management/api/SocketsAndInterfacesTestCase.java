@@ -14,7 +14,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
@@ -40,16 +40,16 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase {
 
@@ -71,16 +71,16 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
     private AutoCloseable snapshot;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         snapshot = ServerSnapshot.takeSnapshot(getManagementClient());
         testHost = System.getProperty("node0");
         testNic = getNic(testHost);
-        assumeFalse("No usable nic '" + testHost + "' is available", testNic == null);
+        assumeFalse(testNic == null, "No usable nic '" + testHost + "' is available");
 
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         snapshot.close();
         snapshot = null;
@@ -108,14 +108,14 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         ModelNode result = executeOperation(op);
 
         final URL url = new URL("http", testHost, TEST_PORT, "/");
-        Assert.assertTrue("Could not connect to created connector: " + url + "<>" + InetAddress.getByName(url.getHost()) + "..." + testNic + ".>" + result, WebUtil.testHttpURL(url.toString()));
+        Assertions.assertTrue(WebUtil.testHttpURL(url.toString()), "Could not connect to created connector: " + url + "<>" + InetAddress.getByName(url.getHost()) + "..." + testNic + ".>" + result);
 
         // change socket binding port
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set("port");
         op.get(VALUE).set(TEST_PORT + 1);
         result = executeOperation(op, false);
-        Assert.assertEquals(result.asString(), "reload-required", result.get(RESPONSE_HEADERS).get(PROCESS_STATE).asString());
+        Assertions.assertEquals("reload-required", result.get(RESPONSE_HEADERS).get(PROCESS_STATE).asString(), result.asString());
 
         logger.trace("Restarting server.");
 
@@ -135,18 +135,18 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         logger.trace("Server is up.");
 
         // check the connector is not listening on the old port
-        Assert.assertFalse("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
-                "http", testHost, TEST_PORT, "/").toString()));
+        Assertions.assertFalse(WebUtil.testHttpURL(new URL(
+                "http", testHost, TEST_PORT, "/").toString()), "Could not connect to created connector.");
 
         // try to remove the interface while the socket binding is still  bound to it - should fail
         op = createOpNode("interface=test123-interface", REMOVE);
         result = executeOperation(op, false);
-        Assert.assertNotEquals("Removed interface with socket binding bound to it.", SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertNotEquals(SUCCESS, result.get(OUTCOME).asString(), "Removed interface with socket binding bound to it.");
 
         // try to remove socket binding while the connector is still using it - should fail
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
         result = executeOperation(op, false);
-        Assert.assertNotEquals("Removed socked binding with connector still using it.", SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertNotEquals(SUCCESS, result.get(OUTCOME).asString(), "Removed socked binding with connector still using it.");
     }
 
     private NetworkInterface getNic(String node) throws SocketException, UnknownHostException {

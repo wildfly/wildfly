@@ -29,8 +29,9 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.jmx.rbac.deployment.JmxResource;
 
@@ -58,9 +59,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE_IDENTITY_ROLES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.management.MBeanServerPermission;
 
@@ -107,9 +108,9 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
         try (CloseableHttpClient httpclient = createHttpClient()) {
             HttpGet httpget = new HttpGet(url.toExternalForm() + urlPattern);
             HttpResponse response = httpclient.execute(httpget);
-            assertNotNull("Response is 'null', we expected non-null response!", response);
+            assertNotNull(response, "Response is 'null', we expected non-null response!");
             final String text = Utils.getContent(response);
-            assertEquals(text, 200, response.getStatusLine().getStatusCode());
+            assertEquals(200, response.getStatusLine().getStatusCode(), text);
             return text;
         }
     }
@@ -145,13 +146,13 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
 
     private void checkResult(String result, String userName) {
         ModelNode resultNode = ModelNode.fromString(result);
-        Assert.assertEquals(userName, resultNode.get(IDENTITY, USERNAME).asString());
+        Assertions.assertEquals(userName, resultNode.get(IDENTITY, USERNAME).asString());
         checkSuperUserInList(resultNode.get("mapped-roles"));
     }
 
     private void checkSuperUserInList(ModelNode modelNode) {
-        Assert.assertEquals(1, modelNode.asList().size());
-        Assert.assertEquals("SuperUser", modelNode.asList().get(0).asString());
+        Assertions.assertEquals(1, modelNode.asList().size());
+        Assertions.assertEquals("SuperUser", modelNode.asList().get(0).asString());
     }
 
     static class EnableRbacSetupTask extends SnapshotRestoreSetupTask {
@@ -227,7 +228,7 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
 
 
             ModelNode response = managementClient.getControllerClient().execute(Util.createCompositeOperation(operations));
-            Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString());
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(10000));
         }
@@ -257,7 +258,7 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
                 return;
             }
             Path target = Paths.get("target/wildfly/standalone/configuration");
-            Assert.assertTrue(Files.exists(target));
+            Assertions.assertTrue(Files.exists(target));
             for (String fileName : ALL_PROPERTIES) {
                 if (skippedFiles.contains(fileName)) {
                     continue;

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -32,15 +32,15 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
     private static final String EAR = "test-visibility.ear";
     private static final String EAR_ISOLATED = "test-visibility-isolated.ear";
@@ -144,16 +144,16 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
 
     private void validateJobXmlNames(final ModelNode address, final Collection<String> expected) throws IOException {
         Set<String> jobXmlNames = getJobXmlNames(address);
-        Assert.assertEquals(expected.size(), jobXmlNames.size());
-        Assert.assertTrue("Expected the following job XML names: " + expected, jobXmlNames.containsAll(expected));
+        Assertions.assertEquals(expected.size(), jobXmlNames.size());
+        Assertions.assertTrue(jobXmlNames.containsAll(expected), "Expected the following job XML names: " + expected);
         final Collection<String> expectedJobNames = new LinkedHashSet<>();
         for (String jobXmlName : expected) {
             final int end = jobXmlName.indexOf(".xml");
             expectedJobNames.add(jobXmlName.substring(0, end));
         }
         final Set<String> jobNames = getJobNames(address);
-        Assert.assertEquals(expectedJobNames.size(), jobNames.size());
-        Assert.assertTrue("Expected the following job names: " + expectedJobNames, jobNames.containsAll(expectedJobNames));
+        Assertions.assertEquals(expectedJobNames.size(), jobNames.size());
+        Assertions.assertTrue(jobNames.containsAll(expectedJobNames), "Expected the following job names: " + expectedJobNames);
     }
 
     private Set<String> getJobXmlNames(final ModelNode address) throws IOException {
@@ -182,7 +182,7 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(Operations.getFailureDescription(result).asString());
+        Assertions.fail(Operations.getFailureDescription(result).asString());
         // Should never be reached
         return new ModelNode();
     }

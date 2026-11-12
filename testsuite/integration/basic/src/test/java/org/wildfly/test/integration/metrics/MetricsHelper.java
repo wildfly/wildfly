@@ -4,8 +4,8 @@
  */
 package org.wildfly.test.integration.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 
@@ -15,7 +15,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 public class MetricsHelper {
 
@@ -52,7 +53,7 @@ public class MetricsHelper {
             }
         }
 
-        Assert.fail(metricName + " metric not found in " + prometheusContent);
+        Assertions.fail(metricName + " metric not found in " + prometheusContent);
         return -1;
     }
 }

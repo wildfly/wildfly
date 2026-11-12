@@ -8,12 +8,12 @@ package org.jboss.as.test.integration.ee.injection.ztatic;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests static field and method injection for EE apps.
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
  * @author Eduardo Martins
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StaticInjectionTestCase {
 
     private static final String DEPLOYMENT_NAME = "static-injection-test-du";
@@ -42,7 +42,7 @@ public class StaticInjectionTestCase {
 
     @Test
     public void testStaticInjection() {
-        Assert.assertTrue("Static field should not be injected", !fieldTestEJB.isStaticResourceInjected());
-        Assert.assertTrue("Static method should not be injected", !methodTestEJB.isStaticResourceInjected());
+        Assertions.assertTrue(!fieldTestEJB.isStaticResourceInjected(), "Static field should not be injected");
+        Assertions.assertTrue(!methodTestEJB.isStaticResourceInjected(), "Static method should not be injected");
     }
 }

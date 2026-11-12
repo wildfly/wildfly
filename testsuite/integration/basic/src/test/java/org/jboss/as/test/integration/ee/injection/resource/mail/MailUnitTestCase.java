@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.ee.injection.resource.mail;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Testing injection of mail service and its definition in xml file.
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  *
  * @author Darran Lofthouse, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MailUnitTestCase {
 
     @ArquillianResource
@@ -39,7 +39,7 @@ public class MailUnitTestCase {
     @Test
     public void testMailInjection() throws Exception {
         StatelessMail bean = (StatelessMail) ctx.lookup("java:module/StatelessMailBean");
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
 
         bean.testMail();
         bean.testMailInjection();

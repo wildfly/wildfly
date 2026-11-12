@@ -15,7 +15,7 @@ import javax.naming.NamingException;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.beanvalidation.Player;
 import org.jboss.as.test.integration.jpa.beanvalidation.SLSBInheritance;
@@ -23,17 +23,17 @@ import org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test Jakarta Bean Validation is propagated on inherited attributes
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BeanValidationJPAInheritanceTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_TestBeanValidationJPAInheritance";
@@ -41,7 +41,7 @@ public class BeanValidationJPAInheritanceTestCase {
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         iniCtx = new InitialContext();
     }
@@ -83,9 +83,9 @@ public class BeanValidationJPAInheritanceTestCase {
             String stacktrace = w.toString();
 
             if (Locale.getDefault().getLanguage().equals("en")) {
-                Assert.assertTrue(stacktrace.contains("interpolatedMessage='must not be empty', propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
+                Assertions.assertTrue(stacktrace.contains("interpolatedMessage='must not be empty', propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
             } else {
-                Assert.assertTrue(stacktrace.contains("propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
+                Assertions.assertTrue(stacktrace.contains("propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
             }
         }
 

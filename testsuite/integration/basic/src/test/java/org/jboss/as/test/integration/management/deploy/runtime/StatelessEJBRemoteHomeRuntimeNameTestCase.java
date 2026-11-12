@@ -12,8 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -30,14 +29,18 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     private static Logger log = Logger.getLogger(StatelessEJBRemoteHomeRuntimeNameTestCase.class);
@@ -56,7 +59,7 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
 
     private static InitialContext context;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         context = getInitialContext();
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
@@ -87,10 +90,10 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
         ModelNode result = controllerClient.execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         safeClose(context);
         ModelNode result = controllerClient.execute(composite(
@@ -98,7 +101,7 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
                 remove(DEPLOYMENT_NAME)
         ));
         // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to undeploy: " + result);
     }
 
     private static InitialContext getInitialContext() throws NamingException {
@@ -133,26 +136,26 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
     }
 
     @Test
-    @InSequence(value = 1)
+    @Order(value = 1)
     public void testGetEjbHome() throws Exception {
         Object home = context.lookup(getEJBHomeJNDIBinding());
-        Assert.assertTrue(home instanceof SimpleHome);
+        Assertions.assertTrue(home instanceof SimpleHome);
 
     }
 
     @Test
-    @InSequence(value = 2)
+    @Order(value = 2)
     public void testStatelessLocalHome() throws Exception {
         SimpleHome home = (SimpleHome) context.lookup(getEJBHomeJNDIBinding());
         SimpleInterface ejbInstance = home.createSimple();
-        Assert.assertEquals("Hello World", ejbInstance.sayHello());
+        Assertions.assertEquals("Hello World", ejbInstance.sayHello());
         home = (SimpleHome) ejbInstance.getEJBHome();
         ejbInstance = home.createSimple();
-        Assert.assertEquals("Hello World", ejbInstance.sayHello());
+        Assertions.assertEquals("Hello World", ejbInstance.sayHello());
     }
 
     @Test
-    @InSequence(value = 3)
+    @Order(value = 3)
     public void testStepByStep() throws Exception {
 
         ModelNode readResource = new ModelNode();
@@ -162,26 +165,26 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBDEPLOYMENT, SUB_DEPLOYMENT_NAME);
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(EJB_TYPE, BEAN_CLASS.getSimpleName());
         result = controllerClient.execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
-    @InSequence(value = 4)
+    @Order(value = 4)
     public void testRecursive() throws Exception {
 
         ModelNode readResource = new ModelNode();
@@ -192,6 +195,6 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
         ModelNode result = controllerClient.execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 }

@@ -17,7 +17,7 @@ import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -25,7 +25,7 @@ import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
 import org.jboss.as.test.integration.jca.JcaTestsUtil;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -35,16 +35,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Running tests on data-source in non-Jakarta Transactions mode.
  *
  * @author <a href="mailto:lgao@redhat.com>Lin Gao</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DatasourceNonCcmTestCase.DatasourceServerSetupTask.class)
 public class DatasourceNonCcmTestCase {
 
@@ -151,38 +151,38 @@ public class DatasourceNonCcmTestCase {
 
     @Test
     public void testNonJTADS() throws Exception {
-        Assert.assertNotNull(nonTXDS);
+        Assertions.assertNotNull(nonTXDS);
 
         Connection c1 = nonTXDS.getConnection();
-        Assert.assertNotNull(c1);
-        Assert.assertEquals(1, getNumberOfConnections(false));
+        Assertions.assertNotNull(c1);
+        Assertions.assertEquals(1, getNumberOfConnections(false));
 
         Connection c2 = nonTXDS.getConnection();
-        Assert.assertNotNull(c2);
-        Assert.assertEquals(2, getNumberOfConnections(false));
+        Assertions.assertNotNull(c2);
+        Assertions.assertEquals(2, getNumberOfConnections(false));
 
         c1.close();
-        Assert.assertEquals(1, getNumberOfConnections(false));
+        Assertions.assertEquals(1, getNumberOfConnections(false));
         c2.close();
-        Assert.assertEquals(0, getNumberOfConnections(false));
+        Assertions.assertEquals(0, getNumberOfConnections(false));
     }
 
     @Test
     public void testJTADS() throws Exception {
-        Assert.assertNotNull(txDS);
+        Assertions.assertNotNull(txDS);
 
         Connection c1 = txDS.getConnection();
-        Assert.assertNotNull(c1);
-        Assert.assertEquals(1, getNumberOfConnections(true));
+        Assertions.assertNotNull(c1);
+        Assertions.assertEquals(1, getNumberOfConnections(true));
 
         Connection c2 = txDS.getConnection();
-        Assert.assertNotNull(c2);
-        Assert.assertEquals(2, getNumberOfConnections(true));
+        Assertions.assertNotNull(c2);
+        Assertions.assertEquals(2, getNumberOfConnections(true));
 
         c1.close();
-        Assert.assertEquals(1, getNumberOfConnections(true));
+        Assertions.assertEquals(1, getNumberOfConnections(true));
         c2.close();
-        Assert.assertEquals(0, getNumberOfConnections(true));
+        Assertions.assertEquals(0, getNumberOfConnections(true));
     }
 
     private int getNumberOfConnections(boolean tx) throws Exception {

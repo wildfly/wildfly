@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.test.integration.common.jms;
+package org.jboss.as.test.integration.messaging.broker;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,15 +17,16 @@ import org.apache.activemq.artemis.core.server.ActiveMQServers;
 import org.apache.activemq.artemis.core.settings.impl.AddressFullMessagePolicy;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.utils.FileUtil;
-import org.junit.runner.Description;
-import org.junit.runner.Result;
-import org.junit.runner.notification.RunListener;
+import org.junit.platform.launcher.LauncherSession;
+import org.junit.platform.launcher.LauncherSessionListener;
 
 /**
+ * Starts an embedded Artemis broker, to be used as a remote broker by the server under test, for the duration of a JUnit Platform launcher session (a surefire execution).
+ * Registered via {@link java.util.ServiceLoader}, it only starts the broker if the {@code artemis.home} system property, which configures the broker data directory, is set.
  *
  * @author Emmanuel Hugonnet (c) 2020 Red Hat, Inc.
  */
-public class ArtemisRunListener extends RunListener {
+public class ArtemisLauncherSessionListener implements LauncherSessionListener {
 
     private ActiveMQServer server;
 
@@ -33,7 +34,7 @@ public class ArtemisRunListener extends RunListener {
     private static final boolean PERSISTENCE = false;
 
     public static void main(final String[] args) throws Exception {
-        ArtemisRunListener listener = new ArtemisRunListener();
+        ArtemisLauncherSessionListener listener = new ArtemisLauncherSessionListener();
         try {
             listener.startServer();
 
@@ -68,7 +69,7 @@ public class ArtemisRunListener extends RunListener {
         }
     }
 
-    private synchronized ActiveMQServer startServer() throws Exception {
+    private synchronized void startServer() throws Exception {
         if (server == null) {
             Configuration config = new ConfigurationImpl()
                     .setName("Test-Broker")
@@ -91,8 +92,8 @@ public class ArtemisRunListener extends RunListener {
                     setBindingsDirectory(new File(dataPlace, "./bindings").getAbsolutePath()).setPersistenceEnabled(true);
             server = ActiveMQServers.newActiveMQServer(config, PERSISTENCE);
             server.getAddressSettingsRepository().addMatch("#", new AddressSettings()
-                    .setDeadLetterAddress(SimpleString.toSimpleString("DLQ"))
-                    .setExpiryAddress(SimpleString.toSimpleString("ExpiryQueue"))
+                    .setDeadLetterAddress(SimpleString.of("DLQ"))
+                    .setExpiryAddress(SimpleString.of("ExpiryQueue"))
                     .setRedeliveryDelay(0)
                     .setMaxSizeBytes(-1)
                     .setMessageCounterHistoryDayLimit(10)
@@ -102,8 +103,8 @@ public class ArtemisRunListener extends RunListener {
                     .setAutoCreateJmsQueues(true)
                     .setAutoCreateJmsTopics(true));
             server.getAddressSettingsRepository().addMatch("activemq.management#", new AddressSettings()
-                    .setDeadLetterAddress(SimpleString.toSimpleString("DLQ"))
-                    .setExpiryAddress(SimpleString.toSimpleString("ExpiryQueue"))
+                    .setDeadLetterAddress(SimpleString.of("DLQ"))
+                    .setExpiryAddress(SimpleString.of("ExpiryQueue"))
                     .setRedeliveryDelay(0)
                     .setMaxSizeBytes(-1)
                     .setMessageCounterHistoryDayLimit(10)
@@ -115,24 +116,26 @@ public class ArtemisRunListener extends RunListener {
             server.start();
             server.waitForActivation(10, TimeUnit.SECONDS);
         }
-        return server;
     }
 
     @Override
-    public void testRunFinished(Result result) throws Exception {
-        stopServer();
-        super.testRunFinished(result);
+    public void launcherSessionOpened(LauncherSession session) {
+        if (System.getProperty("artemis.home") != null) {
+            try {
+                startServer();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to start the Artemis broker", e);
+            }
+        }
     }
 
     @Override
-    public void testRunStarted(Description description) throws Exception {
-        startServer();
-        super.testRunStarted(description);
-    }
-
-    @Override
-    public void testStarted(Description description) throws Exception {
-        super.testStarted(description);
+    public void launcherSessionClosed(LauncherSession session) {
+        try {
+            stopServer();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to stop the Artemis broker", e);
+        }
     }
 
     private String getArtemisHome() {

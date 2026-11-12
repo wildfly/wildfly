@@ -5,19 +5,21 @@
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarJbossStructureDepedenciesTestCase {
 
     @Deployment
@@ -46,9 +48,10 @@ public class EarJbossStructureDepedenciesTestCase {
         return ear;
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void testEarDoesNotHaveAccessToClassfilewriter() throws ClassNotFoundException {
-        loadClass("org.jboss.classfilewriter.ClassFile", TestBB.class.getClassLoader());
+    @Test
+    public void testEarDoesNotHaveAccessToClassfilewriter() {
+        assertThrows(ClassNotFoundException.class, () ->
+            loadClass("org.jboss.classfilewriter.ClassFile", TestBB.class.getClassLoader()));
     }
 
     @Test

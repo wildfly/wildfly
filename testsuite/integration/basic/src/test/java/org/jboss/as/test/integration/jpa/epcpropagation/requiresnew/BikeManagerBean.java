@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.jpa.epcpropagation.requiresnew;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -21,10 +21,10 @@ public class BikeManagerBean {
 
     public void runTest() {
         //this enlists the transaction scoped em into the transaction
-        Assert.assertTrue(bikeRace.allMotorBikes().isEmpty());
+        Assertions.assertTrue(bikeRace.allMotorBikes().isEmpty());
 
         Motorbike bike = bikeRace.createNewBike(1, "Bike1");
-        Assert.assertFalse(bikeRace.contains(bike));
+        Assertions.assertFalse(bikeRace.contains(bike));
 
 
     }
@@ -44,14 +44,14 @@ public class BikeManagerBean {
     public void runTest2() {
 
         Motorbike bike = bikeShop.downPaymentOnBikeNoTx(2, "Bike2");
-        Assert.assertNotNull("newly created bike not be null", bike);
+        Assertions.assertNotNull(bike, "newly created bike not be null");
         bikeShop.purchaseNowAndFlushDbChanges();
-        Assert.assertNotNull("should be able to find bike in database after purchaseNowAndFlushDbChanges.", bikeShop.find(2));
+        Assertions.assertNotNull(bikeShop.find(2), "should be able to find bike in database after purchaseNowAndFlushDbChanges.");
         try {
             bikeShop.forceRollback(2);
         } catch (RuntimeException ignore) {}
-        Assert.assertNotNull("extended persistence context must be associated with Jakarta Transactions tx during " +
-                "call to purchaseNowAndFlushDbChanges() and db changes saved when that method ends its Jakarta Transactions tx.", bikeRace.find(2));
+        Assertions.assertNotNull(bikeRace.find(2), "extended persistence context must be associated with Jakarta Transactions tx during " +
+                "call to purchaseNowAndFlushDbChanges() and db changes saved when that method ends its Jakarta Transactions tx.");
     }
 
 }

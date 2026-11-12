@@ -7,14 +7,14 @@ package org.jboss.as.test.integration.ejb.java8;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.classfilewriter.InvalidBytecodeException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that deployment does not fail with {@link InvalidBytecodeException} if EJB's local interface declares a static method (Java 8 feature).
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class Java8InterfacesEJBTestCase {
 
     @Inject
@@ -36,14 +36,14 @@ public class Java8InterfacesEJBTestCase {
 
     @Test
     public void testDeploymentWorks() {
-        Assert.assertTrue(Airplane.barrelRoll());
-        Assert.assertTrue(airplane.takeOff());
+        Assertions.assertTrue(Airplane.barrelRoll());
+        Assertions.assertTrue(airplane.takeOff());
     }
 
 
     // See https://issues.jboss.org/browse/WFCORE-3512
     @Test
     public void testDefaultMethodWorks() {
-        Assert.assertEquals("Cargo", airplane.getPlaneType());
+        Assertions.assertEquals("Cargo", airplane.getPlaneType());
     }
 }

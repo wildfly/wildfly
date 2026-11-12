@@ -5,13 +5,13 @@
 package org.jboss.as.test.integration.weld.ejb.inheritance;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
@@ -23,7 +23,7 @@ import jakarta.inject.Inject;
  * Also tests that EJB invocations on base class methods work
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EjbInheritanceTestCase {
     @Deployment
     public static WebArchive deployment() {
@@ -46,9 +46,9 @@ public class EjbInheritanceTestCase {
 
     @Test
     public void testCdiInjectedEjb() {
-        Assert.assertEquals("Hello", injectingCDIBean.sayHello());
-        Assert.assertEquals("Goodbye", injectingCDIBean.sayGoodbye());
-        Assert.assertEquals("Interface", injectingCDIBean.callInterfaceMethod());
+        Assertions.assertEquals("Hello", injectingCDIBean.sayHello());
+        Assertions.assertEquals("Goodbye", injectingCDIBean.sayGoodbye());
+        Assertions.assertEquals("Interface", injectingCDIBean.callInterfaceMethod());
     }
 
 

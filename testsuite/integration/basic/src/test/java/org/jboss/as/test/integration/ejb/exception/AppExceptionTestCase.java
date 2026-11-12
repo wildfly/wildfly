@@ -4,26 +4,26 @@
  */
 package org.jboss.as.test.integration.ejb.exception;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AS7-1317
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AppExceptionTestCase {
     @Deployment
     public static Archive<?> deployment() {
@@ -74,7 +74,7 @@ public class AppExceptionTestCase {
     public void testXmlAppException() {
         try {
             bean.throwXmlAppException();
-            Assert.fail("should have thrown exception");
+            Assertions.fail("should have thrown exception");
         } catch (XmlAppException e) {
 
         }

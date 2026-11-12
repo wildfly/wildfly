@@ -9,15 +9,18 @@ import java.util.PropertyPermission;
 
 import jakarta.inject.Inject;
 import org.hibernate.validator.HibernateValidatorPermission;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 
 /**
@@ -26,6 +29,7 @@ import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 abstract class AbstractManagedInjectionTestCase {
     private static final String PERSISTENCE_XML = """
             <persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -48,7 +52,7 @@ abstract class AbstractManagedInjectionTestCase {
     @Inject
     private UserCollector collector;
 
-    @Before
+    @BeforeEach
     public void cleanup() {
         collector.clear();
     }
@@ -101,14 +105,14 @@ abstract class AbstractManagedInjectionTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @InSequence(1)
+    @Order(1)
     public void addUser() throws Exception {
         final User user = new User();
         user.setName("JBoss");
         user.setEmail("jboss@jboss.org");
         final User added = userRegistry.add(user);
-        Assert.assertNotNull(added);
-        Assert.assertNotNull(added.getId());
+        Assertions.assertNotNull(added);
+        Assertions.assertNotNull(added.getId());
         compareUser(added, collector.pop(EventType.PRE_PERSIST));
         compareUser(added, collector.pop(EventType.POST_PERSIST));
     }
@@ -120,7 +124,7 @@ abstract class AbstractManagedInjectionTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @InSequence(2)
+    @Order(2)
     public void updateUser() throws Exception {
         final User user = new User();
         user.setId(1L);
@@ -137,7 +141,7 @@ abstract class AbstractManagedInjectionTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @InSequence(3)
+    @Order(3)
     public void getUser() throws Exception {
         final User user = userRegistry.getUserById(1L);
         compareUser(user, collector.pop(EventType.POST_LOAD));
@@ -150,7 +154,7 @@ abstract class AbstractManagedInjectionTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @InSequence(4)
+    @Order(4)
     public void removeUser() throws Exception {
         final User removed = userRegistry.remove(1L);
         compareUser(removed, collector.pop(EventType.PRE_REMOVE));
@@ -160,10 +164,10 @@ abstract class AbstractManagedInjectionTestCase {
     }
 
     private void compareUser(final User expected, final User actual) {
-        Assert.assertNotNull("The expected user cannot be null", expected);
-        Assert.assertNotNull("The actual user cannot be null", actual);
-        Assert.assertEquals(expected.getId(), actual.getId());
-        Assert.assertEquals(expected.getName(), actual.getName());
-        Assert.assertEquals(expected.getEmail(), actual.getEmail());
+        Assertions.assertNotNull(expected, "The expected user cannot be null");
+        Assertions.assertNotNull(actual, "The actual user cannot be null");
+        Assertions.assertEquals(expected.getId(), actual.getId());
+        Assertions.assertEquals(expected.getName(), actual.getName());
+        Assertions.assertEquals(expected.getEmail(), actual.getEmail());
     }
 }

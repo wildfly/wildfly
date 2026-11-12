@@ -28,7 +28,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -39,17 +39,17 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the Resource injection with substitution works as expected
  *
  * @author wangchao
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ ResourceInjectionSubstitutionTestCase.SystemPropertySetup.class })
 public class ResourceInjectionSubstitutionTestCase {
 
@@ -173,7 +173,7 @@ public class ResourceInjectionSubstitutionTestCase {
         }
     }
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         Context ctx = new InitialContext();
         slsb = (SimpleSLSB) ctx.lookup("java:module/" + SimpleSLSB.class.getSimpleName() + "!" + SimpleSLSB.class.getName());
@@ -193,9 +193,9 @@ public class ResourceInjectionSubstitutionTestCase {
      */
     @Test
     public void testResourceInjectionSubstitutionSlsb() {
-        Assert.assertTrue("@Resource with name wasn't injected in SLSB", slsb.isResourceWithNameInjected());
-        Assert.assertTrue("@Resource with lookup wasn't injected in SLSB", slsb.isResourceWithLookupNameInjected());
-        Assert.assertTrue("@Resource with mappedName wasn't injected in SLSB", slsb.isResourceWithMappedNameInjected());
+        Assertions.assertTrue(slsb.isResourceWithNameInjected(), "@Resource with name wasn't injected in SLSB");
+        Assertions.assertTrue(slsb.isResourceWithLookupNameInjected(), "@Resource with lookup wasn't injected in SLSB");
+        Assertions.assertTrue(slsb.isResourceWithMappedNameInjected(), "@Resource with mappedName wasn't injected in SLSB");
     }
 
     /**
@@ -203,9 +203,9 @@ public class ResourceInjectionSubstitutionTestCase {
      */
     @Test
     public void testResourceInjectionSubstitutionSfsb() {
-        Assert.assertTrue("@Resource with name wasn't injected in SFSB", sfsb.isResourceWithNameInjected());
-        Assert.assertTrue("@Resource with lookup wasn't injected in SFSB", sfsb.isResourceWithLookupNameInjected());
-        Assert.assertTrue("@Resource with mappedName wasn't injected in SFSB", sfsb.isResourceWithMappedNameInjected());
+        Assertions.assertTrue(sfsb.isResourceWithNameInjected(), "@Resource with name wasn't injected in SFSB");
+        Assertions.assertTrue(sfsb.isResourceWithLookupNameInjected(), "@Resource with lookup wasn't injected in SFSB");
+        Assertions.assertTrue(sfsb.isResourceWithMappedNameInjected(), "@Resource with mappedName wasn't injected in SFSB");
     }
 
     /**
@@ -233,8 +233,8 @@ public class ResourceInjectionSubstitutionTestCase {
             producer.send(msg);
 
             MapMessage replyMsg = (MapMessage) consumer.receive(5000);
-            Assert.assertNotNull(replyMsg);
-            Assert.assertEquals("It's Friday!!!", replyMsg.getString("replyMsg"));
+            Assertions.assertNotNull(replyMsg);
+            Assertions.assertEquals("It's Friday!!!", replyMsg.getString("replyMsg"));
         } finally {
             con.close();
         }
@@ -245,8 +245,8 @@ public class ResourceInjectionSubstitutionTestCase {
      */
     @Test
     public void testResourceInjectionSubstitutionCDI() {
-        Assert.assertTrue("@Resource with name wasn't injected in CDI bean", cdiBean.isResourceWithNameInjected());
-        Assert.assertTrue("@Resource with lookup wasn't injected in CDI bean", cdiBean.isResourceWithLookupNameInjected());
-        Assert.assertTrue("@Resource with mappedName wasn't injected in CDI bean", cdiBean.isResourceWithMappedNameInjected());
+        Assertions.assertTrue(cdiBean.isResourceWithNameInjected(), "@Resource with name wasn't injected in CDI bean");
+        Assertions.assertTrue(cdiBean.isResourceWithLookupNameInjected(), "@Resource with lookup wasn't injected in CDI bean");
+        Assertions.assertTrue(cdiBean.isResourceWithMappedNameInjected(), "@Resource with mappedName wasn't injected in CDI bean");
     }
 }

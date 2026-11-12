@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -16,10 +16,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.jms.Message;
 import jakarta.jms.Queue;
@@ -32,14 +33,13 @@ import jakarta.jms.QueueRequestor;
 import jakarta.jms.QueueSession;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
-import org.junit.After;
 
 /**
  * Tests EJB2.0 MDBs with message selector.
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MDB20MessageSelectorTestCase.JmsQueueSetup.class})
 public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
 
@@ -83,7 +83,7 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
         return ejbJar;
     }
 
-    @Before
+    @BeforeEach
     public void initQueues() {
         try {
             final InitialContext ic = new InitialContext();
@@ -98,7 +98,7 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
         }
     }
 
-    @After
+    @AfterEach
     public void purgeQueues() throws Exception {
         purgeQueue("ejb2x/queue");
         purgeQueue("ejb2x/replyQueueA");
@@ -112,11 +112,11 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
     public void testMessageSelectors() {
         sendTextMessage("Say 1st hello to " + EJB2xMDB.class.getName() + " in 1.0 format", queue, replyQueueA, "Version 1.0");
         final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
-        Assert.assertNull("Unexpected reply from " + replyQueueA, replyA);
+        Assertions.assertNull(replyA, "Unexpected reply from " + replyQueueA);
 
         sendTextMessage("Say 2nd hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueB, "Version 1.1");
         final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Missing reply from " + replyQueueB, replyB);
+        Assertions.assertNotNull(replyB, "Missing reply from " + replyQueueB);
     }
 
     /**
@@ -126,11 +126,11 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
     public void retestMessageSelectors() {
         sendTextMessage("Say 1st hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueA, "Version 1.1");
         final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Missing reply from " + replyQueueA, replyA);
+        Assertions.assertNotNull(replyA, "Missing reply from " + replyQueueA);
 
         sendTextMessage("Say 2nd hello to " + EJB2xMDB.class.getName() + " in 1.1 format", queue, replyQueueB, "Version 1.1");
         final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Missing reply from " + replyQueueB, replyB);
+        Assertions.assertNotNull(replyB, "Missing reply from " + replyQueueB);
     }
 
     /**

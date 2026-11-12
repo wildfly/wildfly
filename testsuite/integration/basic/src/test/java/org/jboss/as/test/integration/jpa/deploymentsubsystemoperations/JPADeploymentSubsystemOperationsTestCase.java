@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.jpa.deploymentsubsystemoperations;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -17,9 +17,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -40,7 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
  *
  * @author <a href="mailto:pberan@redhat.com">Petr Beran
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JPADeploymentSubsystemOperationsTestCase {
 
@@ -81,12 +81,12 @@ public class JPADeploymentSubsystemOperationsTestCase {
         ModelNode deploymentModelNode = Util.getReadResourceOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
         ModelNode deploymentResult = controllerClient.execute(deploymentModelNode);
 
-        Assert.assertEquals("The attribute in the subsystem and in the deployment is not the same",
-                subsystemResult.get(RESULT).get(DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE),
-                deploymentResult.get(RESULT).get(DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE));
-        Assert.assertEquals("The attribute in the subsystem and in the deployment is not the same",
-                subsystemResult.get(RESULT).get(DEFAULT_DATASOURCE),
-                deploymentResult.get(RESULT).get(DEFAULT_DATASOURCE));
+        Assertions.assertEquals(subsystemResult.get(RESULT).get(DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE),
+                deploymentResult.get(RESULT).get(DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE),
+                "The attribute in the subsystem and in the deployment is not the same");
+        Assertions.assertEquals(subsystemResult.get(RESULT).get(DEFAULT_DATASOURCE),
+                deploymentResult.get(RESULT).get(DEFAULT_DATASOURCE),
+                "The attribute in the subsystem and in the deployment is not the same");
     }
 
     /**
@@ -127,10 +127,10 @@ public class JPADeploymentSubsystemOperationsTestCase {
      * @param errorCode The {@code String} representing expected error code in the operation's result.
      */
     private void checkForFailure(ModelNode modelNode, String method, String errorCode) {
-        Assert.assertTrue("The operation '" + method + "' should have failed for the JPA subsystem in a deployment",
-                modelNode.get(OUTCOME).asString().equals(FAILED));
-        Assert.assertTrue("The operation '" + method + "' failed due to an unexpected reason",
-                modelNode.get(FAILURE_DESCRIPTION).asString().contains(errorCode));
+        Assertions.assertTrue(modelNode.get(OUTCOME).asString().equals(FAILED),
+                "The operation '" + method + "' should have failed for the JPA subsystem in a deployment");
+        Assertions.assertTrue(modelNode.get(FAILURE_DESCRIPTION).asString().contains(errorCode),
+                "The operation '" + method + "' failed due to an unexpected reason");
     }
 
 }

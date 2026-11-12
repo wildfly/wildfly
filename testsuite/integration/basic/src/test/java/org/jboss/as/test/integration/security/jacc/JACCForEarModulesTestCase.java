@@ -4,9 +4,9 @@
  */
 package org.jboss.as.test.integration.security.jacc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +21,10 @@ import org.dom4j.io.SAXReader;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -37,21 +36,21 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests, which checks JACC permissions generated for enterprise applications.
  *
  * @author Josef Cacek
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JACCForEarModulesTestCase.SecurityDomainsSetup.class})
 @RunAsClient
-@Category(CommonCriteria.class)
-@Ignore("See WFLY-4990")
+@Tag("CommonCriteria")
+@Disabled("See WFLY-4990")
 public class JACCForEarModulesTestCase {
 
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
@@ -101,8 +100,7 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("war")
-    public void testWebPermissions(@ArquillianResource URL webAppURL) throws Exception {
+    public void testWebPermissions(@ArquillianResource @OperateOnDeployment("war") URL webAppURL) throws Exception {
         final Document doc = getPermissionDocument(webAppURL);
         testJACCWebPermissions(doc.selectSingleNode("/" + ListJACCPoliciesServlet.ROOT_ELEMENT
                 + "/ActiveContextPolicies/ContextPolicy[@contextID='jacc-test.war']"));
@@ -117,8 +115,7 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     @Test
-    @OperateOnDeployment("war")
-    public void testEJBPermissions(@ArquillianResource URL webAppURL) throws Exception {
+    public void testEJBPermissions(@ArquillianResource @OperateOnDeployment("war") URL webAppURL) throws Exception {
         final Document doc = getPermissionDocument(webAppURL);
         testJACCEjbPermissions(doc.selectSingleNode("/" + ListJACCPoliciesServlet.ROOT_ELEMENT
                 + "/ActiveContextPolicies/ContextPolicy[@contextID='jar-jacc-test.jar']"));
@@ -164,11 +161,11 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     private void testJACCWebPermissions(final Node contextPolicyNode) throws Exception {
-        assertNotNull("Context policy for the web application should exist.", contextPolicyNode);
+        assertNotNull(contextPolicyNode, "Context policy for the web application should exist.");
         List<?> permNodes = contextPolicyNode.selectNodes("ExcludedPermissions/Permission");
-        assertEquals("ExcludedPermissions should exist.", 2, permNodes.size());
+        assertEquals(2, permNodes.size(), "ExcludedPermissions should exist.");
         permNodes = contextPolicyNode.selectNodes("UncheckedPermissions/Permission");
-        assertFalse("UncheckedPermissions should exist.", permNodes.isEmpty());
+        assertFalse(permNodes.isEmpty(), "UncheckedPermissions should exist.");
 
     }
 
@@ -179,9 +176,9 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     private void testJACCEjbPermissions(final Node contextPolicyNode) throws Exception {
-        assertNotNull("Context policy for the EJB module should exist.", contextPolicyNode);
+        assertNotNull(contextPolicyNode, "Context policy for the EJB module should exist.");
         List<?> permNodes = contextPolicyNode.selectNodes("ExcludedPermissions/Permission");
-        assertFalse("ExcludedPermissions should exist.", permNodes.isEmpty());
+        assertFalse(permNodes.isEmpty(), "ExcludedPermissions should exist.");
     }
 
     /**

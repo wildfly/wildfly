@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,14 +16,15 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
 public class ManagedScheduledExecutorExceptionTestCase {
 
     @Deployment
@@ -63,8 +64,8 @@ public class ManagedScheduledExecutorExceptionTestCase {
             future.get();
             fail("Exception did not propagate");
         } catch (ExecutionException e) {
-            assertTrue(e.toString(), e.getCause().getMessage().contains(loggerMessage));
-            assertTrue(e.toString(), e.getCause().getCause().getMessage().contains(message));
+            assertTrue(e.getCause().getMessage().contains(loggerMessage), e.toString());
+            assertTrue(e.getCause().getCause().getMessage().contains(message), e.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             fail("Caught " + e);

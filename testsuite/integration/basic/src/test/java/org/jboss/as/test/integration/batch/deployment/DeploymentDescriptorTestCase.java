@@ -16,8 +16,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -33,9 +32,12 @@ import org.jboss.as.test.integration.batch.common.StartBatchServlet;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Runs tests with a {@code jboss-all.xml} deployment descriptor.
@@ -43,8 +45,9 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DeploymentDescriptorTestCase.JdbcJobRepositorySetUp.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
 
     // in-memory deployment names
@@ -83,34 +86,30 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
                 .addAsManifestResource(DeploymentDescriptorTestCase.class.getPackage(), "defined-jdbc-jboss-all.xml", "jboss-all.xml");
     }
 
-    @OperateOnDeployment(NAMED_IN_MEMORY_DEPLOYMENT)
     @Test
-    public void namedInMemoryTest(@ArquillianResource final URL url) throws Exception {
+    public void namedInMemoryTest(@ArquillianResource @OperateOnDeployment(NAMED_IN_MEMORY_DEPLOYMENT) final URL url) throws Exception {
         // Test the default batch defined, ExampleDS, repository is isolated
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
 
-    @OperateOnDeployment(DEFINED_IN_MEMORY_DEPLOYMENT)
     @Test
-    public void definedInMemoryTest(@ArquillianResource final URL url) throws Exception {
+    public void definedInMemoryTest(@ArquillianResource @OperateOnDeployment(DEFINED_IN_MEMORY_DEPLOYMENT) final URL url) throws Exception {
         // Test that a newly named
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
 
-    @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT)
     @Test
-    @InSequence(1)
-    public void namedJdbcTest(@ArquillianResource final URL url) throws Exception {
+    @Order(Order.DEFAULT + 1)
+    public void namedJdbcTest(@ArquillianResource @OperateOnDeployment(NAMED_JDBC_DEPLOYMENT) final URL url) throws Exception {
         // This test runs after definedJdbcTest, and the two tests share the same data source.
         testCompletion(3L, url);
         testCompletion(4L, url);
     }
 
-    @OperateOnDeployment(DEFINED_JDBC_DEPLOYMENT)
     @Test
-    public void definedJdbcTest(@ArquillianResource final URL url) throws Exception {
+    public void definedJdbcTest(@ArquillianResource @OperateOnDeployment(DEFINED_JDBC_DEPLOYMENT) final URL url) throws Exception {
         testCompletion(1L, url);
         testCompletion(2L, url);
     }
@@ -122,8 +121,8 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
         final String result = performCall(builder.build());
         final JobExecution jobExecution = JobExecutionMarshaller.unmarshall(result);
 
-        Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
-        Assert.assertEquals(expectedExecutionId, jobExecution.getExecutionId());
+        Assertions.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
+        Assertions.assertEquals(expectedExecutionId, jobExecution.getExecutionId());
     }
 
 
@@ -166,7 +165,7 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
         static ModelNode execute(final ModelControllerClient client, final Operation op) throws IOException {
             final ModelNode result = client.execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                Assert.fail(Operations.getFailureDescription(result).toString());
+                Assertions.fail(Operations.getFailureDescription(result).toString());
             }
             return result;
         }

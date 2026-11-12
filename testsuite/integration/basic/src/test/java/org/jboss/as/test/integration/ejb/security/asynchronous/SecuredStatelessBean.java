@@ -22,7 +22,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 
 /**
@@ -88,7 +89,7 @@ public class SecuredStatelessBean implements SecuredStatelessRemote, SecuredStat
         final Future<Boolean> future = localSearchedBean.localSecured(latchLocal);
         latchLocal.countDown();
         boolean result = future.get();
-        Assert.assertTrue(result);
+        Assertions.assertTrue(result);
 
         return new AsyncResult<Boolean>(true);
     }

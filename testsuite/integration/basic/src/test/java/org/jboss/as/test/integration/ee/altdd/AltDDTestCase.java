@@ -8,19 +8,19 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the alt-dd element of application.xml is respected
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AltDDTestCase {
 
     @Deployment
@@ -39,7 +39,7 @@ public class AltDDTestCase {
     @Test
     public void testAlternateDeploymentDescriptor() throws NamingException {
         final AltDDEjb bean = (AltDDEjb) new InitialContext().lookup("java:module/" + AltDDEjb.class.getSimpleName());
-        Assert.assertEquals("alternate", bean.getValue());
+        Assertions.assertEquals("alternate", bean.getValue());
     }
 
 }

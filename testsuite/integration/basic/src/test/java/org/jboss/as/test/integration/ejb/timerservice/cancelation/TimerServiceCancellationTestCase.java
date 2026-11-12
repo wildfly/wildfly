@@ -12,13 +12,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that timer cancellation works as expected, even when there is a race between the timeout method and the
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServiceCancellationTestCase {
     // countlatchdown waiting time
     private static int TIMER_CALL_WAITING_S = 30;
@@ -45,12 +45,12 @@ public class TimerServiceCancellationTestCase {
         InitialContext ctx = new InitialContext();
         SimpleTimerServiceBean bean = (SimpleTimerServiceBean)ctx.lookup("java:module/" + SimpleTimerServiceBean.class.getSimpleName());
         TimerHandle handle = bean.createTimer();
-        Assert.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
         //now the timeout is in progress cancel the timer
         handle.getTimer().cancel();
         bean.getTimerExit().countDown();
-        Assert.assertFalse(SimpleTimerServiceBean.quickAwaitTimerCall());
-        Assert.assertEquals(0, bean.getTimerCount());
+        Assertions.assertFalse(SimpleTimerServiceBean.quickAwaitTimerCall());
+        Assertions.assertEquals(0, bean.getTimerCount());
 
     }
 
@@ -60,12 +60,12 @@ public class TimerServiceCancellationTestCase {
         InitialContext ctx = new InitialContext();
         CalendarTimerServiceBean bean = (CalendarTimerServiceBean)ctx.lookup("java:module/" + CalendarTimerServiceBean.class.getSimpleName());
         TimerHandle handle = bean.createTimer();
-        Assert.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
+        Assertions.assertTrue(bean.getTimerEntry().await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS));
         //now the timeout is in progress cancel the timer
         handle.getTimer().cancel();
         bean.getTimerExit().countDown();
-        Assert.assertFalse(CalendarTimerServiceBean.quickAwaitTimerCall());
-        Assert.assertEquals(0, bean.getTimerCount());
+        Assertions.assertFalse(CalendarTimerServiceBean.quickAwaitTimerCall());
+        Assertions.assertEquals(0, bean.getTimerCount());
     }
 
 }

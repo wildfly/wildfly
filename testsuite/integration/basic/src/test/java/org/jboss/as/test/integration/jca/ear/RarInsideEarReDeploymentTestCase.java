@@ -6,18 +6,18 @@ package org.jboss.as.test.integration.jca.ear;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
@@ -28,14 +28,15 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a> JBQA-5968 test
  *         for undeployment and re-deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RarInsideEarReDeploymentTestCase extends
         ContainerResourceMgmtTestBase {
@@ -100,7 +101,7 @@ public class RarInsideEarReDeploymentTestCase extends
                 MgmtOperationException.class, XMLElementReader.class,
                 XMLElementWriter.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(
@@ -134,7 +135,7 @@ public class RarInsideEarReDeploymentTestCase extends
             deployer.deploy(deploymentName);
             MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context
                     .lookup("redeployed/Name3");
-            assertNotNull("AO1 not found", adminObject1);
+            assertNotNull(adminObject1, "AO1 not found");
         } finally {
             deployer.undeploy(deploymentName);
             remove(address);

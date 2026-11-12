@@ -12,15 +12,16 @@ import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.sar.injection.pojos.A;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 
@@ -29,7 +30,7 @@ import org.xnio.IoUtils;
  *
  * @author <a href="mailto:opalka.richard@gmail.com">Richard Opalka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public final class SarInjectionTestCase {
 
@@ -50,12 +51,12 @@ public final class SarInjectionTestCase {
         try {
             final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
             final ObjectName objectName = new ObjectName("jboss:name=POJOService");
-            Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
-            Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "InjectedCount"));
-            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
-            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
-            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
-            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
+            Assertions.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
+            Assertions.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "InjectedCount"));
+            Assertions.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
+            Assertions.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
+            Assertions.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
+            Assertions.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
         } finally {
             IoUtils.safeClose(connector);
         }

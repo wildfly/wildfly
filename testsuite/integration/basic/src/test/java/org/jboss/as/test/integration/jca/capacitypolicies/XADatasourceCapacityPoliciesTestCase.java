@@ -4,16 +4,17 @@
  */
 package org.jboss.as.test.integration.jca.capacitypolicies;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Integration test for Jakarta Connectors capacity policies JBJCA-986 using xa-datasource
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(XADatasourceCapacityPoliciesTestCase.DatasourceServerSetupTask.class)
 public class XADatasourceCapacityPoliciesTestCase extends AbstractDatasourceCapacityPoliciesTestCase {
 

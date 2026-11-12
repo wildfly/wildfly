@@ -8,31 +8,31 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jpa.hibernate.envers.Organization;
 import org.jboss.as.test.integration.jpa.hibernate.envers.SLSBOrg;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This testcase verifies Envers/Auditing functions on selected attributes(Audited and NotAudited)
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class BasicSelectiveEnversTestCase {
     private static final String ARCHIVE_NAME = "jpa_BasicSelectiveEnversTestCase";
 
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
 
         iniCtx = new InitialContext();
@@ -75,10 +75,10 @@ public class BasicSelectiveEnversTestCase {
 
         Organization ret1 = slsbOrg.retrieveOldOrgbyId(o2.getId());
         // check that property startDate is audited
-        Assert.assertEquals("10/10/1974", ret1.getStartDate());
-        Assert.assertEquals("HALDIRAMS", ret1.getName());
+        Assertions.assertEquals("10/10/1974", ret1.getStartDate());
+        Assertions.assertEquals("HALDIRAMS", ret1.getName());
         // check that property location is notaudited
-        Assert.assertNull(ret1.getLocation());
+        Assertions.assertNull(ret1.getLocation());
 
     }
 
@@ -86,8 +86,8 @@ public class BasicSelectiveEnversTestCase {
 
         Organization ret1 = slsbOrg.retrieveOldOrgbyEntityName(Organization.class.getName(), o2.getId());
         // check that fetch by Entityname works
-        Assert.assertNotNull(ret1.getName());
-        Assert.assertEquals("BIKANER", ret1.getName());
+        Assertions.assertNotNull(ret1.getName());
+        Assertions.assertEquals("BIKANER", ret1.getName());
 
     }
 
@@ -95,7 +95,7 @@ public class BasicSelectiveEnversTestCase {
 
         Organization ret1 = slsbOrg.retrieveDeletedOrgbyId(o1.getId());
         // check that revisions of deleted entity can be retrieved
-        Assert.assertNotNull(ret1);
+        Assertions.assertNotNull(ret1);
 
     }
 

@@ -8,12 +8,12 @@ package org.jboss.as.test.integration.ee.injection.mappedname;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the mappedName attribute of {@link jakarta.ejb.EJB @EJB} and {@link jakarta.annotation.Resource @Resource} is
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  *      <p/>
  *      User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MappedNameInjectionTestCase {
 
     @Deployment
@@ -45,11 +45,11 @@ public class MappedNameInjectionTestCase {
         final String jndiName = "java:module/" + MappedNameBean.class.getSimpleName() + "!" + MappedNameBean.class.getName();
         final MappedNameBean bean = (MappedNameBean) new InitialContext().lookup(jndiName);
 
-        Assert.assertTrue("@Resource with mappedName wasn't injected", bean.isResourceWithMappedNameInjected());
-        Assert.assertTrue("@Resource with lookup attribute wasn't injected", bean.isResourceWithLookupNameInjected());
+        Assertions.assertTrue(bean.isResourceWithMappedNameInjected(), "@Resource with mappedName wasn't injected");
+        Assertions.assertTrue(bean.isResourceWithLookupNameInjected(), "@Resource with lookup attribute wasn't injected");
 
-        Assert.assertTrue("@EJB with mappedName wasn't injected", bean.isEJBWithMappedNameInjected());
-        Assert.assertTrue("@EJB with lookup attribute wasn't injected", bean.isEJBWithLookupNameInjected());
+        Assertions.assertTrue(bean.isEJBWithMappedNameInjected(), "@EJB with mappedName wasn't injected");
+        Assertions.assertTrue(bean.isEJBWithLookupNameInjected(), "@EJB with lookup attribute wasn't injected");
 
     }
 }

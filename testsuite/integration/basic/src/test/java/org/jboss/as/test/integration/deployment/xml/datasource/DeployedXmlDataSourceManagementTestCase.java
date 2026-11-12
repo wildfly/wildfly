@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,9 +26,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(DeployedXmlDataSourceManagementTestCase.DeployedXmlDataSourceManagementTestCaseSetup.class)
 public class DeployedXmlDataSourceManagementTestCase {
@@ -133,7 +133,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
+        Assertions.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
     }
 
     @Test
@@ -149,7 +149,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertEquals("jdbc:h2:mem:test2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
+        Assertions.assertEquals("jdbc:h2:mem:test2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertEquals("h2", result.get("driver-name").asString());
+        Assertions.assertEquals("h2", result.get("driver-name").asString());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set(VALUE);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get(RESULT).asString());
+        Assertions.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get(RESULT).asString());
     }
 
     @Test
@@ -201,14 +201,14 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(poolAddress);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+        Assertions.assertTrue(result.hasDefined("ActiveCount"), "ActiveCount");
 
         final ModelNode jdbcAddress = new ModelNode().set(address);
         jdbcAddress.add("statistics", "jdbc");
 
         operation.get(OP_ADDR).set(jdbcAddress);
         result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+        Assertions.assertTrue(result.hasDefined("PreparedStatementCacheAccessCount"), "PreparedStatementCacheAccessCount");
     }
 
     @Test
@@ -227,14 +227,14 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(poolAddress);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+        Assertions.assertTrue(result.hasDefined("ActiveCount"), "ActiveCount");
 
         final ModelNode jdbcAddress = new ModelNode().set(address);
         jdbcAddress.add("statistics", "jdbc");
 
         operation.get(OP_ADDR).set(jdbcAddress);
         result = managementClient.getControllerClient().execute(operation).get(RESULT);
-        Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+        Assertions.assertTrue(result.hasDefined("PreparedStatementCacheAccessCount"), "PreparedStatementCacheAccessCount");
     }
 
     /** Test for https://issues.jboss.org/browse/WFLY-2203 */
@@ -250,12 +250,12 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(RECURSIVE).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
 
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
+        Assertions.assertTrue(result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined(), result.toString());
 
         address = new ModelNode();
         address.add("deployment", JPA_DS_XML);
@@ -263,10 +263,10 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(address);
         result = managementClient.getControllerClient().execute(operation).get(RESULT);
 
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
-        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
+        Assertions.assertTrue(result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined(), result.toString());
+        Assertions.assertTrue(result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined(), result.toString());
 
     }
 }

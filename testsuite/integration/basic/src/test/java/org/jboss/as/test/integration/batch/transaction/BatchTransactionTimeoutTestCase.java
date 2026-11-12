@@ -5,25 +5,27 @@
 
 package org.jboss.as.test.integration.batch.transaction;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
 import jakarta.batch.runtime.JobExecution;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for JBERET-231/JBEAP-4811.
@@ -37,7 +39,7 @@ import org.junit.runner.RunWith;
  * The first job execution is expected to fail due to transaction timeout.
  * The second job execution should complete successfully.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(ThreadBatchSetup.class)
 public class BatchTransactionTimeoutTestCase extends AbstractBatchTestCase {
 

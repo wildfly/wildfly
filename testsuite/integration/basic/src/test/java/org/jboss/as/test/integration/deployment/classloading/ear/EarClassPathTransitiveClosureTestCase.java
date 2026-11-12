@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.deployment.classloading.ear;
 import java.nio.charset.StandardCharsets;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
@@ -15,11 +15,11 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EarClassPathTransitiveClosureTestCase {
 
     @Deployment
@@ -64,7 +64,7 @@ public class EarClassPathTransitiveClosureTestCase {
      */
     @Test
     public void testArbitraryDirectoryAccessible() throws ClassNotFoundException {
-        Assert.assertNotNull("getResource returned null URL for testfile.file", getClass().getClassLoader().getResource("testfile.file"));
+        Assertions.assertNotNull(getClass().getClassLoader().getResource("testfile.file"), "getResource returned null URL for testfile.file");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

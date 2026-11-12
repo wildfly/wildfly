@@ -9,21 +9,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that lifecycle methods defined on classes in a different module to the component class
  * are called.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MultiModuleLifecycleMethodTestCase {
 
     private static final String ARCHIVE_NAME = "MultiModuleLifecycleMethodTestCase";
@@ -52,6 +52,6 @@ public class MultiModuleLifecycleMethodTestCase {
     public void testPostConstructCalled() throws Exception {
         ChildBean sfsb1 = lookup("ChildBean", ChildBean.class);
         sfsb1.doStuff();
-        Assert.assertTrue(BaseBean.postConstructCalled);
+        Assertions.assertTrue(BaseBean.postConstructCalled);
     }
 }

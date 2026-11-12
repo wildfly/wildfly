@@ -13,15 +13,15 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a local view exposed by an EJB is <b>not</b> invokable remotely.
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  * @see https://issues.jboss.org/browse/AS7-3939
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class LocalViewRemoteInvocationTestCase {
 
     private static final Logger logger = Logger.getLogger(LocalViewRemoteInvocationTestCase.class);
@@ -47,7 +47,7 @@ public class LocalViewRemoteInvocationTestCase {
         return ejbJar;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -66,7 +66,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (EJBException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
@@ -85,7 +85,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (EJBException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
@@ -104,7 +104,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (EJBException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
@@ -125,7 +125,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
@@ -145,7 +145,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);
@@ -165,7 +165,7 @@ public class LocalViewRemoteInvocationTestCase {
         final String message = "Silence!";
         try {
             final String echo = localEcho.echo(message);
-            Assert.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
+            Assertions.fail("Remote invocation on a local view " + LocalEcho.class.getName() + " was expected to fail");
         } catch (IllegalStateException nsee) {
             // expected
             logger.trace("Got the expected exception on invoking on a local view, remotely", nsee);

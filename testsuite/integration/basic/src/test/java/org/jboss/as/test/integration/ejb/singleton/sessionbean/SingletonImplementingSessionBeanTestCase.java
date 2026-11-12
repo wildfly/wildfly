@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.ejb.singleton.sessionbean;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -16,9 +16,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SingletonImplementingSessionBeanTestCase {
 
     private static final PathAddress LOG_FILE_ADDRESS = PathAddress.pathAddress()
@@ -49,15 +49,15 @@ public class SingletonImplementingSessionBeanTestCase {
     @Test
     @RunAsClient()
     public void testWarningDuringDeployment() throws IOException {
-        Assert.assertTrue("Log should contain warning that singleton bean can't implement SessionBean interface",
-                retrieveServerLog().contains("WFLYEJB0515"));
+        Assertions.assertTrue(retrieveServerLog().contains("WFLYEJB0515"),
+                "Log should contain warning that singleton bean can't implement SessionBean interface");
     }
 
     private String retrieveServerLog() throws IOException {
         ModelNode op = Util.createEmptyOperation("read-log-file", LOG_FILE_ADDRESS);
         op.get("lines").set(30);
         ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         return result.get(RESULT).asList().stream().map(ModelNode::toString).collect(Collectors.joining("\n"));
     }
 }

@@ -12,7 +12,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -21,9 +21,10 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 
 /**
@@ -33,7 +34,7 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
  * @author tmiyar
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RunAsWithElytronEJBContextPropagationTestCase.ServerSetupTask.class)
 @RunAsClient
 public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTestBase {
@@ -86,8 +87,8 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
             throw new RuntimeException(e);
         }
 
-        Assert.assertFalse(intermediate.isCallerInRole(ROLE));
-        Assert.assertTrue(intermediate.isServerCallerInRole(ROLE));
+        Assertions.assertFalse(intermediate.isCallerInRole(ROLE));
+        Assertions.assertTrue(intermediate.isServerCallerInRole(ROLE));
         closeContext(context);
     }
 

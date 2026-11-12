@@ -8,17 +8,18 @@ package org.jboss.as.test.integration.management.cli;
 import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests related to read ops for wildcard addresses, specifically WFLY-2527.
@@ -31,8 +32,8 @@ import org.junit.runner.RunWith;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-@org.junit.Ignore("WFLY-16418")
-@RunWith(Arquillian.class)
+@Disabled("WFLY-16418")
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class WildCardReadsTestCase extends AbstractCliTestBase {
 
@@ -52,12 +53,12 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
     private static final String READ_RES_DESC_OP = ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION + "(access-control=combined-descriptions,operations=true,recursive=true)";
     private static final String EVICTION = "EVICTION";
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         closeCLI();
     }
@@ -70,17 +71,17 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
     public void testLenientReadOperationDescription() throws IOException {
         cli.sendLine(String.format(OP_PATTERN, EVICTION, ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION));
         CLIOpResult opResult = cli.readAllAsOpResult();
-        Assert.assertTrue(opResult.isIsOutcomeSuccess());
+        Assertions.assertTrue(opResult.isIsOutcomeSuccess());
         for (ModelNode node : opResult.getResponseNode().get(ModelDescriptionConstants.RESULT).asList()) {
             String opPart = String.format(READ_OP_DESC_OP, node.asString());
             cli.sendLine(String.format(OP_PATTERN, EVICTION, opPart));
             opResult = cli.readAllAsOpResult();
-            Assert.assertTrue(opResult.isIsOutcomeSuccess());
+            Assertions.assertTrue(opResult.isIsOutcomeSuccess());
             ModelNode specific = opResult.getResponseNode().get(ModelDescriptionConstants.RESULT);
             cli.sendLine(String.format(OP_PATTERN, "*", opPart));
             opResult = cli.readAllAsOpResult();
-            Assert.assertTrue(opResult.isIsOutcomeSuccess());
-            Assert.assertEquals("mismatch for " + node.asString(), specific, opResult.getResponseNode().get(ModelDescriptionConstants.RESULT));
+            Assertions.assertTrue(opResult.isIsOutcomeSuccess());
+            Assertions.assertEquals(specific, opResult.getResponseNode().get(ModelDescriptionConstants.RESULT), "mismatch for " + node.asString());
         }
     }
 
@@ -91,14 +92,14 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
     public void testReadResourceDescriptionNoGenericRegistration() throws IOException {
         cli.sendLine(String.format(OP_PATTERN, EVICTION, READ_RES_DESC_OP));
         CLIOpResult opResult = cli.readAllAsOpResult();
-        Assert.assertTrue(opResult.isIsOutcomeSuccess());
+        Assertions.assertTrue(opResult.isIsOutcomeSuccess());
         ModelNode specific = opResult.getResponseNode().get(ModelDescriptionConstants.RESULT);
         cli.sendLine(String.format(OP_PATTERN, "*", READ_RES_DESC_OP));
         opResult = cli.readAllAsOpResult();
-        Assert.assertTrue(opResult.isIsOutcomeSuccess());
+        Assertions.assertTrue(opResult.isIsOutcomeSuccess());
         ModelNode generic = opResult.getResponseNode().get(ModelDescriptionConstants.RESULT);
-        Assert.assertEquals(ModelType.LIST, generic.getType());
-        Assert.assertEquals(1, generic.asInt());
-        Assert.assertEquals(specific, generic.get(0).get(ModelDescriptionConstants.RESULT));
+        Assertions.assertEquals(ModelType.LIST, generic.getType());
+        Assertions.assertEquals(1, generic.asInt());
+        Assertions.assertEquals(specific, generic.get(0).get(ModelDescriptionConstants.RESULT));
     }
 }

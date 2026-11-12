@@ -4,9 +4,9 @@
  */
 package org.jboss.as.test.integration.jdr.mgmt;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,15 +26,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the JDR Report subsystem management interfaces.
@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
  * @author Mike M. Clark
  */
 @RunAsClient
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JdrReportManagmentTestCase {
 
     @ContainerResource
@@ -58,17 +58,17 @@ public class JdrReportManagmentTestCase {
         // Execute generate-jdr-report operation
         ModelNode response = managementClient.getControllerClient().execute(operation);
         String outcome = response.get("outcome").asString();
-        Assert.assertEquals("JDR Generation failed. Failed response: " + response.asString(), "success", outcome);
+        Assertions.assertEquals("success", outcome, "JDR Generation failed. Failed response: " + response.asString());
 
         ModelNode result = response.get("result");
         validateJdrTimeStamps(result);
 
         String location = result.get("report-location").asString();
-        Assert.assertNotNull("JDR report location was null", location);
+        Assertions.assertNotNull(location, "JDR report location was null");
 
         // Validate report itself.
         File reportFile = new File(location);
-        assertTrue("JDR report missing, not located at " + location, reportFile.exists());
+        assertTrue(reportFile.exists(), "JDR report missing, not located at " + location);
         validateJdrReportContents(reportFile);
 
         // Clean up report file
@@ -82,13 +82,13 @@ public class JdrReportManagmentTestCase {
      */
     @Test
     public void ensureShellScriptExists() {
-        Assume.assumeTrue("This test is only executed if we are testing Galleon Layers", Boolean.getBoolean("ts.layers"));
+        Assumptions.assumeTrue(Boolean.getBoolean("ts.layers"), "This test is only executed if we are testing Galleon Layers");
 
         Path binPath = Paths.get(System.getProperty("jboss.home"), "bin");
 
-        assertTrue("jdr.sh was not found in " + binPath.toString(), binPath.resolve("jdr.sh").toFile().exists());
-        assertTrue("jdr.bat was not found in " + binPath.toString(), binPath.resolve("jdr.bat").toFile().exists());
-        assertTrue("jdr.ps1 was not found in " + binPath.toString(), binPath.resolve("jdr.ps1").toFile().exists());
+        assertTrue(binPath.resolve("jdr.sh").toFile().exists(), "jdr.sh was not found in " + binPath.toString());
+        assertTrue(binPath.resolve("jdr.bat").toFile().exists(), "jdr.bat was not found in " + binPath.toString());
+        assertTrue(binPath.resolve("jdr.ps1").toFile().exists(), "jdr.ps1 was not found in " + binPath.toString());
     }
 
     private void validateJdrReportContents(File reportFile) {
@@ -170,7 +170,7 @@ public class JdrReportManagmentTestCase {
     private ZipEntry validateEntryNotEmpty(String fileName, String fileNameOptional, Set<String> fileNames,
                                        String reportName, ZipFile reportZip) {
         ZipEntry zipENtry = getZipEntry(reportZip, fileName, fileNameOptional, fileNames, reportName);
-        assertTrue("Report entry " + fileName + " was empty or could not be determined", zipENtry.getSize() > 0);
+        assertTrue(zipENtry.getSize() > 0, "Report entry " + fileName + " was empty or could not be determined");
 
         return zipENtry;
     }
@@ -185,7 +185,7 @@ public class JdrReportManagmentTestCase {
     private void validateEntryPresent(String fileName, Set<String> fileNames,
                                        String reportName, ZipFile reportZip) {
         ZipEntry zipENtry = getZipEntry(reportZip, fileName, null, fileNames, reportName);
-        assertNotNull("Report entry " + fileName + " was not present", zipENtry);
+        assertNotNull(zipENtry, "Report entry " + fileName + " was not present");
     }
 
     private ZipEntry getZipEntry(ZipFile reportZip, String fileName, String fileNameOptional, Set<String> fileNames, String reportName) {
@@ -199,15 +199,15 @@ public class JdrReportManagmentTestCase {
             realFileName = fileNames.stream().filter(name -> p2.matcher(name).find()).findFirst();
         }
 
-        assertTrue("Report entry " + fileName + " missing from JDR report "
-                + reportName, realFileName.isPresent());
+        assertTrue(realFileName.isPresent(), "Report entry " + fileName + " missing from JDR report "
+                + reportName);
         return reportZip.getEntry(realFileName.get());
     }
 
     private void validateJdrTimeStamps(ModelNode result) {
         // TODO: Validate time structures beyond just not null.
-        Assert.assertNotNull("JDR start time was null.", result.get("start-time").asString());
-        Assert.assertNotNull("JDR end time was null.", result.get("end-time").asString());
+        Assertions.assertNotNull(result.get("start-time").asString(), "JDR start time was null.");
+        Assertions.assertNotNull(result.get("end-time").asString(), "JDR end time was null.");
     }
 
     /**
@@ -219,7 +219,7 @@ public class JdrReportManagmentTestCase {
      */
     private void validateEmptyEntry(String fileName, Set<String> fileNames, String reportName, ZipFile reportZip) {
         ZipEntry zipEntry = getZipEntry(reportZip, fileName, null, fileNames, reportName);
-        assertFalse("Report entry " + fileName + " should be empty", zipEntry.getSize() > 0);
+        assertFalse(zipEntry.getSize() > 0, "Report entry " + fileName + " should be empty");
     }
 
     private String readProductDirectory(InputStream in) throws IOException {

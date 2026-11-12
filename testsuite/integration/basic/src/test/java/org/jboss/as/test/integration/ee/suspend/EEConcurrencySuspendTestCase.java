@@ -24,7 +24,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -38,14 +38,14 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests for suspend/resume functionality with EE concurrency
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EEConcurrencySuspendTestCase {
 
     protected static Logger log = Logger.getLogger(EEConcurrencySuspendTestCase.class);
@@ -91,7 +91,7 @@ public class EEConcurrencySuspendTestCase {
 
             Thread.sleep(1000); //nasty, but we need to make sure the HTTP request has started
 
-            Assert.assertEquals(ShutdownServlet.TEXT, result.get());
+            Assertions.assertEquals(ShutdownServlet.TEXT, result.get());
 
             ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("suspend");
@@ -116,7 +116,7 @@ public class EEConcurrencySuspendTestCase {
             try {
                 conn.setDoInput(true);
                 int responseCode = conn.getResponseCode();
-                Assert.assertEquals(503, responseCode);
+                Assertions.assertEquals(503, responseCode);
             } finally {
                 conn.disconnect();
             }
@@ -136,7 +136,7 @@ public class EEConcurrencySuspendTestCase {
                 op.get(OP).set(READ_ATTRIBUTE_OPERATION);
                 op.get(NAME).set(SUSPEND_STATE);
 
-                Assert.assertEquals("server-state is not <RUNNING> after resume operation. ", "RUNNING", executeForStringResult(managementClient.getControllerClient(), op));
+                Assertions.assertEquals("RUNNING", executeForStringResult(managementClient.getControllerClient(), op), "server-state is not <RUNNING> after resume operation. ");
             }
         }
     }
@@ -149,7 +149,7 @@ public class EEConcurrencySuspendTestCase {
                 break;
             }
             if (System.currentTimeMillis() > deadline) {
-                Assert.fail("Server suspend-state is not in " + expectedResult + " after " + deadline + " milliseconds.");
+                Assertions.fail("Server suspend-state is not in " + expectedResult + " after " + deadline + " milliseconds.");
             }
             TimeUnit.MILLISECONDS.sleep(500);
         }
@@ -158,7 +158,7 @@ public class EEConcurrencySuspendTestCase {
     static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
         ModelNode result = client.execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
         return result;
     }

@@ -6,20 +6,20 @@
 package org.jboss.as.test.integration.deployment.structure.jar;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  * <p/>
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JarJBossDeploymentStructureTestCase {
 
     private static final Logger logger = Logger.getLogger(JarJBossDeploymentStructureTestCase.class);
@@ -78,7 +78,7 @@ public class JarJBossDeploymentStructureTestCase {
 
         try {
             this.ejb.loadClass(TO_BE_MISSSING_CLASS_NAME);
-            Assert.fail("Unexpectedly found class " + TO_BE_MISSSING_CLASS_NAME);
+            Assertions.fail("Unexpectedly found class " + TO_BE_MISSSING_CLASS_NAME);
         } catch (ClassNotFoundException cnfe) {
             // expected
         }
@@ -87,8 +87,8 @@ public class JarJBossDeploymentStructureTestCase {
     @Test
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
-        Assert.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
-        Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assertions.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assertions.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 
     @Test
