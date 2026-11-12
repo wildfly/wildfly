@@ -102,11 +102,6 @@
                                     <classifier>shaded-model</classifier>
                                     <type>zip</type>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wildfly.extras.vertx</groupId>
-                                    <artifactId>wildfly-vertx-feature-pack-content</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
                             </artifactItems>
                             <!-- The feature-pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
@@ -276,7 +271,6 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-vertx-extension-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
@@ -372,7 +366,7 @@
 
                1) galleon-local
                2) full galleon-shared
-               3) mvc-krazo and vertx
+               3) mvc-krazo
                4) ee galleon-shared-preview
                5) ee galleon-shared
                6) core
@@ -397,20 +391,6 @@
             <artifactId>mvc-krazo-galleon-shared</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.extras.vertx</groupId>
-            <artifactId>wildfly-vertx-feature-pack-content</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-            <exclusions>
-                <!-- TODO When a version with https://github.com/wildfly-extras/wildfly-vertx-feature-pack/issues/57
-                     fixed is integrated, remove this exclusion.  -->
-                <exclusion>
-                    <groupId>org.wildfly.galleon-plugins</groupId>
-                    <artifactId>transformer</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -574,7 +554,6 @@
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
-                                                <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>
