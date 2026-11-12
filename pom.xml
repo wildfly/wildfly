@@ -432,7 +432,7 @@
         <version.io.netty>4.1.139.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.31.1</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.44.0</version.io.opentelemetry.opentelemetry-semconv>
-        <version.io.opentelemetry.opentelemetry>1.66.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry>1.67.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentelemetry.proto>1.11.1-alpha</version.io.opentelemetry.proto>
         <version.io.prometheus>1.7.0</version.io.prometheus>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
