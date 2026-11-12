@@ -278,21 +278,30 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.empty();
 
                         if (identityPrincipal != null) {
-                            // we have an identity token principal - check if the TLS identity, if available,
-                            // has permission to run as the identity token principal.
-                            if (this.sasCurrent instanceof SASCurrentImpl
-                                    && ((SASCurrentImpl) this.sasCurrent).tls_client_authenticated()) {
-                                Certificate[] peerCerts = ((SASCurrentImpl) this.sasCurrent).get_incoming_peer_certificates();
-                                SecurityIdentity authenticatedIdentity = this.authenticateWithCertificate(peerCerts);
-                                identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
-                            } else if (principal != null) {
-                                // no TLS identity found, check if an initial context token was also sent. If it was,
-                                // authenticate the incoming username/password and check if the resulting identity has
-                                // permission to run as the identity token principal.
+                            // we have an identity token principal - check if the client authentication
+                            // identity has permission to run as the identity token principal.
+                            //
+                            // GSSUP (username/password) is checked before the TLS client certificate when
+                            // both are present: this preserves pre-existing behavior for deployments whose
+                            // security domain can authenticate GSSUP credentials but cannot verify X.509
+                            // evidence, and it matches the common CSIv2 convention of treating the
+                            // transport-layer identity only as a fallback. The OMG CSIv2 spec itself does
+                            // not mandate an order between the two authenticating layers.
+                            if (principal != null) {
+                                // an initial context token was sent. Authenticate the incoming
+                                // username/password and check if the resulting identity has permission to
+                                // run as the identity token principal.
                                 char[] password = (char[]) credential;
                                 authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
                                         .usePassword(password);
                                 SecurityIdentity authenticatedIdentity = this.authenticate(principal, password);
+                                identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
+                            } else if (this.sasCurrent instanceof SASCurrentImpl
+                                    && ((SASCurrentImpl) this.sasCurrent).tls_client_authenticated()) {
+                                // no GSSUP credentials found, fall back to the TLS client certificate
+                                // identity, if available.
+                                Certificate[] peerCerts = ((SASCurrentImpl) this.sasCurrent).get_incoming_peer_certificates();
+                                SecurityIdentity authenticatedIdentity = this.authenticateWithCertificate(peerCerts);
                                 identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
                             } else {
                                 // no TLS nor initial context token found - check if the anonymous identity has

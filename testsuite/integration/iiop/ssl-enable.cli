@@ -26,4 +26,12 @@ run-batch
 /subsystem=elytron/security-domain=IIOPCertDomain:add(default-realm=iiopDistributedRealm,realms=[{realm=iiopDistributedRealm,role-mapper=iiopCertRoleMapper}],principal-decoder=cnDecoder,permission-mapper=iiop-cert-permission-mapper)
 /subsystem=ejb3/application-security-domain=iiopCert:add(security-domain=IIOPCertDomain)
 
+# A domain that can authenticate GSSUP (username/password, via the ApplicationRealm properties
+# realm) and grants RunAsPrincipalPermission like IIOPCertDomain, but -- unlike IIOPCertDomain --
+# has no key-store-realm in its realm list, so it cannot verify X.509 certificate evidence. Used to
+# test that GSSUP credentials still authenticate the asserting entity for CSIv2 identity assertion
+# when a client also presents a TLS client certificate that this domain cannot verify.
+/subsystem=elytron/security-domain=GssupRunAsDomain:add(default-realm=ApplicationRealm,realms=[{realm=ApplicationRealm,role-decoder=groups-to-roles}],permission-mapper=iiop-cert-permission-mapper)
+/subsystem=ejb3/application-security-domain=gssupRunAs:add(security-domain=GssupRunAsDomain)
+
 stop-embedded-server
