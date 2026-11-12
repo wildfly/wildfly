@@ -4,7 +4,7 @@ Use this route when a direct `org.jboss.as.controller.Extension` maps XML namesp
 
 ## Trace model and parser registration
 
-In `initialize(...)`, find `registerSubsystem(...)` and the current management `ModelVersion`, root and child resource registrations, and `registerXMLElementWriter(...)`. In `initializeParsers(...)`, trace each `setSubsystemXmlMapping(...)` from namespace to reader. The current writer may be an instance of the latest parser; old readers may be constructed only when their namespace is encountered. Check the model version and XML namespace separately against the last release on the current stream.
+In `initialize(...)`, find `registerSubsystem(...)` and the current management `ModelVersion`, root and child resource registrations, and `registerXMLElementWriter(...)`. In `initializeParsers(...)`, trace each `setSubsystemXmlMapping(...)` from namespace to reader. The current writer may be an instance of the latest parser; old readers may be constructed only when their namespace is encountered. Check the model version and XML namespace separately against the preceding Final baseline in the shared guide.
 
 Inspect the resource definitions and their `registerAttributes`, `registerOperations`, `registerChildren`, add/write/remove handlers, capabilities, and runtime-only flags. A parser can accept an attribute without giving it correct management or runtime behavior, and a management definition can exist without any XML representation.
 

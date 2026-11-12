@@ -10,7 +10,7 @@ The root and child resource definitions may extend `SimpleResourceDefinition`, `
 
 ## Update versioned XML
 
-`PersistentSubsystemSchema.getXMLDescription()` builds a `PersistentResourceXMLDescription` from `PathElement`s. Find its `PersistentResourceXMLDescription.Factory` and current writer (`PersistentResourceXMLDescriptionWriter` in the [Undertow extension](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowExtension.java)). Attribute streams and child builders can be filtered with `this.since(...)` or an equivalent version check; the [Undertow schema](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowSubsystemSchema.java) does both. Gate new syntax to the intended namespace, verify marshalled XML, and update a matching XSD if this subsystem maintains XSDs. Compare model and XML versions independently with the last release on the current stream.
+`PersistentSubsystemSchema.getXMLDescription()` builds a `PersistentResourceXMLDescription` from `PathElement`s. Find its `PersistentResourceXMLDescription.Factory` and current writer (`PersistentResourceXMLDescriptionWriter` in the [Undertow extension](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowExtension.java)). Attribute streams and child builders can be filtered with `this.since(...)` or an equivalent version check; the [Undertow schema](../undertow/src/main/java/org/wildfly/extension/undertow/UndertowSubsystemSchema.java) does both. Gate new syntax to the intended namespace, verify marshalled XML, and update a matching XSD if this subsystem maintains XSDs. Compare model and XML versions independently with the preceding Final baseline in the shared guide.
 
 ## Trace transformers and tests
 
