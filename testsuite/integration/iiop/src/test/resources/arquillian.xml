@@ -32,7 +32,7 @@
         <container qualifier="iiop-server" default="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-iiop-server</property>
-                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100 -Djboss.experimental.iiop.deserialization.filter.spec=!org.jboss.as.test.iiop.denylist.DangerousClass</property>
+                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
@@ -40,6 +40,23 @@
 
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1:10090}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
+            </configuration>
+        </container>
+
+        <!-- Dedicated server for IIOPDenyListTestCase's custom deserialization filter spec. Kept separate from
+             iiop-server so overriding the deny-list filter does not disable the default filter for other tests. -->
+        <container qualifier="iiop-denylist-server" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-iiop-denylist-server</property>
+                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=200 -Djboss.experimental.iiop.deserialization.filter.spec=!org.jboss.as.test.iiop.denylist.DangerousClass</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="managementAddress">${node1}</property>
+                <property name="managementPort">10190</property>
+
+                <property name="waitForPorts">10190</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="javaHome">${container.java.home}</property>
             </configuration>

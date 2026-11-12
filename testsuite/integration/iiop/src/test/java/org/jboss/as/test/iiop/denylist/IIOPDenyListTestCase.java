@@ -26,17 +26,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test case for IIOP deny-list filter functionality.
+ * Test case for the IIOP deny-list filter spec override (jboss.experimental.iiop.deserialization.filter.spec).
+ * Runs against the dedicated iiop-denylist-server container, which is the only container whose default deny-list
+ * is replaced by the custom filter spec; see IIOPDefaultDenyListTestCase for coverage of the built-in default
+ * deny-list, which stays active on the shared iiop-server container.
  * Tests that:
- * 1. Classes in the default deny-list are blocked
- * 2. Classes added via system property are blocked
- * 3. Safe classes are allowed through
+ * 1. Classes added via the custom filter spec are blocked
+ * 2. Safe classes are allowed through
  */
 @RunWith(Arquillian.class)
 public class IIOPDenyListTestCase {
 
     @Deployment(name = "server", testable = false)
-    @TargetsContainer("iiop-server")
+    @TargetsContainer("iiop-denylist-server")
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "denylist-server.jar");
         jar.addClasses(IIOPDenyListBean.class, IIOPDenyListHome.class, IIOPDenyListRemote.class, DangerousClass.class)
@@ -47,7 +49,7 @@ public class IIOPDenyListTestCase {
     @Deployment(name = "client", testable = true)
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
-        String ejbJar = FileUtils.readFile(IIOPDenyListTestCase.class, "ejb-jar.xml");
+        String ejbJar = FileUtils.readFile(IIOPDenyListTestCase.class, "denylist-ejb-jar.xml");
 
         // IPv6 addresses must be enclosed in brackets to be usable in a corbaname URL
         final Properties properties = new Properties();
@@ -80,12 +82,14 @@ public class IIOPDenyListTestCase {
             Assert.fail("Expected exception due to deny-list filter");
         } catch (Exception e) {
             // Expected - verify it's the filter rejection
-            // The exception is wrapped in MarshalException/CORBA MARSHAL, so check the entire exception chain
+            // The exception is wrapped in MarshalException/CORBA MARSHAL, so check the entire exception chain.
+            // The ORB always reports a rejection as "Deserialization of class <name> rejected by filter"
+            // (see openjdk-orb's IIOPInputStream), so require that exact pairing rather than a loose substring
+            // that an unrelated classloading/marshalling failure could also satisfy.
             String fullMessage = getFullExceptionMessage(e);
-            Assert.assertTrue("Exception chain should mention filter rejection or DangerousClass, but was: " + fullMessage,
-                    fullMessage.contains("rejected by filter") ||
-                    fullMessage.contains("DangerousClass") ||
-                    fullMessage.contains("not allowed"));
+            String expected = "Deserialization of class " + DangerousClass.class.getName() + " rejected by filter";
+            Assert.assertTrue("Exception chain should report filter rejection of DangerousClass, but was: " + fullMessage,
+                    fullMessage.contains(expected));
         }
     }
 

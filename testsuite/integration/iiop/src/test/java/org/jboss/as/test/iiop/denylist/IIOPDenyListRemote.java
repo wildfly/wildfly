@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.iiop.denylist;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import jakarta.ejb.EJBObject;
 
@@ -22,4 +23,10 @@ public interface IIOPDenyListRemote extends EJBObject {
      * Method accepting a safe class that should pass the deny-list filter.
      */
     String acceptSafeClass(String safe) throws RemoteException;
+
+    /**
+     * Method accepting an arbitrary object, used to probe the built-in default deny-list with
+     * classes that are already in the default filter spec (e.g. javax.swing.UIDefaults).
+     */
+    String acceptObject(Serializable object) throws RemoteException;
 }
