@@ -16,6 +16,8 @@ public class ClientEjb {
 
     private CallerPropHome failureHome;
 
+    private CallerPropHome bothAuthHome;
+
     public String callServer() throws RemoteException {
         CallerPropRemote ejb = successHome.create();
         return ejb.hello();
@@ -23,6 +25,11 @@ public class ClientEjb {
 
     public String callDefaultDomainServer() throws RemoteException {
         CallerPropRemote ejb = failureHome.create();
+        return ejb.hello();
+    }
+
+    public String callGssupAndTlsServer() throws RemoteException {
+        CallerPropRemote ejb = bothAuthHome.create();
         return ejb.hello();
     }
 }
