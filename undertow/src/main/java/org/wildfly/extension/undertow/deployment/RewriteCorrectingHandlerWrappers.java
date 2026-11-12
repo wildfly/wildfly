@@ -45,7 +45,7 @@ class RewriteCorrectingHandlerWrappers {
                 @Override
                 public void handleRequest(HttpServerExchange exchange) throws Exception {
                     String old = exchange.getAttachment(OLD_RELATIVE_PATH);
-                    if(!old.equals(exchange.getRelativePath())) {
+                    if(old != null && !old.equals(exchange.getRelativePath())) {
                         ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
                         ServletPathMatch info = src.getDeployment().getServletPaths().getServletHandlerByPath(exchange.getRelativePath());
                         src.setCurrentServlet(info.getServletChain());
