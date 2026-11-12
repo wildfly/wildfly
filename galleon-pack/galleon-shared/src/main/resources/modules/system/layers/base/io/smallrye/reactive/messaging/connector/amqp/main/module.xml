@@ -45,6 +45,7 @@
         <module name="org.jboss.weld.api"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
+        <module name="org.wildfly.extension.opentelemetry-api" optional="true"/>
         <module name="org.wildfly.reactive.messaging.amqp" services="import"/>
         <module name="org.reactivestreams"/>
         <module name="org.slf4j"/>

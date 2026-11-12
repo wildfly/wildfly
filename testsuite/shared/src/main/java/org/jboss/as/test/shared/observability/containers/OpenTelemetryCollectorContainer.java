@@ -12,11 +12,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
+import org.apache.http.client.HttpResponseException;
 import org.jboss.as.test.config.ContainerConfig;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.observability.PrometheusClient;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.as.test.shared.observability.signals.logs.CollectorLogRecordParser;
@@ -35,6 +34,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     public static final String OTEL_COLLECTOR_CONFIG_YAML = "/etc/otel-collector-config.yaml";
 
     private final JaegerContainer jaegerContainer;
+    private PrometheusClient prometheusClient;
 
     /**
      * The default timeout in seconds configurable by -Dtestsuite.integration.container.timeout=... and adjustable by -Dts.timeout.factor=...
@@ -63,6 +63,8 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     public void start() {
         super.start();
         jaegerContainer.start();
+
+        prometheusClient = new PrometheusClient(getPrometheusUrl());
 
         debugLog("OTLP gRPC port: " + getMappedPort(OTLP_GRPC_PORT));
         debugLog("OTLP HTTP port: " + getMappedPort(OTLP_HTTP_PORT));
@@ -236,9 +238,10 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
      * @return list of prometheus metrics
      */
     public List<PrometheusMetric> fetchMetrics() {
-        try (Client client = ClientBuilder.newClient()) {
-            WebTarget target = client.target(getPrometheusUrl());
-            return PrometheusMetric.buildPrometheusMetrics(target.request().get().readEntity(String.class));
+        try {
+            return prometheusClient.fetchMetrics();
+        } catch (HttpResponseException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -252,9 +255,5 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                     .as("Metric %s not seen in Prometheus within timeout.", nameToMonitor)
                     .isTrue();
         });
-    }
-
-    private List<PrometheusMetric> buildPrometheusMetrics(String body) {
-        return PrometheusMetric.buildPrometheusMetrics(body);
     }
 }
