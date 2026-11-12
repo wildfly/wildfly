@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.iiop.denylist;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import jakarta.ejb.Stateless;
 
@@ -23,5 +24,9 @@ public class ClientEjb {
 
     public String invokeDangerousMethod(DangerousClass dangerous) throws RemoteException {
         return home.create().acceptDangerousClass(dangerous);
+    }
+
+    public String invokeObjectMethod(Serializable object) throws RemoteException {
+        return home.create().acceptObject(object);
     }
 }

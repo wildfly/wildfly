@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.iiop.denylist;
 
+import java.io.Serializable;
+
 import jakarta.ejb.RemoteHome;
 import jakarta.ejb.Stateless;
 
@@ -21,5 +23,9 @@ public class IIOPDenyListBean {
 
     public String acceptSafeClass(String safe) {
         return "Accepted safe class: " + safe;
+    }
+
+    public String acceptObject(Serializable object) {
+        return "Accepted object: " + object.getClass().getName();
     }
 }
