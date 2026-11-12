@@ -31,7 +31,6 @@ import org.jboss.as.test.smoke.jakarta.data.lib.Constants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
-import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -45,7 +44,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  */
 @ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@ServerSetup({StabilityServerSetupSnapshotRestoreTasks.Preview.class, JakartaDataEarTestCase.JakartaDataSetupTask.class})
+@ServerSetup({JakartaDataEarTestCase.JakartaDataSetupTask.class})
 public class JakartaDataEarTestCase {
 
     private static final String PUBLISHER = "publisher";
