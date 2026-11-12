@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.iiop.denylist;
 
+import java.util.Properties;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -12,6 +14,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
 import org.jboss.shrinkwrap.api.Archive;
@@ -45,9 +48,17 @@ public class IIOPDenyListTestCase {
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
         String ejbJar = FileUtils.readFile(IIOPDenyListTestCase.class, "ejb-jar.xml");
+
+        // IPv6 addresses must be enclosed in brackets to be usable in a corbaname URL
+        final Properties properties = new Properties();
+        properties.putAll(System.getProperties());
+        if (properties.containsKey("node1")) {
+            properties.put("node1", NetworkUtils.formatPossibleIpv6Address((String) properties.get("node1")));
+        }
+
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "denylist-client.jar");
         jar.addClasses(IIOPDenyListTestCase.class, IIOPDenyListRemote.class, IIOPDenyListHome.class, DangerousClass.class, ClientEjb.class);
-        jar.addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar)), "ejb-jar.xml");
+        jar.addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml");
         return jar;
     }
 
