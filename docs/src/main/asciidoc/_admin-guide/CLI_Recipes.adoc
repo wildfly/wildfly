@@ -370,7 +370,8 @@ Actions to deploy some content:
 
 * _deployment deploy-file_: To deploy a file located on the file system.
 
-* _deployment deploy-url_: To deploy content referenced by an URL.
+* _deployment deploy-url_: To deploy content referenced by an URL. Sources
+are subject to <<deployment-content-source-restrictions,Deployment content source restrictions>>.
 
 * _deployment deploy-cli-achive_: To deploy some content thanks to a CLI archive
 (.cli file) located on the file system.
