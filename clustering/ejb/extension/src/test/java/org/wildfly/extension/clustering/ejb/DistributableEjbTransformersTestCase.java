@@ -134,7 +134,8 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("distributable-ejb-reject.xml");
+        String rejectionsXmlResource = String.format("distributable-ejb-reject-%s.xml", this.version);
+        List<ModelNode> xmlOps = builder.parseXmlResource(rejectionsXmlResource);
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
     }
 
@@ -146,7 +147,6 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(BeanManagementResourceRegistration.INFINISPAN.getPathElement().getKey(), "default")), new FailedOperationTransformationConfig.NewAttributesConfig(BeanManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
             config.addFailedAttribute(subsystemAddress.append(PathElement.pathElement(InfinispanTimerManagementResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), "distributed")), new FailedOperationTransformationConfig.NewAttributesConfig(InfinispanTimerManagementResourceDefinitionRegistrar.IDLE_THRESHOLD));
         }
-
         return config;
     }
 
