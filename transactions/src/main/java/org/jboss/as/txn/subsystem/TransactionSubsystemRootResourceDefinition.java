@@ -280,6 +280,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true).build();
 
+    static final String ELYTRON_AUTHENTICATION_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
+
+    public static final SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_AUTHENTICATION_CONTEXT, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.RECOVERY_AUTHENTICATION_CONTEXT.getLocalName())
+            .setAllowExpression(false)
+            .build();
+
 
     private final boolean registerRuntimeOnly;
 
@@ -304,7 +312,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME
+            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME,
+            RECOVERY_AUTHENTICATION_CONTEXT
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
