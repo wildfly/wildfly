@@ -99,7 +99,7 @@ public class MicrometerCollector implements AutoCloseable {
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> addressResolver,
                                          MetricRegistration registration) {
-        if (!isExposingMetrics(address, subsystemFilter)) {
+        if (!isExposingMetrics(address)) {
             return;
         }
 
@@ -142,7 +142,13 @@ public class MicrometerCollector implements AutoCloseable {
         }
     }
 
-    private boolean isExposingMetrics(PathAddress address, Predicate<String> subsystemFilter) {
+    /**
+     * Determines whether the configured subsystem filter includes metrics for an address.
+     *
+     * @param address the management resource address
+     * @return {@code true} when metrics at the address are exposed
+     */
+    public boolean isExposingMetrics(PathAddress address) {
         // root resource
         if (address.size() == 0) {
             return true;
