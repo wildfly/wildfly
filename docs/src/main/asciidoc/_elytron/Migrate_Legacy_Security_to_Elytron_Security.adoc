@@ -11,31 +11,31 @@ endif::[]
 
 == Authentication Configuration
 
-:leveloffset: +1
-include::migrate/Properties_File_Based_Authentication_Migration.adoc[]
-include::migrate/LDAP_Based_Authentication_Migration.adoc[]
-include::migrate/Composite_Stores_Migration.adoc[]
-include::migrate/Database_Authentication_Migration.adoc[]
-include::migrate/Kerberos_Based_Authentication_Migration.adoc[]
-include::migrate/Caching_Migration.adoc[]
+include::migrate/Properties_File_Based_Authentication_Migration.adoc[leveloffset=+2]
+include::migrate/LDAP_Based_Authentication_Migration.adoc[leveloffset=+2]
+include::migrate/Composite_Stores_Migration.adoc[leveloffset=+2]
+include::migrate/Database_Authentication_Migration.adoc[leveloffset=+2]
+include::migrate/Kerberos_Based_Authentication_Migration.adoc[leveloffset=+2]
+include::migrate/Caching_Migration.adoc[leveloffset=+2]
 
-:leveloffset: -1
 == Clients
-:leveloffset: +1
-include::migrate/Application_Client_Migration.adoc[]
-:leveloffset: -1
+
+include::migrate/Application_Client_Migration.adoc[leveloffset=+2]
+
+== Datasources and Resource Adapters
+
+include::migrate/Datasource_Password_Migration.adoc[leveloffset=+2]
+include::migrate/Resource_Adapter_Password_Migration.adoc[leveloffset=+2]
 
 == General Utilities
-:leveloffset: +1
-include::migrate/Security_Vault_Migration.adoc[]
-include::migrate/Security_Property_Migration.adoc[]
-:leveloffset: -1
+
+include::migrate/Security_Vault_Migration.adoc[leveloffset=+2]
+include::migrate/Security_Property_Migration.adoc[leveloffset=+2]
 
 == SSL Migration
-:leveloffset: +1
-include::migrate/Simple_SSL_Migration.adoc[]
-include::migrate/SSL_with_Client_Cert_Migration.adoc[]
-:leveloffset: -1
+
+include::migrate/Simple_SSL_Migration.adoc[leveloffset=+2]
+include::migrate/SSL_with_Client_Cert_Migration.adoc[leveloffset=+2]
 
 [[documentation-still-needed]]
 == Documentation Still Needed
