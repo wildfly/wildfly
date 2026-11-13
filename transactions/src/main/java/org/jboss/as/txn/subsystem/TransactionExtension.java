@@ -42,7 +42,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(8, 0, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -120,5 +120,6 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_5_0.getUriString(), TransactionSubsystem50Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_0.getUriString(), TransactionSubsystem60Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_7_0.getUriString(), TransactionSubsystem70Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_8_0.getUriString(), TransactionSubsystem80Parser::new);
     }
 }
