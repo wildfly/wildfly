@@ -10,31 +10,28 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Paths;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 
@@ -58,6 +55,9 @@ public abstract class AbstractTestsuite {
 
     static final String jndiDs = "java:jboss/datasources/StatDS";
     static final String jndiXaDs = "java:jboss/datasources/StatXaDS";
+
+    @ArquillianResource
+    protected static ContainerController controller;
 
     protected Context context;
 
@@ -102,6 +102,7 @@ public abstract class AbstractTestsuite {
     protected static class TestCaseSetup extends AbstractMgmtTestBase implements ServerSetupTask {
 
         private ManagementClient managementClient;
+        private TestModule testModule;
 
         ModelNode dsAddress;
         ModelNode dsXaAddress;
@@ -110,19 +111,42 @@ public abstract class AbstractTestsuite {
         public void setup(final ManagementClient managementClient, String containerId) throws Exception {
             this.managementClient = managementClient;
             try {
-                tryRemoveConnListenerModule();//before test, in tearDown we cannot connect to CLI....
                 addConnListenerModule();
                 dsAddress = createDataSource(false, jndiDs);
                 dsXaAddress = createDataSource(true, jndiXaDs);
             } catch (Throwable e) {
-                removeDss();
+                tearDown(managementClient, containerId);
                 throw new Exception(e);
             }
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            removeDss();
+            this.managementClient = managementClient;
+            boolean startedByUs = false;
+            try {
+                if (controller != null && !controller.isStarted(CONTAINER)) {
+                    try {
+                        controller.start(CONTAINER);
+                    } finally {
+                        // set even on failure: the process may have launched despite the exception
+                        startedByUs = true;
+                    }
+                }
+                removeDss();
+                removeConnListenerModule();
+                ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            } catch (Throwable e) {
+                log.warn(e.getMessage());
+            } finally {
+                if (controller != null && (startedByUs || controller.isStarted(CONTAINER))) {
+                    try {
+                        controller.stop(CONTAINER);
+                    } catch (Throwable e) {
+                        log.warn(e.getMessage());
+                    }
+                }
+            }
         }
 
         @Override
@@ -206,36 +230,70 @@ public abstract class AbstractTestsuite {
         }
 
         protected void addConnListenerModule() throws Exception {
-            JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
-            jar.addClasses(TestConnectionListener.class)
-                    .addPackage(Logger.class.getPackage());
+            String oldModulePath = System.getProperty("module.path");
+            try {
+                System.setProperty("module.path", Paths.get("target", "wildfly", "modules").toAbsolutePath().toString());
+                testModule = new TestModule(MODULE_NAME, "org.jboss.ironjacamar.jdbcadapters", "org.jboss.logging");
+                testModule.addResource(MODULE_NAME + ".jar")
+                        .addClasses(TestConnectionListener.class);
+                testModule.create(true);
+            } finally {
+                if (oldModulePath != null) {
+                    System.setProperty("module.path", oldModulePath);
+                } else {
+                    System.clearProperty("module.path");
+                }
+            }
 
-            File moduleJar = File.createTempFile(MODULE_NAME, ".jar");
-            copyModuleFile(moduleJar, jar.as(ZipExporter.class).exportAsInputStream());
+            ModelNode address = new ModelNode();
+            address.add(SUBSYSTEM, "ee");
+            address.protect();
 
-            CLIWrapper cli = new CLIWrapper(true);
-            cli.sendLine("module add --name=" + MODULE_NAME + " --slot=main --dependencies=org.jboss.ironjacamar.jdbcadapters --resources=" + moduleJar.getAbsolutePath());
-            /*
-             * Delete global module after finishing this task
-             * https://issues.jboss.org/browse/WFLY-2492
-             */
-            cli.sendLine("/subsystem=ee:write-attribute(name=global-modules,value=[{name => " + MODULE_NAME + ",slot => main}]");
-            cli.quit();
+            ModelNode operation = new ModelNode();
+            operation.get(OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+            operation.get(OP_ADDR).set(address);
+            operation.get("name").set("global-modules");
+            ModelNode module = new ModelNode();
+            module.get("name").set(MODULE_NAME);
+            module.get("slot").set("main");
+            ModelNode value = new ModelNode();
+            value.add(module);
+            operation.get("value").set(value);
+            executeOperation(operation);
         }
 
-        protected void tryRemoveConnListenerModule() throws Exception {
+        protected void removeConnListenerModule() {
             try {
-                CLIWrapper cli = new CLIWrapper(true);
-                cli.sendLine("module remove --name=" + MODULE_NAME + " --slot=main");
-                cli.quit();
+                ModelNode address = new ModelNode();
+                address.add(SUBSYSTEM, "ee");
+                address.protect();
+
+                ModelNode operation = new ModelNode();
+                operation.get(OP).set(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
+                operation.get(OP_ADDR).set(address);
+                operation.get("name").set("global-modules");
+                executeOperation(operation);
             } catch (Throwable e) {
                 log.warn(e.getMessage());
             }
-        }
-    }
 
-    protected static void copyModuleFile(File target, InputStream src) throws IOException {
-        Files.copy(src, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            if (testModule != null) {
+                String oldModulePath = System.getProperty("module.path");
+                try {
+                    System.setProperty("module.path", Paths.get("target", "wildfly", "modules").toAbsolutePath().toString());
+                    testModule.remove();
+                } catch (Throwable e) {
+                    log.warn(e.getMessage());
+                } finally {
+                    if (oldModulePath != null) {
+                        System.setProperty("module.path", oldModulePath);
+                    } else {
+                        System.clearProperty("module.path");
+                    }
+                    testModule = null;
+                }
+            }
+        }
     }
 
     protected <T> T lookup(final Class<T> remoteClass, final Class<?> beanClass, final String archiveName) throws NamingException {
