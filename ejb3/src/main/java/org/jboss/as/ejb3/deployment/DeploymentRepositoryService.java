@@ -28,10 +28,11 @@ import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistryListener;
 import org.wildfly.clustering.server.service.Service;
 import org.wildfly.subsystem.service.ServiceDependency;
 
@@ -50,6 +51,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     private SuspendableActivityRegistry activityRegistry;
     private SuspendableActivity activity;
     private ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember> serviceRegistrar;
+    private AtomicReference<Registration> globalServiceProviderRegistration = new AtomicReference<>(null);
 
     private final List<ModuleAvailabilityRegistrarListener> listeners = new ArrayList<ModuleAvailabilityRegistrarListener>();
 
@@ -89,8 +91,10 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
         // initialize the map of module identifiers to modules
         modules = Collections.emptyMap();
 
-        // register as a ServerActivity
-        activityRegistry.registerActivity(this.activity);
+        // register a global ServiceProviderRegistryListener to receive ServiceProviderRegistry updates
+        ModuleAvailabilityRegistrarServiceProviderRegistryListener listener = new ModuleAvailabilityRegistrarServiceProviderRegistryListener(listeners);
+        Registration globalRegistration = serviceRegistrar.register(listener);
+        globalServiceProviderRegistration.compareAndSet(null, globalRegistration);
 
         // mark this service as started
         started = true;
@@ -100,6 +104,12 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     public void stop() {
         if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
             EjbLogger.DEPLOYMENT_LOGGER.trace("Stopping DeploymentRepositoryService");
+
+        // deregister the global ServiceProviderRegistryListener
+        Registration globalRegistration = globalServiceProviderRegistration.get();
+        if (globalRegistration != null) {
+            globalRegistration.close();
+        }
 
         // unregister as a server activity
         activityRegistry.unregisterActivity(this.activity);
@@ -186,10 +196,8 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                     EjbLogger.DEPLOYMENT_LOGGER.tracef("Adding registration for moduleId %s to ServiceProviderRegistrar", moduleId);
 
-                // register the moduleId with the ServiceProviderRegistrar and provide a callback listener to process updates
-                ModuleAvailabilityRegistrarServiceProviderRegistrationListener listener =
-                        new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, listeners);
-                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId, listener);
+                // register the moduleId with the ServiceProviderRegistrar
+                ServiceProviderRegistration<EJBModuleIdentifier, GroupMember> registration = serviceRegistrar.register(moduleId);
                 registrationReference.set(registration);
             } else {
                 if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
@@ -301,18 +309,12 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
 
     /*
      * This listener is notified of changes for a particular service that has been registered.
-     *
-     * NOTE: because this listener reports changes to providers only, in order to determine if providers were added
-     * orremoved, we need to keep track of the current providers to determine whether nodes were addede or removed
-     * for this module.
      */
-    class ModuleAvailabilityRegistrarServiceProviderRegistrationListener implements ServiceProviderRegistrationListener<GroupMember> {
+    class ModuleAvailabilityRegistrarServiceProviderRegistryListener implements ServiceProviderRegistryListener<EJBModuleIdentifier, GroupMember> {
 
-        private final EJBModuleIdentifier moduleId;
         private final List<ModuleAvailabilityRegistrarListener> listeners;
 
-        public ModuleAvailabilityRegistrarServiceProviderRegistrationListener(EJBModuleIdentifier moduleId, List<ModuleAvailabilityRegistrarListener> listeners) {
-            this.moduleId = moduleId;
+        public ModuleAvailabilityRegistrarServiceProviderRegistryListener(List<ModuleAvailabilityRegistrarListener> listeners) {
             this.listeners = listeners;
         }
 
@@ -323,7 +325,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
          * @param event a registration event describing members providing the given service
          */
         @Override
-        public void providersChanged(ServiceProviderRegistrationEvent<GroupMember> event) {
+        public void providersChanged(EJBModuleIdentifier moduleId, ServiceProviderRegistrationEvent<GroupMember> event) {
             if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                 EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarServiceProviderRegistrationListener: Calling providersChanged() for module %s : previous = %s, current = %s", moduleId, event.getPreviousProviders(), event.getCurrentProviders());
 
@@ -450,7 +452,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
          * - find out which modules are in the deployment repository
          * - register all deployed modules as service providers
          * - for each service provider registered, callback clients will be notified (automatically) that the module is again available
-         * This does not apply when the server is starting as deployments are not possible until ther server is atarted.
+         * This does not apply when the server is starting as deployments are not possible until ther server is started.
          *
          * @param context the server resume context
          * @return a completion stage for the SuspendController
@@ -482,8 +484,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
                     if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
                         EjbLogger.DEPLOYMENT_LOGGER.tracef("ModuleAvailabilityRegistrarSuspendableActivity: Registering listener for module %s", moduleId);
 
-                    ModuleAvailabilityRegistrarServiceProviderRegistrationListener registrationListener = new ModuleAvailabilityRegistrarServiceProviderRegistrationListener(moduleId, listeners);
-                    CompletableFuture.supplyAsync(() -> serviceRegistrar.register(moduleId, registrationListener))
+                    CompletableFuture.supplyAsync(() -> serviceRegistrar.register(moduleId))
                             .whenComplete((registration, e) -> {
                                 if (e != null) {
                                     result.completeExceptionally(e);
