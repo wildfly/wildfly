@@ -29,7 +29,7 @@ public class CodecSessionConfig implements SessionConfig {
         CharSequence encodedSessionId = this.codec.encode(sessionId);
         String requestedSessionId = this.config.findSessionId(exchange);
         // Apply only if identifier changed
-        if (!encodedSessionId.equals(requestedSessionId)) {
+        if ((requestedSessionId == null) || !requestedSessionId.contentEquals(encodedSessionId)) {
             this.config.setSessionId(exchange, encodedSessionId.toString());
         }
     }
