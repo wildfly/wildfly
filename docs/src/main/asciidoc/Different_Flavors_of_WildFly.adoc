@@ -155,6 +155,8 @@ Beginning with WildFly Preview 42, we've begun integrating milestone or final re
 
 |Jakarta JSON Binding  |3.0 |3.1.0-M2
 
+|Jakarta RESTful Web Services  |4.0 |5.0
+
 |=======================================================================
 
 Otherwise than the specifications listed above, WildFly Preview 40 provides support for xref:Getting_Started_Guide{outfilesuffix}#standards_support[the same specification versions as standard WildFly 42]

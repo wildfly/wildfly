@@ -8,9 +8,15 @@ package org.jboss.as.jaxrs;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
+import java.lang.annotation.Annotation;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.ext.Provider;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -29,6 +35,7 @@ import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceTarget;
@@ -92,6 +99,17 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor(contextConfiguration));
             }
         }, OperationContext.Stage.RUNTIME);
+
+        // If CDI is available, we must support the annotations below as bean defining annotations.
+        if (context.getCapabilityServiceSupport().hasCapability(WELD_CAPABILITY_NAME)) {
+            final WeldCapability weldCapability = context.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+            // Add bean defining annotations if they're stereotypes
+            for (Class<? extends Annotation> annotation : List.of(ApplicationPath.class, Path.class, Provider.class)) {
+                if (annotation.isAnnotationPresent(Stereotype.class)) {
+                    weldCapability.addBeanDefiningAnnotation(annotation);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("deprecation")
