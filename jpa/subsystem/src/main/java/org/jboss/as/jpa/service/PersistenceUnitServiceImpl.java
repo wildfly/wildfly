@@ -40,7 +40,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderIntegratorAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -63,7 +62,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
-    private final InjectedValue<PhaseOnePersistenceUnitServiceImpl> phaseOnePersistenceUnitServiceInjectedValue = new InjectedValue<>();
 
     private static final String CDI_BEAN_MANAGER = "jakarta.persistence.bean.manager";
     private static final String VALIDATOR_FACTORY = "jakarta.persistence.validation.factory";
@@ -140,9 +138,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 }
 
                                 try {
-                                    PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                    Object wrapperBeanManagerLifeCycle=null;
+                                    Object wrapperBeanManagerLifeCycle = null;
 
                                     // as per Jakarta Persistence specification contract, always pass ValidatorFactory in via standard property before
                                     // creating container EntityManagerFactory
@@ -150,58 +147,29 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         properties.put(VALIDATOR_FACTORY, validatorFactory);
                                     }
 
-                                    // handle phase 2 of 2 of bootstrapping the persistence unit
-                                    if (phaseOnePersistenceUnitService != null) {
-                                        ROOT_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                                        // indicate that the second phase of bootstrapping the persistence unit has started
-                                        phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
-                                        if (beanManagerInjector.getOptionalValue() != null) {
-                                            wrapperBeanManagerLifeCycle = phaseOnePersistenceUnitService.getBeanManagerLifeCycle();
-                                            // update the bean manager proxy to the actual Jakarta Contexts and Dependency Injection bean manager
-                                            proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
-                                            proxyBeanManager.setDelegate((ELAwareBeanManager) beanManagerInjector.getOptionalValue());  // TODO change the WeldCapability SPI to require ELAwareBeanManager
-                                        }
-                                        EntityManagerFactoryBuilder emfBuilder = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder();
+                                    ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
+                                    pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+                                    pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
 
-                                        // always pass the ValidatorFactory before starting the second phase of the
-                                        // persistence unit bootstrap.
-                                        if (validatorFactory != null) {
-                                            emfBuilder.withValidatorFactory(validatorFactory);
-                                        }
-
-                                        // get the EntityManagerFactory from the second phase of the persistence unit bootstrap
-                                        entityManagerFactory = emfBuilder.build();
-                                        if (phaseOnePersistenceUnitService.getIntegrationWithCDIBag() != null) {
-                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setEntityManagerFactory(entityManagerFactory);
-                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setTransactionManager(transactionManager);
-                                            phaseOnePersistenceUnitService.getIntegrationWithCDIBag().setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
-                                        }
-                                    } else {
-                                        ROOT_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                                        // start the persistence unit in one pass (1 of 1)
-                                        pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
-                                        pu.setJtaDataSource(jtaDataSource.getOptionalValue());
-                                        pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-
-                                        if (beanManagerInjector.getOptionalValue() != null) {
-                                            proxyBeanManager = new ProxyBeanManager();
-                                            proxyBeanManager.setDelegate((ELAwareBeanManager) beanManagerInjector.getOptionalValue()); // TODO change the WeldCapability SPI to require ELAwareBeanManager
-                                            wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
-                                            if (wrapperBeanManagerLifeCycle != null) {
-                                              // pass the wrapper object representing the bean manager life cycle object
-                                              properties.put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
-                                            }
-                                            else {
-                                              properties.put(CDI_BEAN_MANAGER, proxyBeanManager);
-                                            }
-                                        }
-                                        entityManagerFactory = createContainerEntityManagerFactory();
-                                        if (integrationWithCDIBag != null) {
-                                            integrationWithCDIBag.setEntityManagerFactory(entityManagerFactory);
+                                    if (beanManagerInjector.getOptionalValue() != null) {
+                                        proxyBeanManager = new ProxyBeanManager();
+                                        proxyBeanManager.setDelegate((ELAwareBeanManager) beanManagerInjector.getOptionalValue()); // TODO change the WeldCapability SPI to require ELAwareBeanManager
+                                        wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
+                                        if (wrapperBeanManagerLifeCycle != null) {
+                                            // pass the wrapper object representing the bean manager life cycle object
+                                            properties.put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
+                                        } else {
+                                            properties.put(CDI_BEAN_MANAGER, proxyBeanManager);
                                         }
                                     }
+                                    entityManagerFactory = createContainerEntityManagerFactory();
+                                    if (integrationWithCDIBag != null) {
+                                        integrationWithCDIBag.setEntityManagerFactory(entityManagerFactory);
+                                    }
+
                                     persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
-                                    if(wrapperBeanManagerLifeCycle != null) {
+                                    if (wrapperBeanManagerLifeCycle != null) {
                                         beanManagerAfterDeploymentValidation.register(persistenceProviderAdaptor, wrapperBeanManagerLifeCycle);
                                     }
                                     context.complete();
@@ -248,11 +216,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             @Override
                             public Void run() {
 
-                                if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
-                                    ROOT_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                                } else {
                                     ROOT_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                                }
+
                                 ClassLoader old = Thread.currentThread().getContextClassLoader();
                                 Thread.currentThread().setContextClassLoader(classLoader);
                                 if(javaNamespaceSetup != null) {
@@ -374,14 +339,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                     pu.getScopedPersistenceUnitName(), properties, pu.getProperties());
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
         } finally {
+            ROOT_LOGGER.tracef("after call to createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
+                                pu.getScopedPersistenceUnitName(), properties, pu.getProperties());
             persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             for (PersistenceProviderIntegratorAdaptor adaptor : persistenceProviderIntegratorAdaptors) {
                 adaptor.afterCreateContainerEntityManagerFactory(pu);
             }
         }
-    }
-
-    public Injector<PhaseOnePersistenceUnitServiceImpl> getPhaseOnePersistenceUnitServiceImplInjector() {
-        return phaseOnePersistenceUnitServiceInjectedValue;
     }
 }
