@@ -38,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -94,6 +95,14 @@ class SecureServerDefinition extends SimpleResourceDefinition {
 
         private SecureServerAddHandler() {
             super(ALL_ATTRIBUTES);
+        }
+
+        @Override
+        protected boolean requiresRuntime(OperationContext context) {
+            // this resource only publishes the configuration of the management console, which is not served in
+            // admin-only mode. On a server this is already covered by the default behaviour, but for a host
+            // controller the default behaviour does not take the running mode into account.
+            return super.requiresRuntime(context) && context.getRunningMode() == RunningMode.NORMAL;
         }
 
         @Override
