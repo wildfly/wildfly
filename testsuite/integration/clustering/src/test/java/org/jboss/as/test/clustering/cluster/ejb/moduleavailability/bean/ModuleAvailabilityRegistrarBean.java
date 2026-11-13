@@ -14,10 +14,12 @@ import jakarta.ejb.Startup;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistryListener;
 
 /**
  * An EJB wrapper for the ServiceProviderRegistrar instance used by the ModuleAvailabilityListenerService which manages
@@ -51,6 +53,12 @@ public class ModuleAvailabilityRegistrarBean implements ServiceProviderRegistrar
     public ServiceProviderRegistration<Object, GroupMember> register(Object service, ServiceProviderRegistrationListener<GroupMember> listener) {
         LOGGER.infof("Calling register with identifier %s and listener %s\n", service, listener);
         return registrar.register(service, listener);
+    }
+
+    @Override
+    public Registration register(ServiceProviderRegistryListener<Object, GroupMember> listener) {
+        LOGGER.infof("Calling register with global listener %s\n",listener);
+        return registrar.register(listener);
     }
 
     @Override
