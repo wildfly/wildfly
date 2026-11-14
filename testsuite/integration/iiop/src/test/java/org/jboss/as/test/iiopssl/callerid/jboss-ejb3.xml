@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:iiop="urn:iiop"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <method-permission>
+            <unchecked/>
+            <method>
+                <ejb-name>CallerPropBean</ejb-name>
+                <method-name>*</method-name>
+            </method>
+        </method-permission>
+        <method-permission>
+            <unchecked/>
+            <method>
+                <ejb-name>CallerPropDefaultDomainBean</ejb-name>
+                <method-name>*</method-name>
+            </method>
+        </method-permission>
+        <iiop:iiop>
+            <ejb-name>*</ejb-name>
+            <iiop:ior-security-config>
+                <iiop:transport-config
+                    iiop:integrity="required"
+                    iiop:confidentiality="required"
+                    iiop:establish-trust-in-target="supported"
+                    iiop:establish-trust-in-client="required"
+                />
+                <iiop:sas-context
+                    iiop:caller-propagation="supported"
+                />
+            </iiop:ior-security-config>
+        </iiop:iiop>
+    </assembly-descriptor>
+</jboss:ejb-jar>

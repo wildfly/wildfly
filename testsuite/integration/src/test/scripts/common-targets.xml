@@ -356,6 +356,37 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="ts.config-as.iiop.allow-unauth-caller-propagation" description="Allow unauthenticated caller propagation in the IIOP subsystem.">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <sequential>
+            <echo message="IIOP: setting caller-propagation-require-auth to false"/>
+
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/iiopAllowUnauthCallerPropagation.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+            </xslt>
+
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml.mod"/>
+                    <include name="**/standalone.xml.mod"/>
+                    <include name="**/standalone-full.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
+
     <!-- Change default transport stack in clustering server profiles. -->
     <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
 
