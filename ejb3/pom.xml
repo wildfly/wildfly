@@ -123,6 +123,14 @@ vi:ts=4:sw=4:expandtab
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-threads</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-event-logger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-io</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>

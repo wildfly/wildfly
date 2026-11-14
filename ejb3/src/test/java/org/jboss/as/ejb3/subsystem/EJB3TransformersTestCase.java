@@ -17,6 +17,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +49,8 @@ public class EJB3TransformersTestCase extends AbstractSubsystemTest {
     private final ModelVersion subsystemVersion;
 
     public EJB3TransformersTestCase(ModelTestControllerVersion version) {
-        super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());
+        // The current model's access-log resource and namespace are not available when running at default stability
+        super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension(), Stability.COMMUNITY);
 
         this.controllerVersion = version;
         this.subsystemVersion = VERSIONS.get(version).getVersion();
@@ -100,7 +102,7 @@ public class EJB3TransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testTransformations() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization.ManagementAdditionalInitialization(Stability.COMMUNITY))
                 .setSubsystemXmlResource("subsystem-ejb3-transform.xml");
 
         builder.createLegacyKernelServicesBuilder(null, this.controllerVersion, this.subsystemVersion)
@@ -123,7 +125,8 @@ public class EJB3TransformersTestCase extends AbstractSubsystemTest {
     public void testRejections() throws Exception {
         String subsystemXml = readResource("subsystem-ejb3-reject.xml");
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(new EJB3AdditionalInitialization());
+        // Only the current controller runs at community stability; the legacy controller keeps the shared initialization.
+        KernelServicesBuilder builder = createKernelServicesBuilder(new EJB3CommunityAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(new EJB3AdditionalInitialization(), this.controllerVersion, this.subsystemVersion)
                 .addSingleChildFirstClass(EJB3AdditionalInitialization.class)
                 .addMavenResourceURL(this.getDependencies())
@@ -143,7 +146,13 @@ public class EJB3TransformersTestCase extends AbstractSubsystemTest {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
 
-        // need to include all changes from current to 9.0.0
+        // Changes introduced in 11.0.0: reject for all legacy versions (10.0.0 and older)
+        if (EJB3Model.VERSION_11_0_0.requiresTransformation(version)) {
+            // Reject /subsystem=ejb3/service=access-log — no equivalent in model 10.0.0 or older
+            config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.ACCESS_LOG_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        // Changes introduced in 10.0.0: reject for 9.0.0 and older
         if (EJB3Model.VERSION_10_0_0.requiresTransformation(version)) {
             // Reject /subsystem=ejb3/simple-cache resource
             config.addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.SIMPLE_CACHE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);

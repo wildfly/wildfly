@@ -5,6 +5,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_10_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_9_0_0;
 
 import org.jboss.as.controller.ModelVersion;
@@ -37,17 +38,28 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        // register the transformations required for each legacy version after 9.0.0
-        registerTransformers_9_0_0(chainedBuilder.createBuilder(currentModel, VERSION_9_0_0.getVersion()));
+        // register the transformations required for each legacy version
+        registerTransformers_10_0_0(chainedBuilder.createBuilder(currentModel, VERSION_10_0_0.getVersion()));
+        registerTransformers_9_0_0(chainedBuilder.createBuilder(VERSION_10_0_0.getVersion(), VERSION_9_0_0.getVersion()));
 
         // create the chained builder which incorporates all transformations
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[] {
+                VERSION_10_0_0.getVersion(),
                 VERSION_9_0_0.getVersion()
         });
     }
 
     /*
-     * Transformers for changes in model version 10.0.0
+     * Transformers for changes in model version 11.0.0 (current).
+     * Rejects resources introduced in 11.0.0 when transforming to 10.0.0.
+     */
+    private static void registerTransformers_10_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        // Reject /subsystem=ejb3/service=access-log — no equivalent in model 10.0.0
+        subsystemBuilder.rejectChildResource(EJB3SubsystemModel.ACCESS_LOG_PATH);
+    }
+
+    /*
+     * Transformers for changes introduced between 10.0.0 and 9.0.0.
      */
     private static void registerTransformers_9_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
         // Reject ejb3/caches/simple-cache resource

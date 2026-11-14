@@ -129,6 +129,17 @@ public interface EJB3SubsystemModel {
 
     @Deprecated String STATIC_URLS = "static-urls";
 
+    String ACCESS_LOG = "access-log";
+    String DESTINATION = "destination";
+    String ROTATE_SUFFIX = "rotate-suffix";
+    String WORKER = "worker";
+    String INCLUDE_LOCAL = "include-local";
+    String INCLUDE_NODE_NAME = "include-node-name";
+    String METADATA = "metadata";
+    String EVENTS_LOGGED = "events-logged";
+    String EVENTS_DROPPED = "events-dropped";
+    String QUEUE_LENGTH = "queue-length";
+
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_PATH = PathElement.pathElement(TIMER);
@@ -142,6 +153,7 @@ public interface EJB3SubsystemModel {
     PathElement REMOTING_PROFILE_PATH = PathElement.pathElement(REMOTING_PROFILE);
     PathElement SIMPLE_CACHE_PATH = PathElement.pathElement(SIMPLE_CACHE);
     PathElement DISTRIBUTABLE_CACHE_PATH = PathElement.pathElement(DISTRIBUTABLE_CACHE);
+    PathElement ACCESS_LOG_PATH = PathElement.pathElement(SERVICE, ACCESS_LOG);
 
     String BASE_EJB_THREAD_POOL_NAME = "ejb3";
     ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append(BASE_EJB_THREAD_POOL_NAME);
