@@ -39,11 +39,16 @@ public class OpenTelemetryIntegrationWithVertxTestCase extends AbstractOpenTelem
         return buildBaseArchive("otelinteg-with-vertx");
     }
 
+    /**
+     * Verifies that SmallRye reuses the Vert.x subsystem's instance without creating another instance.
+     *
+     * @throws Exception if tracing or server log retrieval fails
+     */
     @Test
     public void testVertxUsageInLog() throws Exception {
         requestOpenTelemetryTrace("otelinteg-with-vertx.war");
         String logsInSmalleRyeOpentelemetry = retrieveServerLog(managementClient, WITH_VERTX_SMALLRYE_OPENTELEMETRY_LOG_FILE);
-        Assert.assertFalse("It won't create Vertx when vertx subsystem is available", logsInSmalleRyeOpentelemetry.contains("Create a new Vertx instance"));
+        Assert.assertFalse("It won't create Vertx when vertx subsystem is available", logsInSmalleRyeOpentelemetry.contains("Creating a new Vertx instance"));
         String logsInVertxSubsystem = retrieveServerLog(managementClient, WITH_VERTX_VERTX_FEATURE_PACK_LOG_FILE);
         Assert.assertTrue("Should use Vertx instance from vertx subsystem", logsInVertxSubsystem.contains("WFLYVTX0008"));
     }
