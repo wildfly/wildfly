@@ -31,23 +31,46 @@ public interface WildFlyRegistry extends AutoCloseable {
     }
 
     private Meter.Id addCounter(WildFlyMetric metric, MetricMetadata metadata) {
-        return FunctionCounter.builder(metadata.getMetricName(), metric,
+        // Seed the id before register() publishes the meter, so a scrape racing registration can still deny it;
+        // then replace it with the authoritative registered id (see addGauge for the same rationale).
+        Meter.Id id = newMeterId(metadata, Meter.Type.COUNTER);
+        metric.setMeterId(id);
+        Meter.Id registeredId = FunctionCounter.builder(metadata.getMetricName(), metric,
                         value -> getMetricValue(metric, metadata.getMeasurementUnit()))
                 .tags(getTags(metadata))
                 .baseUnit(getBaseUnit(metadata))
                 .description(metadata.getDescription())
                 .register((MeterRegistry) this)
                 .getId();
+        metric.setMeterId(registeredId);
+        return registeredId;
     }
 
     private Meter.Id addGauge(WildFlyMetric metric, MetricMetadata metadata) {
-        return Gauge.builder(metadata.getMetricName(), metric,
+        // Seed the id before register() publishes the meter, so a scrape racing registration can still deny it;
+        // then replace it with the authoritative registered id.
+        Meter.Id id = newMeterId(metadata, Meter.Type.GAUGE);
+        metric.setMeterId(id);
+        Meter.Id registeredId = Gauge.builder(metadata.getMetricName(), metric,
                         value -> getMetricValue(metric, metadata.getMeasurementUnit()))
                 .tags(getTags(metadata))
                 .baseUnit(getBaseUnit(metadata))
                 .description(metadata.getDescription())
                 .register((MeterRegistry) this)
                 .getId();
+        metric.setMeterId(registeredId);
+        return registeredId;
+    }
+
+    /**
+     * Creates a meter identity before registration publishes it, so a concurrent scrape can hide denied series.
+     *
+     * @param metadata metadata describing the meter
+     * @param type the Micrometer meter type
+     * @return the identity used by the meter builder
+     */
+    private Meter.Id newMeterId(MetricMetadata metadata, Meter.Type type) {
+        return new Meter.Id(metadata.getMetricName(), getTags(metadata), getBaseUnit(metadata), metadata.getDescription(), type);
     }
 
     private Tags getTags(MetricMetadata metadata) {
