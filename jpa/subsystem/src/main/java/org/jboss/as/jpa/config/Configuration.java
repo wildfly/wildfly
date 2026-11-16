@@ -125,8 +125,6 @@ public class Configuration {
      */
     public static final String JPA_CONTAINER_CLASS_TRANSFORMER = "jboss.as.jpa.classtransformer";
 
-    private static final String JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE = "wildfly.jpa.applicationdatasource";
-
     /**
      * set to false to ignore default data source (defaults to true)
      */
@@ -309,20 +307,6 @@ public class Configuration {
 
     public static String getDefaultProviderModuleName() {
         return PROVIDER_MODULE_DEFAULT;
-    }
-
-    /**
-     * Determine if persistence unit can use application defined DataSource (e.g. DataSourceDefinition or resource ref).
-     *
-     * @param pu
-     * @return true if application defined DataSource can be used, false (default) if not.
-     */
-    public static boolean allowApplicationDefinedDatasource(PersistenceUnitMetadata pu) {
-        boolean result = false;
-        if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE)) {
-            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_APPLICATION_DEFINED_DATASOURCE));
-        }
-        return result;
     }
 
     /**

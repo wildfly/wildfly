@@ -277,6 +277,9 @@ public class PersistenceUnitServiceHandler {
                             // which is important for EAR deployments that contain a WAR that has persistence units defined.
                             registerJPAEntityListenerRegister(deploymentUnit, deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT));
                             final HashMap<String, Object> properties = new HashMap<>();
+                            // add persistence provider specific properties (as we used to during Persistence Unit bootstrap phase 1 of 2)
+                            adaptor.addProviderProperties(properties, pu);
+
                             // add persistence provider integrator specific properties
                             for (PersistenceProviderIntegratorAdaptor integratorAdaptor : integratorAdaptors) {
                                 integratorAdaptor.addIntegratorProperties(properties, pu);
