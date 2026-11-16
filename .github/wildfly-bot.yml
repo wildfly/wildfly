@@ -1,4 +1,16 @@
 wildfly:
+  skip:
+    format:
+      title:
+        - "^Pulls$"
+        - "^Aggregate\\s+PR$"
+      body: "(?i)no\\s+(?:jira|issue)\\s+(?:required|needed)"
+    rules:
+      title:
+        - "^Pulls$"
+        - "^Aggregate\\s+PR$"
+      body: "(?i)no\\s+reviews?\\s+(?:required|needed)"
+
   rules:
     - id: appclient
       directories: [ appclient ]
@@ -250,9 +262,8 @@ wildfly:
     - khermano@redhat.com
     - mjusko@redhat.com
     - brian.stansberry@redhat.com
-  
+
   format:
-    skip: "(?i)no\\s+(?:jira|issue)\\s+(?:required|needed)"
     description:
       regexes:
         - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
