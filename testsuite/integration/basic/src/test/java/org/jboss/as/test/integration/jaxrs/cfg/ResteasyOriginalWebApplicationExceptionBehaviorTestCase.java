@@ -21,6 +21,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.ConfigureLoggingSetupTask;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
+import org.jboss.as.test.integration.jaxrs.cfg.resources.DefaultExceptionMapper;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.ErrorResource;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
 import org.jboss.dmr.ModelNode;
@@ -55,7 +56,8 @@ public class ResteasyOriginalWebApplicationExceptionBehaviorTestCase extends Abs
         return ShrinkWrap.create(WebArchive.class, ResteasyOriginalWebApplicationExceptionBehaviorTestCase.class.getSimpleName() + ".war")
                 .addClasses(
                         TestApplication.class,
-                        ErrorResource.class)
+                        ErrorResource.class,
+                        DefaultExceptionMapper.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
