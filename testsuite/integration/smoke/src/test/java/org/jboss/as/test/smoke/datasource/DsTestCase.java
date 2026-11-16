@@ -20,9 +20,9 @@ import java.sql.ResultSet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
-import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,12 @@ public class DsTestCase {
     public static Archive<?> getDeployment() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "ds-example.jar");
         archive.addClass(DsTestCase.class);
-        archive.addClass(WildFlyDataSource.class);
+        // Add a dep on the org.jboss.as.connector module instead of adding a module class to the deployment.
+        // A real app using a DS would not package a WF internal class.
+        // WildFlyDataSource needs access to other classes in its module.
+        //archive.addClass(WildFlyDataSource.class);
+        archive.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" +
+                "Dependencies: org.jboss.as.connector\n"), "MANIFEST.MF");
         return archive;
     }
 

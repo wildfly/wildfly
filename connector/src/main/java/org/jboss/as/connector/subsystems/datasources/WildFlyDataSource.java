@@ -13,17 +13,28 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+
+import org.jboss.as.connector.logging.ConnectorLogger;
 
 /**
  * WildFly DataSource implementation
  *
  * @author <a href="jesper.pedersen@redhat.com">Jesper Pedersen</a>
  */
-public class WildFlyDataSource implements DataSource, Serializable {
+public final class WildFlyDataSource implements DataSource, Serializable {
 
     /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
+
+    /** JNDI names we've used to create a WildFlyDataSource that readObject() can use in deserialization */
+    private static final Set<String> VALID_JNDI_NAMES = ConcurrentHashMap.newKeySet();
+
+    static void clearValidJNDINames() {
+        VALID_JNDI_NAMES.clear();
+    }
 
     /** DataSource */
     private transient DataSource delegate;
@@ -37,9 +48,10 @@ public class WildFlyDataSource implements DataSource, Serializable {
      * @param delegate The datasource
      * @param jndiName The service name
      */
-    public WildFlyDataSource(DataSource delegate, String jndiName) {
+    WildFlyDataSource(DataSource delegate, String jndiName) {
         this.delegate = delegate;
         this.jndiName = jndiName;
+        VALID_JNDI_NAMES.add(jndiName);
     }
 
     @Override
@@ -87,6 +99,10 @@ public class WildFlyDataSource implements DataSource, Serializable {
         return delegate.getParentLogger();
     }
 
+    void stop() {
+        VALID_JNDI_NAMES.remove(jndiName);
+    }
+
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         out.writeObject(jndiName);
@@ -99,6 +115,10 @@ public class WildFlyDataSource implements DataSource, Serializable {
 
 
         try {
+            if (!VALID_JNDI_NAMES.contains(jndiName)) {
+                throw ConnectorLogger.ROOT_LOGGER.invalidDataSourceJndiName(jndiName);
+            }
+
             InitialContext context = new InitialContext();
 
             DataSource originalDs = (DataSource) context.lookup(jndiName);
