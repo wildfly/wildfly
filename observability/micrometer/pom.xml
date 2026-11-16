@@ -69,6 +69,10 @@
             <artifactId>prometheus-metrics-exposition-textformats</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>prometheus-metrics-model</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.opentelemetry.proto</groupId>
             <artifactId>opentelemetry-proto</artifactId>
         </dependency>
@@ -178,11 +182,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.prometheus</groupId>
-            <artifactId>prometheus-metrics-model</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>prometheus-metrics-config</artifactId>

@@ -16,6 +16,7 @@ import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROME
 
 import java.util.OptionalDouble;
 
+import io.micrometer.core.instrument.Meter;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -28,6 +29,7 @@ public class WildFlyMetric implements Metric {
     private LocalModelControllerClient modelControllerClient;
     private PathAddress address;
     private String attributeName;
+    private volatile Meter.Id meterId;
 
     static {
         UNDEFINED.protect();
@@ -45,6 +47,15 @@ public class WildFlyMetric implements Metric {
 
     public PathAddress getAddress() {
         return address;
+    }
+
+    /**
+     * Associates this model metric with its registered series so the active scrape can omit it after a denied read.
+     *
+     * @param meterId the Micrometer identity for this metric
+     */
+    public void setMeterId(Meter.Id meterId) {
+        this.meterId = meterId;
     }
 
     @Override
@@ -71,6 +82,7 @@ public class WildFlyMetric implements Metric {
         ModelNode response = modelControllerClient.execute(readAttributeOp);
         String error = getFailureDescription(response);
         if (error != null) {
+            MetricScrapeContext.deny(meterId);
             // [WFLY-11933] if the value can not be read if the management resource is not accessible due to RBAC,
             // it is logged it at a lower level.
             if (error.contains("WFLYCTL0216")) {
