@@ -33,12 +33,12 @@ public class IIOPTransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-3.0.xml");
+        return readResource("subsystem-4.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-iiop-openjdk_3_0.xsd";
+        return "schema/wildfly-iiop-openjdk_4_0.xsd";
     }
 
     @Test
@@ -70,6 +70,34 @@ public class IIOPTransformersTestCase extends AbstractSubsystemBaseTest {
         // TODO if https://issues.redhat.com/browse/WFCORE-7422-7422 is ever implemented use it validate resource transformation.
         // The above validates add operation transformation.
     }
+
+    @Test
+    public void testCurrentModelVersionIsNotConfusedWithVersion_4_0() {
+        Assert.assertEquals(ModelVersion.create(5), IIOPExtension.CURRENT_MODEL_VERSION);
+        Assert.assertEquals(ModelVersion.create(4), IIOPExtension.VERSION_4_0);
+        Assert.assertEquals(ModelVersion.create(3), IIOPExtension.VERSION_3_0);
+    }
+
+    @Test
+    public void testValueEquivalentToLegacyBehaviourIsDiscarded() {
+        Assert.assertTrue(isDiscardable(new ModelNode(false)));
+    }
+
+    @Test
+    public void testOtherValueIsNotDiscarded() {
+        Assert.assertFalse(isDiscardable(new ModelNode(true)));
+    }
+
+    @Test
+    public void testUndefinedValueIsNotDiscarded() {
+        Assert.assertFalse(isDiscardable(new ModelNode()));
+    }
+
+    private static boolean isDiscardable(ModelNode value) {
+        return IIOPTransformers.DISCARD_CALLER_PROPAGATION_REQUIRE_AUTH.isResourceAttributeDiscardable(
+                null, Constants.IOR_SAS_CONTEXT_CALLER_PROPAGATION_REQUIRE_AUTH, value, null);
+    }
+
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion) throws Exception {
         String mavenGroupId = controllerVersion.getMavenGroupId();
