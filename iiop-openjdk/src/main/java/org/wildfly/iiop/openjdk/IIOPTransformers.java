@@ -4,6 +4,7 @@
  */
 package org.wildfly.iiop.openjdk;
 
+import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_4_0;
 import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_3_0;
 
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -38,12 +40,33 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
         ModelVersion currentModel = subsystemRegistration.getCurrentSubsystemVersion();
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        // register the transformations required for each legacy version after 3.0.0
-        registerTransformers_3_0_0(chainedBuilder.createBuilder(currentModel, VERSION_3_0));
+        // register the transformations required for each legacy version
+        registerTransformers_4_0_0(chainedBuilder.createBuilder(currentModel, VERSION_4_0));
+        registerTransformers_3_0_0(chainedBuilder.createBuilder(VERSION_4_0, VERSION_3_0));
 
         // create the chained builder which incorporates all transformations
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[] {
+                VERSION_4_0,
                 VERSION_3_0 });
+    }
+
+    static final DiscardAttributeChecker DISCARD_CALLER_PROPAGATION_REQUIRE_AUTH =
+            new DiscardAttributeChecker.DefaultDiscardAttributeChecker(false, false) {
+                @Override
+                protected boolean isValueDiscardable(PathAddress address, String attributeName,
+                                                     ModelNode attributeValue, TransformationContext context) {
+                    return attributeValue.isDefined() && !attributeValue.asBoolean();
+                }
+            };
+
+    /*
+     * Transformers for changes in model version 5.0.0
+     */
+    private static void registerTransformers_4_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        subsystemBuilder.getAttributeBuilder()
+                .setDiscard(DISCARD_CALLER_PROPAGATION_REQUIRE_AUTH, IIOPRootDefinition.CALLER_PROPAGATION_REQUIRE_AUTH)
+                .addRejectCheck(RejectAttributeChecker.ALL, IIOPRootDefinition.CALLER_PROPAGATION_REQUIRE_AUTH)
+                .end();
     }
 
     /*
