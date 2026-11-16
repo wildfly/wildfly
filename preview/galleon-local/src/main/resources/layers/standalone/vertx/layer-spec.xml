@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="vertx">
+    <props>
+        <prop name="org.wildfly.rule.class" value="io.vertx.core.*,io.vertx.mutiny.core.*"/>
+        <prop name="org.wildfly.rule.expected-file" value="[/WEB-INF/vertx.json,/META-INF/vertx.json]"/>
+    </props>
+    <dependencies>
+        <layer name="cdi"/>
+    </dependencies>
+
+    <feature-group name="vertx"/>
+
+    <packages>
+        <package name="org.wildfly.extension.vertx" />
+    </packages>
+
+</layer-spec>

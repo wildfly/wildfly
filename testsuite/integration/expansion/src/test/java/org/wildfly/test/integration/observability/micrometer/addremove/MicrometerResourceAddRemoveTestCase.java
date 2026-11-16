@@ -27,7 +27,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.plugin.tools.server.ServerManager;
 import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * This test verifies the fix for WFLY-22219 as it relates to the WildFly Micrometer subsystem.
@@ -59,7 +59,7 @@ import org.wildfly.test.integration.observability.setuptask.PrometheusSetupTask;
  */
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup({
-        SnapshotServerSetupTask.class,
+        StabilityServerSetupSnapshotRestoreTasks.Community.class,
         PrometheusSetupTask.class,
         MessagingSubsystemSetupTask.class})
 @TestcontainersRequired

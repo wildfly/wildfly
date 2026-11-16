@@ -4,7 +4,6 @@
  */
 package org.wildfly.test.integration.metrics;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.management.api.expression.Utils.executeOp;
 
@@ -17,18 +16,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.AuthSchemes;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,7 +25,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.observability.setuptasks.RbacRealmSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
@@ -107,7 +93,7 @@ public class MetricsRbacTestCase {
      */
     @Test
     public void testWildFlyMetricsUnauthenticatedRejected() throws Exception {
-        setAuthenticationEnabled(true);
+        MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, true);
 
         Assert.assertEquals("Unauthenticated scrape of the secured metrics endpoint should be rejected",
                 401, fetchMetricsStatus(null, null));
@@ -115,29 +101,25 @@ public class MetricsRbacTestCase {
 
     /**
      * Negative test: an authenticated management user without at least the Monitor role must not see the
-     * RBAC-protected model metrics. The scrape authenticates, but the Undertow model metric is read under the
-     * caller's identity and, lacking read access, comes back absent or zeroed rather than carrying a real value.
+     * RBAC-protected model metrics, including the metric series labels. The scrape authenticates, but the
+     * Undertow model metric is read under the caller's identity and, lacking read access, the whole series is
+     * omitted rather than exported with a zero value and address-derived labels.
      */
     @Test
     public void testWildFlyMetricsWithoutMonitorRole() throws Exception {
-        setAuthenticationEnabled(true);
+        MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, true);
         makeRequests();
 
         List<PrometheusMetric> metrics =
                 fetchMetrics(RbacRealmSetupTask.USER_NOROLE, RbacRealmSetupTask.TEST_RBAC_PASSWORD);
 
-        double value = metrics.stream()
-                .filter(metric -> metric.getKey().startsWith(UNDERTOW_MODEL_METRIC))
-                .findFirst()
-                .map(metric -> Double.parseDouble(metric.getValue()))
-                .orElse(0.0);
-
-        Assert.assertEquals("The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
-                "' must not be visible to a user without the Monitor role, but was " + value, 0.0, value, 0.0);
+        Assert.assertFalse("The Undertow model metric series '" + UNDERTOW_MODEL_METRIC +
+                        "' must be omitted for a user without the Monitor role",
+                metrics.stream().anyMatch(metric -> metric.getKey().startsWith(UNDERTOW_MODEL_METRIC)));
     }
 
     private void verifyMetricsAccess(boolean authenticationEnabled) throws Exception {
-        setAuthenticationEnabled(authenticationEnabled);
+        MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, authenticationEnabled);
         makeRequests();
 
         List<PrometheusMetric> metrics = authenticationEnabled
@@ -169,10 +151,7 @@ public class MetricsRbacTestCase {
      * Scrapes the management metrics endpoint.
      */
     protected List<PrometheusMetric> fetchMetrics(String username, String password) throws IOException {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            CloseableHttpResponse resp = scrapeManagement(client, username, password);
-            return PrometheusMetric.buildPrometheusMetrics(EntityUtils.toString(resp.getEntity()));
-        }
+        return MetricsRbacTestSupport.fetchMetrics(managementClient, username, password);
     }
 
     /**
@@ -180,49 +159,7 @@ public class MetricsRbacTestCase {
      * assert an unauthenticated scrape is rejected before any metric body is produced.
      */
     protected int fetchMetricsStatus(String username, String password) throws IOException {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            return scrapeManagement(client, username, password).getStatusLine().getStatusCode();
-        }
-    }
-
-    /**
-     * Issues a GET against {@code http://<mgmt-host>:<mgmt-port>/metrics}. When {@code username} is non-null the request
-     * carries the given credentials and is authenticated via DIGEST.
-     */
-    private CloseableHttpResponse scrapeManagement(CloseableHttpClient client, String username,
-                                                   String password) throws IOException {
-        HttpClientContext hcContext = HttpClientContext.create();
-        HttpGet get = new HttpGet(String.format("http://%s:%d/metrics", managementClient.getMgmtAddress(),
-                managementClient.getMgmtPort()));
-
-        if (username != null) {
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-            hcContext.setCredentialsProvider(credentialsProvider);
-            get.setConfig(RequestConfig.custom()
-                    .setTargetPreferredAuthSchemes(List.of(AuthSchemes.DIGEST))
-                    .build());
-        }
-
-        return client.execute(get, hcContext);
-    }
-
-    /**
-     * Enables or disables RBAC and, in lockstep, the security of the WildFly Metrics endpoints, then reloads.
-     * With authentication enabled, scrapes must present a management-realm identity with at least Monitor access.
-     * With it disabled, the endpoints are open.
-     */
-    private void setAuthenticationEnabled(boolean enabled) throws Exception {
-        executeOp(Util.createCompositeOperation(
-                        List.of(
-                                // /core-service=management/access=authorization:write-attribute(name=provider,value=rbac|simple)
-                                Util.getWriteAttributeOperation(RbacRealmSetupTask.authorization, PROVIDER, enabled ? "rbac" : "simple"),
-                                // /subsystem=metrics:write-attribute(name=security-enabled,value=...)
-                                Util.getWriteAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "metrics"), "security-enabled", enabled)
-                        )),
-                managementClient.getControllerClient());
-
-        ServerReload.reloadIfRequired(managementClient);
+        return MetricsRbacTestSupport.fetchMetricsStatus(managementClient, username, password);
     }
 
 }
