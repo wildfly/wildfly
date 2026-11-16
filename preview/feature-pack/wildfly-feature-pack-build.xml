@@ -9,7 +9,7 @@
       <criteria name="jakarta-ee-11"/>
       <criteria name="jakarta-ee-deployment"/>
       <criteria name="microprofile-7.1+"/>
-      <criteria name="microprofile-7.1"/>
+      <criteria name="microprofile-7.2"/>
     </family>
     <default-packages>
         <package name="modules.all"/>
