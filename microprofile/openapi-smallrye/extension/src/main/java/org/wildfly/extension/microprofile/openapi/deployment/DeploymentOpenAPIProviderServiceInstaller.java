@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.SmallRyeOpenAPI;
+import io.smallrye.openapi.api.SmallRyeOpenAPI.JsonProvider;
 import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScanner;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -124,6 +125,7 @@ public class DeploymentOpenAPIProviderServiceInstaller implements DeploymentServ
                         .withApplicationClassLoader(module.getClassLoader())
                         .withConfig(config)
                         .withIndex(index)
+                        .withJsonProvider(JsonProvider.JACKSON2)
                         .withResourceLocator(resourceResolver)
                         .withScannerClassLoader(WildFlySecurityManager.getClassLoaderPrivileged(AnnotationScanner.class))
                         ;
