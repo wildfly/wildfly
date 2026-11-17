@@ -9,13 +9,18 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -54,6 +59,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.operation.OperationStepHandlerDescriptor;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.resource.operation.WriteAttributeOperationStepHandler;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
@@ -274,14 +284,15 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     private final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
     private final List<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
+    private final Map<AttributeDefinition, ResourceOperationRuntimeHandler> serviceHandlers;
 
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
-        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new AtomicBoolean(false), new AtomicReference<>(), new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
+        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new AtomicBoolean(false), new AtomicReference<>(), new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false), new HashMap<>());
     }
 
-    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
+    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultDistinctName, AtomicBoolean defaultAllowEjbRegex, AtomicReference<String> defaultResourceAdapterName, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault, Map<AttributeDefinition, ResourceOperationRuntimeHandler> serviceHandlers) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultDistinctName, defaultAllowEjbRegex, defaultResourceAdapterName, defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
+                .setAddHandler(new EJB3SubsystemAdd(defaultDistinctName, defaultAllowEjbRegex, defaultResourceAdapterName, defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault, Collections.unmodifiableCollection(serviceHandlers.values())))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -296,6 +307,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
         this.denyAccessByDefault = denyAccessByDefault;
+        serviceHandlers.put(DEFAULT_SFSB_CACHE, new StatefulSessionBeanCacheServiceHandler(DEFAULT_SFSB_CACHE, DEFAULT_STATEFUL_BEAN_CACHE));
+        serviceHandlers.put(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, new StatefulSessionBeanCacheServiceHandler(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, PASSIVATION_DISABLED_STATEFUL_BEAN_CACHE));
+        this.serviceHandlers = Collections.unmodifiableMap(serviceHandlers);
     }
 
     static final AttributeDefinition[] ATTRIBUTES = {
@@ -326,8 +340,18 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(DEFAULT_CLUSTERED_SFSB_CACHE, new SimpleAliasReadAttributeHandler(DEFAULT_SFSB_CACHE));
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, new WriteAttributeOperationStepHandler(new OperationStepHandlerDescriptor() {
+            @Override
+            public Optional<ResourceOperationRuntimeHandler> getRuntimeHandler() {
+                return Optional.of(EJB3SubsystemRootResourceDefinition.this.serviceHandlers.get(DEFAULT_SFSB_CACHE));
+            }
+        }));
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, null, new WriteAttributeOperationStepHandler(new OperationStepHandlerDescriptor() {
+            @Override
+            public Optional<ResourceOperationRuntimeHandler> getRuntimeHandler() {
+                return Optional.of(EJB3SubsystemRootResourceDefinition.this.serviceHandlers.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE));
+            }
+        }));
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL);
@@ -455,4 +479,39 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         }
     }
 
+    private static class StatefulSessionBeanCacheServiceHandler extends ServiceHandler<StatefulSessionBeanCacheProvider> {
+
+        StatefulSessionBeanCacheServiceHandler(AttributeDefinition attribute, RuntimeCapability<Void> capability) {
+            super(attribute, capability, StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR);
+        }
+    }
+
+    private static class ServiceHandler<T> implements ResourceOperationRuntimeHandler {
+        private final RuntimeCapability<Void> capability;
+        private final AttributeDefinition attribute;
+        private final UnaryServiceDescriptor<T> descriptor;
+        private final AtomicReference<Consumer<OperationContext>> remover = new AtomicReference<>();
+
+        ServiceHandler(AttributeDefinition attribute, RuntimeCapability<Void> capability, UnaryServiceDescriptor<T> descriptor) {
+            this.attribute = attribute;
+            this.capability = capability;
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public void addRuntime(OperationContext context, ModelNode model) throws OperationFailedException {
+            String reference = this.attribute.resolveModelAttribute(context, model).asStringOrNull();
+            if (reference != null) {
+                this.remover.set(CapabilityServiceInstaller.BlockingBuilder.of(this.capability, ServiceDependency.on(this.descriptor, reference)).build().install(context));
+            }
+        }
+
+        @Override
+        public void removeRuntime(OperationContext context, ModelNode model) {
+            Consumer<OperationContext> remover = this.remover.getAndSet(null);
+            if (remover != null) {
+                remover.accept(context);
+            }
+        }
+    }
 }

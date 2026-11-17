@@ -26,9 +26,7 @@
 
     <properties>
         <!-- Don't try to deploy the module -->
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-        <skipPublishing>${maven.deploy.skip}</skipPublishing>
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <dependencies>

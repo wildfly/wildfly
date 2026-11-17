@@ -7,7 +7,6 @@ package org.wildfly.test.integration.microprofile.config.smallrye.multideploymen
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -24,12 +23,12 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ReloadIfRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.setup.ReloadServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -41,7 +40,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@ServerSetup({MultiWarConfigDeploymentTestCase.GlobalConfigSourceSetupTask.class, ReloadServerSetupTask.class})
+@ServerSetup(MultiWarConfigDeploymentTestCase.GlobalConfigSourceSetupTask.class)
 public class MultiWarConfigDeploymentTestCase {
 
     @ArquillianResource
@@ -197,10 +196,11 @@ public class MultiWarConfigDeploymentTestCase {
         assertEquals(404, response.getStatus());
     }
 
-    public static class GlobalConfigSourceSetupTask implements ServerSetupTask {
+    @ReloadIfRequired
+    public static class GlobalConfigSourceSetupTask extends SnapshotRestoreSetupTask {
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        protected void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode op = new ModelNode();
             op.get(OP_ADDR).add(SUBSYSTEM, "microprofile-config-smallrye");
             op.get(OP_ADDR).add("config-source", "test");
@@ -218,28 +218,9 @@ public class MultiWarConfigDeploymentTestCase {
             addSystemProperty(managementClient, "prop.global.system.overridden.by.csp", "system-value");
         }
 
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ModelNode op = new ModelNode();
-            op.get(OP_ADDR).add(SUBSYSTEM, "microprofile-config-smallrye");
-            op.get(OP_ADDR).add("config-source", "test");
-            op.get(OP).set(REMOVE);
-            managementClient.getControllerClient().execute(op);
-
-            removeSystemProperty(managementClient, "prop.global.system.untouched");
-            removeSystemProperty(managementClient, "prop.global.system.overridden.by.war");
-            removeSystemProperty(managementClient, "prop.global.system.overridden.by.cs");
-            removeSystemProperty(managementClient, "prop.global.system.overridden.by.csp");
-        }
-
         private void addSystemProperty(ManagementClient client, String name, String value) throws Exception {
             ModelNode op = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, name));
             op.get(VALUE).set(value);
-            client.getControllerClient().execute(op);
-        }
-
-        private void removeSystemProperty(ManagementClient client, String name) throws Exception {
-            ModelNode op = Util.createRemoveOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, name));
             client.getControllerClient().execute(op);
         }
     }

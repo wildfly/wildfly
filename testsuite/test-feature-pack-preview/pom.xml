@@ -32,7 +32,7 @@
 
     <properties>
         <!-- Don't deploy the testsuite modules -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <dependencies>

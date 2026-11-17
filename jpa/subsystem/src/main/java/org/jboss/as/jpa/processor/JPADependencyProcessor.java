@@ -6,6 +6,7 @@
 package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.Configuration;
@@ -29,6 +31,7 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.modules.Module;
@@ -46,6 +49,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final String JAVAX_PERSISTENCE_API_ID = "jakarta.persistence.api";
     private static final String JBOSS_AS_JPA_ID = "org.jboss.as.jpa";
     private static final String JBOSS_AS_JPA_SPI_ID = "org.jboss.as.jpa.spi";
+    private static final String JTS = "org.jboss.jts";
 
     /**
      * Add dependencies for modules required for Jakarta Persistence deployments
@@ -56,17 +60,31 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         // all applications get the jakarta.persistence SPEC API module added to their deployment by default
-        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JAVAX_PERSISTENCE_API_ID).setImportServices(true).build());
+        addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         ROOT_LOGGER.debugf("added %s dependency to %s", JAVAX_PERSISTENCE_API_ID, deploymentUnit.getName());
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment
         }
         for (String moduleIdentifier : new String[]{JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID}) {
-            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
+            addDependency(moduleSpecification, moduleLoader, moduleIdentifier);
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         }
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
+            if (api.isPartOfWeldDeployment(deploymentUnit)) {
+                // EE 11+ CDI Persistence integration defaults to use @TransactionScoped scope which requires the CDI context
+                // provided by Narayana in the org.jboss.jts module.
+                // @see CDIDeploymentProcessor
+                addDependency(moduleSpecification, moduleLoader, JTS);
+            }
+        }
+    }
+
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, String moduleIdentifier) {
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
     }
 
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
@@ -94,7 +112,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add persistence provider dependency
         for (String dependency : moduleDependencies) {
-            moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, dependency).setImportServices(true).build());
+            addDependency(moduleSpecification, moduleLoader, dependency);
             ROOT_LOGGER.debugf("added %s dependency to %s", dependency, deploymentUnit.getName());
         }
 

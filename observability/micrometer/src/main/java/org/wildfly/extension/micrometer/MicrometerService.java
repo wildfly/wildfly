@@ -34,6 +34,7 @@ import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 public class MicrometerService {
     private final WildFlyMicrometerConfig micrometerConfig;
     private final LocalModelControllerClient modelControllerClient;
+    private final LocalModelControllerClient discoveryClient;
     private final ProcessStateNotifier processStateNotifier;
     private final WildFlyCompositeRegistry micrometerRegistry;
     private final ResourceMetricsRetryQueue resourceMetricsRetryQueue;
@@ -43,13 +44,25 @@ public class MicrometerService {
     private MetricRegistration modelMetrics;
     private final Map<PathAddress, RuntimeException> lastFailures = new ConcurrentHashMap<>();
 
+    /**
+     * Creates a service with separate clients for metric reads and asynchronous resource discovery.
+     *
+     * @param micrometerConfig the Micrometer subsystem configuration
+     * @param modelControllerClient the client used to read metric values under the caller's identity
+     * @param discoveryClient the client used to discover resource structure in the background
+     * @param processStateNotifier the server process state notifier
+     * @param micrometerRegistry the registry that receives metrics
+     * @param executor the management executor used for asynchronous resource discovery
+     */
     private MicrometerService(WildFlyMicrometerConfig micrometerConfig,
                               LocalModelControllerClient modelControllerClient,
+                              LocalModelControllerClient discoveryClient,
                               ProcessStateNotifier processStateNotifier,
                               WildFlyCompositeRegistry micrometerRegistry,
                               Executor executor) {
         this.micrometerConfig = micrometerConfig;
         this.modelControllerClient = modelControllerClient;
+        this.discoveryClient = discoveryClient;
         this.processStateNotifier = processStateNotifier;
         this.micrometerRegistry = micrometerRegistry;
         this.resourceMetricsRetryQueue = new ResourceMetricsRetryQueue(executor, this::collectResourceMetrics,
@@ -85,7 +98,7 @@ public class MicrometerService {
      * @param address the address of the added resource
      */
     public synchronized void resourceAdded(PathAddress address) {
-        if (modelRegistration == null || modelMetrics == null) {
+        if (modelRegistration == null || modelMetrics == null || !micrometerCollector.isExposingMetrics(address)) {
             return;
         }
         resourceMetricsRetryQueue.add(address);
@@ -115,6 +128,8 @@ public class MicrometerService {
             modelMetrics = null;
             modelRegistration = null;
         }
+        modelControllerClient.close();
+        discoveryClient.close();
     }
 
     /**
@@ -137,7 +152,7 @@ public class MicrometerService {
         }
         ModelNode result = null;
         try {
-            result = modelControllerClient.execute(Operations.createReadResourceOperation(address.toModelNode(), true));
+            result = discoveryClient.execute(Operations.createReadResourceOperation(address.toModelNode(), true));
         } catch (RuntimeException e) {
             synchronized (this) {
                 if (resourceMetricsRetryQueue.isPending(pendingResource)) {
@@ -202,6 +217,7 @@ public class MicrometerService {
     public static class Builder {
         private WildFlyMicrometerConfig micrometerConfig;
         private LocalModelControllerClient modelControllerClient;
+        private LocalModelControllerClient discoveryClient;
         private ProcessStateNotifier processStateNotifier;
         private WildFlyCompositeRegistry micrometerRegistry;
         private Executor executor;
@@ -213,6 +229,17 @@ public class MicrometerService {
 
         public Builder modelControllerClient(LocalModelControllerClient modelControllerClient) {
             this.modelControllerClient = modelControllerClient;
+            return this;
+        }
+
+        /**
+         * Supplies the client used to discover resources asynchronously with management privileges.
+         *
+         * @param discoveryClient the client used to read resource structure
+         * @return this builder
+         */
+        public Builder discoveryClient(LocalModelControllerClient discoveryClient) {
+            this.discoveryClient = discoveryClient;
             return this;
         }
 
@@ -237,14 +264,17 @@ public class MicrometerService {
             return this;
         }
 
+        /** Builds a service with separate clients for metric reads and resource discovery. */
         public MicrometerService build() {
             assert micrometerRegistry != null &&
                 micrometerConfig != null &&
                 modelControllerClient != null &&
+                discoveryClient != null &&
                 processStateNotifier != null &&
                 executor != null;
 
-            return new MicrometerService(micrometerConfig, modelControllerClient, processStateNotifier, micrometerRegistry, executor);
+            return new MicrometerService(micrometerConfig, modelControllerClient, discoveryClient,
+                    processStateNotifier, micrometerRegistry, executor);
         }
     }
 }

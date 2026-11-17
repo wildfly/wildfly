@@ -8,7 +8,6 @@ package org.wildfly.extension.microprofile.reactive.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import io.vertx.core.logging.LoggerFactory;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -27,8 +26,8 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementReader;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -59,19 +58,8 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext extensionContext) {
-        // Initialize the Netty logger factory or we get horrible stack traces
         // Initialize the vert.x logger factory or we get SM failures if deployment code is on the stack when it initializes stack traces
-        ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
-        if (cl instanceof ModuleClassLoader) {
-            ModuleLoader loader = ((ModuleClassLoader) cl).getModule().getModuleLoader();
-            try {
-                loader.loadModule("io.vertx.core");
-                //noinspection deprecation
-                LoggerFactory.initialise();
-            } catch (ModuleLoadException e) {
-                // The vert.x module is not there so don't do anything
-            }
-        }
+        initializeVertxLogger();
 
         final SubsystemRegistration sr =  extensionContext.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         sr.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
@@ -84,6 +72,25 @@ public class MicroProfileReactiveMessagingExtension implements Extension {
         for (MicroProfileReactiveMessagingSubsystemSchema schema : EnumSet.allOf(MicroProfileReactiveMessagingSubsystemSchema.class)) {
             XMLElementReader<List<ModelNode>> reader = (schema == MicroProfileReactiveMessagingSubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
             extensionParsingContext.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
+        }
+    }
+
+    private static void initializeVertxLogger() {
+        final ClassLoader classLoader = WildFlySecurityManager.getClassLoaderPrivileged(MicroProfileReactiveMessagingExtension.class);
+        if (classLoader instanceof ModuleClassLoader cl) {
+            final ModuleLoader loader = cl.getModule().getModuleLoader();
+            try {
+                // Attempt to load the LoggerFactory for Vert.x 4
+                final Module module = loader.loadModule("io.vertx.core");
+                Class.forName("io.vertx.core.logging.LoggerFactory", true, module.getClassLoader());
+            } catch (Throwable ignore) {
+                try {
+                    // Attempt to load the LoggerFactory for Vert.x 5
+                    final Module module = loader.loadModule("io.vertx.core.logging");
+                    Class.forName("io.vertx.core.internal.logging.LoggerFactory", true, module.getClassLoader());
+                } catch (Throwable ignore2) {
+                }
+            }
         }
     }
 

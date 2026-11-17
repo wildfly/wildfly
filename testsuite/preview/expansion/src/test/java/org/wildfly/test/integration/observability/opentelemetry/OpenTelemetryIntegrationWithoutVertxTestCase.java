@@ -34,7 +34,7 @@ public class OpenTelemetryIntegrationWithoutVertxTestCase extends AbstractOpenTe
     public void testVertxUsageInLog() throws Exception {
         requestOpenTelemetryTrace("otelinteg-without-vertx.war");
         String logsInSmalleRyeOpentelemetry = retrieveServerLog(managementClient, LoggingServerSetupTask.SMALLRYE_OPENTELEMETRY_LOG_FILE);
-        Assert.assertTrue("It should create Vertx when vertx subsystem is not available", logsInSmalleRyeOpentelemetry.contains("Create a new Vertx instance"));
+        Assert.assertTrue("It should create Vertx when vertx subsystem is not available", logsInSmalleRyeOpentelemetry.contains("Creating a new Vertx instance"));
         String logsInVertxSubsystem = retrieveServerLog(managementClient, LoggingServerSetupTask.VERTX_FEATURE_PACK_LOG_FILE);
         Assert.assertFalse("Should not use Vertx instance from vertx subsystem", logsInVertxSubsystem.contains("WFLYVTX0008"));
     }

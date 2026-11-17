@@ -16,6 +16,7 @@ import org.arquillian.testcontainers.api.TestcontainersRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.config.ContainerConfig;
+import org.jboss.as.test.shared.StaleDockerConnectionWorkaround;
 import org.testcontainers.kafka.KafkaContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -38,7 +39,7 @@ public class RunKafkaSetupTask implements ServerSetupTask {
             container.addEnv(entry.getKey(), entry.getValue());
         }
 
-        container.start();
+        StaleDockerConnectionWorkaround.start(container);
 
         companion = new KafkaCompanion("INTERNAL://localhost:9092");
 

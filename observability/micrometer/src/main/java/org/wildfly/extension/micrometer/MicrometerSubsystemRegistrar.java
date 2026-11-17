@@ -179,6 +179,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
         Supplier<MicrometerService> serviceSupplier = () -> new MicrometerService.Builder()
                 .micrometerConfig(micrometerConfig)
                 .modelControllerClient(mccf.get().createClient(executor.get()))
+                .discoveryClient(mccf.get().createSuperUserClient(executor.get()))
                 .processStateNotifier(processStateNotifier.get())
                 .micrometerRegistry(registry.get())
                 .executor(executor.get())

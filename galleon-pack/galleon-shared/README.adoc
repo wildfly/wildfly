@@ -51,5 +51,5 @@ If the wildfly-license-plugin needs special instructions to identify the license
 
 The build of this feature-pack produces a zip that basically packages the content. This is for two reasons:
 
-* Nexus balks at this module not producing an artifact, preventing deploying.
+* JBoss Nexus balked at this module not producing an artifact, preventing deploying. (Maven Central may do the same; determining that would require trying a test release.)
 * Ideally, the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules would depend on and unzip these zip artifacts and consume their content that way. But, at least at the time this document was written, they don't do this and instead just copy in source from this maven module.

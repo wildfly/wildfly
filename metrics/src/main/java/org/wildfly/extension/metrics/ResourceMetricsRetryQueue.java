@@ -4,8 +4,8 @@
  */
 package org.wildfly.extension.metrics;
 
-import java.util.Queue;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -22,6 +22,10 @@ import org.jboss.as.controller.PathAddress;
  *
  * The queue coalesces duplicate notifications and lets callers cancel work for
  * resources that are removed before collection completes.
+ *
+ * TODO: This is identical to a class of the same name in the Micrometer subsystem. When
+ * changing this class, be sure to also update the Micrometer subsystem. Eventually, this
+ * duplicate code should be factored out into a common location.
  */
 final class ResourceMetricsRetryQueue {
     private static final long RETRY_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(30);
@@ -37,7 +41,8 @@ final class ResourceMetricsRetryQueue {
     private boolean stopped;
     private long nextGeneration;
 
-    ResourceMetricsRetryQueue(Executor executor, BiFunction<PendingResource, Integer, Boolean> processor,
+    ResourceMetricsRetryQueue(Executor executor,
+                              BiFunction<PendingResource, Integer, Boolean> processor,
                               BiConsumer<PathAddress, Integer> timeoutProcessor) {
         this.executor = executor;
         this.processor = processor;
