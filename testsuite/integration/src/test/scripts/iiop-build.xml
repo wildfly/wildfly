@@ -32,6 +32,17 @@
             mcast="${mcast}"
         />
         <ts.config-as.iiop.add-auth-context name="jbossas-iiop-server"/>
+
+        <echo message="Building config jbossas-iiop-denylist-server"/>
+        <copy todir="target/jbossas-iiop-denylist-server">
+            <fileset dir="target/wildfly"/>
+        </copy>
+        <ts.config-as.add-jts name="jbossas-iiop-denylist-server"/>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-denylist-server"
+            node="${node1}"
+            mcast="${mcast}"
+        />
+        <ts.config-as.iiop.add-auth-context name="jbossas-iiop-denylist-server"/>
         <!-- Build configs for SSL tests -->
 
         <!-- SSL Client w Sec Domain -->
