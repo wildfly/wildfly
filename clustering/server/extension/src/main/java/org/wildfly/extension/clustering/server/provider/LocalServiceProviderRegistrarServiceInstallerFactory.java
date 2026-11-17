@@ -10,6 +10,7 @@ import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.provider.LocalServiceProviderRegistrar;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
@@ -23,6 +24,7 @@ public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends Ser
         ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
         return ServiceInstaller.BlockingBuilder.of(group.map(LocalServiceProviderRegistrar::of))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
+                .withLifecycle(BlockingLifecycle.autoClose())
                 .build();
     }
 }

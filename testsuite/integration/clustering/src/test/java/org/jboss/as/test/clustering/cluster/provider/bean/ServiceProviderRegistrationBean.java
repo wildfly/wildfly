@@ -19,14 +19,15 @@ import jakarta.ejb.Startup;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 @Singleton
 @Startup
 @Local(ServiceProviderRegistration.class)
-public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String, GroupMember>, ServiceProviderListener<GroupMember> {
+public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String, GroupMember>, ServiceProviderRegistrationListener<GroupMember> {
     static final Logger log = Logger.getLogger(ServiceProviderRegistrationBean.class);
 
     @Resource(name = "clustering/service-provider-registrar")
@@ -59,7 +60,7 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
     }
 
     @Override
-    public void providersChanged(Set<GroupMember> providers) {
+    public void providersChanged(ServiceProviderRegistrationEvent<GroupMember> event) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
@@ -75,6 +76,6 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-        log.info(String.format("ServiceProviderListener.providersChanged(%s)", providers));
+        log.info(String.format("ServiceProviderListener.providersChanged(%s)", event.getCurrentProviders()));
     }
 }
