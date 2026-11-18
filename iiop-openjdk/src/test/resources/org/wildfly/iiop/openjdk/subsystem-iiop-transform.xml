@@ -3,7 +3,11 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.0">
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:4.0">
     <orb socket-binding="iiop"/>
     <security support-ssl="true" client-requires-ssl="true" client-ssl-context="client-context" server-requires-ssl="false"/>
+    <!-- Don't define caller-propagation-require-auth="true" so we can test that undefined (which defaults to true) is transformed properly
+    <sas-context caller-propagation="supported" caller-propagation-require-auth="true"/>
+    -->
+    <sas-context caller-propagation="supported"/>
 </subsystem>
