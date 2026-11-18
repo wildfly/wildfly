@@ -33,6 +33,10 @@ class DataSourcesSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
+        // in any reload AbstractDataSourceService.stop calls should have cleared this,
+        // but let's be sure
+        WildFlyDataSource.clearValidJNDINames();
+
         final DsDeploymentActivator dsDeploymentActivator = new DsDeploymentActivator();
 
         context.addStep(new AbstractDeploymentChainStep() {
