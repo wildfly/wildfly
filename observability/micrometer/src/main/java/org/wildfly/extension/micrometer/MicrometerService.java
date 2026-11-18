@@ -135,7 +135,7 @@ public class MicrometerService {
     /**
      * Attempts one read and registration for a queued resource.
      *
-     * @param address the resource address to collect
+     * @param pendingResource the queued resource generation
      * @param attempt the one-based attempt number
      * @return {@code true} when processing is complete, otherwise retry
      */
