@@ -103,6 +103,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     }
 
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), DeployersLogger.class, AS7DataSourceDeployer.class.getName());
+
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
@@ -219,7 +220,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
         }
 
-        sqlDataSource = null;
+        if (sqlDataSource != null) {
+            sqlDataSource.stop();
+            sqlDataSource = null;
+        }
 
     }
 

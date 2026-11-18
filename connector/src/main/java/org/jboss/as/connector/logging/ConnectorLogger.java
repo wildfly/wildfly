@@ -980,4 +980,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 136, value = "The %s module does not export a META-INF/ra.xml file.")
     String raXmlNotFound(String moduleId);
+
+    @Message(id = 137, value = "%s does not match any valid DataSource binding.")
+    IllegalStateException invalidDataSourceJndiName(String jndiName);
 }
