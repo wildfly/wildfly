@@ -115,7 +115,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
             executeOperations(updates);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override

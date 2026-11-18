@@ -31,13 +31,18 @@ import org.xnio.IoUtils;
 
 /**
  * Utilities for correctly reloading a server process.
+ * <p>
+ * All timeouts accepted by this class are unadjusted; they are adjusted by {@link TimeoutUtil#adjust(int)} before use.
+ * Callers should prefer the overloads that use the default {@link #TIMEOUT} unless a test has a specific reason
+ * to wait longer.
+ * </p>
  * @author Stuart Douglas
  */
 public class ServerReload {
 
     private static final Logger log = Logger.getLogger(ServerReload.class);
 
-    /** Default time in ms to wait for a server process to return to started state following a reload */
+    /** Default unadjusted time in ms to wait for a server process to return to started state following a reload */
     public static final int TIMEOUT = 100000;
 
     /**
@@ -121,7 +126,8 @@ public class ServerReload {
      *
      * @param managementClient client to use to execute the reload and to provide host and port information for
      *      *                         reconnecting to wait for completion of the reload
-     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     * @param timeout unadjusted time in ms to wait for a server process to return to running state following the reload;
+     *                adjusted by {@link TimeoutUtil#adjust(int)} before use
      */
     public static void executeReloadAndWaitForCompletion(ManagementClient managementClient, int timeout) {
         executeReloadAndWaitForCompletion(managementClient.getControllerClient(), timeout, false,
@@ -131,7 +137,8 @@ public class ServerReload {
     /**
      *
      * @param client client to use to instruct the server to reload
-     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     * @param timeout unadjusted time in ms to wait for a server process to return to running state following the reload;
+     *                adjusted by {@link TimeoutUtil#adjust(int)} before use
      * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
      * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
@@ -143,7 +150,8 @@ public class ServerReload {
     /**
      *
      * @param client client to use to instruct the server to reload
-     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     * @param timeout unadjusted time in ms to wait for a server process to return to running state following the reload;
+     *                adjusted by {@link TimeoutUtil#adjust(int)} before use
      * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
      * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
@@ -155,7 +163,8 @@ public class ServerReload {
     /**
      *
      * @param client client to use to instruct the server to reload
-     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     * @param timeout unadjusted time in ms to wait for a server process to return to running state following the reload;
+     *                adjusted by {@link TimeoutUtil#adjust(int)} before use
      * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
      * @param startSuspended if {@code true}, the service will be reloaded in suspended state
      * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
@@ -198,6 +207,13 @@ public class ServerReload {
         }
     }
 
+    /**
+     * Waits for a server process to return to running state following a reload.
+     *
+     * @param timeout unadjusted time in ms to wait; adjusted by {@link TimeoutUtil#adjust(int)} before use
+     * @param serverAddress the management address of the server
+     * @param serverPort the management port of the server
+     */
     public static void waitForLiveServerToReload(int timeout, String serverAddress, int serverPort) {
         int adjustedTimeout = TimeoutUtil.adjust(timeout);
         long start = System.currentTimeMillis();

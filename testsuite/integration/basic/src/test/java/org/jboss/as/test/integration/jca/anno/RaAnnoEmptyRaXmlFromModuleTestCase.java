@@ -102,7 +102,7 @@ public class RaAnnoEmptyRaXmlFromModuleTestCase {
             // create activation in ra subsystem
             createRAActivation(managementClient.getControllerClient());
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
         }
 

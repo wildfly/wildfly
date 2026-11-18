@@ -89,7 +89,7 @@ public abstract class AbstractDataSourceClassloadingTestCase {
             }
             setupDriver(managementClient, classNamePropertyName, driverClass);
             setupDs(managementClient, "TestDS", false);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
@@ -99,7 +99,7 @@ public abstract class AbstractDataSourceClassloadingTestCase {
                 // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
                 testModule.remove();
             }
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private void setupModule() throws IOException {

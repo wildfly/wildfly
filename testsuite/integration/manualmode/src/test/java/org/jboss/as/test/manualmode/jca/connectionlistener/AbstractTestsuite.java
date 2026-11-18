@@ -135,7 +135,7 @@ public abstract class AbstractTestsuite {
                 }
                 removeDss();
                 removeConnListenerModule();
-                ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             } catch (Throwable e) {
                 log.warn(e.getMessage());
             } finally {
@@ -224,7 +224,7 @@ public abstract class AbstractTestsuite {
             operation.get("value").set("true");
             executeOperation(operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
             return address;
         }

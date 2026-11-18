@@ -4,7 +4,6 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.client.helpers.Operations.createAddOperation;
 import static org.jboss.as.controller.client.helpers.Operations.createAddress;
 import static org.jboss.as.controller.client.helpers.Operations.createRemoveOperation;
@@ -180,7 +179,7 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
     }
 
     private void reloadServer(ModelControllerClient managementClient) {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient, (int) SECONDS.toMillis(90), false, SERVER_ADDRESS, getManagementPort());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient, ServerReload.TIMEOUT, false, SERVER_ADDRESS, getManagementPort());
     }
 
     private int getManagementPort() {

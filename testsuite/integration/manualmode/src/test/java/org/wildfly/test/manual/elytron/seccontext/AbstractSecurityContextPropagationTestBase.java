@@ -5,7 +5,6 @@
 package org.wildfly.test.manual.elytron.seccontext;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -725,7 +724,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         }
 
         private void reload() {
-            ServerReload.executeReloadAndWaitForCompletion(client, (int) SECONDS.toMillis(90), false, host,
+            ServerReload.executeReloadAndWaitForCompletion(client, ServerReload.TIMEOUT, false, host,
                     getManagementPort());
         }
 

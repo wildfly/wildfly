@@ -611,7 +611,7 @@ public class IdentityPropagationTestCase {
 
             executeOperations(updates);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private PathAddress bruteForceSystemProperty(final String realmName) {
@@ -655,7 +655,7 @@ public class IdentityPropagationTestCase {
 
             executeOperations(updates);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override

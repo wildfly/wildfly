@@ -23,7 +23,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -229,7 +228,7 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             ModelNode response = managementClient.getControllerClient().execute(Util.createCompositeOperation(operations));
             Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(10000));
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode createSuperUserRoleMapping(String userName) {

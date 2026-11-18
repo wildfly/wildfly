@@ -174,7 +174,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient, 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
 
@@ -196,7 +196,7 @@ public class IIOPTransactionPropagationTestCase {
             }
 
             if (isNeedReload) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient, 40000);
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
 

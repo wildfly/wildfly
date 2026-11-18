@@ -40,7 +40,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.Authentication;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.After;
@@ -112,7 +112,7 @@ public class HttpManagementConstantHeadersTestCase {
 
       managementClient.getControllerClient().execute(createConstantHeadersOperation(headersMap));
 
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 
    private static ModelNode createConstantHeadersOperation(final Map<String, List<Map<String, String>>> constantHeadersValues) {
@@ -159,7 +159,7 @@ public class HttpManagementConstantHeadersTestCase {
 
       managementClient.getControllerClient().execute(undefineAttribute);
 
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
    }
 
    /**
@@ -221,7 +221,7 @@ public class HttpManagementConstantHeadersTestCase {
       headersMap.put(CONSOLE_CTX, headers);
 
       managementClient.getControllerClient().execute(createConstantHeadersOperation(headersMap));
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
       HttpGet get = new HttpGet(managementConsoleUrl.toURI().toString());
       HttpResponse response = httpClient.execute(get);
@@ -270,7 +270,7 @@ public class HttpManagementConstantHeadersTestCase {
       headersMap.put(CONSOLE_CTX, headers);
 
       managementClient.getControllerClient().execute(createConstantHeadersOperation(headersMap));
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
       get = new HttpGet(managementConsoleUrl.toURI().toString());
       response = httpClient.execute(get);
@@ -309,7 +309,7 @@ public class HttpManagementConstantHeadersTestCase {
       headersMap.put(METRICS_CTX, headers);
 
       managementClient.getControllerClient().execute(createConstantHeadersOperation(headersMap));
-      ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+      ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
       get = new HttpGet(metricsUrl.toURI().toString());
       response = httpClient.execute(get);
