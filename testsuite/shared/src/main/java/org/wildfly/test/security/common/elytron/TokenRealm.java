@@ -85,6 +85,18 @@ public class TokenRealm implements SecurityRealm {
             if (jwt.getPublicKey() != null) {
                 jwtProperties.get("public-key").set(jwt.getPublicKey());
             }
+            if (jwt.getClientSslContext() != null) {
+                jwtProperties.get("client-ssl-context").set(jwt.getClientSslContext());
+            }
+            if (jwt.getHostNameVerificationPolicy() != null) {
+                jwtProperties.get("host-name-verification-policy").set(jwt.getHostNameVerificationPolicy());
+            }
+            if (jwt.getConnectionTimeout() != null) {
+                jwtProperties.get("connection-timeout").set(jwt.getConnectionTimeout());
+            }
+            if (jwt.getReadTimeout() != null) {
+                jwtProperties.get("read-timeout").set(jwt.getReadTimeout());
+            }
             if (jwtProperties.asListOrEmpty().isEmpty()) {
                 addOperation.get("jwt").setEmptyObject();
             } else {
@@ -107,6 +119,12 @@ public class TokenRealm implements SecurityRealm {
             }
             if (oauth2Introspection.getIntrospectionUrl() != null) {
                 oauth2IntrospectionProperties.get("introspection-url").set(oauth2Introspection.getIntrospectionUrl());
+            }
+            if (oauth2Introspection.getConnectionTimeout() != null) {
+                oauth2IntrospectionProperties.get("connection-timeout").set(oauth2Introspection.getConnectionTimeout());
+            }
+            if (oauth2Introspection.getReadTimeout() != null) {
+                oauth2IntrospectionProperties.get("read-timeout").set(oauth2Introspection.getReadTimeout());
             }
             if (oauth2IntrospectionProperties.asListOrEmpty().isEmpty()) {
                 addOperation.get("oauth2-introspection").setEmptyObject();
@@ -191,6 +209,10 @@ public class TokenRealm implements SecurityRealm {
         private final String publicKey;
         private final String keyStore;
         private final String certificate;
+        private final String clientSslContext;
+        private final String hostNameVerificationPolicy;
+        private final Integer connectionTimeout;
+        private final Integer readTimeout;
 
         private Jwt(JwtBuilder builder) {
             this.issuer = builder.issuer;
@@ -198,6 +220,10 @@ public class TokenRealm implements SecurityRealm {
             this.publicKey = builder.publicKey;
             this.keyStore = builder.keyStore;
             this.certificate = builder.certificate;
+            this.clientSslContext = builder.clientSslContext;
+            this.hostNameVerificationPolicy = builder.hostNameVerificationPolicy;
+            this.connectionTimeout = builder.connectionTimeout;
+            this.readTimeout = builder.readTimeout;
         }
 
         public List<String> getIssuer() {
@@ -220,6 +246,22 @@ public class TokenRealm implements SecurityRealm {
             return certificate;
         }
 
+        public String getClientSslContext() {
+            return clientSslContext;
+        }
+
+        public String getHostNameVerificationPolicy() {
+            return hostNameVerificationPolicy;
+        }
+
+        public Integer getConnectionTimeout() {
+            return connectionTimeout;
+        }
+
+        public Integer getReadTimeout() {
+            return readTimeout;
+        }
+
     }
 
     public static final class JwtBuilder {
@@ -229,6 +271,10 @@ public class TokenRealm implements SecurityRealm {
         private String publicKey;
         private String keyStore;
         private String certificate;
+        private String clientSslContext;
+        private String hostNameVerificationPolicy;
+        private Integer connectionTimeout;
+        private Integer readTimeout;
 
         public JwtBuilder withIssuer(String... issuer) {
             if (this.issuer == null) {
@@ -262,6 +308,32 @@ public class TokenRealm implements SecurityRealm {
             return this;
         }
 
+        public JwtBuilder withClientSslContext(String clientSslContext) {
+            this.clientSslContext = clientSslContext;
+            return this;
+        }
+
+        public JwtBuilder withHostNameVerificationPolicy(String hostNameVerificationPolicy) {
+            this.hostNameVerificationPolicy = hostNameVerificationPolicy;
+            return this;
+        }
+
+        /**
+         * Sets the {@code connection-timeout} in milliseconds. This attribute is only available at preview stability.
+         */
+        public JwtBuilder withConnectionTimeout(int connectionTimeout) {
+            this.connectionTimeout = connectionTimeout;
+            return this;
+        }
+
+        /**
+         * Sets the {@code read-timeout} in milliseconds. This attribute is only available at preview stability.
+         */
+        public JwtBuilder withReadTimeout(int readTimeout) {
+            this.readTimeout = readTimeout;
+            return this;
+        }
+
         public Jwt build() {
             return new Jwt(this);
         }
@@ -274,6 +346,8 @@ public class TokenRealm implements SecurityRealm {
         private final String introspectionUrl;
         private final String clientSslContext;
         private final String hostNameVerificationPolicy;
+        private final Integer connectionTimeout;
+        private final Integer readTimeout;
 
         private Oauth2Introspection(Oauth2IntrospectionBuilder builder) {
             this.clientId = builder.clientId;
@@ -281,6 +355,8 @@ public class TokenRealm implements SecurityRealm {
             this.introspectionUrl = builder.introspectionUrl;
             this.clientSslContext = builder.clientSslContext;
             this.hostNameVerificationPolicy = builder.hostNameVerificationPolicy;
+            this.connectionTimeout = builder.connectionTimeout;
+            this.readTimeout = builder.readTimeout;
         }
 
         public String getClientId() {
@@ -302,6 +378,14 @@ public class TokenRealm implements SecurityRealm {
         public String getHostNameVerificationPolicy() {
             return hostNameVerificationPolicy;
         }
+
+        public Integer getConnectionTimeout() {
+            return connectionTimeout;
+        }
+
+        public Integer getReadTimeout() {
+            return readTimeout;
+        }
     }
 
     public static final class Oauth2IntrospectionBuilder {
@@ -311,6 +395,8 @@ public class TokenRealm implements SecurityRealm {
         private String introspectionUrl;
         private String clientSslContext;
         private String hostNameVerificationPolicy;
+        private Integer connectionTimeout;
+        private Integer readTimeout;
 
         public Oauth2IntrospectionBuilder withClientId(String clientId) {
             this.clientId = clientId;
@@ -338,6 +424,24 @@ public class TokenRealm implements SecurityRealm {
 
         public Oauth2IntrospectionBuilder withHostNameVerificationPolicy(String hostNameVerificationPolicy) {
             this.hostNameVerificationPolicy = hostNameVerificationPolicy;
+
+            return this;
+        }
+
+        /**
+         * Sets the {@code connection-timeout} in milliseconds. This attribute is only available at preview stability.
+         */
+        public Oauth2IntrospectionBuilder withConnectionTimeout(int connectionTimeout) {
+            this.connectionTimeout = connectionTimeout;
+
+            return this;
+        }
+
+        /**
+         * Sets the {@code read-timeout} in milliseconds. This attribute is only available at preview stability.
+         */
+        public Oauth2IntrospectionBuilder withReadTimeout(int readTimeout) {
+            this.readTimeout = readTimeout;
 
             return this;
         }
