@@ -4,6 +4,7 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_3_0(3, 0), // WildFly 42-present, EAP 8.2-present
     VERSION_4_0(4, 0), // WildFly 43-present, EAP 8.2-present
     ;
-    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_4_0, VERSION_2_0_COMMUNITY);
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = EnumSet.of(VERSION_4_0);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);

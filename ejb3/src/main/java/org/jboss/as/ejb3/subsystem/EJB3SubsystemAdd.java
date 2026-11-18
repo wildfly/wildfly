@@ -44,6 +44,7 @@ import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.management.Capabilities;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
@@ -545,11 +546,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 }
 
                 // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
-                return ServiceInstaller.builder(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar))
-                        // this service performs blocking operations
-                        .blocking()
-                        .onStart(DeploymentRepositoryService::start)
-                        .onStop(DeploymentRepositoryService::stop)
+                return ServiceInstaller.BlockingLifecycleBuilder.of(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar), ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
                         .requires(List.of(serviceProviderRegistrar, activityRegistry))
                         .provides(DeploymentRepositoryService.SERVICE_NAME)
                         .build()

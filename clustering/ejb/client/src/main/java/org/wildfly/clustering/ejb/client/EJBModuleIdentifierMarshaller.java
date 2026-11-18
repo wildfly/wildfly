@@ -44,13 +44,14 @@ public class EJBModuleIdentifierMarshaller implements ProtoStreamMarshaller<EJBM
 
     @Override
     public void writeTo(ProtoStreamWriter writer, EJBModuleIdentifier moduleId) throws IOException {
-        if (moduleId.getAppName() != null) {
+        if (!moduleId.getAppName().isEmpty()) {
             writer.writeString(APPLICATION_INDEX, moduleId.getAppName());
         }
-        if (moduleId.getModuleName() != null) {
-            writer.writeString(MODULE_INDEX, moduleId.getModuleName());
-        }
-        if (moduleId.getDistinctName() != null) {
+
+        // moduleId can never be empty by construction
+        writer.writeString(MODULE_INDEX, moduleId.getModuleName());
+
+        if (!moduleId.getDistinctName().isEmpty()) {
             writer.writeString(DISTINCT_INDEX, moduleId.getDistinctName());
         }
     }

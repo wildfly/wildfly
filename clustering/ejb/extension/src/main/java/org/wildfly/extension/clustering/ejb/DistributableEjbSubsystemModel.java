@@ -18,8 +18,9 @@ public enum DistributableEjbSubsystemModel implements SubsystemModel {
     VERSION_1_0_0(1, 0, 0), // WildFly 27-38, EAP 8.0-8.1
     VERSION_2_0_0(2, 0, 0), // WildFly 39-41
     VERSION_3_0_0(3, 0, 0), // WildFly 42-present, EAP 8.2-present
+    VERSION_4_0_0(4, 0, 0), // WildFly 43-present, EAP 8.2-present
     ;
-    public static final DistributableEjbSubsystemModel CURRENT = VERSION_3_0_0;
+    public static final DistributableEjbSubsystemModel CURRENT = VERSION_4_0_0;
 
     private final ModelVersion version;
 
