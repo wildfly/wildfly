@@ -42,11 +42,69 @@ public class IIOPTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers() throws Exception {
+    public void testTransform4_0() throws Exception {
+        String subsystemXml = "subsystem-iiop-transform-ok.xml";
+        ModelVersion legacyModelVersion = IIOPExtension.VERSION_4_0;
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(subsystemXml);
+        KernelServices mainServices = initialKernelServices(builder, ModelTestControllerVersion.WILDFLY_41_0_0, legacyModelVersion);
+
+        KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, legacyModelVersion, null, true);
+    }
+
+    @Test
+    public void testReject4_0() throws Exception {
+        String subsystemXml = "subsystem-iiop-transform.xml";
+        ModelVersion legacyModelVersion = IIOPExtension.VERSION_4_0;
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(subsystemXml);
+        KernelServices mainServices = initialKernelServices(builder, ModelTestControllerVersion.WILDFLY_41_0_0, legacyModelVersion);
+
+        KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
+        Assert.assertNotNull(legacyServices);
+        // Even though the legacy services can't understand the add op for the root resource,
+        // we expect a successful boot, because mainServices will discard that add op when our
+        // transformer rejects it and not use it to start the legacy services.
+        // (NOTE: this is how the transformer test infrastructure works; a real domain controller
+        // interacts with a legacy host by sending resources, not be sending ops to execute.)
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        // The add operation for the subsystem root resource should have been rejected and discarded by main services
+        // and not used to configure the legacy services. So check that the resource is not present on the legacy resource.
+        ModelNode readChildrenNames = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, PathAddress.EMPTY_ADDRESS);
+        readChildrenNames.get(CHILD_TYPE, SUBSYSTEM);
+        ModelNode response = mainServices.executeOperation(legacyModelVersion, mainServices.transformOperation(IIOPExtension.VERSION_3_0, readChildrenNames));
+        if (response.hasDefined(RESULT)) {
+            Optional<ModelNode> optional = response.get(RESULT).asList().stream().filter(name -> IIOPExtension.SUBSYSTEM_NAME.equals(name.asString())).findFirst();
+            Assert.assertTrue(IIOPExtension.SUBSYSTEM_NAME + " resource should not be present on the legacy controller ", optional.isEmpty());
+        }
+
+        // TODO if https://issues.redhat.com/browse/WFCORE-7422-7422 is ever implemented use it validate resource transformation.
+        // The above validates add operation transformation.
+    }
+
+    @Test
+    public void testTransform3_0() throws Exception {
+        String subsystemXml = "subsystem-iiop-transform-ok.xml";
+        ModelVersion legacyModelVersion = IIOPExtension.VERSION_3_0;
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(subsystemXml);
+        KernelServices mainServices = initialKernelServices(builder, ModelTestControllerVersion.EAP_8_1_0, legacyModelVersion);
+
+        KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, legacyModelVersion, null, true);
+    }
+
+    @Test
+    public void testReject3_0() throws Exception {
         String subsystemXml = "subsystem-iiop-transform.xml";
         ModelVersion legacyModelVersion = IIOPExtension.VERSION_3_0;
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(subsystemXml);
-        KernelServices mainServices = initialKernelServices(builder, ModelTestControllerVersion.EAP_8_1_0);
+        KernelServices mainServices = initialKernelServices(builder, ModelTestControllerVersion.EAP_8_1_0, legacyModelVersion);
 
         KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
         Assert.assertNotNull(legacyServices);
@@ -99,12 +157,11 @@ public class IIOPTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-    private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion) throws Exception {
+    private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, ModelVersion subsystemVersion) throws Exception {
         String mavenGroupId = controllerVersion.getMavenGroupId();
-        ModelVersion modelVersion = IIOPExtension.VERSION_3_0;
         String artifactId = "wildfly-iiop-openjdk";
 
-        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemVersion);
 
         initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion())
 //                .addMavenResourceURL("org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final-redhat-00001")
