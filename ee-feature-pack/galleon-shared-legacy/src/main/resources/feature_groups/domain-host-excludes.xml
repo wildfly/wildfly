@@ -117,10 +117,7 @@
     </feature>
     <feature spec="domain.host-exclude">
         <param name="host-exclude" value="WildFly42.0"/>
-        <!-- WildFly 42 uses management version 34.0.0. -->
-        <param name="management-major-version" value="34"/>
-        <param name="management-minor-version" value="0"/>
-        <param name="management-micro-version" value="0"/>
+        <param name="host-release" value="WildFly42.0"/>
         <param name="excluded-extensions"
                value="[&quot;org.wildfly.extension.hashicorp-vault&quot;]"/>
     </feature>
