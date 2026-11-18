@@ -472,4 +472,10 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 140, value = "Name length %d exceeds maximum %d")
     void nameLengthExceedsMaximum(int nameLength, int maxSize);
 
+    @Message(id = 141, value = "Identity assertion without client authentication is not allowed")
+    NO_PERMISSION identityAssertionRequiresAuthentication();
+
+    @Message(id = 142, value = "Legacy Host Controllers only support 'false' as the value for the iiop-openjdk subsystem 'caller-propagation-require-auth'. " +
+            "This is an insecure setting, upgrading the host to a later version is recommended.")
+    String rejectLegacyCallerPropagationRequireAuth();
 }

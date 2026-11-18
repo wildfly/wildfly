@@ -369,6 +369,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final AttributeDefinition CALLER_PROPAGATION_REQUIRE_AUTH = new SimpleAttributeDefinitionBuilder(
+            Constants.IOR_SAS_CONTEXT_CALLER_PROPAGATION_REQUIRE_AUTH, ModelType.BOOLEAN, true)
+            .setAttributeGroup(Constants.IOR_SAS_CONTEXT)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(ModelNode.TRUE)
+            .setAllowExpression(true)
+            .addAccessConstraint(IIOP_SECURITY_DEF)
+            .build();
+
     // list that contains ORB attribute definitions
     static final List<AttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(PERSISTENT_SERVER_ID, GIOP_VERSION, SOCKET_BINDING,
             SSL_SOCKET_BINDING);
@@ -392,7 +401,8 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             NUMBER_TO_RECLAIM);
 
     //list that contains ior sas attributes definitions
-    static final List<AttributeDefinition> IOR_SAS_ATTRIBUTES = Arrays.asList(CALLER_PROPAGATION);
+    static final List<AttributeDefinition> IOR_SAS_ATTRIBUTES = Arrays.asList(CALLER_PROPAGATION, CALLER_PROPAGATION_REQUIRE_AUTH);
+    static final List<AttributeDefinition> IOR_SAS_ATTRIBUTES_3_0 = Arrays.asList(CALLER_PROPAGATION);
 
     //list that contains ior as attributes definitions
     static final List<AttributeDefinition> IOR_AS_ATTRIBUTES = Arrays.asList(AUTH_METHOD, REALM, REQUIRED);
@@ -404,6 +414,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> CONFIG_ATTRIBUTES = new ArrayList<>();
     static final List<AttributeDefinition> IOR_ATTRIBUTES = new ArrayList<>();
     static final List<AttributeDefinition> ALL_ATTRIBUTES = new ArrayList<>();
+    static final List<AttributeDefinition> ATTRIBUTES_3_0 = new ArrayList<>();
     static {
         CONFIG_ATTRIBUTES.addAll(ORB_ATTRIBUTES);
         CONFIG_ATTRIBUTES.addAll(TCP_ATTRIBUTES);
@@ -419,6 +430,11 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
         ALL_ATTRIBUTES.addAll(CONFIG_ATTRIBUTES);
         ALL_ATTRIBUTES.addAll(IOR_ATTRIBUTES);
+
+        ATTRIBUTES_3_0.addAll(CONFIG_ATTRIBUTES);
+        ATTRIBUTES_3_0.addAll(IOR_TRANSPORT_CONFIG_ATTRIBUTES);
+        ATTRIBUTES_3_0.addAll(IOR_AS_ATTRIBUTES);
+        ATTRIBUTES_3_0.addAll(IOR_SAS_ATTRIBUTES_3_0);
     }
 
     IIOPRootDefinition() {
