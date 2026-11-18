@@ -59,13 +59,27 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
                 }
             };
 
+    static final RejectAttributeChecker REJECT_CALLER_PROPAGATION_REQUIRE_AUTH =
+            new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                @Override
+                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                    return IIOPLogger.ROOT_LOGGER.rejectLegacyCallerPropagationRequireAuth();
+                }
+
+                @Override
+                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    return true;
+                }
+            };
+
     /*
      * Transformers for changes in model version 5.0.0
      */
     private static void registerTransformers_4_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
         subsystemBuilder.getAttributeBuilder()
                 .setDiscard(DISCARD_CALLER_PROPAGATION_REQUIRE_AUTH, IIOPRootDefinition.CALLER_PROPAGATION_REQUIRE_AUTH)
-                .addRejectCheck(RejectAttributeChecker.ALL, IIOPRootDefinition.CALLER_PROPAGATION_REQUIRE_AUTH)
+                .addRejectCheck(REJECT_CALLER_PROPAGATION_REQUIRE_AUTH, IIOPRootDefinition.CALLER_PROPAGATION_REQUIRE_AUTH)
                 .end();
     }
 

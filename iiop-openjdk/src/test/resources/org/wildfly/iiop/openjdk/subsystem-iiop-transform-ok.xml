@@ -1,0 +1,15 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!--
+   This configures items that transformers might reject, but uses settings that the transformer should accept.
+   5.0 -> 4.0 caller-propagation-require-auth="false" which is ok
+   4.0 -> 3.0 client-ssl-context and server-ssl-context are both defined
+ -->
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:4.0">
+    <orb socket-binding="iiop"/>
+    <security support-ssl="true" client-requires-ssl="true" client-ssl-context="client-context" server-requires-ssl="true" server-ssl-context="server-context"/>
+    <sas-context caller-propagation="supported" caller-propagation-require-auth="false"/>
+</subsystem>
