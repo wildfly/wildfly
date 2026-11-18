@@ -33,7 +33,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistryListener;
-import org.wildfly.clustering.server.service.Service;
+import org.wildfly.service.BlockingLifecycle;
 import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
@@ -42,7 +42,7 @@ import org.wildfly.subsystem.service.ServiceDependency;
  * @author Stuart Douglas
  * @author Richard Achmatowicz
  */
-public class DeploymentRepositoryService implements DeploymentRepository, ModuleAvailabilityRegistrar, Service {
+public class DeploymentRepositoryService implements DeploymentRepository, ModuleAvailabilityRegistrar, BlockingLifecycle {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ee", "deploymentRepository");
 
     private final ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency;
@@ -124,6 +124,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     }
 
     // check started status
+    @Override
     public boolean isStarted() {
         return started;
     }
