@@ -78,11 +78,6 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
 
-    // Formats supported in io.prometheus.metrics.expositionformats.ExpositionFormats
-    private static final MediaType PROMETHEUS_TEXT_MEDIA_TYPE = MediaType.parse(PrometheusTextFormatWriter.CONTENT_TYPE);
-    private static final MediaType OPENMETRICS_TEXT_MEDIA_TYPE = MediaType.parse(OpenMetricsTextFormatWriter.CONTENT_TYPE);
-    private static final MediaType PROMETHEUS_PROTOBUF_MEDIA_TYPE = MediaType.parse(PrometheusProtobufWriter.CONTENT_TYPE);
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
 
@@ -131,7 +126,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
         }
         if (!sent) {
             if (headerValues == null || headerValues.isEmpty()) {
-                sendMetrics(PROMETHEUS_TEXT_MEDIA_TYPE, prometheusRegistry, exchange);
+                sendMetrics(MediaTypes.PROMETHEUS_TEXT, prometheusRegistry, exchange);
             } else {
                 exchange.setStatusCode(StatusCodes.NOT_ACCEPTABLE);
                 exchange.getResponseSender().send("Not Acceptable");
@@ -140,7 +135,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
     }
 
     private static Optional<MediaType> getMetricsMediaType(MediaType mediaType) {
-        return Stream.of(PROMETHEUS_TEXT_MEDIA_TYPE, OPENMETRICS_TEXT_MEDIA_TYPE, PROMETHEUS_PROTOBUF_MEDIA_TYPE)
+        return Stream.of(MediaTypes.PROMETHEUS_TEXT, MediaTypes.OPENMETRICS_TEXT, MediaTypes.PROMETHEUS_PROTOBUF)
                 .filter(mmt -> mmt.matches(mediaType.type(), mediaType.subtype())
                         // ignoring q (only relevant for priority), version and charset (micrometer-registry-prometheus is doing the same)
                         && mediaType.hasParameters(mmt.parameters(), Set.of("q", "version", "charset")))
@@ -155,7 +150,7 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
 
     private List<MediaType> getSortedMediaTypes(String acceptHeaderValues) {
         if (acceptHeaderValues == null || acceptHeaderValues.isEmpty()) {
-            return List.of(PROMETHEUS_TEXT_MEDIA_TYPE);
+            return List.of(MediaTypes.PROMETHEUS_TEXT);
         } else {
             return parseMediaType(acceptHeaderValues);
         }
@@ -164,6 +159,23 @@ public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefin
     private static List<MediaType> parseMediaType(String acceptHeaderValues) {
         return Arrays.stream(acceptHeaderValues.split(",")).map(String::trim).filter(s -> !s.isEmpty()).map(MediaType::parse).sorted()
                 .toList();
+    }
+
+    /**
+     * Resolves Prometheus writer classes only when the Prometheus endpoint is used.
+     *
+     * <p>The parent Micrometer subsystem registers this child definition even when no Prometheus registry is
+     * configured. Keeping these constants in a lazy holder lets the {@code io.prometheus} module remain optional
+     * for Micrometer-only installations.
+     */
+    private static final class MediaTypes {
+        private static final MediaType PROMETHEUS_TEXT = MediaType.parse(PrometheusTextFormatWriter.CONTENT_TYPE);
+        private static final MediaType OPENMETRICS_TEXT = MediaType.parse(OpenMetricsTextFormatWriter.CONTENT_TYPE);
+        private static final MediaType PROMETHEUS_PROTOBUF = MediaType.parse(PrometheusProtobufWriter.CONTENT_TYPE);
+
+        /** Prevents instantiation of the lazy constants holder. */
+        private MediaTypes() {
+        }
     }
 
     private static class AddHandler implements UnaryOperator<OperationStepHandler> {

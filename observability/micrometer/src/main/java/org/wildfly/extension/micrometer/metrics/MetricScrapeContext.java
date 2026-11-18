@@ -9,7 +9,12 @@ import java.util.Set;
 
 import io.micrometer.core.instrument.Meter;
 
-/** Tracks model-metric read failures during one caller-scoped Prometheus scrape. */
+/**
+ * Tracks model-metric read failures during one caller-scoped Prometheus scrape.
+ *
+ * <p>The context is deliberately limited to pull scrapes. OTLP push runs without a caller identity and uses its
+ * existing in-VM SuperUser read behavior instead of filtering values through this context.
+ */
 public final class MetricScrapeContext implements AutoCloseable {
     private static final ThreadLocal<MetricScrapeContext> CURRENT = new ThreadLocal<>();
 
@@ -23,7 +28,7 @@ public final class MetricScrapeContext implements AutoCloseable {
     }
 
     /**
-     * Starts collecting model-metric access failures for the current scrape.
+     * Starts collecting model-metric access failures for the current Prometheus scrape.
      *
      * @return the scrape context that must be closed after serialization
      */
@@ -32,7 +37,8 @@ public final class MetricScrapeContext implements AutoCloseable {
     }
 
     /**
-     * Marks a meter as unreadable in the active scrape, if one exists.
+     * Marks a meter as unreadable in the active Prometheus scrape, if one exists. Calls made outside a scrape are
+     * ignored so OTLP push retains its existing value-export behavior.
      *
      * @param meterId the meter whose read failed
      */

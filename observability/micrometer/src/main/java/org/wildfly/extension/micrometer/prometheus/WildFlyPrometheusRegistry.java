@@ -21,6 +21,8 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.prometheusmetrics.PrometheusNamingConvention;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.prometheus.metrics.config.PrometheusProperties;
+import io.prometheus.metrics.config.PrometheusPropertiesLoader;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
@@ -34,12 +36,32 @@ import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import org.wildfly.extension.micrometer.metrics.MetricScrapeContext;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
+/**
+ * Prometheus registry that removes model metric series denied to the current scrape caller.
+ *
+ * <p>The scrape methods mirror {@link PrometheusMeterRegistry}'s public overloads because filtering must happen
+ * between snapshot collection and exposition. Keep this implementation aligned with the upstream scrape API and
+ * constructor behavior when upgrading Micrometer.
+ */
 public class WildFlyPrometheusRegistry extends PrometheusMeterRegistry implements WildFlyRegistry {
     private static final PrometheusNamingConvention NAMING_CONVENTION = new PrometheusNamingConvention();
-    private static final ExpositionFormats EXPOSITION_FORMATS = ExpositionFormats.init();
+    private final ExpositionFormats expositionFormats;
 
     public WildFlyPrometheusRegistry() {
-        super(PrometheusConfig.DEFAULT);
+        this(PrometheusConfig.DEFAULT);
+    }
+
+    /**
+     * Creates a registry that preserves the exporter properties supplied by Micrometer's configuration.
+     *
+     * @param config the Micrometer Prometheus configuration used by the superclass and exposition writers
+     */
+    WildFlyPrometheusRegistry(PrometheusConfig config) {
+        super(config);
+        PrometheusProperties prometheusProperties = config.prometheusProperties() != null
+                ? PrometheusPropertiesLoader.load(config.prometheusProperties())
+                : PrometheusPropertiesLoader.load();
+        expositionFormats = ExpositionFormats.init(prometheusProperties);
     }
 
     /** Scrapes metrics in the default format while omitting model series denied to this caller. */
@@ -80,7 +102,7 @@ public class WildFlyPrometheusRegistry extends PrometheusMeterRegistry implement
                     ? getPrometheusRegistry().scrape()
                     : getPrometheusRegistry().scrape(includedNames::contains);
             MetricSnapshots filteredSnapshots = filterDeniedSeries(snapshots, context.deniedMeters());
-            EXPOSITION_FORMATS.findWriter(contentType).write(outputStream, filteredSnapshots);
+            expositionFormats.findWriter(contentType).write(outputStream, filteredSnapshots);
         }
     }
 
