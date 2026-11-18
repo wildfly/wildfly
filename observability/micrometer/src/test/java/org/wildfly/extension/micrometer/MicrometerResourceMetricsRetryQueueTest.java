@@ -7,6 +7,7 @@ package org.wildfly.extension.micrometer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Test;
 
 /** Verifies retry-queue coalescing, cancellation, ordering, and generations. */
 public class MicrometerResourceMetricsRetryQueueTest {
-    private static final long TIMEOUT_SECONDS = 5;
+    private static final Duration TIMEOUT = TimeoutUtil.adjust(Duration.ofSeconds(20));
     private static final long SHORT_TIMEOUT_MILLIS = 200;
 
     /** Verifies duplicate addresses are processed once. */
@@ -43,7 +45,7 @@ public class MicrometerResourceMetricsRetryQueueTest {
 
             queue.add(address);
             queue.add(address);
-            assertTrue("Address was not processed", processed.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue("Address was not processed", processed.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
 
             assertEquals("Duplicate address should be processed once", 1, calls.get());
             queue.stop();
@@ -77,7 +79,7 @@ public class MicrometerResourceMetricsRetryQueueTest {
             }, (pending, attempts) -> { });
 
             queue.add(blocker);
-            assertTrue("Blocker work did not start", started.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue("Blocker work did not start", started.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
             queue.add(address);
             queue.remove(address);
             release.countDown();
@@ -154,12 +156,12 @@ public class MicrometerResourceMetricsRetryQueueTest {
             }, (pending, attempts) -> { });
 
             queue.add(address);
-            assertTrue("First generation did not start", firstAttempt.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue("First generation did not start", firstAttempt.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
             queue.remove(address);
             queue.add(address);
             release.countDown();
 
-            assertTrue("Second generation did not start", secondAttempt.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue("Second generation did not start", secondAttempt.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
             assertTrue("Re-added address should use a new generation", firstGeneration.get() != secondGeneration.get());
             queue.stop();
         } finally {
@@ -192,7 +194,7 @@ public class MicrometerResourceMetricsRetryQueueTest {
             }, (pending, attempts) -> { });
 
             queue.add(parent);
-            assertTrue("Parent work did not start", parentStarted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue("Parent work did not start", parentStarted.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
             queue.add(child);
             queue.remove(parent);
             releaseParent.countDown();

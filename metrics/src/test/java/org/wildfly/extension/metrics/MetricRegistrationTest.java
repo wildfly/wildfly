@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,10 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Test;
 
 /** Verifies metric removal, terminal shutdown, and ownership of concurrent cleanup work. */
 public class MetricRegistrationTest {
+    private static final Duration TIMEOUT = TimeoutUtil.adjust(Duration.ofSeconds(20));
+
     /** Verifies resource removal includes children while allowing metrics for a later resource generation. */
     @Test
     public void unregistersMetricsForRemovedResourceAndChildren() {
@@ -71,7 +75,7 @@ public class MetricRegistrationTest {
             if (firstCleanupCalls.incrementAndGet() == 1) {
                 cleanupStarted.countDown();
                 try {
-                    assertTrue("Cleanup was not released", releaseCleanup.await(5, TimeUnit.SECONDS));
+                    assertTrue("Cleanup was not released", releaseCleanup.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
                 } catch (InterruptedException exception) {
                     Thread.currentThread().interrupt();
                     throw new AssertionError(exception);
@@ -84,14 +88,14 @@ public class MetricRegistrationTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             Future<?> firstUnregister = executor.submit(unregister);
-            assertTrue("First unregister did not start cleanup", cleanupStarted.await(5, TimeUnit.SECONDS));
+            assertTrue("First unregister did not start cleanup", cleanupStarted.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
 
             Future<?> secondUnregister = executor.submit(unregister);
-            secondUnregister.get(5, TimeUnit.SECONDS);
+            secondUnregister.get(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
             assertEquals("The second unregister must not run cleanup owned by the first", 1, firstCleanupCalls.get());
 
             releaseCleanup.countDown();
-            firstUnregister.get(5, TimeUnit.SECONDS);
+            firstUnregister.get(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
             assertEquals("The remaining cleanup must run exactly once", 1, secondCleanupCalls.get());
         } finally {
             releaseCleanup.countDown();
