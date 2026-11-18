@@ -11,7 +11,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.local.LocalGroup;
@@ -50,10 +49,8 @@ public enum NonClusteredEjbClientServicesProvider implements EjbClientServicesPr
                 (ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>>) (ServiceDependency<?>)
                         localGroup().map(LocalServiceProviderRegistrar::of);
 
-        ServiceName name = ServiceName.parse(MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR.getName());
-
         return List.of(ServiceInstaller.builder(registrar)
-                .provides(name)
+                .provides(MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR)
                 .startWhen(StartWhen.AVAILABLE)
                 .build());
     }
@@ -67,10 +64,8 @@ public enum NonClusteredEjbClientServicesProvider implements EjbClientServicesPr
         // Must be provided beneath the ClusteringServiceDescriptor.REGISTRY base name: EJB3RemoteServiceAdd
         // scans the provided names of each returned installer and aliases any descendant of that base name
         // to EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY/<connectorName>.
-        ServiceName name = ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.REGISTRY, GROUP_NAME, connectorName);
-
         return List.of(ServiceInstaller.builder(registry)
-                .provides(name)
+                .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.REGISTRY, GROUP_NAME, connectorName))
                 .onStop(Registry::close)
                 .startWhen(StartWhen.AVAILABLE)
                 .build());

@@ -24,7 +24,7 @@ public class EjbClientServicesProviderResourceTransformer implements Consumer<Mo
 
     @Override
     public void accept(ModelVersion version) {
-        if (DistributableEjbSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
+        if (DistributableEjbSubsystemModel.VERSION_4_0_0.requiresTransformation(version)) {
             // This resource was addressed via client-mappings-registry prior to VERSION_3_0_0
             this.parent.addChildRedirection(EjbClientServicesProviderResourceRegistration.WILDCARD.getPathElement(), PathElement.pathElement(EjbClientServicesProviderResourceDefinitionRegistrar.LEGACY_PATH_KEY));
         }
