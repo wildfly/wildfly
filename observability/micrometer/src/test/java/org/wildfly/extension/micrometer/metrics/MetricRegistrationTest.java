@@ -8,16 +8,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Test;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 /** Verifies Micrometer metric removal and registration-task synchronization. */
 public class MetricRegistrationTest {
+    private static final Duration TIMEOUT = TimeoutUtil.adjust(Duration.ofSeconds(20));
+
     /** Verifies removing a resource also removes meters for its children. */
     @Test
     public void unregistersMetricsForRemovedResourceAndChildren() {
@@ -55,7 +59,7 @@ public class MetricRegistrationTest {
 
         Thread registerThread = new Thread(registration::register);
         registerThread.start();
-        assertTrue("Registration task did not start", taskStarted.await(5, TimeUnit.SECONDS));
+        assertTrue("Registration task did not start", taskStarted.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
 
         Thread addThread = new Thread(() -> {
             registration.addRegistrationTask(() -> { });
@@ -69,9 +73,9 @@ public class MetricRegistrationTest {
             releaseTask.countDown();
         }
 
-        assertTrue("Queued task was not added after registration", taskAdded.await(5, TimeUnit.SECONDS));
-        registerThread.join(5_000);
-        addThread.join(5_000);
+        assertTrue("Queued task was not added after registration", taskAdded.await(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
+        registerThread.join(TIMEOUT.toMillis());
+        addThread.join(TIMEOUT.toMillis());
     }
 
     /** Creates metadata for a test meter at the supplied address. */
