@@ -224,6 +224,17 @@
 
     <profiles>
         <profile>
+            <id>preview.test.profile</id>
+            <activation>
+                <property>
+                    <name>ts.preview</name>
+                </property>
+            </activation>
+            <properties>
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
+        </profile>
+        <profile>
             <id>bootablejar.profile</id>
             <activation>
                 <property>

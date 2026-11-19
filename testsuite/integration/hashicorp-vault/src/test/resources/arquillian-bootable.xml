@@ -15,7 +15,7 @@
             <property name="jbossArguments">${server.jboss.args}</property>
             <property name="allowConnectingToRunningServer">false</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
-            <property name="managementPort">9990</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
         </configuration>
     </container>
 

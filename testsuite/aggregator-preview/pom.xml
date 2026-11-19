@@ -87,6 +87,7 @@
                 <module>../integration/elytron</module>
                 <module>../integration/elytron-oidc-client</module>
                 <module>../integration/expansion</module>
+                <module>../integration/hashicorp-vault</module>
                 <module>../integration/microprofile-tck</module>
                 <module>../integration/vdx</module>
                 <module>../integration/rbac</module>
