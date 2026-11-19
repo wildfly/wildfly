@@ -142,12 +142,22 @@ public class HealthContextService implements Service {
                     response.add(probeOutcome);
                 }
             }
-            if (HEALTH.equals(requestPath) || HEALTH_LIVE.equals(requestPath)) {
-                // always respond to the /health/live positively
-                ModelNode probeOutcome = new ModelNode();
-                probeOutcome.get(NAME).set("live-server");
-                probeOutcome.get(OUTCOME).set(true);
-                response.add(probeOutcome);
+            if (HEALTH_LIVE.equals(requestPath)) {
+                for (ServerProbe serverProbe : serverProbes.getServerProbes()) {
+                    if (serverProbe.isLivenessProbe()) {
+                        ServerProbe.Outcome outcome = serverProbe.getOutcome();
+                        if (!outcome.isSuccess()) {
+                            globalOutcome = false;
+                        }
+                        ModelNode probeOutcome = new ModelNode();
+                        probeOutcome.get(NAME).set(serverProbe.getName());
+                        probeOutcome.get(OUTCOME).set(outcome.isSuccess());
+                        if (outcome.getData().isDefined()) {
+                            probeOutcome.get("data").set(outcome.getData());
+                        }
+                        response.add(probeOutcome);
+                    }
+                }
             }
             if (HEALTH.equals(requestPath) || HEALTH_STARTED.equals(requestPath)) {
                 // always respond to the /health/started positively

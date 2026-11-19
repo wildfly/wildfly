@@ -57,7 +57,11 @@ public class MicroProfileHealthReporterService implements Service {
         if (!defaultServerProceduresDisabled) {
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             for (ServerProbe serverProbe : serverProbesService.get().getServerProbes()) {
-                healthReporter.addServerReadinessCheck(wrap(serverProbe), tccl);
+                HealthCheck wrapped = wrap(serverProbe);
+                healthReporter.addServerReadinessCheck(wrapped, tccl);
+                if (serverProbe.isLivenessProbe()) {
+                    healthReporter.addServerLivenessCheck(wrapped, tccl);
+                }
             }
         }
 
