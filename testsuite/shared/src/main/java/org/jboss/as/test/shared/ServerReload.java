@@ -101,7 +101,7 @@ public class ServerReload {
      * with the given name once it reloads. Reloaded server will not be in admin-only mode.
      *
      * @param managementClient client to use to execute the reload and to provide host and port information for
-     *      *                         reconnecting to wait for completion of the reload
+     *                         reconnecting to wait for completion of the reload
      * @param serverConfig the configuration file the server should use following reload. May be {@code null} in which
      *                     case the server will use the same configuration file it used before the reload.
      */
@@ -125,10 +125,13 @@ public class ServerReload {
      * Reload the server and wait for it to reach running state. Reloaded server will not be in admin-only mode.
      *
      * @param managementClient client to use to execute the reload and to provide host and port information for
-     *      *                         reconnecting to wait for completion of the reload
+     *                         reconnecting to wait for completion of the reload
      * @param timeout unadjusted time in ms to wait for a server process to return to running state following the reload;
      *                adjusted by {@link TimeoutUtil#adjust(int)} before use
+     * @deprecated Use {@link #executeReloadAndWaitForCompletion(ManagementClient)} which waits for the default
+     *             {@link #TIMEOUT}.
      */
+    @Deprecated(forRemoval = true, since = "43.0")
     public static void executeReloadAndWaitForCompletion(ManagementClient managementClient, int timeout) {
         executeReloadAndWaitForCompletion(managementClient.getControllerClient(), timeout, false,
                 managementClient.getMgmtAddress(), managementClient.getMgmtPort(), null);
