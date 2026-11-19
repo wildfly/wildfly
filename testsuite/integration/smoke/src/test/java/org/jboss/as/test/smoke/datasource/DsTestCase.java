@@ -10,7 +10,12 @@ import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
+import java.io.ObjectInputFilter;
+import java.io.ObjectInputFilter.Config;
+import java.io.ObjectInputFilter.FilterInfo;
+import java.io.ObjectInputFilter.Status;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
@@ -73,6 +78,15 @@ public class DsTestCase {
             out.writeObject(originalDs);
             byte[] bytes = bos.toByteArray();
 
+            if (isRejectedBySerialFilter(originalDs.getClass())) {
+                InvalidClassException e = Assertions.assertThrows(InvalidClassException.class, () -> {
+                    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+                        ois.readObject();
+                    }
+                }, "Deserialization of " + originalDs.getClass().getName() + " should be rejected by the configured jdk.serialFilter");
+                Assertions.assertTrue(e.getMessage().contains("REJECTED"), "Unexpected exception message: " + e.getMessage());
+                return;
+            }
 
             //deserialize
             ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
@@ -115,5 +129,51 @@ public class DsTestCase {
         }
 
 
+    }
+
+    private static boolean isRejectedBySerialFilter(Class<?> dsClass) {
+        ObjectInputFilter filter = Config.getSerialFilter();
+        if (filter != null) {
+            FilterInfo filterInfo = new ClassOnlyFilterInfo(dsClass);
+
+            Status status = filter.checkInput(filterInfo);
+            if (status == Status.REJECTED) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final class ClassOnlyFilterInfo implements FilterInfo {
+        private final Class<?> dsClass;
+
+        ClassOnlyFilterInfo(Class<?> dsClass) {
+            this.dsClass = dsClass;
+        }
+
+        @Override
+        public Class<?> serialClass() {
+            return dsClass;
+        }
+
+        @Override
+        public long arrayLength() {
+            return -1;
+        }
+
+        @Override
+        public long depth() {
+            return 1;
+        }
+
+        @Override
+        public long references() {
+            return 0;
+        }
+
+        @Override
+        public long streamBytes() {
+            return 0;
+        }
     }
 }
