@@ -48,7 +48,8 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (TransactionSubsystemRootResourceDefinition.BINDING.isMarshallable(node) ||
                 TransactionSubsystemRootResourceDefinition.STATUS_BINDING.isMarshallable(node) ||
                 TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.isMarshallable(node) ||
-                TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.isMarshallable(node)) {
+                TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.isMarshallable(node) ||
+                TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.isMarshallable(node)) {
             writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
             TransactionSubsystemRootResourceDefinition.BINDING.marshallAsAttribute(node, writer);
 
@@ -57,6 +58,8 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.marshallAsAttribute(node, writer);
 
             TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.marshallAsAttribute(node, writer);
+
+            TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.marshallAsAttribute(node, writer);
 
             writer.writeEndElement();
         }
