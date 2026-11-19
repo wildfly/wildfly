@@ -53,6 +53,7 @@ import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.webservices.JBossPortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
+import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 
 /**
  * JBoss AS integration helper class.
@@ -368,9 +369,11 @@ public final class ASHelper {
         }
 
         if (contextRoot == null) {
+            if (DefaultDeploymentMappingProvider.instance().getMapping(dep.getSimpleName()) != null) {
+                return "/";
+            }
             contextRoot = jbossWebMD != null ? jbossWebMD.getContextRoot() : null;
         }
-
         return contextRoot;
     }
 
