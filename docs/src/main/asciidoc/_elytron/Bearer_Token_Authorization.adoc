@@ -208,10 +208,11 @@ xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview] or by using th
 starting standard WildFly. For more information about the stability levels of the WildFly server, please refer to the
 xref:Admin_Guide.adoc#Feature_stability_levels[Feature stability levels] section of the Admin Guide.
 
-Validating a token may require the server to make an HTTP request to a remote server. A `jwt` validator fetches remote JSON Web Keys
-when a token has a "jku" header and a `client-ssl-context` is configured, and an `oauth2-introspection` validator sends every token to the
-token introspection endpoint. The `jwt` and `oauth2-introspection` elements both support the following optional attributes to
-control how long the server waits for the remote server:
+Validating a token may require the server to make an HTTP request to a remote server. A `jwt` validator may fetch remote JSON Web Keys
+when a token has both "kid" and "jku" headers, the "jku" value is one of the allowed `jku` values, and a `client-ssl-context` is
+configured. An `oauth2-introspection` validator sends every token to the token introspection endpoint. The `jwt` and
+`oauth2-introspection` elements both support the following optional attributes to control how long the server waits for the
+remote server:
 
 * *connection-timeout*
 +
@@ -240,6 +241,12 @@ timeout expires the introspection request fails and the token is not validated.
                            read-timeout="5000" />
  </token-realm>
 ```
+
+The `jwt` validator caches the JSON Web Keys fetched from each "jku" URL and checks this cache before deciding whether a connection
+is needed. A request is only made if the cache holds no key matching the "kid" of the token, or the cached keys are more than two
+minutes old, and at least ten seconds have passed since the last successful fetch from that URL. Otherwise the cached keys are used
+and no connection is made. If a fetch fails, such as when a timeout expires, nothing is cached, so the next token needing those keys
+causes another attempt to connect. These cache intervals are not configurable.
 
 [[quickstarts]]
 == Quickstarts
