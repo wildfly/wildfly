@@ -23,7 +23,8 @@ import org.jboss.as.ejb3.remote.ModuleAvailabilityRegistrarListener;
 import org.jboss.as.server.suspend.ServerResumeContext;
 import org.jboss.as.server.suspend.ServerSuspendContext;
 import org.jboss.as.server.suspend.SuspendableActivity;
-import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
+import org.jboss.as.server.suspend.SuspendableActivityRegistration;
 import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
@@ -45,10 +46,11 @@ import org.wildfly.subsystem.service.ServiceDependency;
 public class DeploymentRepositoryService implements DeploymentRepository, ModuleAvailabilityRegistrar, BlockingLifecycle {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ee", "deploymentRepository");
 
-    private final ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency;
+    private final ServiceDependency<SuspendableActivityRegistrar> activityRegistrarDependency;
     private final ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency;
 
-    private SuspendableActivityRegistry activityRegistry;
+    private SuspendableActivityRegistrar activityRegistrar;
+    private SuspendableActivityRegistration activityRegistration;
     private SuspendableActivity activity;
     private ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember> serviceRegistrar;
     private AtomicReference<Registration> globalServiceProviderRegistration = new AtomicReference<>(null);
@@ -63,8 +65,8 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
     // servers start out suspended; the actual value is established from the activity registry on start()
     private volatile boolean suspended = true;
 
-    public DeploymentRepositoryService(ServiceDependency<SuspendableActivityRegistry> activityRegistryDependency, ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency) {
-        this.activityRegistryDependency = activityRegistryDependency;
+    public DeploymentRepositoryService(ServiceDependency<SuspendableActivityRegistrar> activityRegistrarDependency, ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceRegistrarDependency) {
+        this.activityRegistrarDependency = activityRegistrarDependency;
         this.serviceRegistrarDependency = serviceRegistrarDependency;
         this.activity = new ModuleAvailabilityRegistrarSuspendableActivity();
     }
@@ -75,16 +77,16 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
             EjbLogger.DEPLOYMENT_LOGGER.trace("Starting DeploymentRepositoryService");
 
         // inject the dependencies
-        this.activityRegistry = this.activityRegistryDependency.get();
+        this.activityRegistrar = this.activityRegistrarDependency.get();
         this.serviceRegistrar = this.serviceRegistrarDependency.get();
 
-        // register as a ServerActivity
-        activityRegistry.registerActivity(this.activity);
+        // register as a ServerActivity with the SuspendableActivityRegistrar
+        this.activityRegistration = activityRegistrar.register(this.activity);
 
         // This service is on-demand, so it may be (re)started at any point in the server lifecycle, including after the
         // server has already resumed. In that case our activity will never see a resume() callback, so seed the
         // suspension state from the registry rather than assuming the server is still suspended.
-        this.suspended = activityRegistry.getState() != SuspensionStateProvider.State.RUNNING;
+        this.suspended = activityRegistration.getState() != SuspensionStateProvider.State.RUNNING;
         if (EjbLogger.DEPLOYMENT_LOGGER.isTraceEnabled())
             EjbLogger.DEPLOYMENT_LOGGER.tracef("DeploymentRepositoryService starting with suspended = %s", this.suspended);
 
@@ -111,12 +113,12 @@ public class DeploymentRepositoryService implements DeploymentRepository, Module
             globalRegistration.close();
         }
 
-        // unregister as a server activity
-        activityRegistry.unregisterActivity(this.activity);
+        // unregister as a server activity with the SuspendableActivityRegistrar
+        activityRegistration.close();
 
         modules = null;
 
-        this.activityRegistry = null;
+        this.activityRegistrar = null;
         this.serviceRegistrar = null;
 
         // mark this service as stopped

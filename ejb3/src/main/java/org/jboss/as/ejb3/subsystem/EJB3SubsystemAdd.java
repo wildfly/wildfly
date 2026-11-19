@@ -132,7 +132,7 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.server.suspend.SuspendController;
-import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspendableActivityRegistrar;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.dmr.ModelNode;
@@ -528,7 +528,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                                                     final boolean appclient) throws OperationFailedException {
 
         // service dependencies of the DeploymentRepository
-        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<SuspendableActivityRegistrar> activityRegistrar = ServiceDependency.on(SuspendableActivityRegistrar.SERVICE_DESCRIPTOR);
         ServiceDependency<ServiceProviderRegistrar<EJBModuleIdentifier, GroupMember>> serviceProviderRegistrar =
                 ServiceDependency.on(EjbClientServicesProvider.MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR).map(ServiceProviderRegistrar.class::cast);
 
@@ -546,8 +546,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 }
 
                 // NOTE: choose the correct builder to avoid service installation issues (need a supplier builder here)
-                return ServiceInstaller.BlockingLifecycleBuilder.of(() -> new DeploymentRepositoryService(activityRegistry, serviceProviderRegistrar), ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
-                        .requires(List.of(serviceProviderRegistrar, activityRegistry))
+                return ServiceInstaller.BlockingLifecycleBuilder.of(() -> new DeploymentRepositoryService(activityRegistrar, serviceProviderRegistrar), ServiceDependency.on(Capabilities.MANAGEMENT_EXECUTOR))
+                        .requires(List.of(serviceProviderRegistrar, activityRegistrar))
                         .provides(DeploymentRepositoryService.SERVICE_NAME)
                         .build()
                         .install(target);
