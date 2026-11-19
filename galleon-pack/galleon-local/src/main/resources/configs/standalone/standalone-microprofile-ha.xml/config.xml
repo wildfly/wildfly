@@ -19,6 +19,7 @@
         <exclude name="jpa"/>
         <include name="jpa-distributed"/>
         <include name="web-clustering"/>
+        <include name="mod_cluster"/>
         <include name="elytron-oidc-client"/>
         <include name="web-console"/>
     </layers>
