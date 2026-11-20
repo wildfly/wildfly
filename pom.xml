@@ -421,7 +421,7 @@
         <version.com.sun.xml.fastinfoset>2.1.1</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.messaging.saaj>3.0.6</version.com.sun.xml.messaging.saaj>
         <version.commons-beanutils>1.11.0</version.commons-beanutils>
-        <version.commons-codec>1.17.2</version.commons-codec>
+        <version.commons-codec>1.23.0</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-io>2.22.0</version.commons-io>
         <version.org.apache.commons.secure-xml>1.0.0</version.org.apache.commons.secure-xml>
