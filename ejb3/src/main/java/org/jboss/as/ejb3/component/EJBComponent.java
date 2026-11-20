@@ -107,6 +107,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final UserTransaction userTransaction;
     private final ControlPoint controlPoint;
     private final AtomicBoolean exceptionLoggingEnabled;
+    private final AccessLogHolder accessLogHolder;
 
     private final SecurityDomain securityDomain;
     private final boolean enableJacc;
@@ -163,6 +164,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
         this.controlPoint = ejbComponentCreateService.getControlPoint();
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
+        this.accessLogHolder = ejbComponentCreateService.getAccessLogHolder();
 
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
         this.enableJacc = ejbComponentCreateService.isEnableJacc();
@@ -595,6 +597,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public boolean isExceptionLoggingEnabled() {
         return exceptionLoggingEnabled.get();
+    }
+
+    public AccessLogHolder getAccessLogHolder() {
+        return accessLogHolder;
     }
 
 
