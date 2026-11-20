@@ -19,6 +19,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.version.Stability;
 
 /**
  * An {@link Extension} to add support for OpenID Connect.
@@ -33,6 +34,9 @@ public class ElytronOidcExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "elytron-oidc-client";
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+
+    /** Minimum stability level that must be enabled to use this subsystem in a HostController */
+    static final Stability HOST_CONTROLLER_STABILITY = Stability.PREVIEW;
 
     private static final String RESOURCE_NAME = ElytronOidcExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -50,6 +54,18 @@ public class ElytronOidcExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ElytronOidcClientSubsystemModel.CURRENT.getVersion());
+        // The subsystem can also be configured on a host controller in order to secure the management console of a
+        // managed domain. This is only available at the preview stability level or lower; without the host capability
+        // the subsystem cannot be registered under /host=<host-name>/subsystem=elytron-oidc-client at all, so none of
+        // the host controller specific code in the subsystem is reachable.
+        //
+        // No further guards are needed for the domain wide, i.e. profile scoped, configuration a host controller also
+        // maintains. Runtime steps only execute on a host controller for addresses of the form /host=*/subsystem=*,
+        // see AbstractOperationContext.isDefaultRequiresRuntime(), and the model stage code keyed off
+        // SecureDeploymentDefinition.isHostControllerConfiguration() likewise only applies to a /host=* address.
+        if (context.getStability().enables(HOST_CONTROLLER_STABILITY)) {
+            subsystem.setHostCapable();
+        }
         subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(ElytronOidcSubsystemSchema.CURRENT.get(context.getStability())));
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ElytronOidcSubsystemDefinition());
