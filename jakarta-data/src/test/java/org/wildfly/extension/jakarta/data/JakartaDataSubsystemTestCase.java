@@ -41,9 +41,10 @@ public class JakartaDataSubsystemTestCase extends AbstractSubsystemSchemaTest<Ja
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        // n.b. for preview:1 schema subsystem test, we automatically promote stability to a community:1 schema since they are now effectively equivalent;
+        // n.b. for preview:1 and community:1 schema subsystem tests, we automatically promote stability
+        // to a default:1 schema since they are now effectively equivalent;
         // thus for this particular schema we need to ignore comparison of the namespace
-        boolean ignoreNamespace = schema.getStability() == Stability.PREVIEW && schema.getVersion().major() == 1;
+        boolean ignoreNamespace = (schema.getStability() == Stability.PREVIEW || schema.getStability() == Stability.COMMUNITY) && schema.getVersion().major() == 1;
         super.compareXml(configId, original, marshalled, ignoreNamespace);
     }
 
