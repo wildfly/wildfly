@@ -13,7 +13,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Encapsulates a {@link Dependency} on a {@link org.jboss.msc.Service} that supplies a value.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceDependency#on(ServiceName)}.
  */
+@Deprecated(forRemoval = true)
 public class ServiceSupplierDependency<V> extends SimpleServiceNameProvider implements SupplierDependency<V> {
 
     private volatile Supplier<V> supplier;

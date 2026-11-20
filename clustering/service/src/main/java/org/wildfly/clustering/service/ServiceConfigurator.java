@@ -11,7 +11,9 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Configures the dependencies of a {@link org.jboss.msc.Service}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceInstaller}.
  */
+@Deprecated(forRemoval = true)
 public interface ServiceConfigurator extends ServiceNameProvider {
 
     /**

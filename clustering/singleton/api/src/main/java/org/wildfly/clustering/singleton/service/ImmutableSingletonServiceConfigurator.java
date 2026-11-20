@@ -11,7 +11,9 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 /**
  * An immutable {@link ServiceConfigurator} used to build a singleton service.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link SingletonServiceTarget}.
  */
+@Deprecated(forRemoval = true)
 public interface ImmutableSingletonServiceConfigurator extends ServiceConfigurator {
 
     @Override

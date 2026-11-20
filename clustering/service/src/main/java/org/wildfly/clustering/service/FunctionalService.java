@@ -18,7 +18,9 @@ import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class FunctionalService<T, V> implements Service {
     private static final Logger LOGGER = Logger.getLogger(FunctionalService.class);
 
