@@ -250,6 +250,10 @@ public abstract class LayersTestBase {
             "wildflyee.api",
             // read-only extension that is not part of the default config
             "org.wildfly.extension.security.manager",
+            // HashiCorp Vault extension is available but not included in the default config
+            "io.github.jopenlibs.vault-java-driver",
+            "org.wildfly.extension.hashicorp-vault",
+            "org.wildfly.security.elytron-hashicorp-vault",
     };
 
 
@@ -361,7 +365,7 @@ public abstract class LayersTestBase {
             "org.eclipse.krazo.resteasy",
             // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
             "org.hibernate.commons-annotations",
-            "org.wildfly.extension.vertx"
+            "org.wildfly.extension.vertx",
     };
 
     /**

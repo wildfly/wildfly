@@ -372,6 +372,11 @@
         </dependency>
 
         <dependency>
+            <groupId>io.github.jopenlibs</groupId>
+            <artifactId>vault-java-driver</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-core</artifactId>
             <exclusions>
@@ -2667,6 +2672,16 @@
         <dependency>
             <groupId>org.wildfly.security.elytron-web</groupId>
             <artifactId>undertow-server-servlet</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security.hashicorp.vault</groupId>
+            <artifactId>wildfly-elytron-hashicorp-vault</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security.vault</groupId>
+            <artifactId>wildfly-vault-subsystem</artifactId>
         </dependency>
 
         <dependency>

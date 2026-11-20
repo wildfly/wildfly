@@ -32,6 +32,7 @@
         <jboss.home>${jboss.dist}</jboss.home>
 
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
+        <vault.docker.image>hashicorp/vault:2.2.1</vault.docker.image>
 
     </properties>
 
@@ -44,6 +45,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-vault</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -271,6 +277,7 @@
                         <jboss.test.host.secondary.address>${node1}</jboss.test.host.secondary.address>
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
                         <testsuite.default.build.project.prefix>${testsuite.default.build.project.prefix}</testsuite.default.build.project.prefix>
+                        <vault.docker.image>${vault.docker.image}</vault.docker.image>
                     </systemPropertyVariables>
                     <includes>
                         <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
