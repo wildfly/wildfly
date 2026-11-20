@@ -6,7 +6,6 @@ package org.jboss.as.test.clustering.cluster.ejb.timer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
@@ -30,9 +29,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AbstractManualTimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AbstractTimerBean;
@@ -47,7 +43,6 @@ import org.jboss.as.test.clustering.cluster.ejb.timer.servlet.BurstTimerServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -116,18 +111,5 @@ public class CoalesceMissedTimeoutsTestCase extends AbstractClusteringTestCase {
             timeouts.add(DateUtils.parseDate(header.getValue()).toInstant());
         }
         return timeouts;
-    }
-
-    private static void suspend(ManagementClient client) throws IOException {
-        execute(client, ModelDescriptionConstants.SUSPEND);
-    }
-
-    private static void resume(ManagementClient client) throws IOException {
-        execute(client, ModelDescriptionConstants.RESUME);
-    }
-
-    private static void execute(ManagementClient client, String operation) throws IOException {
-        ModelNode result = client.getControllerClient().execute(Util.createOperation(operation, PathAddress.EMPTY_ADDRESS));
-        assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString(), result.toString());
     }
 }
