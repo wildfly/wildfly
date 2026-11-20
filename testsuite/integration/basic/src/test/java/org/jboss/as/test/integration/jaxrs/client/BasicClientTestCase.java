@@ -11,17 +11,17 @@ import jakarta.ws.rs.client.Entity;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:kanovotn@redhat.com">Katerina Novotna</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class BasicClientTestCase {
 
@@ -50,12 +50,12 @@ public class BasicClientTestCase {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClient() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -64,27 +64,27 @@ public class BasicClientTestCase {
     public void testGet() throws Exception {
         String result = client.target(url.toExternalForm() + "myjaxrs/client")
                 .request("text/plain").get(String.class);
-        Assert.assertEquals("GET: Hello World!", result);
+        Assertions.assertEquals("GET: Hello World!", result);
     }
 
     @Test
     public void testPost() throws Exception {
         String result = client.target(url.toExternalForm() + "myjaxrs/client")
                 .request("text/plain").post(Entity.text("David"), String.class);
-        Assert.assertEquals("POST: David", result);
+        Assertions.assertEquals("POST: David", result);
     }
 
     @Test
     public void testPut() throws Exception {
         String result = client.target(url.toExternalForm() + "myjaxrs/client")
                 .request("text/plain").put(Entity.text("Michael"), String.class);
-        Assert.assertEquals("PUT: Michael", result);
+        Assertions.assertEquals("PUT: Michael", result);
     }
 
     @Test
     public void testDelete() throws Exception {
         String result = client.target(url.toExternalForm() + "myjaxrs/client")
                 .request("text/plain").delete(String.class);
-        Assert.assertEquals("DELETE:", result);
+        Assertions.assertEquals("DELETE:", result);
     }
 }

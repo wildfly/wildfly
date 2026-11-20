@@ -13,8 +13,8 @@ import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRun
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
 import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -24,7 +24,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -35,19 +35,19 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests whether the invocation statistics actually make sense.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(EjbInvocationStatisticsTestCaseSetup.class)
 public class EjbInvocationStatisticsTestCase {
@@ -59,19 +59,19 @@ public class EjbInvocationStatisticsTestCase {
 
     private static InitialContext context;
 
-    @After
+    @AfterEach
     public void after() throws IOException {
         setEnableStatistics(managementClient, statisticsEnabled);
     }
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         statisticsEnabled = getEnableStatistics(managementClient);
         setEnableStatistics(managementClient, true);
         assertEquals(Boolean.TRUE, getEnableStatistics(managementClient));
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -127,7 +127,7 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     @Test
-    @Ignore("WFLY-14107 intermittent failure")
+    @Disabled("WFLY-14107 intermittent failure")
     public void testSingletonWaitTime() throws Exception {
         validateWaitTimeStatistic(SINGLETON, WaitTimeSingletonBean.class);
     }
@@ -157,7 +157,7 @@ public class EjbInvocationStatisticsTestCase {
         {
             final ModelNode result = executeOperation(managementClient,
                     ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
-            assertTrue("Expecting wait-time attribute value > 0, but got " + result.toString(), result.get("wait-time").asLong() > 0L);
+            assertTrue(result.get("wait-time").asLong() > 0L, "Expecting wait-time attribute value > 0, but got " + result.toString());
         }
     }
 

@@ -13,21 +13,21 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DependsOnSingletonUnitTestCase {
     private static final Logger log = Logger.getLogger(DependsOnSingletonUnitTestCase.class.getName());
 
@@ -80,6 +80,6 @@ public class DependsOnSingletonUnitTestCase {
         expectedOrder.add("SingletonThree");
         expectedOrder.add("SingletonTwo");
         expectedOrder.add("SingletonOne");
-        Assert.assertEquals(expectedOrder, singleton.getCalls());
+        Assertions.assertEquals(expectedOrder, singleton.getCalls());
     }
 }

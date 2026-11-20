@@ -9,21 +9,21 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * Tests excluding a subsystem via jboss-deployment-structure.xml
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExcludeEjbSubsystemTestCase {
 
     private static final Logger logger = Logger.getLogger(ExcludeEjbSubsystemTestCase.class);
@@ -43,7 +43,7 @@ public class ExcludeEjbSubsystemTestCase {
     public void testEjbNotInstalled() throws NamingException {
         try {
             Object result = initialContext.lookup("java:module/" + SimpleEjb.class.getSimpleName());
-            Assert.fail("Expected lookup to fail, instead " + result + " was returned");
+            Assertions.fail("Expected lookup to fail, instead " + result + " was returned");
         } catch (NameNotFoundException expected) {}
     }
 

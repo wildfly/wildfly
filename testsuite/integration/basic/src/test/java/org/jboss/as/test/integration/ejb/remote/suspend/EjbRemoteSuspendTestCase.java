@@ -13,8 +13,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -23,16 +22,20 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that remote EJB requests are rejected when the container is suspended.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class EjbRemoteSuspendTestCase {
 
     private static final String APP_NAME = "";
@@ -51,7 +54,7 @@ public class EjbRemoteSuspendTestCase {
         return ejbJar;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -59,12 +62,12 @@ public class EjbRemoteSuspendTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testSuspendedCallRejected() throws Exception {
         final Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
         final String message = "Silence!";
         String echo = localEcho.echo(message);
-        Assert.assertEquals(message, echo);
+        Assertions.assertEquals(message, echo);
 
 
         ModelNode op = new ModelNode();
@@ -76,13 +79,13 @@ public class EjbRemoteSuspendTestCase {
             while (true) {
                 echo = localEcho.echo(message);
                 if (System.currentTimeMillis() > fin)
-                    Assert.fail("call should have been rejected");
+                    Assertions.fail("call should have been rejected");
                 Thread.sleep(300);
             }
         } catch (NoSuchEJBException expected) {
 
         } catch (Exception e) {
-            Assert.fail(e.getMessage() + " thrown but NoSuchEJBException was expected");
+            Assertions.fail(e.getMessage() + " thrown but NoSuchEJBException was expected");
         }
         finally {
             op = new ModelNode();
@@ -113,7 +116,7 @@ public class EjbRemoteSuspendTestCase {
 
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testStatefulEjbCreationRejected() throws Exception {
 
         ModelNode op = new ModelNode();
@@ -125,7 +128,7 @@ public class EjbRemoteSuspendTestCase {
             while (true) {
                 Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
                 if (System.currentTimeMillis() > fin)
-                    Assert.fail("call should have been rejected");
+                    Assertions.fail("call should have been rejected");
                 Thread.sleep(300);
             }
         } catch (NamingException expected) {

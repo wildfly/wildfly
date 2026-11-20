@@ -9,15 +9,15 @@ import java.util.concurrent.TimeUnit;
 import jakarta.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * EJB 3.2 5.4.3:
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class NoMethodMessageListenerTestCase {
 
     public static final String EAR_NAME = "no-method-message-listener-test";
@@ -75,7 +75,7 @@ public class NoMethodMessageListenerTestCase {
     public void doTest() throws InterruptedException {
         boolean receivedSuccessfully = tracker.getReceivedLatch()
                 .await(TimeoutUtil.adjust(30), TimeUnit.SECONDS);
-        Assert.assertTrue("Message was not received within reasonable timeout", receivedSuccessfully);
+        Assertions.assertTrue(receivedSuccessfully, "Message was not received within reasonable timeout");
     }
 
 

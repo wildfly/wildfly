@@ -11,19 +11,19 @@ import java.util.Hashtable;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class RemoteEJBJndiBasedInvocationTestCase {
 
@@ -43,7 +43,7 @@ public class RemoteEJBJndiBasedInvocationTestCase {
         return jar;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable props = new Hashtable();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -54,33 +54,33 @@ public class RemoteEJBJndiBasedInvocationTestCase {
     public void testRemoteSLSBInvocation() throws Exception {
         final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME
                 + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-        Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+        Assertions.assertNotNull(remoteEcho, "Lookup returned a null bean proxy");
         final String msg = "Hello world from a really remote client!!!";
         final String echo = remoteEcho.echo(msg);
-        Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected echo returned from remote bean");
     }
 
     @Test
     public void testRemoteSFSBInvocation() throws Exception {
         final RemoteCounter remoteCounter = (RemoteCounter) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME
                 + "/" + CounterBean.class.getSimpleName() + "!" + RemoteCounter.class.getName() + "?stateful");
-        Assert.assertNotNull("Lookup returned a null bean proxy", remoteCounter);
-        Assert.assertEquals("Unexpected initial count returned by bean", 0, remoteCounter.getCount());
+        Assertions.assertNotNull(remoteCounter, "Lookup returned a null bean proxy");
+        Assertions.assertEquals(0, remoteCounter.getCount(), "Unexpected initial count returned by bean");
         final int NUM_TIMES = 25;
         // test increment
         for (int i = 0; i < NUM_TIMES; i++) {
             remoteCounter.incrementCount();
             final int currentCount = remoteCounter.getCount();
-            Assert.assertEquals("Unexpected count after increment", i + 1, currentCount);
+            Assertions.assertEquals(i + 1, currentCount, "Unexpected count after increment");
         }
-        Assert.assertEquals("Unexpected total count after increment", NUM_TIMES, remoteCounter.getCount());
+        Assertions.assertEquals(NUM_TIMES, remoteCounter.getCount(), "Unexpected total count after increment");
         // test decrement
         for (int i = NUM_TIMES; i > 0; i--) {
             remoteCounter.decrementCount();
             final int currentCount = remoteCounter.getCount();
-            Assert.assertEquals("Unexpected count after decrement", i - 1, currentCount);
+            Assertions.assertEquals(i - 1, currentCount, "Unexpected count after decrement");
         }
-        Assert.assertEquals("Unexpected total count after decrement", 0, remoteCounter.getCount());
+        Assertions.assertEquals(0, remoteCounter.getCount(), "Unexpected total count after decrement");
 
     }
 

@@ -5,6 +5,7 @@
 package org.jboss.as.test.integration.management.cli;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,9 +14,8 @@ import java.util.List;
 import org.aesh.complete.AeshCompleteOperation;
 import org.aesh.readline.completion.Completion;
 import org.aesh.readline.terminal.formatting.TerminalString;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.jboss.arquillian.junit.Arquillian;
+
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.Util;
@@ -24,6 +24,8 @@ import org.jboss.as.cli.impl.aesh.cmd.security.model.DefaultResourceNames;
 import org.jboss.as.cli.impl.aesh.cmd.security.model.ElytronUtil;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
@@ -31,31 +33,31 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  *
  * @author jdenise@redhat.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class SecurityAuthCommandsTestCase {
 
     private static final ByteArrayOutputStream consoleOutput = new ByteArrayOutputStream();
 
     private static CommandContext ctx;
 
-    @ClassRule
-    public static final TemporaryFolder temporaryUserHome = new TemporaryFolder();
+    @TempDir
+    public static File temporaryUserHome;
 
     private static final String TEST_DOMAIN = "test-domain";
     private static final String TEST_HTTP_FACTORY = "test-http-factory";
@@ -74,7 +76,7 @@ public class SecurityAuthCommandsTestCase {
     private static List<ModelNode> originalConstantMappers;
     private static List<ModelNode> originalConstantRoleMappers;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
@@ -113,7 +115,7 @@ public class SecurityAuthCommandsTestCase {
 
     private static void addFSRealm() throws Exception {
         ctx.handle("/subsystem=elytron/filesystem-realm=" + TEST_FS_REALM + ":add(path="
-                + escapePath(temporaryUserHome.newFolder("identities").getAbsolutePath()));
+                + escapePath(newFolder(temporaryUserHome, "identities").getAbsolutePath()));
         ctx.handle("/subsystem=elytron/filesystem-realm=" + TEST_FS_REALM + ":add-identity(identity=user1");
         ctx.handle("/subsystem=elytron/filesystem-realm=" + TEST_FS_REALM + ":set-password(identity=user1,clear={password=mypassword})");
     }
@@ -214,16 +216,16 @@ public class SecurityAuthCommandsTestCase {
     }
 
     private static void checkState() throws Exception {
-        Assert.assertEquals(originalConstantMappers, getConstantRealmMappers());
-        Assert.assertEquals(originalFSRealms, getFileSystemRealms());
-        Assert.assertEquals(originalHttpFactories, getHttpFactories());
-        Assert.assertEquals(originalPropertiesRealms, getPropertiesRealm());
-        Assert.assertEquals(originalKSRealms, getKSRealms());
-        Assert.assertEquals(originalSecurityDomains, getSecurityDomains());
-        Assert.assertEquals(originalConstantRoleMappers, getConstantRoleMappers());
+        Assertions.assertEquals(originalConstantMappers, getConstantRealmMappers());
+        Assertions.assertEquals(originalFSRealms, getFileSystemRealms());
+        Assertions.assertEquals(originalHttpFactories, getHttpFactories());
+        Assertions.assertEquals(originalPropertiesRealms, getPropertiesRealm());
+        Assertions.assertEquals(originalKSRealms, getKSRealms());
+        Assertions.assertEquals(originalSecurityDomains, getSecurityDomains());
+        Assertions.assertEquals(originalConstantRoleMappers, getConstantRoleMappers());
     }
 
-    @After
+    @AfterEach
     public void cleanupTest() throws Exception {
         try {
             eraseAllDomains();
@@ -335,7 +337,7 @@ public class SecurityAuthCommandsTestCase {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         Exception e = null;
         if (ctx != null) {
@@ -361,19 +363,19 @@ public class SecurityAuthCommandsTestCase {
     @Test
     public void testOOBHTTP() throws Exception {
         ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
 
         try {
             // enabling the same domain using mechanism should fail now
             ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=BASIC "
                     + "--file-system-realm-name=" + TEST_FS_REALM + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-            Assert.fail("Enabling using mechanism should have failed");
+            Assertions.fail("Enabling using mechanism should have failed");
         } catch (Exception e) {
-            MatcherAssert.assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+            assertThat(e.getMessage()).contains("Can't mix mechanism and referenced security domain");
         }
 
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
     }
 
     @Test
@@ -384,32 +386,32 @@ public class SecurityAuthCommandsTestCase {
                 + "--user-properties-file=application-users.properties --group-properties-file=application-roles.properties  "
                 + "--relative-to=jboss.server.config.dir --exposed-realm=ApplicationRealm --new-security-domain-name=" + TEST_DOMAIN
                 + " --new-auth-factory-name=" + TEST_HTTP_FACTORY + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals(TEST_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(TEST_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));
 
         // Check Realm.
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals("ApplicationRealm", getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals("ApplicationRealm", getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
         getNames(Util.CONSTANT_REALM_MAPPER).contains("ApplicationRealm");
 
         // Replace with file system realm.
         ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=BASIC "
                 + "--file-system-realm-name=" + TEST_FS_REALM + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
 
-        Assert.assertEquals(TEST_FS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(TEST_FS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
         getNames(Util.CONSTANT_REALM_MAPPER).contains(TEST_FS_REALM);
 
         // check that domain has both realms.
         List<String> realms = getDomainRealms(TEST_DOMAIN);
-        Assert.assertTrue(realms.contains("ApplicationRealm"));
-        Assert.assertTrue(realms.contains(TEST_FS_REALM));
+        Assertions.assertTrue(realms.contains("ApplicationRealm"));
+        Assertions.assertTrue(realms.contains(TEST_FS_REALM));
 
         try {
             // enabling the same domain using referenced domain should fail now
             ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN
                     + " --referenced-security-domain=" + ElytronUtil.OOTB_APPLICATION_DOMAIN);
-            Assert.fail("Enabling using referenced domain should have failed");
+            Assertions.fail("Enabling using referenced domain should have failed");
         } catch (Exception e) {
-            MatcherAssert.assertThat(e.getMessage(), CoreMatchers.containsString("Can't mix mechanism and referenced security domain"));
+            assertThat(e.getMessage()).contains("Can't mix mechanism and referenced security domain");
         }
     }
 
@@ -417,9 +419,9 @@ public class SecurityAuthCommandsTestCase {
     public void testReferencedSecurityDomainHTTP() throws Exception {
         ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN
                 + " --referenced-security-domain=" + ElytronUtil.OOTB_APPLICATION_DOMAIN);
-        Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
     }
 
     @Test
@@ -430,9 +432,9 @@ public class SecurityAuthCommandsTestCase {
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("--no-reload", "--security-domain=");
-            assertEquals(candidates.toString(), res, candidates);
+            assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertEquals(candidates.toString(), res, candidates);
+            assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -442,9 +444,9 @@ public class SecurityAuthCommandsTestCase {
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("--mechanism=", "--no-reload",
                     "--referenced-security-domain=");
-            assertEquals(candidates.toString(), res, candidates);
+            assertEquals(res, candidates, candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertEquals(candidates.toString(), res, candidates);
+            assertEquals(res, candidates, candidates.toString());
         }
 
         {
@@ -454,9 +456,9 @@ public class SecurityAuthCommandsTestCase {
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("BASIC", "CLIENT_CERT", "DIGEST", "FORM");
-            assertTrue(candidates.toString(), candidates.containsAll(res));
+            assertTrue(candidates.containsAll(res), candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertTrue(candidates.toString(), candidates.containsAll(res));
+            assertTrue(candidates.containsAll(res), candidates.toString());
         }
 
         {
@@ -465,9 +467,9 @@ public class SecurityAuthCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            assertFalse(candidates.toString(), candidates.contains("--referenced-security-domain="));
+            assertFalse(candidates.contains("--referenced-security-domain="), candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertFalse(candidates.toString(), candidates.contains("--referenced-security-domain="));
+            assertFalse(candidates.contains("--referenced-security-domain="), candidates.toString());
         }
 
         {
@@ -477,9 +479,9 @@ public class SecurityAuthCommandsTestCase {
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
             List<String> res = Arrays.asList("ApplicationDomain");
-            assertTrue(candidates.toString(), candidates.containsAll(res));
+            assertTrue(candidates.containsAll(res), candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertTrue(candidates.toString(), candidates.containsAll(res));
+            assertTrue(candidates.containsAll(res), candidates.toString());
         }
 
         {
@@ -488,9 +490,9 @@ public class SecurityAuthCommandsTestCase {
             List<String> candidates = new ArrayList<>();
             ctx.getDefaultCommandCompleter().complete(ctx,
                     cmd, cmd.length(), candidates);
-            assertFalse(candidates.toString(), candidates.contains("--mechanism="));
+            assertFalse(candidates.contains("--mechanism="), candidates.toString());
             candidates = complete(ctx, cmd, null);
-            assertFalse(candidates.toString(), candidates.contains("--mechanism="));
+            assertFalse(candidates.contains("--mechanism="), candidates.toString());
         }
 
     }
@@ -504,22 +506,22 @@ public class SecurityAuthCommandsTestCase {
                 + " --new-auth-factory-name=" + TEST_HTTP_FACTORY + " --new-realm-name="
                 + TEST_USERS_REALM + " --exposed-realm=ApplicationRealm" + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
 
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertTrue(getNames(Util.HTTP_AUTHENTICATION_FACTORY).contains(TEST_HTTP_FACTORY));
-        Assert.assertTrue(getNames(Util.SECURITY_DOMAIN).contains(TEST_DOMAIN));
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertTrue(getNames(Util.HTTP_AUTHENTICATION_FACTORY).contains(TEST_HTTP_FACTORY));
+        Assertions.assertTrue(getNames(Util.SECURITY_DOMAIN).contains(TEST_DOMAIN));
 
-        Assert.assertEquals(Arrays.asList("BASIC"), getMechanisms(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(Arrays.asList("BASIC"), getMechanisms(TEST_UNDERTOW_DOMAIN));
 
         // Add DIGEST.
         ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=DIGEST"
                 + " --properties-realm-name=" + TEST_USERS_REALM + " --exposed-realm=ApplicationRealm"
                 + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
         // capture the state.
         List<ModelNode> factories = getHttpFactories();
         List<ModelNode> domains = getSecurityDomains();
@@ -527,22 +529,22 @@ public class SecurityAuthCommandsTestCase {
         List<ModelNode> userRealms = getPropertiesRealm();
 
         List<String> expected1 = Arrays.asList("BASIC", "DIGEST");
-        Assert.assertEquals(expected1, getMechanisms(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(expected1, getMechanisms(TEST_UNDERTOW_DOMAIN));
 
-        Assert.assertTrue(getNames(Util.PROPERTIES_REALM).contains(TEST_USERS_REALM));
+        Assertions.assertTrue(getNames(Util.PROPERTIES_REALM).contains(TEST_USERS_REALM));
 
         // Disable digest mechanism
         ctx.handle("security disable-http-auth-http-server --no-reload --mechanism=DIGEST"
                 + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
 
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals(domains, getSecurityDomains());
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(domains, getSecurityDomains());
         //still secured
-        Assert.assertEquals(TEST_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));
-        Assert.assertEquals(Arrays.asList("BASIC"), getMechanisms(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(TEST_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(Arrays.asList("BASIC"), getMechanisms(TEST_UNDERTOW_DOMAIN));
 
         {
             // Disable the last mechanism is forbidden
@@ -562,17 +564,17 @@ public class SecurityAuthCommandsTestCase {
         // Re-enable the mechanism
         ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=DIGEST"
                 + " --properties-realm-name=" + TEST_USERS_REALM + " --exposed-realm=ApplicationRealm" + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
-        Assert.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "DIGEST"));
-        Assert.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "DIGEST"));
-        Assert.assertEquals(expected1, getMechanisms(TEST_UNDERTOW_DOMAIN));
-        Assert.assertEquals(factories, getHttpFactories());
-        Assert.assertEquals(domains, getSecurityDomains());
-        Assert.assertEquals(mappers, getConstantRealmMappers());
-        Assert.assertEquals(userRealms, getPropertiesRealm());
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "BASIC"));
+        Assertions.assertEquals("ApplicationRealm", getExposedRealmName(TEST_UNDERTOW_DOMAIN, "DIGEST"));
+        Assertions.assertEquals(TEST_USERS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "DIGEST"));
+        Assertions.assertEquals(expected1, getMechanisms(TEST_UNDERTOW_DOMAIN));
+        Assertions.assertEquals(factories, getHttpFactories());
+        Assertions.assertEquals(domains, getSecurityDomains());
+        Assertions.assertEquals(mappers, getConstantRealmMappers());
+        Assertions.assertEquals(userRealms, getPropertiesRealm());
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).size() == 1);
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_USERS_REALM));
     }
 
     @Test
@@ -596,8 +598,8 @@ public class SecurityAuthCommandsTestCase {
                 + " --key-store-name=" + TEST_KS + " --new-security-domain-name=" + TEST_DOMAIN
                 + " --new-auth-factory-name=" + TEST_HTTP_FACTORY + " --new-realm-name=" + TEST_KS_REALM
                 + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals(TEST_KS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "CLIENT_CERT"));
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_KS_REALM));
+        Assertions.assertEquals(TEST_KS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "CLIENT_CERT"));
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_KS_REALM));
 
         // capture the state.
         List<ModelNode> factories = getHttpFactories();
@@ -608,13 +610,13 @@ public class SecurityAuthCommandsTestCase {
         // Re-enable simply by re-using same key-store-realm, no changes expected.
         ctx.handle("security enable-http-auth-http-server --no-reload --mechanism=CLIENT_CERT"
                 + " --key-store-realm-name=" + TEST_KS_REALM + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals(TEST_KS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "CLIENT_CERT"));
-        Assert.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_KS_REALM));
+        Assertions.assertEquals(TEST_KS_REALM, getMechanismRealmMapper(TEST_UNDERTOW_DOMAIN, "CLIENT_CERT"));
+        Assertions.assertTrue(getDomainRealms(TEST_DOMAIN).contains(TEST_KS_REALM));
 
-        Assert.assertEquals(factories, getHttpFactories());
-        Assert.assertEquals(domains, getSecurityDomains());
-        Assert.assertEquals(mappers, getConstantRealmMappers());
-        Assert.assertEquals(ksRealms, getKSRealms());
+        Assertions.assertEquals(factories, getHttpFactories());
+        Assertions.assertEquals(domains, getSecurityDomains());
+        Assertions.assertEquals(mappers, getConstantRealmMappers());
+        Assertions.assertEquals(ksRealms, getKSRealms());
 
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
 
@@ -623,16 +625,16 @@ public class SecurityAuthCommandsTestCase {
                 + " --key-store-realm-name=" + TEST_KS_REALM + " --roles=FOO,BAR"
                 + " --security-domain=" + TEST_UNDERTOW_DOMAIN);
 
-        Assert.assertEquals(factories, getHttpFactories());
-        Assert.assertEquals(mappers, getConstantRealmMappers());
-        Assert.assertEquals(ksRealms, getKSRealms());
+        Assertions.assertEquals(factories, getHttpFactories());
+        Assertions.assertEquals(mappers, getConstantRealmMappers());
+        Assertions.assertEquals(ksRealms, getKSRealms());
 
-        Assert.assertEquals(DefaultResourceNames.ROLE_MAPPER_NAME, getRoleMapper(TEST_KS_REALM, TEST_DOMAIN));
+        Assertions.assertEquals(DefaultResourceNames.ROLE_MAPPER_NAME, getRoleMapper(TEST_KS_REALM, TEST_DOMAIN));
         List<String> names = getNames(Util.CONSTANT_ROLE_MAPPER);
-        Assert.assertTrue(names.toString(), names.contains(DefaultResourceNames.ROLE_MAPPER_NAME));
+        Assertions.assertTrue(names.contains(DefaultResourceNames.ROLE_MAPPER_NAME), names.toString());
         ModelNode roleMapper = getConstantRoleMapper(DefaultResourceNames.ROLE_MAPPER_NAME);
         List<ModelNode> lst = roleMapper.get(Util.ROLES).asList();
-        Assert.assertTrue(lst.size() == 2);
+        Assertions.assertTrue(lst.size() == 2);
         for (ModelNode r : lst) {
             if (!r.asString().equals("FOO") && !r.asString().equals("BAR")) {
                 throw new Exception("Invalid roles in " + lst);
@@ -822,5 +824,14 @@ public class SecurityAuthCommandsTestCase {
         // aesh-readline does sort the candidates prior to display.
         Collections.sort(candidates);
         return candidates;
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 }

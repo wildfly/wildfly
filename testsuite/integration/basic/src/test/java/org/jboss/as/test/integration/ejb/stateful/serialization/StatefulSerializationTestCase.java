@@ -6,14 +6,14 @@
 package org.jboss.as.test.integration.ejb.stateful.serialization;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -27,7 +27,7 @@ import java.io.ObjectOutputStream;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StatefulSerializationTestCase {
 
     private static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
@@ -60,7 +60,7 @@ public class StatefulSerializationTestCase {
         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()));
         AnnotatedBean bean = (AnnotatedBean) in.readObject();
         in.close();
-        Assert.assertEquals(10, bean.getValue());
+        Assertions.assertEquals(10, bean.getValue());
     }
 
 

@@ -13,20 +13,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for https://issues.jboss.org/browse/WFLY-5221
  *
  * @author Tomas Hofman (thofman@redhat.com)
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class GetTimersTestCase {
 
     @Deployment
@@ -51,16 +51,16 @@ public class GetTimersTestCase {
             bean1.stopTimers();
             bean2.stopTimers();
 
-            Assert.assertEquals(0, bean1.getTimers().size());
-            Assert.assertEquals(0, bean2.getTimers().size());
+            Assertions.assertEquals(0, bean1.getTimers().size());
+            Assertions.assertEquals(0, bean2.getTimers().size());
         }
     }
 
     public void assertTimersPrefix(Collection<Timer> timers, String bean) {
         for (Timer timer : timers) {
-            Assert.assertTrue(String.format("Bean %s returned timer %s which doesn't belong to this bean.",
-                            bean, timer.getInfo()),
-                    timer.getInfo().toString().startsWith(bean));
+            Assertions.assertTrue(timer.getInfo().toString().startsWith(bean),
+                    String.format("Bean %s returned timer %s which doesn't belong to this bean.",
+                            bean, timer.getInfo()));
         }
     }
 }

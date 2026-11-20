@@ -19,7 +19,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -28,10 +28,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Simple test to check if server will return default code if no app is registered under path.
@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
  * @author baranowb
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTestBase {
     private static final String URL_PATTERN = "/";
@@ -60,7 +60,7 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
         return war;
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         this.httpclient = HttpClientBuilder.create().build();
         this.url = super.getManagementClient().getWebUri().toURL();
@@ -73,10 +73,10 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
             HttpGet httpget = new HttpGet(url.toString());
             HttpResponse response = this.httpclient.execute(httpget);
             //403 apparently
-            Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
             httpget = new HttpGet(url.toString() + URL_PATTERN + "xxx");
             response = this.httpclient.execute(httpget);
-            Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
         } finally {
             deployer.undeploy("test");
         }
@@ -103,11 +103,11 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
             HttpResponse response = null;
             httpget = new HttpGet(url.toString() + URL_PATTERN+"xxx/xxxxx");
             response = this.httpclient.execute(httpget);
-            Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(404, response.getStatusLine().getStatusCode());
             deployer.undeploy("test");
             httpget = new HttpGet(url.toString() + URL_PATTERN);
             response = this.httpclient.execute(httpget);
-            Assert.assertEquals(""+httpget,506, response.getStatusLine().getStatusCode());
+            Assertions.assertEquals(506,response.getStatusLine().getStatusCode(), ""+httpget);
         }
     }
 }

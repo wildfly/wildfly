@@ -18,7 +18,7 @@ import javax.naming.Context;
 import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -27,11 +27,11 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the management API for Jakarta Messaging queues.
@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExternalJMSDestinationManagementTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(ExternalJMSDestinationManagementTestCase.class);
@@ -57,7 +57,7 @@ public class ExternalJMSDestinationManagementTestCase {
     @ContainerResource
     private Context remoteContext;
 
-    @Before
+    @BeforeEach
     public void prepareDestinations() throws Exception {
         if (initialQueues == null || initialQueues.isEmpty()) {
             initialQueues = listRuntimeQueues(managementClient);
@@ -107,15 +107,15 @@ public class ExternalJMSDestinationManagementTestCase {
     @Test
     public void testCreatedDestinations() throws Exception {
         ActiveMQJMSConnectionFactory cf = (ActiveMQJMSConnectionFactory) remoteContext.lookup("jms/TestConnectionFactory");
-        Assert.assertNotNull(cf);
+        Assertions.assertNotNull(cf);
         Destination myExternalQueue = (Destination) remoteContext.lookup("jms/queue/" + QUEUE_NAME);
-        Assert.assertNotNull(myExternalQueue);
+        Assertions.assertNotNull(myExternalQueue);
         Destination myLegacyExternalQueue = (Destination) remoteContext.lookup("jms/queue/" + LEGACY_QUEUE_NAME);
-        Assert.assertNotNull(myLegacyExternalQueue);
+        Assertions.assertNotNull(myLegacyExternalQueue);
         Destination myExternalTopic = (Destination) remoteContext.lookup("jms/topic/" + TOPIC_NAME);
-        Assert.assertNotNull(myExternalTopic);
+        Assertions.assertNotNull(myExternalTopic);
         Destination myLegacyExternalTopic = (Destination) remoteContext.lookup("jms/topic/" + LEGACY_TOPIC_NAME);
-        Assert.assertNotNull(myLegacyExternalTopic);
+        Assertions.assertNotNull(myLegacyExternalTopic);
         try (JMSContext jmsContext = cf.createContext("guest", "guest", JMSContext.AUTO_ACKNOWLEDGE)) {
             checkJMSDestination(jmsContext, myLegacyExternalQueue);
             checkJMSDestination(jmsContext, myLegacyExternalTopic);
@@ -132,9 +132,9 @@ public class ExternalJMSDestinationManagementTestCase {
             op.get("child-type").set("runtime-queue");
             List<ModelNode> runtimeQueues = Operations.readResult(managementClient.getControllerClient().execute(op)).asList();
             Set<String> queues = runtimeQueues.stream().map(ModelNode::asString).collect(Collectors.toSet());
-            Assert.assertEquals(initialQueues.size() + 4, queues.size());
-            Assert.assertTrue("We should have myExternalQueue queue", queues.contains(QUEUE_NAME));
-            Assert.assertTrue("We should have myExternalQueue queue", queues.contains("jms.queue." + LEGACY_QUEUE_NAME));
+            Assertions.assertEquals(initialQueues.size() + 4, queues.size());
+            Assertions.assertTrue(queues.contains(QUEUE_NAME), "We should have myExternalQueue queue");
+            Assertions.assertTrue(queues.contains("jms.queue." + LEGACY_QUEUE_NAME), "We should have myExternalQueue queue");
             queues.removeAll(initialQueues);
             queues.remove(QUEUE_NAME);
             queues.remove("jms.queue." + LEGACY_QUEUE_NAME);
@@ -151,8 +151,8 @@ public class ExternalJMSDestinationManagementTestCase {
         try (JMSConsumer consumer = jmsContext.createConsumer(destination)) {
             jmsContext.createProducer().send(destination, jmsContext.createTextMessage(message));
             TextMessage msg = (TextMessage) consumer.receive(TimeoutUtil.adjust(5000));
-            Assert.assertNotNull(msg);
-            Assert.assertEquals(message, msg.getText());
+            Assertions.assertNotNull(msg);
+            Assertions.assertEquals(message, msg.getText());
         }
     }
 
@@ -161,8 +161,8 @@ public class ExternalJMSDestinationManagementTestCase {
         op.get("include-runtime").set(true);
         op.get("include-defaults").set(true);
         ModelNode result = Operations.readResult(managementClient.getControllerClient().execute(op));
-        Assert.assertEquals("ANYCAST", result.require("routing-type").asString());
-        Assert.assertEquals(expectedQueueAddress, result.require("queue-address").asString());
+        Assertions.assertEquals("ANYCAST", result.require("routing-type").asString());
+        Assertions.assertEquals(expectedQueueAddress, result.require("queue-address").asString());
     }
 
     private void checkRuntimeTopic(JMSOperations ops, String topicId) throws IOException {
@@ -171,11 +171,11 @@ public class ExternalJMSDestinationManagementTestCase {
         op.get("include-defaults").set(true);
         ModelNode result = Operations.readResult(managementClient.getControllerClient().execute(op));
         String address = result.require("queue-address").asString();
-        Assert.assertTrue(address.equals("jms.topic." + LEGACY_TOPIC_NAME) || address.equals(TOPIC_NAME));
-        Assert.assertEquals("MULTICAST", result.require("routing-type").asString());
+        Assertions.assertTrue(address.equals("jms.topic." + LEGACY_TOPIC_NAME) || address.equals(TOPIC_NAME));
+        Assertions.assertEquals("MULTICAST", result.require("routing-type").asString());
     }
 
-    @After
+    @AfterEach
     public void removeQueues() throws Exception {
         JMSOperations adminSupport = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         adminSupport.removeCoreQueue(QUEUE_NAME);

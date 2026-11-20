@@ -16,7 +16,7 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientConnection;
@@ -25,16 +25,17 @@ import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 
 /**
  * Test that it is possible to set invocation timeouts for EJB client invocations.
  * @author Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EJBClientInvocationTimeoutTestCase {
 
@@ -64,10 +65,10 @@ public class EJBClientInvocationTimeoutTestCase {
             EJBClient.setInvocationTimeout(bean, 1, TimeUnit.SECONDS);
             try {
                 bean.longRunningOperation();
-                Assert.fail("Call shouldn't be allowed to finish without throwing an exception");
+                Assertions.fail("Call shouldn't be allowed to finish without throwing an exception");
             } catch (EJBException e) {
-                Assert.assertTrue("Call should fail with a TimeoutException, but was: ",
-                        e.getCausedByException() instanceof TimeoutException);
+                Assertions.assertTrue(e.getCausedByException() instanceof TimeoutException,
+                        "Call should fail with a TimeoutException, but was: ");
             }
         } finally {
             ejbCtx.close();
@@ -93,10 +94,10 @@ public class EJBClientInvocationTimeoutTestCase {
             LongRunningBeanRemote bean = lookup(ejbCtx);
             try {
                 bean.longRunningOperation();
-                Assert.fail("Call shouldn't be allowed to finish without throwing an exception");
+                Assertions.fail("Call shouldn't be allowed to finish without throwing an exception");
             } catch (EJBException e) {
-                Assert.assertEquals("Call should fail with a TimeoutException",
-                        TimeoutException.class, e.getCausedByException().getClass());
+                Assertions.assertEquals(TimeoutException.class,
+                        e.getCausedByException().getClass(), "Call should fail with a TimeoutException");
             }
         } finally {
             ejbCtx.close();
@@ -123,10 +124,10 @@ public class EJBClientInvocationTimeoutTestCase {
                 LongRunningBeanRemote bean = lookup(ejbCtx);
                 try {
                     bean.longRunningOperation();
-                    Assert.fail("Call shouldn't be allowed to finish without throwing an exception");
+                    Assertions.fail("Call shouldn't be allowed to finish without throwing an exception");
                 } catch (EJBException e) {
-                    Assert.assertEquals("Call should fail with a TimeoutException",
-                            TimeoutException.class, e.getCausedByException().getClass());
+                    Assertions.assertEquals(TimeoutException.class,
+                            e.getCausedByException().getClass(), "Call should fail with a TimeoutException");
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);

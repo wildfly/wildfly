@@ -8,7 +8,7 @@ package org.jboss.as.test.integration.ejb.stateful.persistencecontext;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -23,9 +23,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
@@ -37,7 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author Bill Burke, Ondrej Chaloupka
  */
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(StatefulUnitTestCase.StatefulUnitTestCaseSetup.class)
 public class StatefulUnitTestCase {
     private static final Logger log = Logger.getLogger(StatefulUnitTestCase.class);
@@ -110,7 +110,7 @@ public class StatefulUnitTestCase {
             ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 1);
             ModelNode result = managementClient.getControllerClient().execute(operation);
             log.trace("modelnode operation write-attribute max-active-beans=1: " + result);
-            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
             ServerReload.reloadIfRequired(managementClient);
         }
 
@@ -122,7 +122,7 @@ public class StatefulUnitTestCase {
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 10000);
             ModelNode result = managementClient.getControllerClient().execute(operation);
-            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString());
             ServerReload.reloadIfRequired(managementClient);
         }
     }

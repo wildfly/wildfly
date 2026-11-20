@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.jpa.transaction.envers;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.SessionContext;

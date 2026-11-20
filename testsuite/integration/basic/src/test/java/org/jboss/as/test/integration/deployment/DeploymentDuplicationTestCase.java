@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.deployment;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -29,9 +29,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DeploymentDuplicationTestCase {
 
     private static final String EJB_DEPLOYMENT = "ejb.jar";
@@ -113,7 +113,7 @@ public class DeploymentDuplicationTestCase {
             deployer.deploy(EJB_DEPLOYMENT);
             Path tempPath = Paths.get(ManagementOperations.executeOperation(mcc, readTempPathOp()).asString(), "vfs", "temp");
             List<ContentRepositoryElement> elements = PathUtil.listFiles(tempPath, null, contentFilter);
-            Assert.assertTrue("There should be no content file in the tmp/vfs/temp directory", elements.isEmpty());
+            Assertions.assertTrue(elements.isEmpty(), "There should be no content file in the tmp/vfs/temp directory");
         } finally {
             deployer.undeploy(EJB_DEPLOYMENT);
         }
@@ -126,7 +126,7 @@ public class DeploymentDuplicationTestCase {
             deployer.deploy(WEB_DEPLOYMENT);
             Path tmpDeploymentPath = Paths.get(ManagementOperations.executeOperation(mcc, readTempPathOp()).asString(), "vfs", "deployment");
             List<ContentRepositoryElement> libInDeploymentDir = PathUtil.listFiles(tmpDeploymentPath, null, contentFilter(JAR_DEPLOYMENT_A));
-            Assert.assertTrue("There should be no lib-a.jar file in the tmp/vfs/deployment directory", libInDeploymentDir.isEmpty());
+            Assertions.assertTrue(libInDeploymentDir.isEmpty(), "There should be no lib-a.jar file in the tmp/vfs/deployment directory");
         } finally {
             deployer.undeploy(WEB_DEPLOYMENT);
         }
@@ -139,14 +139,14 @@ public class DeploymentDuplicationTestCase {
             deployer.deploy(EAR_DEPLOYMENT);
             Path tempPath = Paths.get(ManagementOperations.executeOperation(mcc, readTempPathOp()).asString(), "vfs", "temp");
             List<ContentRepositoryElement> elements = PathUtil.listFiles(tempPath, null, contentFilter);
-            Assert.assertTrue("There should be no content file in the tmp/vfs/temp directory", elements.isEmpty());
+            Assertions.assertTrue(elements.isEmpty(), "There should be no content file in the tmp/vfs/temp directory");
             Path tmpDeploymentPath = Paths.get(ManagementOperations.executeOperation(mcc, readTempPathOp()).asString(), "vfs", "deployment");
             List<ContentRepositoryElement> libAInDeploymentDir = PathUtil.listFiles(tmpDeploymentPath, null, contentFilter(JAR_DEPLOYMENT_A));
-            Assert.assertEquals("There should be 1 lib-a.jar file in the tmp/vfs/deployment directory", 1, libAInDeploymentDir.size());
+            Assertions.assertEquals(1, libAInDeploymentDir.size(), "There should be 1 lib-a.jar file in the tmp/vfs/deployment directory");
             List<ContentRepositoryElement> libBInDeploymentDir = PathUtil.listFiles(tmpDeploymentPath, null, contentFilter(JAR_DEPLOYMENT_B));
-            Assert.assertTrue("There should be no lib-b.jar file in the tmp/vfs/deployment directory", libBInDeploymentDir.isEmpty());
+            Assertions.assertTrue(libBInDeploymentDir.isEmpty(), "There should be no lib-b.jar file in the tmp/vfs/deployment directory");
             List<ContentRepositoryElement> libBInTempDir = PathUtil.listFiles(tempPath, null, contentFilter(JAR_DEPLOYMENT_B));
-            Assert.assertEquals("There should be 1 lib-b.jar file in the tmp/vfs/temp directory", 1, libBInTempDir.size());
+            Assertions.assertEquals(1, libBInTempDir.size(), "There should be 1 lib-b.jar file in the tmp/vfs/temp directory");
         } finally {
             deployer.undeploy(EAR_DEPLOYMENT);
         }

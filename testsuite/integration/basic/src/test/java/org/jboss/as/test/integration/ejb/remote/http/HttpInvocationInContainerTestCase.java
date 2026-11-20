@@ -16,16 +16,16 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HttpInvocationInContainerTestCase {
 
     @ArquillianResource
@@ -51,6 +51,6 @@ public class HttpInvocationInContainerTestCase {
         table.put(Context.SECURITY_CREDENTIALS, "password1");
         InitialContext ic = new InitialContext(table);
         EchoRemote echo = (EchoRemote) ic.lookup("http-test/EchoBean!org.jboss.as.test.integration.ejb.remote.http.EchoRemote");
-        Assert.assertEquals("hello", echo.echo("hello"));
+        Assertions.assertEquals("hello", echo.echo("hello"));
     }
 }

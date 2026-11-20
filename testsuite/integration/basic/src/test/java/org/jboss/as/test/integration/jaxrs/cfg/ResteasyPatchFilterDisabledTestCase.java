@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.ConfigureLoggingSetupTask;
@@ -27,8 +26,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-patchfilter-disabled} attribute works as expected.
@@ -41,6 +43,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup({ConfigureLoggingSetupTask.class, SnapshotServerSetupTask.class})
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -61,7 +64,7 @@ public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttribu
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             final long id = 1;
@@ -74,13 +77,13 @@ public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttribu
                             .request()
                             .post(Entity.json(addUser))
             ) {
-                Assert.assertEquals(201, response.getStatus());
+                Assertions.assertEquals(201, response.getStatus());
                 final User user = client.target(response.getLocation()).request().get(User.class);
-                Assert.assertEquals(String.format("Expected id %d for user %s", id, user.getName()), id, user.getId());
-                Assert.assertEquals("resteasy", user.getName());
-                Assert.assertTrue(String.format("Expected role ADMIN for %s", user), user.getRoles().contains(User.Role.ADMIN));
-                Assert.assertTrue(String.format("Expected role MANAGER for %s", user), user.getRoles().contains(User.Role.MANAGER));
-                Assert.assertFalse(String.format("Expected role USER for %s to not be present", user), user.getRoles().contains(User.Role.USER));
+                Assertions.assertEquals(id, user.getId(), String.format("Expected id %d for user %s", id, user.getName()));
+                Assertions.assertEquals("resteasy", user.getName());
+                Assertions.assertTrue(user.getRoles().contains(User.Role.ADMIN), String.format("Expected role ADMIN for %s", user));
+                Assertions.assertTrue(user.getRoles().contains(User.Role.MANAGER), String.format("Expected role MANAGER for %s", user));
+                Assertions.assertFalse(user.getRoles().contains(User.Role.USER), String.format("Expected role USER for %s to not be present", user));
             }
             // Attempt to send a patch ot the user
             try (
@@ -88,18 +91,18 @@ public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttribu
                             .request()
                             .method("PATCH", Entity.entity("{\"roles\": [\"MANAGER\", \"USER\"]}", "application/merge-patch+json"))
             ) {
-                Assert.assertEquals(204, response.getStatus());
+                Assertions.assertEquals(204, response.getStatus());
                 final User user = client.target(response.getLocation()).request().get(User.class);
-                Assert.assertEquals("resteasy", user.getName());
-                Assert.assertTrue(String.format("Expected role MANAGER for %s", user), user.getRoles().contains(User.Role.MANAGER));
-                Assert.assertTrue(String.format("Expected role USER for %s", user), user.getRoles().contains(User.Role.USER));
-                Assert.assertFalse(String.format("Expected role ADMIN for %s ot not be present", user), user.getRoles().contains(User.Role.ADMIN));
+                Assertions.assertEquals("resteasy", user.getName());
+                Assertions.assertTrue(user.getRoles().contains(User.Role.MANAGER), String.format("Expected role MANAGER for %s", user));
+                Assertions.assertTrue(user.getRoles().contains(User.Role.USER), String.format("Expected role USER for %s", user));
+                Assertions.assertFalse(user.getRoles().contains(User.Role.ADMIN), String.format("Expected role ADMIN for %s ot not be present", user));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkPatchDisabled() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
@@ -113,13 +116,13 @@ public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttribu
                             .request()
                             .post(Entity.json(addUser))
             ) {
-                Assert.assertEquals(201, response.getStatus());
+                Assertions.assertEquals(201, response.getStatus());
                 final User user = client.target(response.getLocation()).request().get(User.class);
-                Assert.assertEquals(String.format("Expected id %d for user %s", id, user.getName()), id, user.getId());
-                Assert.assertEquals("resteasy", user.getName());
-                Assert.assertTrue(String.format("Expected role ADMIN for %s", user), user.getRoles().contains(User.Role.ADMIN));
-                Assert.assertTrue(String.format("Expected role MANAGER for %s", user), user.getRoles().contains(User.Role.MANAGER));
-                Assert.assertFalse(String.format("Expected role USER for %s to not be present", user), user.getRoles().contains(User.Role.USER));
+                Assertions.assertEquals(id, user.getId(), String.format("Expected id %d for user %s", id, user.getName()));
+                Assertions.assertEquals("resteasy", user.getName());
+                Assertions.assertTrue(user.getRoles().contains(User.Role.ADMIN), String.format("Expected role ADMIN for %s", user));
+                Assertions.assertTrue(user.getRoles().contains(User.Role.MANAGER), String.format("Expected role MANAGER for %s", user));
+                Assertions.assertFalse(user.getRoles().contains(User.Role.USER), String.format("Expected role USER for %s to not be present", user));
             }
             // Attempt to send a patch ot the user
             try (
@@ -128,13 +131,13 @@ public class ResteasyPatchFilterDisabledTestCase extends AbstractResteasyAttribu
                             .method("PATCH", Entity.entity("{\"roles\": [\"MANAGER\", \"USER\"]}", "application/merge-patch+json"))
             ) {
                 // Patching should be disabled resulting in a 400 and null fields
-                Assert.assertEquals(400, response.getStatus());
+                Assertions.assertEquals(400, response.getStatus());
                 final User user = response.readEntity(User.class);
-                Assert.assertEquals(String.format("User.getId() expected to be -1 for %s", user), -1L, user.getId());
-                Assert.assertNull(String.format("User.getName() expected to be null for %s", user), user.getName());
-                Assert.assertTrue(String.format("Expected role MANAGER for %s", user), user.getRoles().contains(User.Role.MANAGER));
-                Assert.assertTrue(String.format("Expected role USER for %s", user), user.getRoles().contains(User.Role.USER));
-                Assert.assertFalse(String.format("Expected role ADMIN for %s ot not be present", user), user.getRoles().contains(User.Role.ADMIN));
+                Assertions.assertEquals(-1L, user.getId(), String.format("User.getId() expected to be -1 for %s", user));
+                Assertions.assertNull(user.getName(), String.format("User.getName() expected to be null for %s", user));
+                Assertions.assertTrue(user.getRoles().contains(User.Role.MANAGER), String.format("Expected role MANAGER for %s", user));
+                Assertions.assertTrue(user.getRoles().contains(User.Role.USER), String.format("Expected role USER for %s", user));
+                Assertions.assertFalse(user.getRoles().contains(User.Role.ADMIN), String.format("Expected role ADMIN for %s ot not be present", user));
             }
         }
     }

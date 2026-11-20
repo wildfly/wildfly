@@ -12,7 +12,7 @@ import javax.naming.NamingException;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 abstract class StatefulTimeoutTestBase1 {
     static final String ARCHIVE_NAME = "StatefulTimeoutTestCase";
@@ -50,7 +50,7 @@ abstract class StatefulTimeoutTestBase1 {
     void testStatefulTimeoutFromAnnotation() throws Exception {
 
         AnnotatedBean sfsb1 = lookup(AnnotatedBean.class);
-        Assert.assertFalse(AnnotatedBean.preDestroy);
+        Assertions.assertFalse(AnnotatedBean.preDestroy);
         sfsb1.doStuff();
         Thread.sleep(2000);
         try {
@@ -59,13 +59,13 @@ abstract class StatefulTimeoutTestBase1 {
         } catch (NoSuchEJBException expected) {
 
         }
-        Assert.assertTrue(AnnotatedBean.preDestroy);
+        Assertions.assertTrue(AnnotatedBean.preDestroy);
     }
 
     void testStatefulTimeoutWithPassivation() throws Exception {
 
         PassivatingBean sfsb1 = lookup(PassivatingBean.class);
-        Assert.assertFalse(PassivatingBean.preDestroy);
+        Assertions.assertFalse(PassivatingBean.preDestroy);
         sfsb1.doStuff();
         Thread.sleep(2000);
         try {
@@ -74,13 +74,13 @@ abstract class StatefulTimeoutTestBase1 {
         } catch (NoSuchEJBException expected) {
 
         }
-        Assert.assertTrue(PassivatingBean.preDestroy);
+        Assertions.assertTrue(PassivatingBean.preDestroy);
     }
 
     void testStatefulTimeoutFromDescriptor() throws Exception {
 
         DescriptorBean sfsb1 = lookup(DescriptorBean.class);
-        Assert.assertFalse(DescriptorBean.preDestroy);
+        Assertions.assertFalse(DescriptorBean.preDestroy);
         sfsb1.doStuff();
         Thread.sleep(2000);
         try {
@@ -89,18 +89,18 @@ abstract class StatefulTimeoutTestBase1 {
         } catch (NoSuchEJBException expected) {
 
         }
-        Assert.assertTrue(DescriptorBean.preDestroy);
+        Assertions.assertTrue(DescriptorBean.preDestroy);
     }
 
     void testStatefulBeanNotDiscardedWhileInTransaction() throws Exception {
         try {
             userTransaction.begin();
             AnnotatedBean2 sfsb1 = lookup(AnnotatedBean2.class);
-            Assert.assertFalse(AnnotatedBean2.preDestroy);
+            Assertions.assertFalse(AnnotatedBean2.preDestroy);
             sfsb1.doStuff();
             Thread.sleep(2000);
             sfsb1.doStuff();
-            Assert.assertFalse(AnnotatedBean2.preDestroy);
+            Assertions.assertFalse(AnnotatedBean2.preDestroy);
         } finally {
             userTransaction.commit();
         }
@@ -110,11 +110,11 @@ abstract class StatefulTimeoutTestBase1 {
         try {
             userTransaction.begin();
             PassivatingBean2 sfsb1 = lookup(PassivatingBean2.class);
-            Assert.assertFalse(PassivatingBean2.preDestroy);
+            Assertions.assertFalse(PassivatingBean2.preDestroy);
             sfsb1.doStuff();
             Thread.sleep(2000);
             sfsb1.doStuff();
-            Assert.assertFalse(PassivatingBean2.preDestroy);
+            Assertions.assertFalse(PassivatingBean2.preDestroy);
         } finally {
             userTransaction.commit();
         }

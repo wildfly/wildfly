@@ -5,9 +5,9 @@
 
 package org.jboss.as.test.integration.hibernate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.util.HashSet;
@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 
 import org.hibernate.stat.Statistics;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -27,16 +27,16 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that Hibernate statistics is working on native Hibernate and second level cache
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class Hibernate2LCacheStatsTestCase {
 
     private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v6.InfinispanRegionFactory</property>";
@@ -69,7 +69,7 @@ public class Hibernate2LCacheStatsTestCase {
     @ArquillianResource
     private static InitialContext iniCtx;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws NamingException {
         // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
@@ -142,13 +142,13 @@ public class Hibernate2LCacheStatsTestCase {
             Connection conn = ds.getConnection();
 
             int updated = conn.prepareStatement("update PLANET set galaxy_name='ANDROMEDA' where planetId=1").executeUpdate();
-            assertTrue("was able to update added Planet.  update count=" + updated, updated > 0);
+            assertTrue(updated > 0, "was able to update added Planet.  update count=" + updated);
             conn.close();
             // read updated (dirty) data from second level cache
             s2 = sfsb.getPlanet(s2.getPlanetId());
-            assertTrue("was able to read updated Planet entity", s2 != null);
-            assertEquals("Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy(),
-                    "MILKY WAY", s2.getGalaxy());
+            assertTrue(s2 != null, "was able to read updated Planet entity");
+            assertEquals("MILKY WAY",
+                    s2.getGalaxy(), "Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy());
 
             assertEquals(s2.getSatellites().size(), 1);
 

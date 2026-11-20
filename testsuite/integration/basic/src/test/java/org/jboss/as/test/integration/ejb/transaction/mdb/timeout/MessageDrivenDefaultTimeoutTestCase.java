@@ -14,7 +14,7 @@ import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
@@ -23,10 +23,10 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * <p>
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  * Default transaction timeout is defined under {@link TransactionDefaultTimeoutSetupTask}
  * and the timeout time in MDB is specified by {@link TxTestUtil#waitForTimeout(jakarta.transaction.TransactionManager)}.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({TransactionTimeoutQueueSetupTask.class, TransactionDefaultTimeoutSetupTask.class})
 public class MessageDrivenDefaultTimeoutTestCase {
 
@@ -58,7 +58,7 @@ public class MessageDrivenDefaultTimeoutTestCase {
         return deployment;
     }
 
-    @Before
+    @BeforeEach
     public void startUp() throws NamingException {
         checker.resetAll();
     }
@@ -71,8 +71,8 @@ public class MessageDrivenDefaultTimeoutTestCase {
     public void defaultTimeout() throws Exception {
         String text = "default timeout";
         Queue q = MessageDrivenTimeoutTestCase.sendMessage(text, TransactionTimeoutQueueSetupTask.DEFAULT_TIMEOUT_JNDI_NAME, initCtx);
-        Assert.assertNull("No message should be received as mdb timeouted", MessageDrivenTimeoutTestCase.receiveMessage(q, initCtx, false));
+        Assertions.assertNull(MessageDrivenTimeoutTestCase.receiveMessage(q, initCtx, false), "No message should be received as mdb timeouted");
 
-        Assert.assertEquals("Expecting no commmit happened as default timeout was hit", 0, checker.getCommitted());
+        Assertions.assertEquals(0, checker.getCommitted(), "Expecting no commmit happened as default timeout was hit");
     }
 }

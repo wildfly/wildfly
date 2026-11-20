@@ -12,21 +12,21 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AnnotatedEJBClientInterceptorTest
  * For more information visit <a href="issues.jboss.org/browse/JBEAP-14246">https://issues.jboss.org/browse/JBEAP-14246</a>
  * @author Petr Adamec
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class AnnotatedEJBClientInterceptorTestCase {
     private static final String JAR_FILE_NAME = "remote-interface-test-annotations-standalone";
@@ -50,7 +50,7 @@ public class AnnotatedEJBClientInterceptorTestCase {
     public void testConfiguration(@ArquillianResource URL url) throws Throwable {
         TestRemote bean = lookup(url, TestRemote.class, TestSLSB.class, JAR_FILE_NAME);
         if(bean.invoke("Test-" + System.currentTimeMillis()) > 1){
-            Assert.fail("Method was invoked more than once.");
+            Assertions.fail("Method was invoked more than once.");
         }
     }
 

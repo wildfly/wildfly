@@ -10,15 +10,15 @@ import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (ejbthree-786) to AS7 [JIRA JBQA-5483].
@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoveMethodUnitTestCase {
     private static final String DD_BASED_MODULE_NAME = "remove-method-dd-test";
     private static final String ANNOTATION_BASED_MODULE_NAME = "remove-method-test";
@@ -53,28 +53,28 @@ public class RemoveMethodUnitTestCase {
     public void testRemoveStatefulRemote() throws Exception {
         RemoveStatefulRemote session = (RemoveStatefulRemote) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + StatefulRemoveBean.class.getSimpleName() + "!" + RemoveStatefulRemote.class.getName());
         String result = session.remove();
-        Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
+        Assertions.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatelessRemote() throws Exception {
         RemoveStatelessRemote session = (RemoveStatelessRemote) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + StatelessRemoveBean.class.getSimpleName() + "!" + RemoveStatelessRemote.class.getName());
         String result = session.remove();
-        Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
+        Assertions.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatefulLocalViaDelegate() throws Exception {
         Delegate session = (Delegate) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
         String result = session.invokeStatefulRemove();
-        Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
+        Assertions.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
     public void testRemoveStatelessLocalViaDelegate() throws Exception {
         Delegate session = (Delegate) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + DelegateBean.class.getSimpleName() + "!" + Delegate.class.getName());
         String result = session.invokeStatelessRemove();
-        Assert.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
+        Assertions.assertEquals(AbstractRemoveBean.RETURN_STRING, result);
     }
 
     @Test
@@ -85,12 +85,12 @@ public class RemoveMethodUnitTestCase {
         Ejb21View session = home.create();
 
         // Ensure EJBObject
-        Assert.assertTrue(session instanceof EJBObject);
+        Assertions.assertTrue(session instanceof EJBObject);
 
         // Cast and remove appropriately, ensuring removed
         boolean removed = false;
         String result = session.test();
-        Assert.assertEquals(Ejb21ViewBean.TEST_STRING, result);
+        Assertions.assertEquals(Ejb21ViewBean.TEST_STRING, result);
         session.remove();
         try {
             session.test();
@@ -98,10 +98,10 @@ public class RemoveMethodUnitTestCase {
             if (e instanceof NoSuchObjectException || e.getCause() instanceof NoSuchObjectException) {
                 removed = true;
             } else {
-                Assert.fail("Exception received, " + e + ", was not expected and should have had root cause of " + NoSuchObjectException.class);
+                Assertions.fail("Exception received, " + e + ", was not expected and should have had root cause of " + NoSuchObjectException.class);
             }
         }
-        Assert.assertTrue("SFSB instance was not removed as expected", removed);
+        Assertions.assertTrue(removed, "SFSB instance was not removed as expected");
 
     }
 
@@ -119,18 +119,18 @@ public class RemoveMethodUnitTestCase {
         Ejb21View bean = home.create();
 
         // Ensure EJBObject
-        Assert.assertTrue(bean instanceof EJBObject);
+        Assertions.assertTrue(bean instanceof EJBObject);
 
         String result = bean.test();
 
         bean.remove();
         try {
             bean.test();
-            Assert.fail("Invocation on a removed bean was expected to fail");
+            Assertions.fail("Invocation on a removed bean was expected to fail");
         } catch (NoSuchObjectException e) {
             // expected
         }
         final RemoveMethodInvocationTracker ejbRemoveMethodInvocationTracker = (RemoveMethodInvocationTracker) ctx.lookup("java:app/" + ANNOTATION_BASED_MODULE_NAME + "/" + RemoveMethodInvocationTrackerBean.class.getSimpleName() + "!" + RemoveMethodInvocationTracker.class.getName());
-        Assert.assertTrue("ejbRemove() method was not invoked after bean removal", ejbRemoveMethodInvocationTracker.wasEjbRemoveCallbackInvoked());
+        Assertions.assertTrue(ejbRemoveMethodInvocationTracker.wasEjbRemoveCallbackInvoked(), "ejbRemove() method was not invoked after bean removal");
     }
 }

@@ -18,7 +18,7 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -30,16 +30,16 @@ import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.test.integration.metrics.application.TestApplication;
 import org.wildfly.test.integration.metrics.application.TestResource;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({
         StabilityServerSetupSnapshotRestoreTasks.Community.class,
@@ -63,7 +63,7 @@ public class MetricsRbacTestCase {
 
     // In some CI scenarios, the WildFly Metrics subsystem may not be enabled. In those scenarios, we need to ignore
     // this test rather than failing the build.
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         if (isMetricsEnabled == null) {
             try {
@@ -74,7 +74,7 @@ public class MetricsRbacTestCase {
                 isMetricsEnabled = false;
             }
         }
-        Assume.assumeTrue("WildFly Metrics must be enabled for this test to run.", isMetricsEnabled);
+        Assumptions.assumeTrue(isMetricsEnabled, "WildFly Metrics must be enabled for this test to run.");
     }
 
     @Test
@@ -95,8 +95,8 @@ public class MetricsRbacTestCase {
     public void testWildFlyMetricsUnauthenticatedRejected() throws Exception {
         MetricsRbacTestSupport.setAuthenticationEnabled(managementClient, true);
 
-        Assert.assertEquals("Unauthenticated scrape of the secured metrics endpoint should be rejected",
-                401, fetchMetricsStatus(null, null));
+        Assertions.assertEquals(401,
+                fetchMetricsStatus(null, null), "Unauthenticated scrape of the secured metrics endpoint should be rejected");
     }
 
     /**
@@ -113,9 +113,9 @@ public class MetricsRbacTestCase {
         List<PrometheusMetric> metrics =
                 fetchMetrics(RbacRealmSetupTask.USER_NOROLE, RbacRealmSetupTask.TEST_RBAC_PASSWORD);
 
-        Assert.assertFalse("The Undertow model metric series '" + UNDERTOW_MODEL_METRIC +
-                        "' must be omitted for a user without the Monitor role",
-                metrics.stream().anyMatch(metric -> metric.getKey().startsWith(UNDERTOW_MODEL_METRIC)));
+        Assertions.assertFalse(metrics.stream().anyMatch(metric -> metric.getKey().startsWith(UNDERTOW_MODEL_METRIC)),
+                "The Undertow model metric series '" + UNDERTOW_MODEL_METRIC +
+                        "' must be omitted for a user without the Monitor role");
     }
 
     private void verifyMetricsAccess(boolean authenticationEnabled) throws Exception {
@@ -132,9 +132,9 @@ public class MetricsRbacTestCase {
 
         double value = Double.parseDouble(undertowMetric.getValue());
 
-        Assert.assertTrue("The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
+        Assertions.assertTrue(value > 0, "The Undertow model metric '" + UNDERTOW_MODEL_METRIC +
                 "' should be non-zero (authentication " + (authenticationEnabled ? "enabled" : "disabled") +
-                "), but was " + value, value > 0);
+                "), but was " + value);
     }
 
     protected void makeRequests() throws URISyntaxException {
@@ -142,7 +142,7 @@ public class MetricsRbacTestCase {
             WebTarget target = client.target(url.toURI() + "metrics-app/hello");
             for (int i = 0; i < REQUEST_COUNT; i++) {
                 Response response = target.request().get();
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
             }
         }
     }

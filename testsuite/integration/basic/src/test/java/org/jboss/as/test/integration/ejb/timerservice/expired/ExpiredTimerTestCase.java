@@ -14,19 +14,19 @@ import jakarta.ejb.NoSuchObjectLocalException;
 import jakarta.ejb.TimerConfig;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ExpiredTimerTestCase {
 
     private static final int TIMER_CALL_WAITING_S = 5;
@@ -53,18 +53,18 @@ public class ExpiredTimerTestCase {
 
         // wait for the timeout to be invoked
         final boolean timeoutInvoked = timeoutNotifier.await(TIMER_CALL_WAITING_S, TimeUnit.SECONDS);
-        Assert.assertTrue("timeout method was not invoked (within " + TIMER_CALL_WAITING_S + " seconds)", timeoutInvoked);
+        Assertions.assertTrue(timeoutInvoked, "timeout method was not invoked (within " + TIMER_CALL_WAITING_S + " seconds)");
 
         // the timer stays in timeout method - checking how the invoke of method getNext and getTimeRemaining behave
         try {
             bean.invokeTimeRemaining();
-            Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
+            Assertions.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
         } catch (NoMoreTimeoutsException e) {
             log.trace("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getTimeRemaining");
         }
         try {
             bean.invokeGetNext();
-            Assert.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
+            Assertions.fail("Expecting exception " + NoMoreTimeoutsException.class.getSimpleName());
         } catch (NoMoreTimeoutsException e) {
             log.trace("Expected exception " + e.getClass().getSimpleName() + " was thrown on method getNextTimeout");
         }
@@ -79,7 +79,7 @@ public class ExpiredTimerTestCase {
         while (count < 20 && !passed) {
             try {
                 bean.invokeTimeRemaining();
-                Assert.fail("Expected to fail on invoking on an expired timer");
+                Assertions.fail("Expected to fail on invoking on an expired timer");
             } catch (NoSuchObjectLocalException nsole) {
                 // expected
                 log.trace("Got the expected exception " + nsole);
@@ -91,7 +91,7 @@ public class ExpiredTimerTestCase {
             }
         }
         if(!passed) {
-            Assert.fail("Got NoMoreTimeoutsException rather than  NoSuchObjectLocalException");
+            Assertions.fail("Got NoMoreTimeoutsException rather than  NoSuchObjectLocalException");
         }
     }
 }

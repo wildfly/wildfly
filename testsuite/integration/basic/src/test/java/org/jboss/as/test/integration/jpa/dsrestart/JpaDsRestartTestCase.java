@@ -18,7 +18,7 @@ import java.security.Permission;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
@@ -31,14 +31,14 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JpaDsRestartTestCase {
     @ArquillianResource
     private InitialContext iniCtx;
@@ -63,24 +63,24 @@ public class JpaDsRestartTestCase {
 
     @Test
     public void testRestartDataSource() throws Exception {
-        Assert.assertNotNull(serviceContainer);
+        Assertions.assertNotNull(serviceContainer);
 
         NonJpaSfsb nonJpaSfsb = (NonJpaSfsb) iniCtx.lookup("java:module/" + NonJpaSfsb.class.getSimpleName());
-        Assert.assertEquals("test", nonJpaSfsb.echo("test"));
+        Assertions.assertEquals("test", nonJpaSfsb.echo("test"));
         JpaInjectedSfsb jpaInjected = (JpaInjectedSfsb) iniCtx.lookup("java:module/" + JpaInjectedSfsb.class.getSimpleName());
-        Assert.assertNotNull(jpaInjected.getEntityManager());
+        Assertions.assertNotNull(jpaInjected.getEntityManager());
         EjbInjectedSfsb ejbInjected = (EjbInjectedSfsb) iniCtx.lookup("java:module/" + EjbInjectedSfsb.class.getSimpleName());
-        Assert.assertNotNull(ejbInjected.getJpaEjb());
-        Assert.assertNotNull(ejbInjected.getJpaEjb().getEntityManager());
+        Assertions.assertNotNull(ejbInjected.getJpaEjb());
+        Assertions.assertNotNull(ejbInjected.getJpaEjb().getEntityManager());
 
         //Should fail since app has dependencies on it
         toggleDataSource(false, true);
 
         //The persistence unit service should be restarted
-        Assert.assertEquals("test", nonJpaSfsb.echo("test"));
-        Assert.assertNotNull(jpaInjected.getEntityManager());
-        Assert.assertNotNull(ejbInjected.getJpaEjb());
-        Assert.assertNotNull(ejbInjected.getJpaEjb().getEntityManager());
+        Assertions.assertEquals("test", nonJpaSfsb.echo("test"));
+        Assertions.assertNotNull(jpaInjected.getEntityManager());
+        Assertions.assertNotNull(ejbInjected.getJpaEjb());
+        Assertions.assertNotNull(ejbInjected.getJpaEjb().getEntityManager());
     }
 
     private void toggleDataSource(boolean enable, boolean expectFailure) throws Exception {
@@ -95,9 +95,9 @@ public class JpaDsRestartTestCase {
         ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
         if (expectFailure) {
             //System.out.println("Expected failure " + result.get(FAILURE_DESCRIPTION).asString());
-            Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+            Assertions.assertEquals(FAILED, result.get(OUTCOME).asString());
         } else {
-            Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, result.get(OUTCOME).asString(), result.get(FAILURE_DESCRIPTION).asString());
         }
     }
 }

@@ -5,13 +5,13 @@
 package org.jboss.as.test.integration.ejb.timerservice.persistence;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.NamingException;
 
@@ -20,7 +20,7 @@ import javax.naming.NamingException;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServicePersistenceSecondTestCase {
 
     @Deployment
@@ -36,7 +36,7 @@ public class TimerServicePersistenceSecondTestCase {
      */
     @Test
     public void testTimerServiceCalled() throws NamingException {
-        Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
+        Assertions.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
     }
 
     /**
@@ -44,7 +44,7 @@ public class TimerServicePersistenceSecondTestCase {
      */
     @Test
     public void testTimerServiceNotCalled() throws NamingException {
-        Assert.assertFalse(CancelledTimerServiceBean.quickAwaitTimerCall());
+        Assertions.assertFalse(CancelledTimerServiceBean.quickAwaitTimerCall());
     }
 
     /**
@@ -52,11 +52,11 @@ public class TimerServicePersistenceSecondTestCase {
      */
     @Test
     public void testTimerServiceNonPersistent() throws NamingException {
-        Assert.assertFalse(NonPersistentTimerServiceBean.quickAwaitTimerCall());
+        Assertions.assertFalse(NonPersistentTimerServiceBean.quickAwaitTimerCall());
     }
 
     @Test
     public void testPersistentCalendarTimer() throws NamingException {
-        Assert.assertEquals(CalendarTimerServiceBean.MESSAGE, CalendarTimerServiceBean.awaitTimerCall());
+        Assertions.assertEquals(CalendarTimerServiceBean.MESSAGE, CalendarTimerServiceBean.awaitTimerCall());
     }
 }

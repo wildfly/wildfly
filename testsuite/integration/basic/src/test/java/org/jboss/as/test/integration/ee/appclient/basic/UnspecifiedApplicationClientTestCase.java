@@ -7,11 +7,12 @@ package org.jboss.as.test.integration.ee.appclient.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests using an EAR with a single application client module and not specifying the name
@@ -19,7 +20,7 @@ import org.junit.runner.RunWith;
  *
  * @author Brian Stansberry
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class UnspecifiedApplicationClientTestCase  extends AbstractSimpleApplicationClientTestCase {
 

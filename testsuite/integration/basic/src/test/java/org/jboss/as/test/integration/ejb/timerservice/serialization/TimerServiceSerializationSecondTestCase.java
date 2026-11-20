@@ -8,18 +8,18 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that an @Timout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class TimerServiceSerializationSecondTestCase {
 
     @Deployment
@@ -35,9 +35,9 @@ public class TimerServiceSerializationSecondTestCase {
         InitialContext ctx = new InitialContext();
         TimerServiceSerializationBean bean = (TimerServiceSerializationBean) ctx.lookup("java:module/" + TimerServiceSerializationBean.class.getSimpleName());
         InfoA info = TimerServiceSerializationBean.awaitTimerCall();
-        Assert.assertNotNull(info);
-        Assert.assertNotNull(info.infoB);
-        Assert.assertNotNull(info.infoB.infoC);
+        Assertions.assertNotNull(info);
+        Assertions.assertNotNull(info.infoB);
+        Assertions.assertNotNull(info.infoB.infoC);
     }
 
 

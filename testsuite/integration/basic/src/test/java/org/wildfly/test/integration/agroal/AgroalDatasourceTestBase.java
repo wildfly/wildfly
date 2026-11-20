@@ -18,8 +18,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -184,7 +184,7 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         try {
             executeOperation(driverOp);
         } catch (MgmtOperationException e) {
-            Assert.fail(String.format( "Can't add driver '%s' by cli: %s", DATASOURCES_SUBSYSTEM, e.getResult().get(FAILURE_DESCRIPTION)));
+            Assertions.fail(String.format( "Can't add driver '%s' by cli: %s", DATASOURCES_SUBSYSTEM, e.getResult().get(FAILURE_DESCRIPTION)));
         }
     }
 

@@ -5,19 +5,20 @@
 
 package org.jboss.as.test.integration.jpa.version;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Ensure that version handling works.
@@ -29,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class VersionTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
@@ -77,11 +78,11 @@ public class VersionTestCase {
         Employee updatedEmp = sfsb1.mutateEmployee(emp);
 
         assertTrue(
+                firstVersion.intValue() < updatedEmp.getVersion().intValue(),
                 "entities read in non-tx should be detached from persistence context as they are read." +
                         "  version at time of creation = " + firstVersion +
                         ", version after update should be greater than creation version" +
-                        ", version after update is = " + updatedEmp.getVersion(),
-                firstVersion.intValue() < updatedEmp.getVersion().intValue());
+                        ", version after update is = " + updatedEmp.getVersion());
     }
 
 }

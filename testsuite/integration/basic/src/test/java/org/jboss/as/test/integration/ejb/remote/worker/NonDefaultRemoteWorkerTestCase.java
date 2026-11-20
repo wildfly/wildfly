@@ -23,7 +23,7 @@ import java.util.logging.Level;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -39,18 +39,18 @@ import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Simple test case to check if we get proper feedback on write op to listener->worker
  * @author baranowb
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class NonDefaultRemoteWorkerTestCase {
 
@@ -68,13 +68,13 @@ public class NonDefaultRemoteWorkerTestCase {
 
     private AutoCloseable serverSnapshot;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
         addWorker();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         serverSnapshot.close();
     }
@@ -83,26 +83,26 @@ public class NonDefaultRemoteWorkerTestCase {
     public void testMe() throws Exception {
 
         ModelNode result = setHttpListenerWorkerTo(NAME_WORKER,BAD_LEVEL);
-        Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
-        Assert.assertTrue(result.hasDefined(RESPONSE_HEADERS));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), result.toString());
+        Assertions.assertTrue(result.hasDefined(RESPONSE_HEADERS));
         ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
-        Assert.assertTrue(responseHeaders.hasDefined(WARNINGS));
+        Assertions.assertTrue(responseHeaders.hasDefined(WARNINGS));
         List<ModelNode> warnings = responseHeaders.get(WARNINGS).asList();
-        Assert.assertTrue(warnings.size() == 2);
+        Assertions.assertTrue(warnings.size() == 2);
         ModelNode warningLoggerLevel = warnings.get(0);
         String message = warningLoggerLevel.get(WARNING).asString();
-        Assert.assertEquals(ControllerLogger.ROOT_LOGGER.couldntConvertWarningLevel(BAD_LEVEL), message);
+        Assertions.assertEquals(ControllerLogger.ROOT_LOGGER.couldntConvertWarningLevel(BAD_LEVEL), message);
         Level level = Level.parse(warningLoggerLevel.get(LEVEL).asString());
-        Assert.assertEquals(Level.ALL,level);
+        Assertions.assertEquals(Level.ALL,level);
         ModelNode warningWorker = warnings.get(1);
         message = warningWorker.get(WARNING).asString();
-        Assert.assertTrue(String.format("Expected message to start with WFLYUT0097: found %s", message), message.startsWith("WFLYUT0097:"));
+        Assertions.assertTrue(message.startsWith("WFLYUT0097:"), String.format("Expected message to start with WFLYUT0097: found %s", message));
         level = Level.parse(warningWorker.get(LEVEL).asString());
-        Assert.assertEquals(Level.WARNING,level);
+        Assertions.assertEquals(Level.WARNING,level);
         //default level is "WARNING, set to severe and check if there are warnings
         result = setHttpListenerWorkerTo("default","SEVERE");
         responseHeaders = result.get(RESPONSE_HEADERS);
-        Assert.assertFalse(responseHeaders.hasDefined(WARNINGS));
+        Assertions.assertFalse(responseHeaders.hasDefined(WARNINGS));
     }
 
     @Deployment(name = NAME_DEPLOYMENT)
@@ -132,6 +132,6 @@ public class NonDefaultRemoteWorkerTestCase {
         op.get(ModelDescriptionConstants.OP_ADDR).set(ADDRESS_WORKER.toModelNode());
         op.get(ModelDescriptionConstants.OP).set(ADD);
         ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), result.toString());
     }
 }

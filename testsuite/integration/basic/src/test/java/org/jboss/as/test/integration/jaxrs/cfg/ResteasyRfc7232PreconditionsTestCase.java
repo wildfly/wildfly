@@ -14,7 +14,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
@@ -24,8 +23,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-rfc7232preconditions} attribute works as expected.
@@ -38,6 +40,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(SnapshotServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttributeTest {
 
     @ArquillianResource
@@ -57,7 +60,7 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -69,14 +72,14 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
                             .header(HttpHeaders.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT")
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("preconditions met", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("preconditions met", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkDefaultFail() {
         try (Client client = ClientBuilder.newClient()) {
             try (
@@ -89,13 +92,13 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
                 // Preconditions failed with a 304 as the content has not been modified. Note this is testing that
                 // without the resteasy-rfc7232preconditions that the If-None-Match is not ignored. See
                 // noneMatchIgnoreIfModifiedSince for an expected passing version.
-                Assert.assertEquals(304, response.getStatus());
+                Assertions.assertEquals(304, response.getStatus());
             }
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void checkTrue() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
@@ -108,14 +111,14 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
                             .header(HttpHeaders.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT")
                             .get()
             ) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("preconditions met", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("preconditions met", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(5)
+    @Order(5)
     public void noneMatchIgnoreIfModifiedSince() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
@@ -131,14 +134,14 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
                 // the condition in If-None-Match is considered to be a more accurate replacement for the condition in
                 // If-Modified-Since, and the two are only combined for the sake of interoperating with older
                 // intermediaries that might not implement If-None-Match.
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("preconditions met", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("preconditions met", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(6)
+    @Order(6)
     public void matchIgnoreIfModifiedSince() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (Client client = ClientBuilder.newClient()) {
@@ -154,8 +157,8 @@ public class ResteasyRfc7232PreconditionsTestCase extends AbstractResteasyAttrib
                 // condition in If-Match is considered to be a more accurate replacement for the condition in
                 // If-Unmodified-Since, and the two are only combined for the sake of interoperating with older
                 // intermediaries that might not implement If-Match.
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("preconditions met", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("preconditions met", response.readEntity(String.class));
             }
         }
     }

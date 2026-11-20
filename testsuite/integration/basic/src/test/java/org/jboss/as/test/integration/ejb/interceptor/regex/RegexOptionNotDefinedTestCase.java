@@ -7,13 +7,13 @@ package org.jboss.as.test.integration.ejb.interceptor.regex;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case where ejb subsytem option 'allow-ejb-name-regex' is not defined to true
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RegexOptionNotDefinedTestCase {
     private static final String EJB_SIMPLE_RETURN = "test";
 
@@ -37,10 +37,10 @@ public class RegexOptionNotDefinedTestCase {
     public void testInterceptors() throws NamingException {
         final InitialContext ctx = new InitialContext();
         TestEjb bean = (TestEjb) ctx.lookup("java:module/Test1");
-        Assert.assertEquals(EJB_SIMPLE_RETURN, bean.test());
+        Assertions.assertEquals(EJB_SIMPLE_RETURN, bean.test());
         bean = (TestEjb) ctx.lookup("java:module/Test2");
-        Assert.assertEquals(EJB_SIMPLE_RETURN, bean.test());
+        Assertions.assertEquals(EJB_SIMPLE_RETURN, bean.test());
         bean = (TestEjb) ctx.lookup("java:module/Production");
-        Assert.assertEquals(EJB_SIMPLE_RETURN, bean.test());
+        Assertions.assertEquals(EJB_SIMPLE_RETURN, bean.test());
     }
 }

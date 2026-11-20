@@ -9,11 +9,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -30,16 +30,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * XA Data source statistics testCase
  *
  * @author dsimko@redhat.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(XaDataSourceSetupStep.class)
 public class XaDataSourcePoolStatisticsTestCase {
@@ -68,7 +68,7 @@ public class XaDataSourcePoolStatisticsTestCase {
         return ear;
     }
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         // TODO Elytron: Determine how this should be adapted once the transaction client changes are in
         //final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
@@ -84,7 +84,7 @@ public class XaDataSourcePoolStatisticsTestCase {
         int xaStartCountBefore = readStatisticalAttribute(ATTRIBUTE_XA_START_COUNT);
         int xaCommitCount = readStatisticalAttribute(ATTRIBUTE_XA_COMMIT_COUNT);
 
-        assertEquals(ATTRIBUTE_XA_COMMIT_COUNT + " is " + xaCommitCount + " but should be 0", 0, xaCommitCount);
+        assertEquals(0, xaCommitCount, ATTRIBUTE_XA_COMMIT_COUNT + " is " + xaCommitCount + " but should be 0");
 
         SLSB slsb = getBean();
         for (int i = 0; i < COUNT; i++) {
@@ -95,8 +95,8 @@ public class XaDataSourcePoolStatisticsTestCase {
         int xaStartCountAfter = readStatisticalAttribute(ATTRIBUTE_XA_START_COUNT);
         int total = xaStartCountBefore + COUNT;
 
-        assertEquals(ATTRIBUTE_XA_COMMIT_COUNT + " is " + xaCommitCount + " but should be " + COUNT, COUNT, xaCommitCount);
-        assertEquals(ATTRIBUTE_XA_START_COUNT + " is " + xaStartCountAfter + " but should be " + total, total, xaStartCountAfter);
+        assertEquals(COUNT, xaCommitCount, ATTRIBUTE_XA_COMMIT_COUNT + " is " + xaCommitCount + " but should be " + COUNT);
+        assertEquals(total, xaStartCountAfter, ATTRIBUTE_XA_START_COUNT + " is " + xaStartCountAfter + " but should be " + total);
     }
 
     /**
@@ -106,7 +106,7 @@ public class XaDataSourcePoolStatisticsTestCase {
     public void testXARollback() throws Exception {
         int xaRollbackCount = readStatisticalAttribute(ATTRIBUTE_XA_ROLLBACK_COUNT);
 
-        assertEquals(ATTRIBUTE_XA_ROLLBACK_COUNT + " is " + xaRollbackCount + " but should be 0", 0, xaRollbackCount);
+        assertEquals(0, xaRollbackCount, ATTRIBUTE_XA_ROLLBACK_COUNT + " is " + xaRollbackCount + " but should be 0");
 
         SLSB slsb = getBean();
         for (int i = 0; i < COUNT; i++) {
@@ -115,7 +115,7 @@ public class XaDataSourcePoolStatisticsTestCase {
 
         xaRollbackCount = readStatisticalAttribute(ATTRIBUTE_XA_ROLLBACK_COUNT);
 
-        assertEquals(ATTRIBUTE_XA_ROLLBACK_COUNT + " is " + xaRollbackCount + " but should be " + COUNT, COUNT, xaRollbackCount);
+        assertEquals(COUNT, xaRollbackCount, ATTRIBUTE_XA_ROLLBACK_COUNT + " is " + xaRollbackCount + " but should be " + COUNT);
     }
 
     private SLSB getBean() {

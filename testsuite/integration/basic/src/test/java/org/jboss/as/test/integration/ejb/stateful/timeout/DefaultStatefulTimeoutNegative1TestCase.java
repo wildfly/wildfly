@@ -5,21 +5,21 @@
 
 package org.jboss.as.test.integration.ejb.stateful.timeout;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that the default stateful timeout value -1 configured in the server works.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DefaultStatefulTimeoutNegative1TestCase.ServerSetup.class)
 public class DefaultStatefulTimeoutNegative1TestCase extends StatefulTimeoutTestBase2 {
     private static final int CONFIGURED_TIMEOUT = -1;
@@ -30,7 +30,7 @@ public class DefaultStatefulTimeoutNegative1TestCase extends StatefulTimeoutTest
      */
     @Test
     public void testStatefulTimeoutFromAnnotation() throws Exception {
-        Assert.assertEquals(CONFIGURED_TIMEOUT, readAttribute().asLong());
+        Assertions.assertEquals(CONFIGURED_TIMEOUT, readAttribute().asLong());
         super.testStatefulTimeoutFromAnnotation();
     }
 
@@ -80,7 +80,7 @@ public class DefaultStatefulTimeoutNegative1TestCase extends StatefulTimeoutTest
         timeoutNotConfiguredBean.doStuff();
         Thread.sleep(2000);
         timeoutNotConfiguredBean.doStuff();
-        Assert.assertFalse(TimeoutNotConfiguredBean.preDestroy);
+        Assertions.assertFalse(TimeoutNotConfiguredBean.preDestroy);
     }
 
     /**

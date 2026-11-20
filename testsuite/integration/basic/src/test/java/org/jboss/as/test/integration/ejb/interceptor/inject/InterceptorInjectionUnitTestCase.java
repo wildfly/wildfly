@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Migration test from EJB Testsuite (interceptors, 2061) to AS7 [JIRA JBQA-5483].
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  * Interceptor injection test.
  * Bill Burke, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InterceptorInjectionUnitTestCase {
 
     @ArquillianResource
@@ -46,8 +46,8 @@ public class InterceptorInjectionUnitTestCase {
     public void testInterceptAndInjection() throws Exception {
         MySessionRemote test = (MySessionRemote) ctx.lookup("java:module/" + MySessionBean.class.getSimpleName());
         ArrayList list = test.doit();
-        Assert.assertEquals("MyBaseInterceptor", list.get(0));
-        Assert.assertEquals("MyInterceptor", list.get(1));
+        Assertions.assertEquals("MyBaseInterceptor", list.get(0));
+        Assertions.assertEquals("MyInterceptor", list.get(1));
     }
 
     /**

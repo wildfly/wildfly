@@ -23,7 +23,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
@@ -86,36 +87,36 @@ public abstract class AnnSBTest {
         final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
         authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
-            Assert.assertEquals(echoValue, "alohomora");
+            Assertions.assertEquals(echoValue, "alohomora");
 
             try {
                 echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
-                Assert.fail("Method cannot be successfully called without logged in user");
+                Assertions.fail("Method cannot be successfully called without logged in user");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName());
             }
 
             try {
                 echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
-                Assert.fail("Method cannot be successfully called without logged in user");
+                Assertions.fail("Method cannot be successfully called without logged in user");
             } catch (EJBAccessException e) {
                 // expected
             }
 
             try {
                 echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
-                Assert.fail("@PermitAll annotation must allow all users and no users to call the method");
+                Assertions.fail("@PermitAll annotation must allow all users and no users to call the method");
             }
 
             try {
                 echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
-                Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
+                Assertions.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName(), e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was " + e.getClass().getSimpleName());
             }
             return null;
         });
@@ -139,47 +140,47 @@ public abstract class AnnSBTest {
         authenticationContext.runCallable(() -> {
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
-                Assert.fail("EJBAccessException not expected");
+                Assertions.fail("EJBAccessException not expected");
             }
 
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
-                Assert.fail("EJBAccessException not expected");
+                Assertions.fail("EJBAccessException not expected");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
-                Assert.fail("Method cannot be successfully called with logged in principal.");
+                Assertions.fail("Method cannot be successfully called with logged in principal.");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was different");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
-                Assert.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
+                Assertions.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
-                Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
+                Assertions.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was different");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).starRoleAllowed("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
-                Assert.fail(
+                Assertions.fail(
                         "@RolesAllowed(\"**\") annotation must allow all authenticated users to the method.");
             }
             return null;
@@ -204,40 +205,40 @@ public abstract class AnnSBTest {
         authenticationContext.runCallable(() -> {
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
-                Assert.fail("EJBAccessException not expected");
+                Assertions.fail("EJBAccessException not expected");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessOne("alohomora");
-                Assert.fail("Method cannot be successfully called with logged in user2");
+                Assertions.fail("Method cannot be successfully called with logged in user2");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was different");
             }
 
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).roleBasedAccessMore("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (EJBAccessException e) {
-                Assert.fail("EJBAccessException not expected");
+                Assertions.fail("EJBAccessException not expected");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).permitAll("alohomora");
-                Assert.assertEquals(echoValue, "alohomora");
+                Assertions.assertEquals(echoValue, "alohomora");
             } catch (Exception e) {
-                Assert.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
+                Assertions.fail("@PermitAll annotation must allow all users and no users to call the method - principal.");
             }
 
             try {
                 String echoValue = getBean(MODULE, log, SB_CLASS, ctx).denyAll("alohomora");
-                Assert.fail("@DenyAll annotation must allow all users and no users to call the method");
+                Assertions.fail("@DenyAll annotation must allow all users and no users to call the method");
             } catch (Exception e) {
                 // expected
-                Assert.assertTrue("Thrown exception must be EJBAccessException, but was different", e instanceof EJBAccessException);
+                Assertions.assertTrue(e instanceof EJBAccessException, "Thrown exception must be EJBAccessException, but was different");
             }
             return null;
         });

@@ -8,15 +8,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test to see if the proper invoked business interface is returned. Part of migration tests from EJB Testsuite (ejbthree-1060)
@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InvokedBusinessInterfaceUnitTestCase {
     private static final String ARCHIVE_NAME = "business-interface-test";
     private static final Logger log = Logger.getLogger(InvokedBusinessInterfaceUnitTestCase.class);
@@ -51,7 +51,7 @@ public class InvokedBusinessInterfaceUnitTestCase {
         try {
             tester.testAnnotated1();
         } catch (TestFailedException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ public class InvokedBusinessInterfaceUnitTestCase {
         try {
             tester.testAnnotated2();
         } catch (TestFailedException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -71,7 +71,7 @@ public class InvokedBusinessInterfaceUnitTestCase {
         try {
             tester.testXml1();
         } catch (TestFailedException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -81,7 +81,7 @@ public class InvokedBusinessInterfaceUnitTestCase {
         try {
             tester.testXml2();
         } catch (TestFailedException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 }

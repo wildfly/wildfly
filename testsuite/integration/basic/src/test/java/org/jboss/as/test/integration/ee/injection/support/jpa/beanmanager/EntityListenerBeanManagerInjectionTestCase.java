@@ -5,21 +5,22 @@
 
 package org.jboss.as.test.integration.ee.injection.support.jpa.beanmanager;
 
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EntityListenerBeanManagerInjectionTestCase {
 
     private static final String ARCHIVE_NAME = "test";
@@ -42,14 +43,20 @@ public class EntityListenerBeanManagerInjectionTestCase {
                 .cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
+    @Inject
+    Foo foo;
+
+    @Inject
+    Bar bar;
+
     @Test
-    public void testBeanManagerInEntityListenerCallbacks(Foo foo, Bar bar) throws NamingException {
+    public void testBeanManagerInEntityListenerCallbacks() throws NamingException {
         TestBean bean = lookup("TestBean", TestBean.class);
         bean.createEmployee("Joe Black", "Brno 2", 20);
         bean.updateEmployee(20);
         bean.removeEmployee(20);
         // PostLoad call back is called twice
-        Assert.assertEquals(8, foo.getCounter().get());
-        Assert.assertEquals(8, bar.getCounter().get());
+        Assertions.assertEquals(8, foo.getCounter().get());
+        Assertions.assertEquals(8, bar.getCounter().get());
     }
 }

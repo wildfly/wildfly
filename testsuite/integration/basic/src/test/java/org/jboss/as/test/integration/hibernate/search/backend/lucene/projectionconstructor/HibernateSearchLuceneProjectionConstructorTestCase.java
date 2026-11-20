@@ -4,34 +4,34 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.lucene.projectionconstructor;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Verify deployed applications can use Hibernate Search's @ProjectionConstructor with Lucene.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HibernateSearchLuceneProjectionConstructorTestCase {
 
     private static final String NAME = HibernateSearchLuceneProjectionConstructorTestCase.class.getSimpleName();
     private static final String JAR_ARCHIVE_NAME = NAME + ".jar";
 
-    @BeforeClass
+    @BeforeAll
     public static void securityManagerNotSupportedInHibernateSearch() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
@@ -39,8 +39,8 @@ public class HibernateSearchLuceneProjectionConstructorTestCase {
     @Inject
     private SearchBean searchBean;
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void cleanupDatabase() {
         searchBean.deleteAll();
     }
@@ -81,7 +81,7 @@ public class HibernateSearchLuceneProjectionConstructorTestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
 
-        // TODO maybe just use managed=false and deploy in the @BeforeClass / undeploy in an @AfterClass
+        // TODO maybe just use managed=false and deploy in the @BeforeAll / undeploy in an @AfterAll
         //   see HibernateSearchLuceneSimpleTestCase
         if (AssumeTestGroupUtil.isSecurityManagerEnabled()) {
             return AssumeTestGroupUtil.emptyJar(JAR_ARCHIVE_NAME);

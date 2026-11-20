@@ -11,17 +11,17 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ViewFromJavaPackageTestCase {
 
     @Deployment
@@ -35,7 +35,7 @@ public class ViewFromJavaPackageTestCase {
     public void testViewInJavaPackage() throws Exception {
         final Context ctx = new InitialContext();
         final Callable t = (Callable) ctx.lookup("java:module/" + CallableEjb.class.getSimpleName());
-        Assert.assertEquals(CallableEjb.MESSAGE, t.call());
+        Assertions.assertEquals(CallableEjb.MESSAGE, t.call());
     }
 
 }

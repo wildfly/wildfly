@@ -4,12 +4,13 @@
  */
 package org.jboss.as.test.integration.jca.moduledeployment;
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.junit.runner.RunWith;
 
 import java.util.Locale;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -28,7 +29,7 @@ import java.util.Locale;
  *         modulename/main/META-INF/ra.xml
  *         modulename/main/module.jar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(MultiActivationJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class MultiActivationJarTestCase extends MultiActivationFlatTestCase {
 

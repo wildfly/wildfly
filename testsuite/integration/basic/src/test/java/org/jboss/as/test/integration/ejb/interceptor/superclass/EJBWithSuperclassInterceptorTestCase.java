@@ -5,18 +5,18 @@
 package org.jboss.as.test.integration.ejb.interceptor.superclass;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class EJBWithSuperclassInterceptorTestCase {
 
     @Deployment
@@ -33,6 +33,6 @@ public class EJBWithSuperclassInterceptorTestCase {
                 + "!" + Foo.class.getName());
         FooInterceptor.invoked = false;
         foo.foo("foo");
-        Assert.assertTrue(FooInterceptor.invoked);
+        Assertions.assertTrue(FooInterceptor.invoked);
     }
 }

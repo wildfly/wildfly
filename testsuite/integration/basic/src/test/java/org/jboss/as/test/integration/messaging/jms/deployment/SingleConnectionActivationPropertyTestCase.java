@@ -8,8 +8,8 @@ import static org.jboss.as.test.integration.messaging.jms.deployment.BaseConnect
 import static org.jboss.as.test.integration.messaging.jms.deployment.BaseConnectionPerSessionMDB.QUEUE_NAME;
 import static org.jboss.as.test.integration.messaging.jms.deployment.BaseConnectionPerSessionMDB.SINGLE_CONNECTION_SYSTEM_PROPERTY_NAME;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -33,7 +33,7 @@ import org.awaitility.Awaitility;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -49,15 +49,17 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 
 /**
  * Tests for singleConnection activation config property with various configurations.
  */
 @RunAsClient()
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SingleConnectionActivationPropertyTestCase.MessagingResourcesSetupTask.class)
 public class SingleConnectionActivationPropertyTestCase extends ContainerResourceMgmtTestBase {
 
@@ -142,7 +144,7 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("There must be no connection when MDB is undeployed.")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 0);
-            assertEquals("Number of JMS sessions on queue does not match.", 0, countSessionsOnQueue());
+            assertEquals(0, countSessionsOnQueue(), "Number of JMS sessions on queue does not match.");
 
             // Redeploy the MDB
             deployer.deploy(SINGLE_CONNECTION_MDB);
@@ -169,7 +171,7 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 15 connections with singleConnection=false")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 15);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            assertEquals(15, countSessionsOnQueue(), "Number of JMS sessions on queue does not match.");
             sendAndReceiveMessage();
         } finally {
             deployer.undeploy(CONNECTION_PER_SESSION_MDB);
@@ -230,7 +232,7 @@ public class SingleConnectionActivationPropertyTestCase extends ContainerResourc
             Awaitility.await("MDB deployment should create exactly 15 connections.")
                     .atMost(Duration.ofMillis(TimeoutUtil.adjust(5000)))
                     .until(() -> countConnectionsOnQueue() == 15);
-            assertEquals("Number of JMS sessions on queue does not match.", 15, countSessionsOnQueue());
+            assertEquals(15, countSessionsOnQueue(), "Number of JMS sessions on queue does not match.");
             sendAndReceiveMessage();
         } finally {
             deployer.undeploy(SINGLE_CONNECTION_WITH_EXPRESSION_MDB);
