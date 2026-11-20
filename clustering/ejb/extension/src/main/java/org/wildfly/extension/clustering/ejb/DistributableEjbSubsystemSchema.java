@@ -4,6 +4,7 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,8 +36,9 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
     VERSION_2_0(2, 0), // WildFly 36-39
     VERSION_2_0_COMMUNITY(2, 0, Stability.COMMUNITY), // WildFly 39-41
     VERSION_3_0(3, 0), // WildFly 42-present, EAP 8.2-present
+    VERSION_4_0(4, 0), // WildFly 43-present, EAP 8.2-present
     ;
-    static final Set<DistributableEjbSubsystemSchema> CURRENT = Set.of(VERSION_3_0);
+    static final Set<DistributableEjbSubsystemSchema> CURRENT = EnumSet.of(VERSION_4_0);
 
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
     private final ResourceXMLParticleFactory factory = ResourceXMLParticleFactory.newInstance(this);
@@ -68,7 +70,7 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
             builder.withLocalNames(Map.of(DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER, DistributableEjbSubsystemResourceDefinitionRegistrar.DEFAULT_BEAN_MANAGEMENT_PROVIDER.getName()));
             contentBuilder.addChoice(this.beanManagementChoice());
         }
-        contentBuilder.addChoice(this.clientMappingsRegistryChoice());
+        contentBuilder.addChoice(this.ejbClientServicesChoice());
         contentBuilder.addChoice(this.timerManagementChoice());
         return builder.withContent(contentBuilder.build())
                 .build();
@@ -97,23 +99,25 @@ public enum DistributableEjbSubsystemSchema implements SubsystemResourceXMLSchem
         return builder;
     }
 
-    SingletonResourceRegistrationXMLChoice clientMappingsRegistryChoice() {
+    SingletonResourceRegistrationXMLChoice ejbClientServicesChoice() {
         return this.factory.singletonElementChoice()
-                .addElement(this.localClientMappingsRegistryElement())
-                .addElement(this.infinispanClientMappingsRegistryElement())
+                .addElement(this.localEjbClientServicesElement())
+                .addElement(this.infinispanEjbClientServicesElement())
                 .build();
     }
 
-    SingletonResourceRegistrationXMLElement localClientMappingsRegistryElement() {
-        return this.factory.singletonElement(ClientMappingsRegistryProviderResourceRegistration.LOCAL)
-                .withElementLocalName("local-client-mappings-registry")
+    SingletonResourceRegistrationXMLElement localEjbClientServicesElement() {
+        return this.factory.singletonElement(EjbClientServicesProviderResourceRegistration.LOCAL)
+                // change name of element to indicate multiple client services provided
+                .withElementLocalName(this.since(VERSION_4_0) ? "local-ejb-client-services" : "local-client-mappings-registry")
                 .build();
     }
 
-    SingletonResourceRegistrationXMLElement infinispanClientMappingsRegistryElement() {
-        return this.factory.singletonElement(ClientMappingsRegistryProviderResourceRegistration.INFINISPAN)
-                .withElementLocalName("infinispan-client-mappings-registry")
-                .addAttributes(InfinispanClientMappingsRegistryProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
+    SingletonResourceRegistrationXMLElement infinispanEjbClientServicesElement() {
+        return this.factory.singletonElement(EjbClientServicesProviderResourceRegistration.INFINISPAN)
+                // change name of element to indicate multiple client services provided
+                .withElementLocalName(this.since(VERSION_4_0) ? "infinispan-ejb-client-services" : "infinispan-client-mappings-registry")
+                .addAttributes(InfinispanEjbClientServicesProviderResourceDefinitionRegistrar.CACHE_ATTRIBUTE_GROUP.getAttributes())
                 .build();
     }
 
