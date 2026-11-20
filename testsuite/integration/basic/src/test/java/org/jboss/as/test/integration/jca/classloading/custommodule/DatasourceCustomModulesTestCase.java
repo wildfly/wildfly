@@ -232,7 +232,7 @@ public class DatasourceCustomModulesTestCase {
 
             customModule.create();
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
         }
 
@@ -241,7 +241,7 @@ public class DatasourceCustomModulesTestCase {
             if (customModule != null) {
                 customModule.remove();
             }
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }

@@ -355,7 +355,7 @@ public class JWTIdentityPropagationTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:add(auth-method=MP-JWT)",
                         EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN + ".ear"));
             }
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         // rls start
@@ -396,7 +396,7 @@ public class JWTIdentityPropagationTestCase {
 
                 rlsTearDownDebugLog(cli); // rls debug
             }
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private void createFilesystemRealm(CLIWrapper cli, String domainName, String realmName, String path, String user, String role) {

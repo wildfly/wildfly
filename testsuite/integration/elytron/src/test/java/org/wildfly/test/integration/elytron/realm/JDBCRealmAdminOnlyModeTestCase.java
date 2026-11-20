@@ -15,7 +15,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.ServerReload;
 
 import org.junit.After;
@@ -37,7 +36,6 @@ public class JDBCRealmAdminOnlyModeTestCase {
     @ContainerResource
     protected ManagementClient managementClient;
 
-    protected static final int CONNECTION_TIMEOUT_IN_MS = TimeoutUtil.adjust(6 * 1000);
     protected static final boolean ADMIN_ONLY_MODE = true;
 
     @Test
@@ -46,7 +44,7 @@ public class JDBCRealmAdminOnlyModeTestCase {
 
         ModelControllerClient client = managementClient.getControllerClient();
 
-        ServerReload.executeReloadAndWaitForCompletion(client, CONNECTION_TIMEOUT_IN_MS, ADMIN_ONLY_MODE,
+        ServerReload.executeReloadAndWaitForCompletion(client, ServerReload.TIMEOUT, ADMIN_ONLY_MODE,
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), null);
 
         ModelNode operation = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), "running-mode");
@@ -68,7 +66,7 @@ public class JDBCRealmAdminOnlyModeTestCase {
     @After
     public void reload() throws Exception {
         ModelControllerClient client = managementClient.getControllerClient();
-        ServerReload.executeReloadAndWaitForCompletion(client, CONNECTION_TIMEOUT_IN_MS, !ADMIN_ONLY_MODE,
+        ServerReload.executeReloadAndWaitForCompletion(client, ServerReload.TIMEOUT, !ADMIN_ONLY_MODE,
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), null);
         ModelNode operation = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), "running-mode");
         assertEquals("NORMAL", client.execute(operation).get("result").asString());
