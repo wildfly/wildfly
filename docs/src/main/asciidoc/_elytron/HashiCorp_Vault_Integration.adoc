@@ -62,12 +62,33 @@ The credential store resource supports the following attributes:
 
 |`client-ssl-context`
 |No
-|Reference to an Elytron `client-ssl-context` for HTTPS server trust and optional client certificates.
+|Reference to an Elytron `client-ssl-context` for HTTPS server trust and client certificate authentication.
 
 |`credential-reference`
 |No
-|A credential reference providing the Vault authentication token.
+|A credential reference providing the Vault authentication token when token authentication is used.
+
+|`default-engine-type`
+|No
+|The default Vault KV secret engine type (`KVv1` or `KVv2`) to use when not specified in the alias. Defaults to `KVv2`.
+
+|`default-mount-path`
+|No
+|The default Vault mount path to use when not specified in the alias. Defaults to `secret`.
+
+|`support-legacy-alias-format`
+|No
+|Controls support for the legacy dot-separated alias format (`secret/path.key`). Defaults to `false` at default stability and `true` at community stability.
 |===
+
+=== Authentication methods
+
+The HashiCorp Vault credential store supports two authentication methods:
+
+* *Token authentication:* The Vault token is supplied using the `credential-reference` attribute (either clear-text or referencing another credential store).
+* *Certificate authentication:* When `credential-reference` is omitted, authentication is performed via client certificates configured in the referenced `client-ssl-context` (key manager).
+
+NOTE: Authentication methods other than `token` and `certificate` (such as AppRole, Kubernetes, or userpass) are currently not supported.
 
 NOTE: The Vault token can be obtained from another credential store using `credential-reference={store=token-store,alias=vault-token}`. See <<CredentialStore,Credential Store>> for information on creating and protecting that store.
 
@@ -90,6 +111,25 @@ Create `vault-tls-context` and `token-store` before adding this resource. The SS
 The `authentication-context` attribute is no longer supported. When migrating an existing Vault credential store, define an Elytron `client-ssl-context` with the required trust manager and optional key manager, and replace `authentication-context` with `client-ssl-context` on the Vault resource.
 
 For XML configurations, use the `urn:wildfly:hashicorp-vault:2.0` namespace with `client-ssl-context`. Older subsystem namespaces reject `authentication-context` with a migration error.
+
+=== Managing aliases via CLI
+
+You can manage aliases directly through the credential store resource:
+
+[source,options="nowrap"]
+----
+# Add or update an alias in Vault
+/subsystem=hashicorp-vault/credential-store=my-vault:add-alias( \
+    alias="myapp/database?password", \
+    secret-value="supersecret")
+
+# List all aliases
+/subsystem=hashicorp-vault/credential-store=my-vault:read-aliases()
+
+# Remove an alias
+/subsystem=hashicorp-vault/credential-store=my-vault:remove-alias( \
+    alias="myapp/database?password")
+----
 
 == Alias format
 
@@ -124,11 +164,18 @@ Use `@` to specify a non-default mount path. When `@` is present, use `#` to mar
 
 === Specifying the engine type
 
-Use the `engine=` prefix to select a KV engine version. Supported values are `KVv1` and `KVv2`:
+Use the `engine=` prefix to select a KV engine version. Supported values are `KVv1` and `KVv2` (other engine types, such as `database` or `pki`, are not supported):
 
 [source,text,options="nowrap"]
 ----
 engine=KVv1@secret-v1#myapp/config?api_key
+----
+
+When using `engine=` without `@mount-path`, the `#` marker is required to mark the start of the secret path:
+
+[source,text,options="nowrap"]
+----
+engine=KVv1#myapp/config?api_key
 ----
 
 === Multi-part secret paths
@@ -210,8 +257,8 @@ For example, a secret path containing a `#` character:
 
 When omitted from the alias:
 
-* *Engine type* defaults to KV v2.
-* *Mount path* defaults to `secret`.
+* *Engine type* defaults to KV v2 (or the `default-engine-type` configured on the credential store).
+* *Mount path* defaults to `secret` (or the `default-mount-path` configured on the credential store).
 
 === Quick reference
 
@@ -285,7 +332,12 @@ Prior versions used an alias format where the secret path and key were separated
 secret/database.password
 ----
 
-This format is deprecated. At *default* stability level, only the new alias format (using `?` as the delimiter) is accepted. At *community* stability level or lower, the legacy format is still recognised but a deprecation warning is logged.
+This format is deprecated. Support for the legacy format is controlled by the `support-legacy-alias-format` attribute on the credential store resource:
+
+* At *default* stability level, `support-legacy-alias-format` defaults to `false` and only the new alias format (using `?` as the delimiter) is accepted. Legacy format aliases result in an error. Users needing a migration period can explicitly set `support-legacy-alias-format=true`.
+* At *community* stability level or lower, `support-legacy-alias-format` defaults to `true`. The legacy format is recognized, but a deprecation warning is logged with the suggested new format.
+
+NOTE: Legacy aliases that contain `@` (e.g. `user@host`) are parsed as new-format aliases because `@` is a new-format delimiter. Users with such aliases should migrate to the new format.
 
 The following table shows how to convert legacy aliases to the new format:
 
