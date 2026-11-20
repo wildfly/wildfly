@@ -427,17 +427,59 @@ The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an
 
 `mp.messaging.outgoing.to.connector=smallrye-amqp` says that we want to use AMQP to back the `to` channel. Note that the value `smallrye-amqp` is SmallRye Reactive Messaging specific, and will only be understood if the AMQP connector is enabled.
 
-`mp.messaging.outgoing.to.address=my-topic` says that we will send data via `to` channel to the AMQP queue on address called `my-topic`.
+`mp.messaging.outgoing.to.address=my-topic` says that we will send data via the `to` channel to the AMQP address called `my-topic`.
 
 `mp.messaging.incoming.from.connector=smallrye-amqp` says that we want to use AMQP to back the `from` channel. As above, the value `smallrye-amqp` is SmallRye Reactive Messaging specific.
 
-`mp.messaging.incoming.from.address=my-topic` says that the channel named `from` will read data from the AMQP topic (or queue) on address called `my-topic`.
+`mp.messaging.incoming.from.address=my-topic` says that the channel named `from` will receive data from the AMQP address called `my-topic`.
 
 
 The full set of properties understood by the SmallRye Reactive Messaging's AMQP connector can be found in the SmallRye Reactive Messaging AMQP connector https://smallrye.io/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/amqp/amqp/[documentation].
 
 The prefixes discussed above are stripped off before passing the property to the AMQP connector.
 
+
+.Queue semantics with Apache ActiveMQ Artemis
+The minimal configuration above selects an AMQP address. Whether messages sent to that address use point-to-point queue semantics or publish/subscribe semantics depends on the broker and link configuration.
+
+Artemis supports `anycast` routing, which routes a message to a single queue on an address, and `multicast` routing, which routes a message to every subscription queue on an address.
+
+With Artemis defaults, the minimal example auto-creates `my-topic` as a multicast address if it does not already exist, because the client supplies no routing hint. The broker's `default-address-routing-type` address setting controls this fallback and defaults to `MULTICAST`. When Artemis auto-creates a multicast address, there might not yet be a subscription queue. Messages sent before a receiver establishes that queue are not retained for that receiver. This can occur during application startup or restarts; the sender being ready does not guarantee that the receiver has attached.
+
+To request anycast queue semantics with Artemis for an address that the broker will auto-create, add the following properties to the minimal configuration:
+
+[source,properties]
+----
+mp.messaging.outgoing.to.capabilities=queue
+mp.messaging.outgoing.to.use-anonymous-sender=false
+mp.messaging.incoming.from.capabilities=queue
+----
+
+The equivalent environment variables are:
+
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_CAPABILITIES=queue
+MP_MESSAGING_OUTGOING_TO_USE_ANONYMOUS_SENDER=false
+MP_MESSAGING_INCOMING_FROM_CAPABILITIES=queue
+----
+
+The `queue` capability requests anycast routing on both links, so either the sender or the receiver can attach first. This requires the broker to allow automatic creation of addresses and queues, and the connecting user to have permission to create them. When the sender attaches first, the queue is created before messages are sent, allowing messages to wait for the receiver. If the address already exists, ensure that its routing type and queues support anycast.
+
+SmallRye uses an anonymous sender by default when the broker supports it. SmallRye does not pass the configured capabilities when creating an anonymous sender, so `use-anonymous-sender=false` is needed for the outgoing `queue` capability to take effect. Disabling anonymous sending also means that outgoing message metadata cannot dynamically select a different destination address.
+
+Alternatively, preconfigure an anycast address and queue on the broker. For example, add the following address to the `<addresses>` element inside `<core>` in Artemis's `broker.xml`:
+
+[source,xml]
+----
+<address name="my-topic">
+    <anycast>
+        <queue name="my-topic"/>
+    </anycast>
+</address>
+----
+
+With this address and queue already present, the minimal client configuration above can be used without the additional link settings. Applications that require publish/subscribe semantics should instead configure multicast addresses and the required subscription queues. See the https://artemis.apache.org/components/artemis/documentation/latest/address-model.html[Artemis address model documentation] for more information.
 
 ===== Connecting to a secure AMQP broker
 
