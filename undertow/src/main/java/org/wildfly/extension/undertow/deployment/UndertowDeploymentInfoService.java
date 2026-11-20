@@ -114,6 +114,7 @@ import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 import jakarta.servlet.Filter;
@@ -166,6 +167,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public static final String DEFAULT_SERVLET_NAME = "default";
     public static final String UNDERTOW = "undertow";
+    private static final String WEB_SOCKETS_DEFLATE_MAX_BUFFER_SIZE_PROPERTY = "org.wildfly.extension.undertow.websockets.core.WEB_SOCKETS_DEFLATE_MAX_BUFFER_SIZE_PROPERTY";
 
     private DeploymentInfo deploymentInfo;
     private Registration registration;
@@ -913,7 +915,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
 
                 if(servletContainer.isPerMessageDeflate()) {
-                    PerMessageDeflateHandshake perMessageDeflate = new PerMessageDeflateHandshake(false, servletContainer.getDeflaterLevel());
+                    final int deflateBufferSize = Integer.parseInt(
+                            WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(WEB_SOCKETS_DEFLATE_MAX_BUFFER_SIZE_PROPERTY,Integer.toString(PerMessageDeflateHandshake.DEFAULT_MAX_BUFFER_SIZE)));
+                    PerMessageDeflateHandshake perMessageDeflate = new PerMessageDeflateHandshake(false, servletContainer.getDeflaterLevel(), true, true, deflateBufferSize);
                     webSocketDeploymentInfo.addExtension(perMessageDeflate);
                 }
 
