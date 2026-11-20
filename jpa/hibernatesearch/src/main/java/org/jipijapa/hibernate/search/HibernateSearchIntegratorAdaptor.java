@@ -28,7 +28,6 @@ public class HibernateSearchIntegratorAdaptor implements PersistenceProviderInte
     private static final Pattern MULTI_VALUE_SEPARATOR_PATTERN = Pattern.compile( "," );
 
     private Collection<Index> indexes;
-    private final List<WildFlyHibernateOrmSearchMappingConfigurer> configurers = new ArrayList<>();
 
     @Override
     public void injectIndexes(Collection<Index> indexes) {
@@ -58,7 +57,6 @@ public class HibernateSearchIntegratorAdaptor implements PersistenceProviderInte
         }
         // Change the default behavior of Hibernate Search regarding Jandex indexes
         WildFlyHibernateOrmSearchMappingConfigurer configurer = new WildFlyHibernateOrmSearchMappingConfigurer(indexes);
-        configurers.add(configurer); // for cleaning up later, see methods below
         mappingConfigurerRefs.add(0, configurer);
         properties.put(HibernateOrmMapperSettings.MAPPING_CONFIGURER, mappingConfigurerRefs);
     }
@@ -66,11 +64,9 @@ public class HibernateSearchIntegratorAdaptor implements PersistenceProviderInte
     @Override
     public void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {
         // Don't keep any reference to indexes, as those can be quite large.
+        // The mapping configurer keeps its own reference until Hibernate Search has started,
+        // which may happen after the EntityManagerFactory was created (e.g. when waiting for CDI).
         indexes = null;
-        for (WildFlyHibernateOrmSearchMappingConfigurer configurer : configurers) {
-            configurer.clearIndexReferences();
-        }
-        configurers.clear();
     }
 }
 

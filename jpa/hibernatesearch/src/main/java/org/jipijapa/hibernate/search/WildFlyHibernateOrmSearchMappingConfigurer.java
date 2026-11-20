@@ -28,14 +28,12 @@ final class WildFlyHibernateOrmSearchMappingConfigurer implements HibernateOrmSe
                  .buildMissingDiscoveredJandexIndexes(false);
         if (indexes != null) {
             for (Index index : indexes) {
-                // This class is garbage-collected after bootstrap,
-                // so the reference to indexes does not matter.
                 context.annotationMapping().addJandexIndex(index);
             }
+            // Hibernate Search may start after the EntityManagerFactory has been created
+            // (e.g. when it waits for the CDI bean manager), so the indexes must stay available until
+            // this method is called. Don't keep any reference to indexes afterwards, as those can be quite large.
+            indexes = null;
         }
-    }
-
-    public void clearIndexReferences() {
-        indexes = null;
     }
 }

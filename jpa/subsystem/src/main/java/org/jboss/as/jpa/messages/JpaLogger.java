@@ -136,15 +136,15 @@ public interface JpaLogger extends BasicLogger {
     //@Message(id = 9, value = "Could not load entity class '%s', ignoring this error and continuing with application deployment")
     //void cannotLoadEntityClass(@Cause Throwable cause, String className);
 
-    /**
-     * Logs an informational message indicating the persistence unit service is starting phase n of 2.
-     *
-     * @param phase       is the phase number (1 or 2)
-     * @param name        an additional name for the service.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 10, value = "Starting Persistence Unit (phase %d of 2) Service '%s'")
-    void startingPersistenceUnitService(int phase, String name);
+//    /**
+//     * Logs an informational message indicating the persistence unit service is starting phase n of 2.
+//     *
+//     * @param phase       is the phase number (1 or 2)
+//     * @param name        an additional name for the service.
+//     */
+//    @LogMessage(level = INFO)
+//    @Message(id = 10, value = "Starting Persistence Unit (phase %d of 2) Service '%s'")
+//    void startingPersistenceUnitService(int phase, String name);
 
     /**
      * Logs an informational message indicating the service is stopping.
@@ -152,9 +152,9 @@ public interface JpaLogger extends BasicLogger {
      * @param phase       is the phase number (1 or 2)
      * @param name        an additional name for the service.
      */
-    @LogMessage(level = INFO)
-    @Message(id = 11, value = "Stopping Persistence Unit (phase %d of 2) Service '%s'")
-    void stoppingPersistenceUnitService(int phase, String name);
+    // @LogMessage(level = INFO)
+    // @Message(id = 11, value = "Stopping Persistence Unit (phase %d of 2) Service '%s'")
+    // void stoppingPersistenceUnitService(int phase, String name);
 
     /**
      * Logs warning about unexpected problem gathering statistics.
