@@ -33,7 +33,9 @@
     <properties>
         <version.jakarta.cdi>5.0.0</version.jakarta.cdi>
         <version.jakarta.json.bind.api>3.1.0-M2</version.jakarta.json.bind.api>
+        <version.jakarta.ws.rs.jakarta-ws-rs-api>5.0.0-M1</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.org.eclipse.yasson>3.1.0-M2</version.org.eclipse.yasson>
+        <version.org.jboss.resteasy>8.0.0.Alpha1</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>7.0.0.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>7.0.Final</version.org.jboss.weld.weld-api>
     </properties>
@@ -103,6 +105,18 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.eclipse.yasson</groupId>
                 <artifactId>yasson</artifactId>
                 <version>${version.org.eclipse.yasson}</version>
@@ -117,6 +131,112 @@
                         <artifactId>jakarta.json</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-atom-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-cdi</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client-api</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-core</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-core-spi</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-crypto</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jackson2-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxb-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jsapi</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-json-binding-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-json-p-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-multipart-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-rxjava2</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-validator-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>

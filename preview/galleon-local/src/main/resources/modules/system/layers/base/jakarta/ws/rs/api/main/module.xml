@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.ws.rs.api">
+
+    <resources>
+        <artifact name="${jakarta.ws.rs:jakarta.ws.rs-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+        <module name="jakarta.inject.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <!-- Export the services for RESTful Web Services implementation -->
+        <module name="org.jboss.resteasy.resteasy-client" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core" services="export"/>
+        <!-- Export is required to provide visibility to the CDI extensions and producers to other modules. Deployments
+             already have this visibility. However, we need provided modules which use Jakarta REST to also have
+             visibility at runtime to these CDI resources.
+         -->
+        <module name="org.jboss.resteasy.resteasy-cdi" services="import" export="true"/>
+    </dependencies>
+</module>
