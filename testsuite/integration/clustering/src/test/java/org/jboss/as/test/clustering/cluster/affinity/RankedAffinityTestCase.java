@@ -95,7 +95,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
      */
     @Test
     void test(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
-        URL lbURL = new URL(baseURL.getProtocol(), baseURL.getHost(), baseURL.getPort() + 500, baseURL.getFile());
+        URL lbURL = new URL(baseURL.getProtocol(), baseURL.getHost(), baseURL.getPort() + LOAD_BALANCER_1_PORT_OFFSET, baseURL.getFile());
         URI lbURI = SimpleServlet.createURI(lbURL);
 
         establishTopology(baseURL, NODE_1_2_3);
@@ -124,8 +124,8 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             Thread.sleep(3_000);
 
             // 2
-            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500);
-            try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500, "remote+http")) {
+            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
+            try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET, "remote+http")) {
                 String node = previousAffinities[0];
                 ModelNode operation = new ModelNode();
                 operation.get(OP).set(ModelDescriptionConstants.STOP);
@@ -171,7 +171,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             super(NODE_1_2_3, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost, port=8590)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost, port=%d)", LOAD_BALANCER_1_MCMP_PORT)
                             .add("/subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[load-balancer-1])")
                             .add("/subsystem=modcluster/proxy=default:write-attribute(name=status-interval, value=1)")
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=ranked:add()")

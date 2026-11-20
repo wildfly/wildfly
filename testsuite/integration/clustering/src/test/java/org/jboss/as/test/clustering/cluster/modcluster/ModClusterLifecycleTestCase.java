@@ -51,7 +51,6 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = ModClusterLifecycleTestCase.class.getSimpleName();
     private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
     private static final long STATUS_REFRESH_TIMEOUT = 30_000;
-    private static final int LB_OFFSET = 500;
 
     @Deployment(name = DEPLOYMENT_1, testable = false, managed = false)
     @TargetsContainer(NODE_1)
@@ -180,7 +179,7 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
         return TestSuiteEnvironment.getModelControllerClient(
                 null,
                 TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort() + LB_OFFSET);
+                TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
     }
 
     static class ServerSetupTask extends ManagementServerSetupTask {
@@ -189,7 +188,7 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
                     .setupScript(createScriptBuilder()
                             .startBatch()
                             .add("/subsystem=modcluster/proxy=default:write-attribute(name=advertise, value=false)")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=localhost, port=8590)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=localhost, port=%d)", LOAD_BALANCER_1_MCMP_PORT)
                             .add("/subsystem=modcluster/proxy=default:list-add(name=proxies, value=proxy1)")
                             .endBatch()
                             .build())
