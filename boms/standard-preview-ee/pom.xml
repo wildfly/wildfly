@@ -54,7 +54,7 @@
         <version.org.antlr>4.13.2</version.org.antlr>
         <version.org.apache.lucene>9.12.3</version.org.apache.lucene>
         <version.org.bytebuddy>1.18.14</version.org.bytebuddy>
-        <version.org.elasticsearch.client.rest-client>9.3.1</version.org.elasticsearch.client.rest-client>
+        <version.org.elasticsearch.client.rest-client>9.4.2</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>6.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.21</version.org.glassfish.jakarta.faces>
         <version.org.glassfish.soteria>4.0.2</version.org.glassfish.soteria>
