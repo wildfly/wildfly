@@ -1,0 +1,29 @@
+RULE hold the shutdown just before the server suspends
+CLASS org.jboss.as.server.suspend.SuspendController
+METHOD suspend(org.jboss.as.server.suspend.ServerSuspendContext)
+AT ENTRY
+IF TRUE
+DO
+  System.out.println("[BYTEMAN] shutdown waiting for a health request");
+  waitFor("health-request-in-probe-loop", 60000)
+ENDRULE
+
+RULE let the shutdown proceed once a request is part way through the probes
+CLASS org.wildfly.extension.health.HealthContextService$HealthCheckHandler
+METHOD handleRequest
+AT INVOKE java.util.Iterator.next()
+IF NOT flagged("health-probe-paused")
+DO
+  flag("health-probe-paused");
+  signalWake("health-request-in-probe-loop", false);
+  waitFor("server-probes-cleared", 60000)
+ENDRULE
+
+RULE release the health request once the server probes have been cleared
+CLASS org.wildfly.extension.health.ServerProbesService
+METHOD stop
+AT EXIT
+IF TRUE
+DO
+  signalWake("server-probes-cleared", false)
+ENDRULE

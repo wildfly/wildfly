@@ -35,11 +35,11 @@ public class MicroProfileHealthReporter {
     private final boolean globalDefaultProceduresDisabled;
     private final String defaultReadinessEmptyResponse;
     private final String defaultStartupEmptyResponse;
-    private final Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
-    private final Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
-    private final Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
-    private final Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
-    private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> healthChecks = new ConcurrentHashMap<>();
+    private final Map<HealthCheck, ClassLoader> livenessChecks = new ConcurrentHashMap<>();
+    private final Map<HealthCheck, ClassLoader> readinessChecks = new ConcurrentHashMap<>();
+    private final Map<HealthCheck, ClassLoader> startupChecks = new ConcurrentHashMap<>();
+    private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new ConcurrentHashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
