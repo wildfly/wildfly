@@ -11,7 +11,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Encapsulates a {@link Dependency} on a {@link org.jboss.msc.Service}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceDependency}.
  */
+@Deprecated(forRemoval = true)
 public class ServiceDependency extends SimpleServiceNameProvider implements Dependency {
 
     public ServiceDependency(ServiceName name) {

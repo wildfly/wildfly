@@ -12,7 +12,9 @@ import org.jboss.msc.service.ServiceBuilder;
 /**
  * A {@link SupplierDependency} that applies a mapping to the source dependency value.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.Dependency#map(Function)}.
  */
+@Deprecated(forRemoval = true)
 public class FunctionSupplierDependency<T, R> implements SupplierDependency<R> {
 
     private final SupplierDependency<T> dependency;

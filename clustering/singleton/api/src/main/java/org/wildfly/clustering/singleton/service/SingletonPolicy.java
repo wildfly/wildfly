@@ -13,7 +13,9 @@ import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 /**
  * Defines a policy for creating singleton services.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link ServiceTargetFactory}.
  */
+@Deprecated(forRemoval = true)
 public interface SingletonPolicy {
     NullaryServiceDescriptor<SingletonPolicy> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.default-singleton-policy", SingletonPolicy.class);
     UnaryServiceDescriptor<SingletonPolicy> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.clustering.singleton-policy", DEFAULT_SERVICE_DESCRIPTOR);

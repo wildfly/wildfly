@@ -10,7 +10,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Provides a service name.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public interface ServiceNameProvider {
     /**
      * Returns the associated service name

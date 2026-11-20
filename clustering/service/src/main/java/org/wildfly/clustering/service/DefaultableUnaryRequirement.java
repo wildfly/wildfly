@@ -8,7 +8,9 @@ package org.wildfly.clustering.service;
 /**
  * Identifies a requirement that provides a service and can reference some default requirement.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.descriptor.UnaryServiceDescriptor#of(String, org.wildfly.service.descriptor.NullaryServiceDescriptor)}.
  */
+@Deprecated(forRemoval = true)
 public interface DefaultableUnaryRequirement extends UnaryRequirement {
     Requirement getDefaultRequirement();
 

@@ -16,7 +16,9 @@ import org.jboss.msc.service.ServiceController;
 /**
  * {@link LifecycleListener} that counts down a latch when a target {@link LifecycleEvent} is triggered.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class CountDownLifecycleListener implements LifecycleListener {
     private final Set<LifecycleEvent> targetEvents;
     private final CountDownLatch latch;

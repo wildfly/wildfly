@@ -10,7 +10,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * {@link ServiceNameProvider} using a pre-defined {@link ServiceName}
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class SimpleServiceNameProvider implements ServiceNameProvider {
 
     private final ServiceName name;

@@ -15,7 +15,9 @@ import org.jboss.msc.service.ServiceController;
 /**
  * Lifecycle listener that cascades service removal to a series of services.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class CascadeRemovalLifecycleListener implements LifecycleListener {
 
     private final Iterable<ServiceController<?>> controllers;

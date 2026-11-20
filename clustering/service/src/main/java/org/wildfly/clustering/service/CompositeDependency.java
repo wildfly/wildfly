@@ -9,7 +9,9 @@ import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.Installer.Builder#requires(Iterable)}.
  */
+@Deprecated(forRemoval = true)
 public class CompositeDependency implements Dependency {
 
     private final Dependency[] dependencies;
