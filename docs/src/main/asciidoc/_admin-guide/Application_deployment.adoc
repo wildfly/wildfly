@@ -767,6 +767,112 @@ different, the server is using the file you want to replace. You should
 undeploy the deployment, replace the content, and then deploy again. Or
 you can stop the server, replace the deployment and deploy again.
 
+[[deployment-content-source-restrictions]]
+== Deployment content source restrictions
+
+When an administrator's deployment operation includes a parameter instructing
+the server to read content from a URL or filesystem path, this results in the content
+being read using the server process permissions.
+The server process may have permissions to read content the administrator invoking the
+operation cannot. Therefore, WildFly applies some configurable restrictions on the
+permitted content sources.
+
+To understand better this distinction, when uploading a local file using the
+CLI command `deploy /path/to/application.war`, the CLI process reads the file
+using the local user's permissions and sends its content to the server. The
+server side restrictions therefore do not apply to that local path. However,
+when deploying from a URL with `deploy --url=file:/path/to/application.war`,
+the server process opens the URL and reads the content. In this case, the
+source restrictions apply.
+
+By default, sources using the http, https, file, and ftp schemes are allowed,
+except for files inside protected server directories. These include directories
+defined by the `jboss.server.config.dir`, `jboss.server.data.dir`, `jboss.server.log.dir`,
+`jboss.server.temp.dir`, and `jboss.server.content.dir` properties, along with their
+domain mode counterparts.
+There are no default file extension restrictions: .war, .jar, and other extensions are allowed,
+subject to the source restrictions.
+HTTP and HTTPS sources resolving to link-local addresses are also blocked by default.
+
+Two system properties control this policy. Configure them on the
+standalone or managed domain to override the defaults.
+
+=== Configuring allowed sources
+
+The `jboss.deployment.source.allow` system property is unset by default.
+Set it to a Java regular expression to replace the default scheme and
+directory restrictions. The expression must match the entire source URL
+or resolved filesystem path to be allowed.
+
+Let's see some examples assuming we are working on unix systems:
+
+Allow filesystem deployments ending only with `.ear`, `.war`, or `.jar` from a specific
+first level directory `/deployments`. Notice that this excludes any sources under the server home directory,
+including the default deployment scanner directory `$WLY_HOME/standalone/deployments`:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow='(file:(//)?)?/deployments/\w+[.](war|ear|jar)'
+----
+
+[NOTE]
+====
+The default directory of the deployment scanner can be configured to be outside the server home directory.
+See <<Deployment_Scanner,Deployment Scanner Subsystem>>
+====
+
+Assuming WildFly is installed at `/opt/wildfly`, allow filesystem deployments only from the
+default deployment scanner directory `/opt/wildfly/standalone/deployments` for any extension
+except `.properties` or `.xml` and ignoring any subdirectories:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow='(file:(//)?)?/opt/wildfly/standalone/deployments/\w+[.](?!properties|xml)[^./]+'
+----
+
+Assuming WildFly is installed at `/opt/wildfly`, allow `.ear`, `.war`, and
+`.jar` filesystem deployments from any directory outside WildFly Home server plus sources
+under its default deployment scanner directory and subdirectories `/opt/wildfly/standalone/deployments`:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow='(file:(//)?)?/(?!/|opt/wildfly/(?!standalone/deployments/)).*[.](war|jar|ear)'
+----
+
+Allow deployments ending only with `.ear`, `.war`, or `.jar` from
+`https://internal.example.com/wildfly/deployments`:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow="https://internal[.]example[.]com/wildfly/deployments/.+[.](war|ear|jar)"
+----
+
+[IMPORTANT]
+====
+Use overrides carefully. Replacing the default source restrictions can
+allow users to upload sensitive content files to the server, which can be exposed back
+by using read-content operations. Before adding a new regular expression, test it with the
+`java.util.regex.Pattern` and `java.util.regex.Matcher` classes to ensure it matches only
+the intended sources.
+====
+
+=== Allowing link-local addresses
+
+The `jboss.deployment.source.allow.link-local.address` system property
+defaults to `false`. HTTP and HTTPS sources resolving to link-local
+addresses are blocked by default, even when they match a configured
+`jboss.deployment.source.allow` expression.
+
+To allow these sources, set the following JVM option:
+
+[source,options="nowrap"]
+----
+-Djboss.deployment.source.allow.link-local.address=true
+----
+
+For example, this permits `http://internal.example.com/app.war` even if `internal.example.com`
+resolves to `169.254.10.20`, provided it also matches any configured `jboss.deployment.source.allow` expression.
+
 :leveloffset: +1
 
 include::Deployment_Overlays.adoc[]
