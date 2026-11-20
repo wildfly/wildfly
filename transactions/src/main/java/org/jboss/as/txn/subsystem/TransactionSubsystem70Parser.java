@@ -51,7 +51,10 @@ class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
                     TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.parseAndSetParameter(value, operation, reader);
                     break;
                 case TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN:
-                    TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.parseAndSetParameter(value, operation, reader);
+                    // Map old enum to new int attribute: "ignore" → 0 (skip, default), "wait" → -1 (indefinite)
+                    if ("wait".equals(value)) {
+                        TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN.parseAndSetParameter("-1", operation, reader);
+                    }
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -61,7 +64,6 @@ class TransactionSubsystem70Parser extends TransactionSubsystem60Parser {
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        // Handle elements
         requireNoContent(reader);
     }
 }
