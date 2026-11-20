@@ -32,8 +32,8 @@
 
     <properties>
         <!-- This is a test-only artifact with a never-changing version.
-                     DO NOT DEPLOY IT -->
-        <skipPublishing>true</skipPublishing>
+             DO NOT PUBLISH/DEPLOY IT TO A MAVEN REPOSITORY -->
+        <central.skipPublishing>true</central.skipPublishing>
     </properties>
 
     <build>

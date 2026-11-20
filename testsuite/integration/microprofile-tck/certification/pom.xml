@@ -23,8 +23,8 @@
     <name>WildFly Test Suite: Integration - MicroProfile TCK - Certification</name>
 
     <properties>
-        <!-- Don't try to deploy the testsuite modules because they don't build jars -->
-        <skipPublishing>true</skipPublishing>
+        <!-- Don't publish/deploy the testsuite modules to a Maven repository; they don't build jars -->
+        <central.skipPublishing>true</central.skipPublishing>
     </properties>
 
     <build>

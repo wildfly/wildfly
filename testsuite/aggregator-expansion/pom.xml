@@ -35,8 +35,8 @@
         available via the wildfly-galleon-pack feature-pack artifact.</description>
 
     <properties>
-        <!-- Don't try to deploy the module -->
-        <skipPublishing>true</skipPublishing>
+        <!-- Don't publish/deploy this module to a Maven repository -->
+        <central.skipPublishing>true</central.skipPublishing>
     </properties>
 
     <profiles>

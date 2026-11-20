@@ -31,8 +31,8 @@
 
 
     <properties>
-        <!-- Don't deploy the testsuite modules -->
-        <skipPublishing>true</skipPublishing>
+        <!-- Don't publish/deploy the testsuite modules to a Maven repository -->
+        <central.skipPublishing>true</central.skipPublishing>
     </properties>
 
     <dependencies>
