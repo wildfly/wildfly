@@ -77,6 +77,7 @@ public final class Constants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
+    public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION_REQUIRE_AUTH = "caller-propagation-require-auth";
 
     public static final String IOR_SUPPORTED = "supported";
     public static final String IOR_REQUIRED = "required";

@@ -29,7 +29,7 @@ public class IIOPSubsystemParser_3_0 extends PersistentResourceXMLParser {
     public PersistentResourceXMLDescription getParserDescription() {
         return builder(IIOPExtension.PATH_SUBSYSTEM, Namespace.IIOP_OPENJDK_3_0.getUriString())
                 .setMarshallDefaultValues(true)
-                .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                .addAttributes(IIOPRootDefinition.ATTRIBUTES_3_0.toArray(new AttributeDefinition[0]))
                 .build();
     }
 
