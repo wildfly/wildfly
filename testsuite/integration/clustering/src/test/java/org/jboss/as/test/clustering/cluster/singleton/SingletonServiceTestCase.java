@@ -19,6 +19,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
@@ -58,7 +59,9 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
     @Test
     void singletonService(
             @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
             throws Exception {
 
         // Needed to be able to inject ArquillianResource
@@ -233,6 +236,65 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        }
+
+            suspend(client2);
+
+            try {
+                response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_1)));
+                try {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                    assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                } finally {
+                    HttpClientUtils.closeQuietly(response);
+                }
+
+                response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
+                try {
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                } finally {
+                    HttpClientUtils.closeQuietly(response);
+                }
+            } finally {
+                resume(client2);
+            }
+
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            try {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            try {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            try {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            try {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+       }
     }
 }

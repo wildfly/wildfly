@@ -24,10 +24,7 @@ public interface SingletonServiceActivator extends ServiceActivator {
 
     @Override
     default void activate(ServiceActivatorContext context) {
-        Map.Entry<String, String[]> resolved = ServiceTargetFactory.SERVICE_DESCRIPTOR.resolve(this.getSingletonPolicy());
-        ServiceName baseName = ServiceName.parse(resolved.getKey());
-        ServiceName name = (resolved.getValue().length > 0) ? baseName.append(resolved.getValue()) : baseName;
-        ServiceDependency<SingletonServiceTargetFactory> singletonTargetFactory = ServiceDependency.on(name);
+        ServiceDependency<SingletonServiceTargetFactory> singletonTargetFactory = this.getSingletonServiceTargetFactoryDependency();
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(ServiceTarget target) {
@@ -47,6 +44,17 @@ public interface SingletonServiceActivator extends ServiceActivator {
             }
         };
         ServiceInstaller.Builder.of(installer).requires(singletonTargetFactory).build().install(context.getServiceTarget());
+    }
+
+    /**
+     * Returns the service dependency on a {@link SingletonServiceTargetFactory}.
+     * @return the service dependency on a {@link SingletonServiceTargetFactory}.
+     */
+    default ServiceDependency<SingletonServiceTargetFactory> getSingletonServiceTargetFactoryDependency() {
+        Map.Entry<String, String[]> resolved = ServiceTargetFactory.SERVICE_DESCRIPTOR.resolve(this.getSingletonPolicy());
+        ServiceName baseName = ServiceName.parse(resolved.getKey());
+        ServiceName name = (resolved.getValue().length > 0) ? baseName.append(resolved.getValue()) : baseName;
+        return ServiceDependency.on(name);
     }
 
     /**
