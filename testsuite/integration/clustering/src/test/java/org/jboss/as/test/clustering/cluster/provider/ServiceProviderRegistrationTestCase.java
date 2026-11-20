@@ -5,13 +5,14 @@
 
 package org.jboss.as.test.clustering.cluster.provider;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Collection;
+import static org.assertj.core.api.Assertions.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
@@ -51,49 +52,46 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
     }
 
     @Test
-    void test() throws Exception {
-        this.test(ServiceProviderRetrieverBean.class);
+    void test(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+        this.test(client1, client2, ServiceProviderRetrieverBean.class);
     }
 
     @Test
-    void legacy() throws Exception {
-        this.test(LegacyServiceProviderRetrieverBean.class);
+    void legacy(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+        this.test(client1, client2, LegacyServiceProviderRetrieverBean.class);
     }
 
-    public void test(Class<? extends ServiceProviderRetriever> beanClass) throws Exception {
+    public void test(ManagementClient client1, ManagementClient client2, Class<? extends ServiceProviderRetriever> beanClass) throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             ServiceProviderRetriever bean = directory.lookupStateless(beanClass, ServiceProviderRetriever.class);
 
-            Collection<String> names = bean.getProviders();
-            assertEquals(2, names.size());
-            assertTrue(names.contains(NODE_1), names.toString());
-            assertTrue(names.contains(NODE_2), names.toString());
+            assertThat(bean.getProviders()).containsExactlyInAnyOrder(NODE_1, NODE_2);
 
             undeploy(DEPLOYMENT_1);
 
-            names = bean.getProviders();
-            assertEquals(1, names.size());
-            assertTrue(names.contains(NODE_2));
+            assertThat(bean.getProviders()).containsExactly(NODE_2);
 
             deploy(DEPLOYMENT_1);
 
-            names = bean.getProviders();
-            assertEquals(2, names.size());
-            assertTrue(names.contains(NODE_1));
-            assertTrue(names.contains(NODE_2));
+            assertThat(bean.getProviders()).containsExactlyInAnyOrder(NODE_1, NODE_2);
 
             stop(NODE_2);
 
-            names = bean.getProviders();
-            assertEquals(1, names.size());
-            assertTrue(names.contains(NODE_1));
+            assertThat(bean.getProviders()).containsExactly(NODE_1);
 
             start(NODE_2);
 
-            names = bean.getProviders();
-            assertEquals(2, names.size());
-            assertTrue(names.contains(NODE_1));
-            assertTrue(names.contains(NODE_2));
+            assertThat(bean.getProviders()).containsExactlyInAnyOrder(NODE_1, NODE_2);
+
+            suspend(client1);
+
+            try {
+                assertThat(bean.getProviders()).containsExactly(NODE_2);
+            } finally {
+                resume(client1);
+            }
+
+            assertThat(bean.getProviders()).containsExactlyInAnyOrder(NODE_1, NODE_2);
         }
     }
 }
