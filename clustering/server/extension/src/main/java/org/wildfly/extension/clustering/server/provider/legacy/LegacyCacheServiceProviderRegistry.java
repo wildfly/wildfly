@@ -11,8 +11,9 @@ import java.util.stream.Collectors;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.provider.CacheContainerServiceProviderRegistrar;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 import org.wildfly.extension.clustering.server.group.legacy.LegacyCacheContainerGroup;
 import org.wildfly.extension.clustering.server.group.legacy.LegacyCacheContainerGroupMember;
 
@@ -36,10 +37,10 @@ public interface LegacyCacheServiceProviderRegistry<T> extends org.wildfly.clust
 
     @Override
     default org.wildfly.clustering.provider.ServiceProviderRegistration<T> register(T service, org.wildfly.clustering.provider.ServiceProviderRegistration.Listener listener) {
-        ServiceProviderRegistration<T, CacheContainerGroupMember> registration = this.unwrap().register(service, new ServiceProviderListener<>() {
+        ServiceProviderRegistration<T, CacheContainerGroupMember> registration = this.unwrap().register(service, new ServiceProviderRegistrationListener<>() {
             @Override
-            public void providersChanged(Set<CacheContainerGroupMember> providers) {
-                listener.providersChanged(providers.stream().map(LegacyCacheContainerGroupMember::wrap).collect(Collectors.toSet()));
+            public void providersChanged(ServiceProviderRegistrationEvent<CacheContainerGroupMember> event) {
+                listener.providersChanged(event.getCurrentProviders().stream().map(LegacyCacheContainerGroupMember::wrap).collect(Collectors.toSet()));
             }
         });
         LegacyCacheContainerGroup group = this.getGroup();

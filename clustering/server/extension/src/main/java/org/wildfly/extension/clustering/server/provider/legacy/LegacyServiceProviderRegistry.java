@@ -10,9 +10,10 @@ import java.util.stream.Collectors;
 
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.group.GroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 import org.wildfly.extension.clustering.server.group.legacy.LegacyGroup;
 
 /**
@@ -39,10 +40,10 @@ public interface LegacyServiceProviderRegistry<T, A extends Comparable<A>, M ext
     @Override
     default org.wildfly.clustering.provider.ServiceProviderRegistration<T> register(T service, org.wildfly.clustering.provider.ServiceProviderRegistration.Listener listener) {
         LegacyGroup<A, M> group = this.getGroup();
-        ServiceProviderRegistration<T, M> registration = this.unwrap().register(service, new ServiceProviderListener<>() {
+        ServiceProviderRegistration<T, M> registration = this.unwrap().register(service, new ServiceProviderRegistrationListener<>() {
             @Override
-            public void providersChanged(Set<M> providers) {
-                listener.providersChanged(providers.stream().map(group::wrap).collect(Collectors.toSet()));
+            public void providersChanged(ServiceProviderRegistrationEvent<M> event) {
+                listener.providersChanged(event.getCurrentProviders().stream().map(group::wrap).collect(Collectors.toSet()));
             }
         });
         return new org.wildfly.clustering.provider.ServiceProviderRegistration<>() {
