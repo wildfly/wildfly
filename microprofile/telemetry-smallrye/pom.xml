@@ -36,7 +36,6 @@
     </dependencyManagement>
 
     <modules>
-        <module>cdi-provider</module>
         <module>extension</module>
     </modules>
 </project>
