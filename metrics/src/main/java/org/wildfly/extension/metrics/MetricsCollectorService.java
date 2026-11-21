@@ -78,7 +78,8 @@ public class MetricsCollectorService implements Service<MetricCollector> {
         // asynchronously on a management thread that carries no authenticated identity, so
         // it must use a SuperUser client; otherwise RBAC denies every read-resource and the
         // retry queue spins until it times out. This only reads resource structure to register
-        // metric metadata; the per-user value reads above still enforce RBAC at scrape time.
+        // metric metadata without recursively reading child configuration; the per-user value reads above
+        // still enforce RBAC at scrape time.
         discoveryClient = modelControllerClientFactory.get().createSuperUserClient(managementExecutor.get());
 
         metricCollector = new MetricCollector(modelControllerClient,

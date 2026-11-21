@@ -135,7 +135,7 @@ public class MetricCollector {
         }
         ModelNode result = null;
         try {
-            result = discoveryClient.execute(Operations.createReadResourceOperation(address.toModelNode(), true));
+            result = discoveryClient.execute(Operations.createReadResourceOperation(address.toModelNode(), false));
         } catch (RuntimeException e) {
             synchronized (this) {
                 if (resourceMetricsRetryQueue.isPending(pendingResource)) {
