@@ -20,6 +20,12 @@ import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+/**
+ * OTLP registry that performs server-initiated metric pushes with SuperUser model access.
+ *
+ * <p>Unlike a Prometheus pull, an OTLP push has no caller whose permissions can be applied to the exported values.
+ * This registry therefore intentionally does not use {@link org.wildfly.extension.micrometer.metrics.MetricScrapeContext}.
+ */
 public class WildFlyOtlpRegistry extends OtlpMeterRegistry implements WildFlyRegistry {
     public WildFlyOtlpRegistry(WildFlyMicrometerOtlpConfig config) {
         super(config, Clock.SYSTEM);
@@ -30,7 +36,8 @@ public class WildFlyOtlpRegistry extends OtlpMeterRegistry implements WildFlyReg
      * metrics are read through the same per-caller client the pull endpoint uses, so here they would resolve to the
      * anonymous identity and be filtered to 0 under RBAC. Unlike a scrape, a server-initiated push has no caller to
      * filter by, so the reads are performed as an in-VM call, which the management layer authorizes as SuperUser - the
-     * same mechanism {@code ModelControllerClientFactory} uses for its SuperUser clients. The pull path is unaffected.
+     * same mechanism {@code ModelControllerClientFactory} uses for its SuperUser clients. The pull path is unaffected,
+     * and this distinction from Prometheus filtering is intentional.
      */
     @Override
     protected void publish() {

@@ -7,8 +7,10 @@ package org.wildfly.extension.micrometer.prometheus;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
+import io.micrometer.prometheusmetrics.PrometheusConfig;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -52,6 +54,36 @@ public class WildFlyPrometheusRegistryTest {
             assertFalse("The denied JMS queue series and its name label must be omitted",
                     scrape.contains(DENIED_QUEUE));
         }
+    }
+
+    /** Verifies that custom Prometheus exporter properties are applied by the filtered scrape path. */
+    @Test
+    public void scrapeUsesPrometheusConfigExporterProperties() {
+        try (WildFlyPrometheusRegistry registry = new WildFlyPrometheusRegistry(configWithCreatedTimestamps())) {
+            registry.counter("configured_counter").increment();
+
+            String scrape = registry.scrape();
+
+            assertTrue("The configured exporter must include counter creation timestamps",
+                    scrape.contains("configured_counter_created"));
+        }
+    }
+
+    /** Builds a Prometheus configuration that enables a non-default exporter output property. */
+    private static PrometheusConfig configWithCreatedTimestamps() {
+        return new PrometheusConfig() {
+            @Override
+            public String get(String key) {
+                return null;
+            }
+
+            @Override
+            public Properties prometheusProperties() {
+                Properties properties = new Properties();
+                properties.setProperty("io.prometheus.exporter.includeCreatedTimestamps", "true");
+                return properties;
+            }
+        };
     }
 
     /** Builds a model metric for a named JMS queue backed by the given management client. */
