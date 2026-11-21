@@ -619,6 +619,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 if (timeOut.isSetTxQueryTimeout()) {
                     managedConnectionFactory.setTransactionQueryTimeout(true);
                 }
+                if (timeOut.getValidationTimeoutSeconds() != null) {
+                    managedConnectionFactory.setValidationTimeout(timeOut.getValidationTimeoutSeconds());
+                }
             }
 
             if (statement != null) {

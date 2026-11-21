@@ -203,6 +203,73 @@ RESOURCE DESCRIPTION
 [...]
 ----
 
+[[ds-validation-timeout]]
+== Validation Timeout
+
+A connection that has gone stale (for example after a network interruption
+or a database restart) may cause a JDBC driver to block indefinitely when
+the connection is validated. When this happens during background validation
+or validate-on-match, a single stale connection can block the whole
+connection pool.
+
+Setting `query-timeout` is not a suitable remedy, as it applies to all
+statements, including legitimate long-running application queries. The
+`validation-timeout-seconds` attribute of the `data-source` and
+`xa-data-source` resources applies a timeout only to the validation of a
+connection.
+
+[NOTE]
+
+The `validation-timeout-seconds` attribute is provided at `community`
+xref:Admin_Guide.adoc#Feature_stability_levels[stability] level. It is
+available only if the server runs at `community` stability or a less
+stable level, e.g. when started with `--stability=community`. The same
+applies to the `urn:jboss:domain:datasources:community:8.0` XML namespace
+used to configure it. At the default stability level neither the attribute
+nor the namespace is available.
+
+[cols=",,",options="header"]
+|=======================================================================
+|Attribute |Type |Default
+|`validation-timeout-seconds` |int, expressions allowed |`0` (no timeout)
+|=======================================================================
+
+The value is in seconds. The timeout is passed to the configured
+`valid-connection-checker`, so it only takes effect with a checker that
+supports a validation timeout.
+
+It can be configured in the `<timeout>` element of a datasource:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:datasources:community:8.0">
+    <datasources>
+        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
+            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+            <driver>h2</driver>
+            <timeout>
+                <validation-timeout-seconds>2</validation-timeout-seconds>
+            </timeout>
+            <validation>
+                <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
+                <background-validation>true</background-validation>
+            </validation>
+        </datasource>
+    </datasources>
+</subsystem>
+----
+
+or through the CLI:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=datasources/data-source=ExampleDS:write-attribute(name=validation-timeout-seconds, value=2)
+----
+
+In a managed domain, a configuration that defines
+`validation-timeout-seconds` is rejected when it is transformed for a host
+that does not support the attribute.
+
 [[ds-component-reference]]
 == Component Reference
 
