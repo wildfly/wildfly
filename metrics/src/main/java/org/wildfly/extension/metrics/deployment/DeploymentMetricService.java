@@ -53,7 +53,7 @@ public class DeploymentMetricService implements Service {
          */
         sb.requires(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName()));
         sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, metricCollector, metricRegistry,
-            prefix))
+                prefix))
                 .install();
     }
 

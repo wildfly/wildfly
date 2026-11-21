@@ -23,7 +23,9 @@ import org.jboss.as.controller.PathAddress;
  * The queue coalesces duplicate notifications and lets callers cancel work for
  * resources that are removed before collection completes.
  *
- * TODO: Moved to shared module when available
+ * TODO: This class is duplicated in the Metrics subsystem. Keep the implementations in sync; differences are
+ * limited to package declaration, imports, and formatting. Eventually, this duplicate code should be factored out
+ * into a common location.
  */
 final class ResourceMetricsRetryQueue {
     private static final long RETRY_TIMEOUT_NANOS = TimeUnit.MINUTES.toNanos(30);
