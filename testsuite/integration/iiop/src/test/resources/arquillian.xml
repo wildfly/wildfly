@@ -14,8 +14,8 @@
         <!-- The server than invokes the exposed EJB's -->
         <container qualifier="iiop-client" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-client</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-iiop-client</property>
+                <property name="jbossHome">${basedir}/target/wildfly-iiop-client</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-iiop-client</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
@@ -31,7 +31,7 @@
         <!-- The server that expsoses EJB's via IIOP -->
         <container qualifier="iiop-server" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-server</property>
+                <property name="jbossHome">${basedir}/target/wildfly-iiop-server</property>
                 <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
@@ -49,7 +49,7 @@
              iiop-server so overriding the deny-list filter does not disable the default filter for other tests. -->
         <container qualifier="iiop-denylist-server" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-denylist-server</property>
+                <property name="jbossHome">${basedir}/target/wildfly-iiop-denylist-server</property>
                 <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=200 -Djboss.experimental.iiop.deserialization.filter.spec=!org.jboss.as.test.iiop.denylist.DangerousClass</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
@@ -69,8 +69,8 @@
         <!-- The server than invokes the exposed EJB's -->
         <container qualifier="iiop-client" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-client</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-iiop-ssl-client</property>
+                <property name="jbossHome">${basedir}/target/wildfly-iiop-ssl-client</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-iiop-ssl-client</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -84,7 +84,7 @@
         <!-- The server that expsoses EJB's via IIOP -->
         <container qualifier="iiop-server" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-server</property>
+                <property name="jbossHome">${basedir}/target/wildfly-iiop-ssl-server</property>
                 <property name="javaVmArguments">${server.jvm2.args} -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="managementAddress">${node1}</property>

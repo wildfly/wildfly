@@ -164,28 +164,81 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
                             <execution>
-                                <id>build-clustering.server</id>
+                                <id>copy-wildfly-for-iiop-client</id>
                                 <phase>test-compile</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <target>
-                                        <!-- Configure IIOP server and client. -->
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
-                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}" />
-                                            <property name="keystore.client.file" value="${wildfly.config.dir}/client.keystore.jks"/>
-                                            <property name="keystore.server.file" value="${wildfly.config.dir}/server.keystore.jks"/>
-                                            <property name="truststore.client.file" value="${wildfly.config.dir}/client.truststure.jks"/>
-                                            <property name="truststore.server.file" value="${wildfly.config.dir}/server.truststore.jks"/>
-                                            <property name="keystore.password" value="password"/>
-                                            <target name="build-iiop-elytron" />
-                                        </ant>
-                                    </target>
+                                    <outputDirectory>${basedir}/target/wildfly-iiop-client</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${wildfly.dir}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-wildfly-for-iiop-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-iiop-server</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${wildfly.dir}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-wildfly-for-iiop-denylist-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-iiop-denylist-server</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${wildfly.dir}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-wildfly-for-iiop-ssl-client</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-iiop-ssl-client</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${wildfly.dir}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-wildfly-for-iiop-ssl-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-iiop-ssl-server</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${wildfly.dir}</directory>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
@@ -193,20 +246,8 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                         <configuration>
                             <offline>true</offline>
-                            <scripts>
-                                <script>ssl-enable.cli</script>
-                            </scripts>
-                            <jboss-home>${wildfly.dir}</jboss-home>
                             <stdout>none</stdout>
                             <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>
@@ -214,8 +255,92 @@
                                 <module.path>${jboss.dist}/modules</module.path>
                             </system-properties>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>configure-base-ssl</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>ssl-enable.cli</script>
+                                    </scripts>
+                                    <jboss-home>${wildfly.dir}</jboss-home>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>configure-iiop-client</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>iiop-jts.cli</script>
+                                        <script>iiop-auth-context.cli</script>
+                                    </scripts>
+                                    <jboss-home>${basedir}/target/wildfly-iiop-client</jboss-home>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>configure-iiop-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>iiop-jts.cli</script>
+                                        <script>iiop-auth-context.cli</script>
+                                    </scripts>
+                                    <jboss-home>${basedir}/target/wildfly-iiop-server</jboss-home>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>configure-iiop-denylist-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>iiop-jts.cli</script>
+                                        <script>iiop-auth-context.cli</script>
+                                    </scripts>
+                                    <jboss-home>${basedir}/target/wildfly-iiop-denylist-server</jboss-home>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>configure-iiop-ssl-client</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>iiop-auth-context.cli</script>
+                                    </scripts>
+                                    <jboss-home>${basedir}/target/wildfly-iiop-ssl-client</jboss-home>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>configure-iiop-ssl-server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>iiop-auth-context.cli</script>
+                                        <script>iiop-require-ssl.cli</script>
+                                    </scripts>
+                                    <jboss-home>${basedir}/target/wildfly-iiop-ssl-server</jboss-home>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
-                    
+
                     <!-- Surefire test executions -->
                     <!--
                     -Djboss.socket.binding.port-offset=100

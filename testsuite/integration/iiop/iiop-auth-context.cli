@@ -1,0 +1,7 @@
+embed-server --server-config=standalone-full.xml
+
+/subsystem=elytron/authentication-configuration=iiop-auth-config:add(authentication-name=user1, credential-reference={clear-text=password1})
+/subsystem=elytron/authentication-context=default-context:add(match-rules=[{match-protocol=iiop, authentication-configuration=iiop-auth-config},{match-protocol=ssliop, authentication-configuration=iiop-auth-config}])
+/subsystem=elytron:write-attribute(name=default-authentication-context, value=default-context)
+
+stop-embedded-server
