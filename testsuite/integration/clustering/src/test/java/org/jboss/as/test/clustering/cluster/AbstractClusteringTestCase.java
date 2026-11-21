@@ -4,24 +4,36 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.awaitility.Awaitility;
 import org.infinispan.commons.util.Version;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,7 +110,9 @@ public abstract class AbstractClusteringTestCase {
      * Accommodate for the fact that a client topology update does not necessarily mean that the beans on the server are available.
      */
     public static final Duration EJB_CLIENT_TOPOLOGY_UPDATE_WAIT = Duration.ofMillis(TimeoutUtil.adjust(5000));
-    public static final int SUSPEND_TIMEOUT_S = TimeoutUtil.adjust(60);
+    public static final Duration SUSPEND_TIMEOUT = TimeoutUtil.adjust(Duration.ofMinutes(1));
+    public static final int SUSPEND_TIMEOUT_S = (int) SUSPEND_TIMEOUT.getSeconds();
+    public static final Duration RESUME_TIMEOUT = TimeoutUtil.adjust(Duration.ofSeconds(15));
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
     public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
@@ -309,6 +323,26 @@ public abstract class AbstractClusteringTestCase {
 
     static Set<String> toDeployments(Set<String> containers) {
         return containers.stream().map(AbstractClusteringTestCase::findDeployment).collect(Collectors.toSet());
+    }
+
+    public static void suspend(ManagementClient client) throws IOException {
+        ModelNode suspendOperation = Util.createOperation(ModelDescriptionConstants.SUSPEND, PathAddress.EMPTY_ADDRESS);
+        suspendOperation.get(ModelDescriptionConstants.SUSPEND_TIMEOUT).set(new ModelNode(SUSPEND_TIMEOUT.getSeconds()));
+        assertSuccessful(client.getControllerClient().execute(suspendOperation));
+    }
+
+    public static void resume(ManagementClient client) throws IOException {
+        ModelNode resumeOperation = Util.createOperation(ModelDescriptionConstants.SUSPEND, PathAddress.EMPTY_ADDRESS);
+        assertSuccessful(client.getControllerClient().execute(resumeOperation));
+        ModelNode readSuspendStateOperation = Util.getReadAttributeOperation(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.SUSPEND_STATE);
+        Callable<ModelNode> state = () -> client.getControllerClient().execute(readSuspendStateOperation);
+        Consumer<ModelNode> assertRunning = result -> assertThat(result.get(ModelDescriptionConstants.RESULT).asStringOrNull()).isEqualTo(SuspensionStateProvider.State.RUNNING.name());
+        // Unlike the suspend operation, resume operation lacks a blocking mode
+        Awaitility.await().atMost(RESUME_TIMEOUT).pollInSameThread().pollInterval(Duration.ofMillis(100)).untilAsserted(state, assertRunning);
+    }
+
+    private static void assertSuccessful(ModelNode result) {
+        assertThat(result.get(ModelDescriptionConstants.OUTCOME).asString()).isEqualTo(ModelDescriptionConstants.SUCCESS);
     }
 
     public interface Lifecycle {
