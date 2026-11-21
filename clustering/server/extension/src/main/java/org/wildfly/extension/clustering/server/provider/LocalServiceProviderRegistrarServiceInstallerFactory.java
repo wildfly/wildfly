@@ -7,7 +7,7 @@ package org.wildfly.extension.clustering.server.provider;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.wildfly.clustering.server.local.LocalGroup;
-import org.wildfly.clustering.server.local.provider.LocalServiceProviderRegistrar;
+import org.wildfly.clustering.server.local.provider.DefaultLocalServiceProviderRegistrar;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.service.BlockingLifecycle;
@@ -22,7 +22,7 @@ public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends Ser
     @Override
     public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
-        return ServiceInstaller.BlockingBuilder.of(group.map(LocalServiceProviderRegistrar::of))
+        return ServiceInstaller.BlockingBuilder.of(group.map(DefaultLocalServiceProviderRegistrar::new))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
                 .withLifecycle(BlockingLifecycle.autoClose())
                 .build();
