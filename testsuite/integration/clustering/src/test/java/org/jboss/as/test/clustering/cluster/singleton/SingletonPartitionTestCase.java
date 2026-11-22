@@ -17,10 +17,11 @@ import java.util.Set;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.Header;
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -31,9 +32,8 @@ import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionServlet;
 import org.jboss.as.test.clustering.cluster.singleton.partition.SingletonServiceActivator;
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceExecutorRegistry;
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
-import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
+import org.jboss.as.test.clustering.cluster.singleton.service.ElectedMemberRegistry;
+import org.jboss.as.test.clustering.cluster.singleton.service.ElectedMemberServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.msc.service.ServiceActivator;
@@ -58,6 +58,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  */
 @ExtendWith(ArquillianExtension.class)
 public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
+    private static final ConditionFactory AWAIT = Awaitility.await().atMost(TimeoutUtil.adjust(Duration.ofSeconds(15))).pollInterval(Duration.ofMillis(100)).pollInSameThread();
 
     // maximum time in ms to wait for cluster topology change in case the injected merge event fails for some reason
     private static final Duration TOPOLOGY_CHANGE_TIMEOUT = Duration.ofMillis(TimeoutUtil.adjust(150_000));
@@ -80,10 +81,10 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SingletonPartitionTestCase.class.getSimpleName() + ".war");
         war.addPackage(SingletonServiceActivator.class.getPackage());
-        war.addClasses(NodeServiceServlet.class, SingletonElectionListenerService.class, NodeServiceExecutorRegistry.class);
+        war.addClasses(ElectedMemberServiceServlet.class, ElectedMemberRegistry.class);
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.service, org.jgroups, org.infinispan.core\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jgroups, org.infinispan.core\n"));
         return war;
     }
 
@@ -93,75 +94,73 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
         // URLs look like "http://IP:PORT/singleton/service"
-        URI serviceANode1Uri = NodeServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_A_NAME);
-        URI serviceANode2Uri = NodeServiceServlet.createURI(baseURL2, SingletonServiceActivator.SERVICE_A_NAME);
+        URI serviceANode1Uri = ElectedMemberServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_A_NAME);
+        URI serviceANode2Uri = ElectedMemberServiceServlet.createURI(baseURL2, SingletonServiceActivator.SERVICE_A_NAME);
 
-        URI serviceBNode1Uri = NodeServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_B_NAME);
-        URI serviceBNode2Uri = NodeServiceServlet.createURI(baseURL2, SingletonServiceActivator.SERVICE_B_NAME);
+        URI serviceBNode1Uri = ElectedMemberServiceServlet.createURI(baseURL1, SingletonServiceActivator.SERVICE_B_NAME);
+        URI serviceBNode2Uri = ElectedMemberServiceServlet.createURI(baseURL2, SingletonServiceActivator.SERVICE_B_NAME);
 
         log.trace("URLs are:\n" + serviceANode1Uri
                 + "\n" + serviceANode2Uri
                 + "\n" + serviceBNode1Uri
                 + "\n" + serviceBNode2Uri);
 
-        // 1. Begin with no partitions, both services should have a single provider
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
-        waitForView(baseURL1, NODE_1_2);
-        waitForView(baseURL2, NODE_1_2);
-        Thread.sleep(SERVICE_TIMEOUT);
+            // 1. Begin with no partitions, both services should have a single provider
 
+            waitForView(client, baseURL1, NODE_1_2);
+            waitForView(client, baseURL2, NODE_1_2);
+            Thread.sleep(SERVICE_TIMEOUT);
 
-        // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
-        // check service B
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
+            // check service A
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
+            // check service B
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
 
+            // 2. Simulate network partition; each having its own provider
+            partition(client, true, baseURL1, baseURL2);
+            waitForView(client, baseURL1, Set.of(NODE_1));
+            waitForView(client, baseURL2, Set.of(NODE_2));
+            Thread.sleep(SERVICE_TIMEOUT);
 
-        // 2. Simulate network partition; each having its own provider
+            // check service A
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_A_NAME, NODE_1);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_A_NAME, NODE_2);
+            // check service B
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_B_NAME, NODE_1);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_B_NAME, NODE_2);
 
-        partition(true, baseURL1, baseURL2);
-        waitForView(baseURL1, Set.of(NODE_1));
-        waitForView(baseURL2, Set.of(NODE_2));
-        Thread.sleep(SERVICE_TIMEOUT);
+            // 3. Stop partitioning, merge, each service is supposed to have a single provider again.
 
-        // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, NODE_1);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, NODE_2);
-        // check service B
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, NODE_1);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, NODE_2);
+            partition(client, false, baseURL1, baseURL2);
+            waitForView(client, baseURL1, NODE_1_2);
+            waitForView(client, baseURL2, NODE_1_2);
+            Thread.sleep(SERVICE_TIMEOUT);
 
+            // check service A
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
+            // check service B
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
 
-        // 3. Stop partitioning, merge, each service is supposed to have a single provider again.
+            // 4. Simulate network partition again, each node should start the service again. This verifies WFLY-4748.
 
-        partition(false, baseURL1, baseURL2);
-        waitForView(baseURL1, NODE_1_2);
-        waitForView(baseURL2, NODE_1_2);
-        Thread.sleep(SERVICE_TIMEOUT);
+            partition(client, true, baseURL1, baseURL2);
+            waitForView(client, baseURL1, Set.of(NODE_1));
+            waitForView(client, baseURL2, Set.of(NODE_2));
+            Thread.sleep(SERVICE_TIMEOUT);
 
-        // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
-        // check service B
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
-
-
-        // 4. Simulate network partition again, each node should start the service again. This verifies WFLY-4748.
-
-        partition(true, baseURL1, baseURL2);
-        waitForView(baseURL1, Set.of(NODE_1));
-        waitForView(baseURL2, Set.of(NODE_2));
-        Thread.sleep(SERVICE_TIMEOUT);
-
-        // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, NODE_1);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, NODE_2);
-        // check service B
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, NODE_1);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, NODE_2);
+            // check service A
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_A_NAME, NODE_1);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_A_NAME, NODE_2);
+            // check service B
+            checkSingletonNode(client, baseURL1, SingletonServiceActivator.SERVICE_B_NAME, NODE_1);
+            checkSingletonNode(client, baseURL2, SingletonServiceActivator.SERVICE_B_NAME, NODE_2);
+        }
     }
 
     @AfterEach
@@ -173,38 +172,31 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         stop(NODE_1_2);
     }
 
-    private static void checkSingletonNode(URL baseURL, ServiceName serviceName, String expectedProviderNode) throws IOException, URISyntaxException {
-        URI uri = (expectedProviderNode != null) ? NodeServiceServlet.createURI(baseURL, serviceName, expectedProviderNode) : NodeServiceServlet.createURI(baseURL, serviceName);
-        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri));
-            try {
+    private static void checkSingletonNode(CloseableHttpClient client, URL baseURL, ServiceName serviceName, String expectedProviderNode) throws URISyntaxException {
+        URI uri = (expectedProviderNode != null) ? ElectedMemberServiceServlet.createURI(baseURL, serviceName, expectedProviderNode) : ElectedMemberServiceServlet.createURI(baseURL, serviceName);
+        AWAIT.untilAsserted(() -> {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
                 assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Header header = response.getFirstHeader("node");
+                Header header = response.getFirstHeader(ElectedMemberServiceServlet.ELECTED_MEMBER_HEADER);
                 if (header != null) {
                     assertEquals(expectedProviderNode, header.getValue(), "Expected different provider node");
                 } else {
                     assertNull(expectedProviderNode, "Unexpected provider node");
                 }
-            } finally {
-                HttpClientUtils.closeQuietly(response);
             }
-        }
+        });
     }
 
-    private static void waitForView(URL baseURL, Set<String> topology) throws IOException, URISyntaxException {
-        TopologyChangeListenerUtil.establishTopology(baseURL, CONTAINER, "default", topology, TOPOLOGY_CHANGE_TIMEOUT);
+    private static void waitForView(CloseableHttpClient client, URL baseURL, Set<String> topology) throws IOException, URISyntaxException {
+        TopologyChangeListenerUtil.establishTopology(client, baseURL, CONTAINER, "default", topology, TOPOLOGY_CHANGE_TIMEOUT);
     }
 
-    private static void partition(boolean partition, URL... baseURIs) {
+    private static void partition(CloseableHttpClient client, boolean partition, URL... baseURIs) {
         Arrays.stream(baseURIs).parallel().forEach(baseURI -> {
-            try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-                HttpResponse response = client.execute(new HttpGet(PartitionServlet.createURI(baseURI, partition)));
-                try {
-                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                } finally {
-                    HttpClientUtils.closeQuietly(response);
-                }
-            } catch (Exception ignored) {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(PartitionServlet.createURI(baseURI, partition)))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            } catch (IOException | URISyntaxException e) {
+                fail(e);
             }
         });
     }

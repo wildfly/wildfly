@@ -5,60 +5,59 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.partition;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
 
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceExecutorRegistry;
-import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.as.test.clustering.cluster.singleton.service.ElectedMemberRegistry;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ChildTargetService;
-import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
-import org.wildfly.clustering.singleton.election.NamePreference;
-import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
-import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
-import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.singleton.election.SingletonElectionListener;
+import org.wildfly.clustering.singleton.election.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.service.SingletonServiceActivatorContext;
+import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.service.SingletonServiceTarget;
 
 /**
  * @author Tomas Hofman
  */
-public class SingletonServiceActivator implements ServiceActivator {
+public class SingletonServiceActivator implements org.wildfly.clustering.singleton.service.SingletonServiceActivator {
 
-    private static final String CONTAINER_NAME = "server";
     public static final ServiceName SERVICE_A_NAME = ServiceName.JBOSS.append("test1", "service", "default");
     public static final ServiceName SERVICE_B_NAME = ServiceName.JBOSS.append("test2", "service", "default");
     public static final String SERVICE_A_PREFERRED_NODE = NODE_2;
     public static final String SERVICE_B_PREFERRED_NODE = NODE_1;
 
     @Override
-    public void activate(ServiceActivatorContext context) {
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(ServiceName.JBOSS.append("test1", "service", "installer"));
-        Supplier<SingletonServiceConfiguratorFactory> factoryDependency = builder.requires(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.resolve(CONTAINER_NAME)));
-        Consumer<ServiceTarget> installer = target -> {
-            SingletonServiceConfiguratorFactory factory = factoryDependency.get();
-            install(target, factory, SERVICE_A_NAME, SERVICE_A_PREFERRED_NODE);
-            install(target, factory, SERVICE_B_NAME, SERVICE_B_PREFERRED_NODE);
-        };
-        builder.setInstance(new ChildTargetService(installer)).install();
-
-        NodeServiceExecutorRegistry.INSTANCE.capture(SERVICE_A_NAME).install(context.getServiceTarget());
-        NodeServiceExecutorRegistry.INSTANCE.capture(SERVICE_B_NAME).install(context.getServiceTarget());
+    public void activate(SingletonServiceActivatorContext context) {
+        install(context.getServiceTarget(), SERVICE_A_NAME, SERVICE_A_PREFERRED_NODE);
+        install(context.getServiceTarget(), SERVICE_B_NAME, SERVICE_B_PREFERRED_NODE);
     }
 
-    private static void install(ServiceTarget target, SingletonServiceConfiguratorFactory factory, ServiceName name, String preferredNode) {
-        ServiceBuilder<?> builder = target.addService(name);
-        SingletonElectionListenerService listenerService = new SingletonElectionListenerService(builder.provides(name));
-        builder.setInstance(listenerService).install();
-
-        factory.createSingletonServiceConfigurator(name.append("singleton"))
-                .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(preferredNode)))
-                .electionListener(listenerService)
-                .build(target)
-                .install();
+    private static void install(SingletonServiceTarget target, ServiceName name, String preferredMember) {
+        Consumer<GroupMember> elected = ElectedMemberRegistry.INSTANCE.add(name);
+        SingletonServiceBuilder<?> builder = target.addService();
+        builder.provides(name);
+        builder.addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                    if (event == LifecycleEvent.REMOVED) {
+                        ElectedMemberRegistry.INSTANCE.remove(name);
+                    }
+                }
+            })
+            .withElectionPolicy(SingletonElectionPolicy.oldest().prefer(List.of(member -> member.getName().equals(preferredMember))))
+            .withElectionListener(new SingletonElectionListener() {
+                @Override
+                public void elected(List<GroupMember> candidateMembers, GroupMember electedMember) {
+                    elected.accept(electedMember);
+                }
+            })
+            .install();
     }
 }
