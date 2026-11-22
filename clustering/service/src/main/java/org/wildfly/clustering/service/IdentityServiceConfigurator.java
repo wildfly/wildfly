@@ -18,7 +18,9 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Configures a {@link Service} whose value is provided by another {@link Service}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceInstaller.BlockingBuilder#of(org.wildfly.service.ServiceDependency)}.
  */
+@Deprecated(forRemoval = true)
 public class IdentityServiceConfigurator<T> extends SimpleServiceNameProvider implements ServiceConfigurator {
 
     private final ServiceName requirementName;

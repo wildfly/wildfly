@@ -20,7 +20,9 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceInstaller.BlockingBuilder#of(Supplier, org.wildfly.service.ServiceDependency)}.
  */
+@Deprecated(forRemoval = true)
 public class AsyncServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator {
 
     private static final ServiceName EXECUTOR_SERVICE_NAME = ServiceName.JBOSS.append("as", "server-executor");

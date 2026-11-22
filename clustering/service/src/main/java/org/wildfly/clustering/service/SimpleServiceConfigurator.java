@@ -15,7 +15,9 @@ import org.jboss.msc.service.ServiceTarget;
 /**
  * Configures a simple {@link Service} that provides a static value.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceInstaller.BlockingBuilder#of(java.util.function.Supplier)}.
  */
+@Deprecated(forRemoval = true)
 public class SimpleServiceConfigurator<T> extends SimpleServiceNameProvider implements ServiceConfigurator {
 
     private final T value;

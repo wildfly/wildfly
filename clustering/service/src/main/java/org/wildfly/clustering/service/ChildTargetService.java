@@ -15,7 +15,9 @@ import org.jboss.msc.service.StopContext;
 /**
  * Service that performs service installation into the child target on start.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceInstaller.Builder#of(org.wildfly.service.ServiceInstaller)}.
  */
+@Deprecated(forRemoval = true)
 public class ChildTargetService implements Service {
     private final Consumer<ServiceTarget> installer;
 

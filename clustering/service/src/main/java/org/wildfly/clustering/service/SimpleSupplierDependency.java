@@ -10,7 +10,9 @@ import org.jboss.msc.service.ServiceBuilder;
 /**
  * A {@link Dependency} that supplies a static value
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.ServiceDependency#of(Object)}.
  */
+@Deprecated(forRemoval = true)
 public class SimpleSupplierDependency<V> implements SupplierDependency<V> {
 
     private final V value;

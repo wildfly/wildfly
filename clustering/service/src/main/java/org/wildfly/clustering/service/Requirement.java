@@ -8,7 +8,9 @@ package org.wildfly.clustering.service;
 /**
  * Identifies a requirement that provides a service.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.service.descriptor.ServiceDescriptor}.
  */
+@Deprecated(forRemoval = true)
 public interface Requirement {
     /**
      * The base name of this requirement.
