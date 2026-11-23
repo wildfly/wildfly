@@ -18,26 +18,39 @@ In general, a singleton election happens in response to any change of membership
 
 While singleton MSC services have been around since AS7, WildFly adds the ability to leverage the singleton subsystem to create singleton MSC services from existing singleton policies.
 
-The singleton subsystem exposes capabilities for each singleton policy it defines. 
-
-These policies, encapsulated by the `org.wildfly.clustering.singleton.service.SingletonPolicy` interface, can be referenced via the following capability name:
-"org.wildfly.clustering.singleton.policy" + _policy-name_
-
-You can reference the default singleton policy of the server via the name:
-"org.wildfly.clustering.singleton.default-policy"
-e.g.
+To install a singleton service from a deployment, expose a service activator that implements `org.wildfly.clustering.singleton.service.SingletonServiceActivator`:
 
 [source,java,options="nowrap"]
 ----
-public class MyServiceActivator implements ServiceActivator {
+@MetaInfServices(org.jboss.msc.service.ServiceActivator.class)
+public class MyServiceActivator implements org.wildfly.clustering.singleton.service.SingletonServiceActivator {
     @Override
-    public void activate(ServiceActivatorContext context) {
-        ServiceName name = ServiceName.parse("my.service.name");
-        // Use default singleton policy
-        Supplier<SingletonPolicy> policy = new ActiveServiceSupplier<>(context.getServiceTarget(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName()));
-        ServiceBuilder<?> builder = policy.get().createSingletonServiceConfigurator(name).build(context.getServiceTarget());
+    public void activate(org.wildfly.clustering.singleton.service.SingletonServiceActivatorContext context) {
+        // Any service installed into this target will be instrumented as a singleton service
+        ServiceTarget target = context.getServiceTarget();
+        ServiceBuilder<?> builder = target.addService();
+        builder.provides(ServiceName.parse("my.service.name"));
         Service service = new MyService();
         builder.setInstance(service).install();
+    }
+}
+----
+
+To install singleton services using a non-default singleton policy, override the `getSingletonPolicy()` method accordingly.
+
+e.g.
+[source,java,options="nowrap"]
+----
+@MetaInfServices(org.jboss.msc.service.ServiceActivator.class)
+public class MyServiceActivator implements org.wildfly.clustering.singleton.service.SingletonServiceActivator {
+    @Override
+    public void activate(org.wildfly.clustering.singleton.service.SingletonServiceActivatorContext context) {
+        // ....
+    }
+
+    @Override
+    public String getSingletonPolicy() {
+        return "foo";
     }
 }
 ----
@@ -62,55 +75,48 @@ e.g.
 [[installing-an-msc-service-using-dynamic-singleton-policy]]
 == Installing an MSC service using dynamic singleton policy
 
-Alternatively, you can configure a singleton policy dynamically, which is particularly useful if you want to use a custom singleton election policy.
-`org.wildfly.clustering.singleton.service.SingletonPolicy` is a generalization of the `org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory` interface,
-which includes support for specifying an election policy, an election listener, and, optionally, a quorum.
+Alternatively, you can override a singleton policy dynamically, which is particularly useful if you want to use a custom singleton election policy.
+`org.wildfly.clustering.singleton.service.SingletonServiceTarget` is a specialisation of the `org.jboss.msc.service.ServiceTarget` interface, that creates `org.wildfly.clustering.singleton.service.SingletonServiceBuilder` instances, which itself is a specialisation of the `org.jboss.msc.service.ServiceBuilder` interface,
+and includes support for specifying an election policy, an election listener, and, optionally, a quorum required before electing the primary provider of the singleton.
 
 The SingletonElectionPolicy is responsible for electing a member to operate as the primary singleton service provider following any change in the set of singleton service providers.
 Following the election of a new primary singleton service provider, any registered SingletonElectionListener is triggered on every member of the cluster.
-
-The 'SingletonServiceConfiguratorFactory' capability may be referenced using the following capability name:
-"org.wildfly.clustering.cache.singleton-service-configurator-factory" + _container-name_ + "." + _cache-name_
-
-You can reference a 'SingletonServiceConfiguratorFactory' using the default cache of a given cache container via the name:
-"org.wildfly.clustering.cache.default-singleton-service-configurator-factory" + _container-name_
 
 e.g.
 
 [source,java,options="nowrap"]
 ----
-public class MySingletonElectionPolicy implements SingletonElectionPolicy {
+public class MySingletonElectionPolicy implements org.wildfly.clustering.singleton.election.SingletonElectionPolicy {
     @Override
-    public Node elect(List<Node> candidates) {
+    public GroupMember elect(List<GroupMember> candidates) {
         // ...
         return ...;
     }
 }
 
-public class MySingletonElectionListener implements SingletonElectionListener {
+public class MySingletonElectionListener implements org.wildfly.clustering.singleton.election.SingletonElectionListener {
     @Override
-    public void elected(List<Node> candidates, Node primary) {
+    public void elected(List<GroupMember> candidates, GroupMember elected) {
         // ...
     }
 }
 
-public class MyServiceActivator implements ServiceActivator {
+@MetaInfServices(org.jboss.msc.service.ServiceActivator.class)
+public class MyServiceActivator implements org.wildfly.clustering.singleton.service.SingletonServiceActivator {
     @Override
-    public void activate(ServiceActivatorContext context) {
-        String containerName = "foo";
-        SingletonElectionPolicy policy = new MySingletonElectionPolicy();
-        SingletonElectionListener listener = new MySingletonElectionListener();
+    public void activate(org.wildfly.clustering.singleton.service.SingletonServiceActivatorContext context) {
+        org.wildfly.clustering.singleton.election.SingletonElectionPolicy policy = new MySingletonElectionPolicy();
+        org.wildfly.clustering.singleton.election.SingletonElectionListener listener = new MySingletonElectionListener();
         int quorum = 3;
-        ServiceName name = ServiceName.parse("my.service.name");
-        // Use a SingletonServiceConfiguratorFactory backed by default cache of "foo" container
-        Supplier<SingletonServiceConfiguratorFactory> factory = new ActiveServiceSupplier<>(context.getServiceTarget(), ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.resolve(containerName).getName()));
-        ServiceBuilder<?> builder = factory.get().createSingletonServiceConfigurator(name)
-                .electionListener(listener)
-                .electionPolicy(policy)
-                .requireQuorum(quorum)
-                .build(context.getServiceTarget());
+        // Any service installed into this target will be instrumented as a singleton service
+        org.wildfly.clustering.singleton.service.SingletonServiceTarget target = context.getServiceTarget();
+        org.wildfly.clustering.singleton.service.SingletonServiceBuilder<?> builder = target.addService()
+                .withElectionListener(listener)
+                .withElectionPolicy(policy)
+                .requireQuorum(quorum);
+        builder.provides(ServiceName.parse("my.service.name"));
         Service service = new MyService();
-        builder.setInstance(service).install();
+        org.wildfly.clustering.singleton.service.SingletonServiceController<?> controller = builder.setInstance(service).install();
     }
 }
 ----
