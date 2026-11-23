@@ -42,7 +42,7 @@ import org.wildfly.subsystem.resource.capability.CapabilityReferenceAttributeDef
 import org.wildfly.subsystem.resource.executor.MetricOperationStepHandler;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
-import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
+import org.wildfly.subsystem.service.capture.CapabilityValueExecutorRegistry;
 
 /**
  * Registers a resource definition for a JGroups channel.
@@ -62,13 +62,13 @@ public class ChannelResourceDefinitionRegistrar extends AbstractChannelResourceD
             .build();
     static final StatisticsEnabledAttributeDefinition STATISTICS_ENABLED = new StatisticsEnabledAttributeDefinition.Builder().setDeprecated(JGroupsSubsystemModel.VERSION_12_0_0.getVersion()).build();
 
-    private final ServiceValueExecutorRegistry<JChannel> channelRegistry;
+    private final CapabilityValueExecutorRegistry<JChannel> channelRegistry;
 
     ChannelResourceDefinitionRegistrar() {
-        this(ServiceValueExecutorRegistry.newInstance());
+        this(CapabilityValueExecutorRegistry.of(CHANNEL));
     }
 
-    private ChannelResourceDefinitionRegistrar(ServiceValueExecutorRegistry<JChannel> channelRegistry) {
+    private ChannelResourceDefinitionRegistrar(CapabilityValueExecutorRegistry<JChannel> channelRegistry) {
         super(new Configurator<>() {
             @Override
             public ResourceRegistration getResourceRegistration() {

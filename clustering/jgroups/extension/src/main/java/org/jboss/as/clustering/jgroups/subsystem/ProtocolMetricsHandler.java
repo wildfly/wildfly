@@ -17,6 +17,7 @@ import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -25,12 +26,10 @@ import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
-import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
 import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.capture.FunctionExecutor;
-import org.wildfly.subsystem.service.ServiceDependency;
-import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 
 /**
  * A generic handler for protocol metrics based on reflection.
@@ -208,9 +207,9 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private final FunctionExecutorRegistry<JChannel> executors;
+    private final FunctionExecutorRegistry<PathAddress, JChannel> executors;
 
-    public ProtocolMetricsHandler(FunctionExecutorRegistry<JChannel> executors) {
+    public ProtocolMetricsHandler(FunctionExecutorRegistry<PathAddress, JChannel> executors) {
         this.executors = executors;
     }
 
@@ -240,7 +239,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 return result;
             }
         };
-        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, context.getCurrentAddress().getParent().getLastElement().getValue()));
+        FunctionExecutor<JChannel> executor = this.executors.getExecutor(context.getCurrentAddress().getParent());
         try {
             ModelNode value = (executor != null) ? executor.execute(function) : null;
             if (value != null) {

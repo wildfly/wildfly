@@ -72,7 +72,7 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
-import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
+import org.wildfly.subsystem.service.capture.CapabilityValueExecutorRegistry;
 
 /**
  * Abstract resource definition registrar for channel and fork resources.
@@ -83,7 +83,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
     // Typically contributed by Infinispan subsystem
     static final AddressFactory ADDRESS_FACTORY = ServiceLoader.load(AddressFactory.class, AddressFactory.class.getClassLoader()).findFirst().orElse(null);
 
-    private static final RuntimeCapability<Void> CHANNEL = RuntimeCapability.Builder.of(JGroupsServiceDescriptor.CHANNEL).setAllowMultipleRegistrations(true).build();
+    static final RuntimeCapability<Void> CHANNEL = RuntimeCapability.Builder.of(JGroupsServiceDescriptor.CHANNEL).setAllowMultipleRegistrations(true).build();
     private static final RuntimeCapability<Void> CHANNEL_FACTORY = RuntimeCapability.Builder.of(ForkChannelFactory.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
 
     interface Configurator<C> extends ResourceServiceConfigurator {
@@ -123,9 +123,9 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
     }
 
     private final Configurator<C> configurator;
-    private final ServiceValueExecutorRegistry<JChannel> channelRegistry;
+    private final CapabilityValueExecutorRegistry<JChannel> channelRegistry;
 
-    AbstractChannelResourceDefinitionRegistrar(Configurator<C> configurator, ServiceValueExecutorRegistry<JChannel> channelRegistry) {
+    AbstractChannelResourceDefinitionRegistrar(Configurator<C> configurator, CapabilityValueExecutorRegistry<JChannel> channelRegistry) {
         this.configurator = configurator;
         this.channelRegistry = channelRegistry;
     }
@@ -304,7 +304,7 @@ public abstract class AbstractChannelResourceDefinitionRegistrar<C extends Chann
                 .withLifecycle(lifecycle)
                 .build());
 
-        installers.add(this.channelRegistry.capture(ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, name)));
+        installers.add(this.channelRegistry.capture(context.getCurrentAddress()));
 
         // Create installers for jndi bindings
         installers.add(new BinderServiceInstaller(JGroupsBindingFactory.CHANNEL.apply(name), context.getCapabilityServiceName(JGroupsServiceDescriptor.CHANNEL, name)));
