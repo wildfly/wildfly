@@ -6,14 +6,15 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.infinispan.subsystem.ComponentRuntimeResourceDefinitionRegistrar;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.executor.MetricOperationStepHandler;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationStepHandler;
-import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Registers a runtime resource definition for a remote cache.
@@ -23,7 +24,7 @@ public class RemoteCacheRuntimeResourceDefinitionRegistrar extends ComponentRunt
 
     static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement("remote-cache"));
 
-    RemoteCacheRuntimeResourceDefinitionRegistrar(FunctionExecutorRegistry<RemoteCacheContainer> executors) {
+    RemoteCacheRuntimeResourceDefinitionRegistrar(FunctionExecutorRegistry<PathAddress, RemoteCacheContainer> executors) {
         super(REGISTRATION, new ManagementResourceRegistrar() {
             @Override
             public void register(ManagementResourceRegistration registration) {

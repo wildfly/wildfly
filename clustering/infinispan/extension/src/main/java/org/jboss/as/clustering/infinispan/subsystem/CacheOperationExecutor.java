@@ -13,13 +13,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationExecutor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationFunction;
-import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -42,8 +40,8 @@ public abstract class CacheOperationExecutor<C> implements RuntimeOperationExecu
 
     @Override
     public ModelNode execute(OperationContext context, ModelNode op, RuntimeOperation<C> operation) throws OperationFailedException {
-        ServiceName name = ServiceNameFactory.parseServiceName(InfinispanServiceDescriptor.CACHE.getName()).append(this.resolver.apply(context.getCurrentAddress()));
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(name));
+        String[] resolved = this.resolver.apply(context.getCurrentAddress());
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE, resolved[0], resolved[1]));
         return (executor != null) ? executor.execute(new RuntimeOperationFunction<>(context, op, this, operation)) : null;
     }
 }

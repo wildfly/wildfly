@@ -14,6 +14,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ConfigurationResourceDefinitionRegistrar;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -22,6 +23,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -30,7 +32,6 @@ import org.wildfly.subsystem.resource.capability.CapabilityReferenceListAttribut
 import org.wildfly.subsystem.resource.executor.RuntimeOperationStepHandler;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ServiceDependency;
-import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Registers a resource definition for a remote Infinispan cluster.
@@ -46,9 +47,9 @@ public class RemoteClusterResourceDefinitionRegistrar extends ConfigurationResou
     public static final CapabilityReferenceListAttributeDefinition<OutboundSocketBinding> SOCKET_BINDINGS = new CapabilityReferenceListAttributeDefinition.Builder<>("socket-bindings", CapabilityReference.builder(CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build()).build();
 
     private final ResourceOperationRuntimeHandler parentRuntimeHandler;
-    private final FunctionExecutorRegistry<RemoteCacheContainer> executors;
+    private final FunctionExecutorRegistry<PathAddress, RemoteCacheContainer> executors;
 
-    RemoteClusterResourceDefinitionRegistrar(ResourceOperationRuntimeHandler parentRuntimeHandler, FunctionExecutorRegistry<RemoteCacheContainer> executors) {
+    RemoteClusterResourceDefinitionRegistrar(ResourceOperationRuntimeHandler parentRuntimeHandler, FunctionExecutorRegistry<PathAddress, RemoteCacheContainer> executors) {
         super(new Configurator<>() {
             @Override
             public ResourceRegistration getResourceRegistration() {

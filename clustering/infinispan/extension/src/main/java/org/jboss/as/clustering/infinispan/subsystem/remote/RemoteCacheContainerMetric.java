@@ -9,7 +9,6 @@ import java.util.function.ToIntFunction;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -57,7 +56,7 @@ public enum RemoteCacheContainerMetric implements Metric<RemoteCacheManagerMXBea
     }
 
     @Override
-    public ModelNode execute(RemoteCacheManagerMXBean manager) throws OperationFailedException {
+    public ModelNode execute(RemoteCacheManagerMXBean manager) {
         return new ModelNode(this.applyAsInt(manager));
     }
 }

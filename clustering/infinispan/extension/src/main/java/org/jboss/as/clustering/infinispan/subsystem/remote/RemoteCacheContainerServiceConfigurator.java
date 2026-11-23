@@ -14,7 +14,6 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.infinispan.client.ManagedRemoteCacheContainer;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.management.Capabilities;
@@ -41,7 +40,7 @@ public enum RemoteCacheContainerServiceConfigurator implements ResourceServiceCo
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build();
 
     @Override
-    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) {
         String name = context.getCurrentAddressValue();
 
         ServiceDependency<Configuration> configuration = ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER_CONFIGURATION, name);

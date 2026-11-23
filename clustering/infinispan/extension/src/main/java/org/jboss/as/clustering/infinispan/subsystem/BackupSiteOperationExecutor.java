@@ -14,13 +14,13 @@ import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationExecutor;
 import org.wildfly.subsystem.resource.executor.RuntimeOperationFunction;
-import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -47,7 +47,7 @@ public class BackupSiteOperationExecutor implements RuntimeOperationExecutor<Map
                 return new AbstractMap.SimpleImmutableEntry<>(site, ComponentRegistry.componentOf(cache.getAdvancedCache(), XSiteAdminOperations.class));
             }
         };
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
         return (executor != null) ? executor.execute(new RuntimeOperationFunction<>(context, operation, mapper, executable)) : null;
     }
 }

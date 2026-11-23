@@ -49,6 +49,7 @@ import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
+import org.wildfly.subsystem.service.capture.CapabilityValueRegistry;
 import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
@@ -58,10 +59,10 @@ import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 public class CacheContainerServiceConfigurator implements ResourceServiceConfigurator {
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.CACHE_CONTAINER).build();
 
-    private final ServiceValueRegistry<EmbeddedCacheManager> containerRegistry;
+    private final CapabilityValueRegistry<EmbeddedCacheManager> containerRegistry;
     private final ServiceValueRegistry<Cache<?, ?>> cacheRegistry;
 
-    public CacheContainerServiceConfigurator(ServiceValueRegistry<EmbeddedCacheManager> containerRegistry, ServiceValueRegistry<Cache<?, ?>> cacheRegistry) {
+    public CacheContainerServiceConfigurator(CapabilityValueRegistry<EmbeddedCacheManager> containerRegistry, ServiceValueRegistry<Cache<?, ?>> cacheRegistry) {
         this.containerRegistry = containerRegistry;
         this.cacheRegistry = cacheRegistry;
     }
@@ -138,7 +139,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                 .withLifecycle(lifecycle)
                 .startWhen(StartWhen.AVAILABLE)
                 .build();
-        ServiceInstaller captureInstaller = this.containerRegistry.capture(ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER, name));
+        ServiceInstaller captureInstaller = this.containerRegistry.capture(context.getCurrentAddress());
         return ResourceServiceInstaller.combine(installer, binderInstaller, captureInstaller);
     }
 
@@ -161,7 +162,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(containerName, cacheName);
             InfinispanLogger.ROOT_LOGGER.started(configuration);
             this.registrations.put(cacheName, this.registrar.register(cacheName));
-            this.registry.add(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).accept(new LazyCache<>(container, cacheName));
+            this.registry.add(configuration.resolveServiceName(InfinispanServiceDescriptor.CACHE)).accept(new LazyCache<>(container, cacheName));
             return CompletableFuture.completedStage(null);
         }
 
@@ -171,7 +172,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             String containerName = container.getCacheManagerConfiguration().cacheManagerName();
             String cacheName = event.getCacheName();
             BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(containerName, cacheName);
-            this.registry.remove(configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE));
+            this.registry.remove(configuration.resolveServiceName(InfinispanServiceDescriptor.CACHE));
             try (Registration registration = this.registrations.remove(cacheName)) {
                 InfinispanLogger.ROOT_LOGGER.stopped(configuration);
             }

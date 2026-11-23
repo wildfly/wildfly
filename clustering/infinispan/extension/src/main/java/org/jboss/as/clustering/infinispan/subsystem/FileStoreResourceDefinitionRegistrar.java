@@ -13,7 +13,6 @@ import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigura
 import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigurationBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -72,7 +71,7 @@ public class FileStoreResourceDefinitionRegistrar extends StoreResourceDefinitio
             }
 
             @Override
-            public ServiceDependency<SoftIndexFileStoreConfigurationBuilder> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+            public ServiceDependency<SoftIndexFileStoreConfigurationBuilder> resolve(OperationContext context, ModelNode model) {
                 return ServiceDependency.from(ConfigurationBuilder::new).map(ConfigurationBuilder::persistence).map(PersistenceConfigurationBuilder::addSoftIndexFileStore);
             }
         });

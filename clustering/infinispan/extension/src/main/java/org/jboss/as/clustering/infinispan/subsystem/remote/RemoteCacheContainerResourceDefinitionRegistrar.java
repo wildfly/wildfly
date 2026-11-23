@@ -72,7 +72,7 @@ import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
-import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
+import org.wildfly.subsystem.service.capture.CapabilityValueExecutorRegistry;
 
 /**
  * Registers a resource definition for a remote cache container.
@@ -140,7 +140,7 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
         }
     }
 
-    private final ServiceValueExecutorRegistry<RemoteCacheContainer> registry = ServiceValueExecutorRegistry.newInstance();
+    private final CapabilityValueExecutorRegistry<RemoteCacheContainer> registry = CapabilityValueExecutorRegistry.of(RemoteCacheContainerServiceConfigurator.CAPABILITY);
 
     public RemoteCacheContainerResourceDefinitionRegistrar() {
         super(new Configurator<>() {
@@ -195,10 +195,10 @@ public class RemoteCacheContainerResourceDefinitionRegistrar extends Configurati
     }
 
     @Override
-    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) {
         String name = context.getCurrentAddressValue();
 
-        ResourceServiceInstaller captureInstaller = this.registry.capture(ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, name));
+        ResourceServiceInstaller captureInstaller = this.registry.capture(context.getCurrentAddress());
         ResourceServiceInstaller containerInstaller = RemoteCacheContainerServiceConfigurator.INSTANCE.configure(context, model);
         ResourceServiceInstaller bindingInstaller = new BinderServiceInstaller(InfinispanCacheContainerBindingFactory.REMOTE.apply(name), context.getCapabilityServiceName(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, name));
 

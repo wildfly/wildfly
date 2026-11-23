@@ -80,6 +80,7 @@ import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
+import org.wildfly.subsystem.service.capture.CapabilityValueExecutorRegistry;
 import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
@@ -131,7 +132,7 @@ public class CacheContainerResourceDefinitionRegistrar implements ChildResourceD
         @SuppressWarnings("removal")
         RuntimeCapability<Void> defaultSingletonServiceBuilderFactory = RuntimeCapability.Builder.of(org.wildfly.clustering.singleton.SingletonServiceBuilderFactory.DEFAULT_SERVICE_DESCRIPTOR).build();
 
-        ServiceValueExecutorRegistry<EmbeddedCacheManager> containerExecutors = ServiceValueExecutorRegistry.newInstance();
+        CapabilityValueExecutorRegistry<EmbeddedCacheManager> containerExecutors = CapabilityValueExecutorRegistry.of(CacheContainerServiceConfigurator.CAPABILITY);
         ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = ServiceValueExecutorRegistry.newInstance();
 
         ResourceDescriptionResolver resolver = InfinispanSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement());
