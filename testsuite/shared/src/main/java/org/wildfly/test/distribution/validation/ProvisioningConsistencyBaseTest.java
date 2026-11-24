@@ -53,6 +53,7 @@ public abstract class ProvisioningConsistencyBaseTest {
     private static final String INSTALLATION = ".installation";
     private static final String PROVISIONING = ".wildfly-maven-plugin-provisioning.xml";
     private static final String INSTALLATION_MANAGER_HELPERS = "_installation-manager_helper.";
+    private static final String RUNNING_LOCK = "running.lock";
     private static final String SBOM = "sbom.cdx.json.gz";
     private static final Path JBOSS_HOME = resolveJBossHome();
     private final Path CHANNEL_INSTALLATION;
@@ -126,6 +127,7 @@ public abstract class ProvisioningConsistencyBaseTest {
                     if (files != null) {
                         files = Arrays.stream(files)
                                 .filter(f -> !f.getName().startsWith(INSTALLATION_MANAGER_HELPERS))
+                                .filter(f -> !f.getName().equals(RUNNING_LOCK))
                                 .toArray(File[]::new);
                         if (files.length > 0) {
                             errors.add(String.format("%s has unexpected files: %s", dist, Arrays.asList(files)));
