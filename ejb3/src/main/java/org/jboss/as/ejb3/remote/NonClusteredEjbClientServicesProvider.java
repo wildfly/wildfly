@@ -14,10 +14,9 @@ import org.jboss.as.server.ServerEnvironment;
 import org.wildfly.clustering.ejb.remote.EjbClientServicesProvider;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.local.LocalGroup;
-import org.wildfly.clustering.server.local.provider.LocalServiceProviderRegistrar;
+import org.wildfly.clustering.server.local.provider.DefaultLocalServiceProviderRegistrar;
 import org.wildfly.clustering.server.local.registry.LocalRegistry;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
-import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -47,9 +46,9 @@ public enum NonClusteredEjbClientServicesProvider implements EjbClientServicesPr
         @SuppressWarnings("unchecked")
         ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>> registrar =
                 (ServiceDependency<ServiceProviderRegistrar<Object, GroupMember>>) (ServiceDependency<?>)
-                        localGroup().map(LocalServiceProviderRegistrar::of);
+                        localGroup().map(group -> new DefaultLocalServiceProviderRegistrar<>(group));
 
-        return List.of(ServiceInstaller.builder(registrar)
+        return List.of(ServiceInstaller.BlockingBuilder.of(registrar)
                 .provides(MODULE_AVAILABILITY_REGISTRAR_SERVICE_PROVIDER_REGISTRAR)
                 .startWhen(StartWhen.AVAILABLE)
                 .build());
@@ -64,9 +63,8 @@ public enum NonClusteredEjbClientServicesProvider implements EjbClientServicesPr
         // Must be provided beneath the ClusteringServiceDescriptor.REGISTRY base name: EJB3RemoteServiceAdd
         // scans the provided names of each returned installer and aliases any descendant of that base name
         // to EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY/<connectorName>.
-        return List.of(ServiceInstaller.builder(registry)
+        return List.of(ServiceInstaller.BlockingBuilder.of(registry)
                 .provides(ServiceNameFactory.resolveServiceName(ClusteringServiceDescriptor.REGISTRY, GROUP_NAME, connectorName))
-                .onStop(Registry::close)
                 .startWhen(StartWhen.AVAILABLE)
                 .build());
     }
