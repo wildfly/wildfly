@@ -53,7 +53,8 @@ public class WeldExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new WeldResourceDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(WeldSubsystem50Parser.INSTANCE);
-
+        // Clear any left-over bean defining annotations from a potential reload
+        WeldCapabilityImpl.clearBeanDefiningAnnotations();
     }
 
     /** {@inheritDoc} */

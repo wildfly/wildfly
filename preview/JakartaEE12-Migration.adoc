@@ -1,0 +1,206 @@
+= Jakarta EE 12 Migration Notes
+:server-name: WildFly Preview
+
+// When a PR upgrades a spec in WildFly Preview, add its section here in the same PR. Please keep the specs in
+// alphabetical order.
+
+This guide lists the changes you need to make when you move an application from Jakarta EE 11 to {server-name}, which
+implements Jakarta EE 12. Each section covers one specification: what no longer works, and what to use instead.
+
+NOTE: Jakarta EE 12 is still in development. This guide covers the current {server-name} release, and its content
+changes as the specifications change.
+
+== Jakarta Contexts and Dependency Injection 5.0
+
+Specification: https://jakarta.ee/specifications/cdi/5.0/[Jakarta Contexts and Dependency Injection 5.0]
+
+{server-name} provides CDI 5.0 through Weld 7.
+
+=== Maven coordinates
+
+The CDI API artifacts use the `jakarta.cdi` group ID. If your build declares a CDI API artifact directly, update the
+dependency:
+
+[cols="1,1"]
+|===
+|Jakarta EE 11 |Jakarta EE 12
+
+|`jakarta.enterprise:jakarta.enterprise.cdi-api`
+|`jakarta.cdi:jakarta.cdi-api`
+
+|`jakarta.enterprise:jakarta.enterprise.cdi-el-api`
+|`jakarta.cdi:jakarta.cdi-el-api`
+
+|`jakarta.enterprise:jakarta.enterprise.lang-model`
+|`jakarta.cdi:jakarta.cdi-lang-model-api`
+|===
+
+The CDI project publishes relocation artifacts for the old coordinates, so a build that still uses them resolves, but
+prints a relocation warning.
+
+=== Unified EL methods on `BeanManager`
+
+CDI 5.0 removes the Unified EL integration methods from `BeanManager`, such as `getELResolver()`. CDI 4.1 deprecated
+them and moved them to `ELAwareBeanManager`. If your code calls these methods on `BeanManager`, call them on
+`ELAwareBeanManager` instead.
+
+=== Synthetic beans
+
+This applies only if you write a CDI build compatible extension. The `SyntheticBeanCreator` and `SyntheticBeanDisposer`
+methods that do not take `SyntheticInjections` are deprecated for removal. Use the methods that take
+`SyntheticInjections`.
+
+== Jakarta JSON Binding 3.1
+
+Specification: https://jakarta.ee/specifications/jsonb/3.1/[Jakarta JSON Binding 3.1]
+
+{server-name} provides JSON Binding 3.1 through Yasson 3.1.
+
+No application changes required. JSON Binding 3.1 does not remove or deprecate any API.
+
+== Jakarta RESTful Web Services 5.0
+
+Specification: https://jakarta.ee/specifications/restful-ws/5.0/[Jakarta RESTful Web Services 5.0]
+
+{server-name} provides Jakarta RESTful Web Services 5.0 through RESTEasy 8. Jakarta RESTful Web Services 5.0 requires
+CDI, and integrates resources and providers with CDI.
+
+=== Resources and providers are CDI beans without `beans.xml`
+
+In Jakarta EE 10 and 11, resources, providers and `Application` subclasses are CDI beans only if CDI is active for their
+archive, for example because the archive contains a `beans.xml` file. In Jakarta EE 12, the `@Path`, `@Provider` and
+`@ApplicationPath` annotations are CDI stereotypes. These classes are therefore CDI beans in every archive, including an
+archive without a `beans.xml` file.
+
+If your archive has no `beans.xml` file, check the scope and the injection points of each of these classes.
+
+A class that does not declare a scope gets the default scope of its kind:
+
+[cols="1,1"]
+|===
+|Class |Default scope
+
+|Resource class (`@Path`)
+|`@RequestScoped`
+
+|Provider (`@Provider`)
+|`@ApplicationScoped`
+
+|`Application` subclass (`@ApplicationPath`)
+|`@ApplicationScoped`
+
+|Stateless or singleton session bean
+|`@Dependent`
+|===
+
+If a provider declares a scope, use `@ApplicationScoped` or `@Singleton`. Other scopes, including `@Dependent`, are not
+portable. An `Application` subclass must be `@ApplicationScoped` or `@Singleton`.
+
+=== Resources and providers must be proxyable
+
+A resource, provider or `Application` subclass that does not declare a scope gets a normal scope, so CDI accesses it
+through a client proxy. Weld cannot create a proxy for a class that:
+
+* is `final`,
+* has a non-private `final` method, or
+* has no non-private constructor without parameters.
+
+For such a class, Weld throws an `UnproxyableResolutionException`. Remove the `final` modifier, or add a non-private
+constructor without parameters. If you cannot change the class, declare `@Dependent` on a resource, or `@Singleton` on
+a provider or `Application` subclass. Neither scope uses a proxy.
+
+=== Use `@Inject` for context types and parameters
+
+In a CDI bean, CDI performs the injection. A field or bean property needs `@Inject` to be portable. Inject a
+Jakarta RESTful Web Services context type, such as `UriInfo`, with `@Inject` alone. You may keep the `@Context` on the
+field as well, it's just not needed in most cases. A field with a parameter extraction annotation, such as
+`@QueryParam`, must keep the annotation and add `@Inject`.
+
+NOTE: {server-name} adds `@Inject` for you to resource and provider fields, setter methods and constructors annotated
+with `@Context` or a parameter extraction annotation, so you do not need to change existing code. It is suggested you
+add `@Inject` anyway for portability.
+
+[source,java]
+----
+// Jakarta EE 11
+@Context
+UriInfo uriInfo;
+
+@QueryParam("q")
+String query;
+
+// Jakarta EE 12
+@Inject
+UriInfo uriInfo;
+
+@Inject
+@QueryParam("q")
+String query;
+----
+
+`@Context` is a CDI qualifier. Use `@Inject @Context` for Servlet types, such as `ServletConfig`, `ServletContext` and
+`HttpServletRequest`, so that CDI injects the instance that {server-name} manages. Without `@Context`, CDI can resolve
+another bean of the same type, for example a servlet class, which is a bean of type `ServletConfig`.
+
+NOTE: The Jakarta RESTful Web Services 5.0 API milestone that {server-name} includes still deprecates `@Context` for
+removal and does not declare it a qualifier, so your compiler reports a deprecation warning. RESTEasy registers
+`@Context` as a qualifier, so `@Inject @Context` works in {server-name}. The specification change that makes `@Context`
+a qualifier and removes the deprecation is in https://github.com/jakartaee/rest/pull/1367[jakartaee/rest#1367].
+
+Use `@Inject @Context Application` to inject the deployed `Application`, and `@Inject MyApplication` to inject your own
+subclass. For other context types, you can keep `@Context` and add `@Inject`: `@Inject UriInfo` and
+`@Inject @Context UriInfo` inject the same value.
+
+Do not define your own CDI beans or producers for Jakarta RESTful Web Services context types such as `UriInfo`.
+{server-name} provides these beans, so a second bean makes the injection point ambiguous.
+
+=== Asynchronous processing
+
+`AsyncResponse` and `SseEventSink` resource method parameters do not need an annotation. Declare each by its type
+alone. `@Suspended` is deprecated for removal, so remove it from `AsyncResponse` parameters.
+
+[source,java]
+----
+// Jakarta EE 11
+@GET
+public void get(@Suspended AsyncResponse response) { }
+
+@GET
+@Produces(MediaType.SERVER_SENT_EVENTS)
+public void events(@Context SseEventSink sink, @Context Sse sse) { }
+
+// Jakarta EE 12
+@GET
+public void get(AsyncResponse response) { }
+
+@GET
+@Produces(MediaType.SERVER_SENT_EVENTS)
+public void events(SseEventSink sink, Sse sse) { }
+----
+
+Code that runs after asynchronous processing resumes can run on a different thread, where the CDI request context is not
+active. In that code, a `@RequestScoped`, `@SessionScoped` or `@ConversationScoped` bean can fail to resolve, or resolve
+to a different instance. `@ApplicationScoped` and `@Dependent` beans are not affected. Read the values you need from
+these beans before you hand processing to another thread.
+
+Jakarta RESTful Web Services context types, such as `UriInfo`, are not affected in providers that {server-name} invokes
+after processing resumes. They reflect the request that is being processed.
+
+=== Resource method parameters
+
+A resource method parameter must be one of the following:
+
+* A Jakarta RESTful Web Services context type, such as `UriInfo` or `Sse`, or a Servlet type such as
+  `HttpServletRequest`, with or without `@Context`
+* A parameter annotated with `@QueryParam`, `@PathParam`, `@HeaderParam`, `@MatrixParam`, `@CookieParam`, `@FormParam` or
+  `@BeanParam`
+* The entity parameter
+* `AsyncResponse` or `SseEventSink`
+
+To use any other CDI bean in a resource method, inject it into a field or the constructor.
+
+=== `@BeanParam` classes
+
+If the class of a `@BeanParam` parameter is a CDI bean, declare it `@Dependent`. A bean with a normal scope, such as
+`@RequestScoped`, is injected as a client proxy, and the fields of a client proxy do not hold the parameter values.
+{server-name} logs a `RESTEASY011025` warning for such a class.
