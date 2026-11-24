@@ -36,7 +36,7 @@ import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ServiceDependency;
-import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
+import org.wildfly.subsystem.service.capture.CapabilityValueExecutorRegistry;
 
 /**
  * Registers a resource definition for a fork channel.
@@ -50,7 +50,7 @@ public class ForkResourceDefinitionRegistrar extends AbstractChannelResourceDefi
 
     private final ResourceServiceConfigurator configurator;
 
-    ForkResourceDefinitionRegistrar(ServiceValueExecutorRegistry<JChannel> registry) {
+    ForkResourceDefinitionRegistrar(CapabilityValueExecutorRegistry<JChannel> registry) {
         this(new Configurator<>() {
             @Override
             public ResourceRegistration getResourceRegistration() {
@@ -140,7 +140,7 @@ public class ForkResourceDefinitionRegistrar extends AbstractChannelResourceDefi
         }, registry);
     }
 
-    ForkResourceDefinitionRegistrar(Configurator<ForkChannelConfiguration> configurator, ServiceValueExecutorRegistry<JChannel> channelRegistry) {
+    ForkResourceDefinitionRegistrar(Configurator<ForkChannelConfiguration> configurator, CapabilityValueExecutorRegistry<JChannel> channelRegistry) {
         super(configurator, channelRegistry);
         this.configurator = configurator;
     }
