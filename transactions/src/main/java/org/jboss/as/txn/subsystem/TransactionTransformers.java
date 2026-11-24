@@ -6,6 +6,7 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN;
 
 import org.jboss.as.controller.ModelVersion;
@@ -35,6 +36,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         builder81.getAttributeBuilder()
             .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)
             .addRejectCheck(RejectAttributeChecker.DEFINED, TRANSACTIONS_RECOVERY_GRACEFUL_SHUTDOWN)
+            .setDiscard(DiscardAttributeChecker.UNDEFINED, RECOVERY_AUTHENTICATION_CONTEXT)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, RECOVERY_AUTHENTICATION_CONTEXT)
             .end();
 
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_EAP81});
