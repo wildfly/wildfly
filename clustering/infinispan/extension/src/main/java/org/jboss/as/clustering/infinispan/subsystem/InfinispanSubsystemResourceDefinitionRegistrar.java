@@ -14,7 +14,6 @@ import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcess
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinitionRegistrar;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.SubsystemResourceRegistration;
@@ -85,7 +84,7 @@ public class InfinispanSubsystemResourceDefinitionRegistrar implements Subsystem
     }
 
     @Override
-    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) {
         InfinispanLogger.ROOT_LOGGER.activatingSubsystem();
 
         Collection<ResourceServiceInstaller> installers = new LinkedList<>();

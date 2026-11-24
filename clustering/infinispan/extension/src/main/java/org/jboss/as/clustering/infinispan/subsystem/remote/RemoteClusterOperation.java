@@ -11,7 +11,6 @@ import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemResourceDefinitionRegistrar;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -25,7 +24,7 @@ public enum RemoteClusterOperation implements RuntimeOperation<Map.Entry<String,
 
     SWITCH_CLUSTER("switch-cluster", ModelType.BOOLEAN) {
         @Override
-        public ModelNode execute(ExpressionResolver resolver, ModelNode operation, Map.Entry<String, RemoteCacheManagerMXBean> entry) throws OperationFailedException {
+        public ModelNode execute(ExpressionResolver resolver, ModelNode operation, Map.Entry<String, RemoteCacheManagerMXBean> entry) {
             return new ModelNode(entry.getValue().switchToCluster(entry.getKey()));
         }
     },

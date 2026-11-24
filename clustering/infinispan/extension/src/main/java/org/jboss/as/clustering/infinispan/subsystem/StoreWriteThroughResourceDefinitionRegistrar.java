@@ -10,7 +10,6 @@ import org.infinispan.configuration.cache.AsyncStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -31,7 +30,7 @@ public class StoreWriteThroughResourceDefinitionRegistrar extends StoreWriteReso
     }
 
     @Override
-    public ServiceDependency<AsyncStoreConfigurationBuilder<SoftIndexFileStoreConfigurationBuilder>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceDependency<AsyncStoreConfigurationBuilder<SoftIndexFileStoreConfigurationBuilder>> resolve(OperationContext context, ModelNode model) {
         return ServiceDependency.from(new Supplier<>() {
             @Override
             public AsyncStoreConfigurationBuilder<SoftIndexFileStoreConfigurationBuilder> get() {

@@ -7,7 +7,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -28,7 +27,7 @@ public class NoStoreResourceDefinitionRegistrar extends PersistenceResourceDefin
     }
 
     @Override
-    public ServiceDependency<PersistenceConfigurationBuilder> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceDependency<PersistenceConfigurationBuilder> resolve(OperationContext context, ModelNode model) {
         return ServiceDependency.from(ConfigurationBuilder::new).map(ConfigurationBuilder::persistence);
     }
 }

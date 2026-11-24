@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.ServerEnvironment;
@@ -30,14 +29,14 @@ public class NoTransportResourceDefinitionRegistrar extends TransportResourceDef
             }
 
             @Override
-            public String resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+            public String resolve(OperationContext context, ModelNode model) {
                 return ModelDescriptionConstants.LOCAL;
             }
         });
     }
 
     @Override
-    public ServiceDependency<TransportConfigurationBuilder> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceDependency<TransportConfigurationBuilder> resolve(OperationContext context, ModelNode model) {
         return ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR).map(new Function<>() {
             @Override
             public TransportConfigurationBuilder apply(ServerEnvironment environment) {

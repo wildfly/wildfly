@@ -15,7 +15,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.ResourceRegistration;
@@ -66,7 +65,7 @@ public class BackupSitesResourceDefinitionRegistrar extends ConfigurationResourc
     }
 
     @Override
-    public ServiceDependency<SitesConfigurationBuilder> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceDependency<SitesConfigurationBuilder> resolve(OperationContext context, ModelNode model) {
         PathAddress cacheAddress = context.getCurrentAddress().getParent();
         PathAddress containerAddress = cacheAddress.getParent();
         String containerName = containerAddress.getLastElement().getValue();

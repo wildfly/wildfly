@@ -9,7 +9,6 @@ import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemResourceDefinitionRegistrar;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -23,7 +22,7 @@ public enum RemoteCacheOperation implements RuntimeOperation<RemoteCacheClientSt
 
     RESET_STATISTICS("reset-statistics", ModelType.UNDEFINED) {
         @Override
-        public ModelNode execute(ExpressionResolver resolver, ModelNode operation, RemoteCacheClientStatisticsMXBean statistics) throws OperationFailedException {
+        public ModelNode execute(ExpressionResolver resolver, ModelNode operation, RemoteCacheClientStatisticsMXBean statistics) {
             statistics.resetStatistics();
             return null;
         }
