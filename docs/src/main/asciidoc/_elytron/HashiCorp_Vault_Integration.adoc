@@ -1,15 +1,51 @@
 [[Vault_Integration]]
 = HashiCorp Vault Integration
 
-To use credential stores backed by HashiCorp Vault in the WildFly management model, the Vault feature-pack can be used. This feature-pack adds the `hashicorp-vault` subsystem to WildFly, which allows you to define Elytron credential store resources that read secrets from a HashiCorp Vault server. It also allows you to define expressions backed by HashiCorp Vault.
+The `hashicorp-vault` subsystem provides credential stores backed by HashiCorp Vault and expressions that resolve to secrets in those stores. The subsystem and its Galleon layer are available at *default* stability through the WildFly EE and WildFly Preview feature-packs.
 
-There are several ways to install the Vault feature-pack. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for details.
+== Activating the subsystem
 
-== HashiCorp Vault credential store
+The standard and Preview WildFly distributions include the required modules, but their default standalone and domain configurations do not enable the extension or subsystem. To enable Vault support in an existing standalone server, add them with the following management CLI operations:
 
-After the feature-pack is installed, define one or more credential store resources in the `hashicorp-vault` subsystem. You can then reference credentials from these stores elsewhere in the configuration using the standard `credential-reference` pattern with `store` and `alias`.
+[source,options="nowrap"]
+----
+/extension=org.wildfly.extension.hashicorp-vault:add()
+/subsystem=hashicorp-vault:add()
+----
 
-Aliases use the form _`<vault-path>.<key>`_: the path to the secret in Vault (e.g. `secret/database`) followed by a dot and the key name (e.g. `password`), giving `secret/database.password`.
+In a managed domain, connect the management CLI to the domain controller. Register the extension at the domain root and add the subsystem to the profile used by the target server group. For example, for a profile named `default`:
+
+[source,options="nowrap"]
+----
+/extension=org.wildfly.extension.hashicorp-vault:add()
+/profile=default/subsystem=hashicorp-vault:add()
+----
+
+Add the extension only if it is not already registered. See <<vault-managed-domain,Configuring the connection in a managed domain>> and <<vault-domain-operations,Managing credentials in a managed domain>> for the next steps.
+
+When provisioning a server with Galleon layers, explicitly include the `hashicorp-vault` layer to install the required modules and enable the extension and subsystem. For example:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-vault-server --layers=hashicorp-vault
+----
+
+The generated `standalone/configuration/standalone.xml` registers `org.wildfly.extension.hashicorp-vault` and contains an empty subsystem:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:wildfly:hashicorp-vault:2.0"/>
+----
+
+No Vault credential stores, server addresses or tokens are configured by the layer. Add the credential store resources described below before using Vault credentials.
+
+Include `hashicorp-vault` alongside the other layers required by your application. Selecting other layers alone does not enable the Vault subsystem; the modules included in such an installation depend on its selected layers and packages. The same layer can be selected when provisioning with the WildFly Maven Plugin, including when building a bootable JAR.
+
+A separate Vault feature-pack is not required. Refer to the xref:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] and the xref:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] for provisioning details.
+
+== Configuring the connection to HashiCorp Vault
+
+After enabling the subsystem, define a credential store resource for the Vault connection. This resource identifies the Vault server and supplies its authentication and TLS configuration. The examples below name the store `my-vault`; use that name when referring to its credentials later.
 
 The following management CLI operation adds a minimal credential store that uses a clear-text Vault token (adjust `host-address` and paths for your environment):
 
@@ -20,18 +56,70 @@ The following management CLI operation adds a minimal credential store that uses
     credential-reference={clear-text="myroot"})
 ----
 
-=== Credential references backed by HashiCorp Vault
+[[vault-https-connections]]
+=== HTTPS connections
 
-Use the credential store name and alias in any resource that supports `credential-reference` (e.g. datasources, Elytron key stores, etc.). The following XML illustrates that pattern in configuration:
+For an HTTPS connection, use the following example in place of the minimal HTTP example above. Configure server trust and optional client certificates in Elytron, then reference the resulting `client-ssl-context` from the Vault credential store. See <<configuring-a-client-sslcontext,Configuring a client SSLContext>> for the Elytron configuration.
+
+[source,options="nowrap"]
+----
+/subsystem=hashicorp-vault/credential-store=my-vault:add( \
+    host-address="https://vault.example.com:8200", \
+    client-ssl-context=vault-tls-context, \
+    credential-reference={store=token-store,alias=vault-token})
+----
+
+Create `vault-tls-context` and `token-store` before adding this resource. The SSL context's trust manager validates the Vault server certificate; configure a key manager as well when Vault requires client certificates.
+
+For certificate authentication or the complete list of connection attributes, see <<vault-connection-reference,Connection attributes and authentication>>. If you are reusing scripts or XML from an earlier integration, read <<vault-tls-migration,Updating existing Vault TLS configurations>> before applying them.
+
+[[vault-managed-domain]]
+=== Configuring the connection in a managed domain
+
+After enabling the subsystem in the profile used by the target server group, add the credential store to that profile. For example, for a profile named `default`:
+
+[source,options="nowrap"]
+----
+/profile=default/subsystem=hashicorp-vault/credential-store=my-vault:add( \
+    host-address="https://vault.example.com:8200", \
+    client-ssl-context=vault-tls-context, \
+    credential-reference={store=token-store,alias=vault-token})
+----
+
+Configure the Elytron `vault-tls-context` and `token-store` resources in the same profile before adding this store. Each managed server using the profile must be able to reach Vault and access any TLS or token-store files required by its configuration. Apply any reload or restart indicated by the management responses before using the store.
+
+[[vault-using-credentials]]
+== Using credentials from Vault
+
+Once `my-vault` is configured, you can use credentials that already exist in Vault through a credential reference or a Vault expression. Both forms identify the configured store and an alias selecting a value in Vault.
+
+The examples below assume a KV v2 engine mounted at `secret`, containing a secret at `myapp/database` with a field named `password`. The alias `#myapp/database?password` selects that field. The leading `#` explicitly selects the new alias format, and `?` separates the secret path from the key. See the <<vault-alias-quick-reference,alias quick reference>> for common patterns, or <<vault-alias-format,Alias format>> for the full syntax and encoding rules.
+
+=== Using a credential reference
+
+Use the credential store name and alias in any resource that supports `credential-reference` (e.g. datasources, Elytron key stores, etc.). The following XML shows the pattern:
 
 [source,xml,options="nowrap"]
 ----
-<credential-reference store="my-vault" alias="secret/database.password"/>
+<credential-reference store="my-vault" alias="#myapp/database?password"/>
 ----
 
-=== Encrypted expressions backed by HashiCorp Vault
+For example, the following CLI command adds an Elytron key store using that credential reference for its password:
 
-You can reference a HashiCorp Vault credential store anywhere expressions are allowed in the management model. The pattern for these expressions is:
+[source,options="nowrap"]
+----
+/subsystem=elytron/key-store=vault-protected-keys:add( \
+    path="application.p12", \
+    relative-to=jboss.server.config.dir, \
+    type=PKCS12, \
+    credential-reference={store=my-vault,alias="#myapp/database?password"})
+----
+
+When loading an existing `application.p12` file, the password stored in Vault must match the file's password.
+
+=== Using an expression
+
+Use a Vault expression to refer to a value from the configured store. The syntax is:
 
 [source,text,options="nowrap"]
 ----
@@ -42,5 +130,444 @@ For example, a system property value might use an expression as follows:
 
 [source,xml,options="nowrap"]
 ----
-<property name="example.secret" value="${HC_VAULT::my-vault:secret/database.password}"/>
+<property name="db.password" value="${HC_VAULT::my-vault:#myapp/database?password}"/>
 ----
+
+The equivalent CLI command is:
+
+[source,options="nowrap"]
+----
+/system-property=db.password:add(value="${HC_VAULT::my-vault:#myapp/database?password}")
+----
+
+The attribute consuming a Vault expression must support expressions and resolve them during the runtime stage of management operations. Vault expressions cannot be resolved during the model stage. See <<vault-runtime-resolution,Runtime resolution and dependencies>> for initialization and dependency restrictions.
+
+[[vault-credential-updates]]
+=== Picking up credential changes
+
+Credentials are obtained when a consuming resource resolves its credential reference or expression, for example during boot or service initialization. Retrieved credentials can be cached, so a later resolution does not necessarily read the value from Vault again.
+
+IMPORTANT: The integration does not watch Vault for updates. Changing a secret does not automatically refresh credentials already resolved by running resources. When rotating credentials, restart the affected servers so their credential stores and consuming resources are initialized again with the updated values.
+
+== Managing credentials in Vault
+
+You can add, list and remove credentials through the configured credential store resource. The following examples use a disposable secret at `myapp/credential-demo`, separate from the credentials consumed by the earlier examples. Choose a path with no existing data or version history.
+
+IMPORTANT: These operations modify data in Vault. Removing an alias deletes its credential value. If it is the last field in the secret, the entire secret is deleted; for KV v2, this permanently deletes its metadata and all versions. Use only disposable data when trying the removal examples.
+
+[source,options="nowrap"]
+----
+# Add a new alias in Vault
+/subsystem=hashicorp-vault/credential-store=my-vault:add-alias( \
+    alias="#myapp/credential-demo?sample", \
+    secret-value="demo-value")
+
+# List aliases recursively under the default mount
+/subsystem=hashicorp-vault/credential-store=my-vault:read-aliases(recursive=true)
+
+# Remove an alias
+/subsystem=hashicorp-vault/credential-store=my-vault:remove-alias( \
+    alias="#myapp/credential-demo?sample")
+----
+
+`add-alias` fails if the alias already exists. The default `read-aliases()` operation does not descend into child secret paths. Use `path` to select a starting path, `recursive=true` to descend, and `recursive-depth` and `max-number-of-aliases` to bound the results (defaults: 100 and 10000). For example:
+
+[source,options="nowrap"]
+----
+/subsystem=hashicorp-vault/credential-store=my-vault:read-aliases( \
+    path="@secret#myapp",recursive=true,recursive-depth=10,max-number-of-aliases=100)
+----
+
+[[vault-domain-operations]]
+=== Managing credentials in a managed domain
+
+The profile address configures the store. Alias operations access a running managed server, using `/host=HOST/server=SERVER` instead of `/profile=PROFILE`. The following commands for server `main-one` on host `primary` use the same disposable path and have the same deletion consequences as the standalone example above:
+
+[source,options="nowrap"]
+----
+/host=primary/server=main-one/subsystem=hashicorp-vault/credential-store=my-vault:add-alias( \
+    alias="#myapp/credential-demo?sample",secret-value="demo-value")
+/host=primary/server=main-one/subsystem=hashicorp-vault/credential-store=my-vault:read-aliases(recursive=true)
+/host=primary/server=main-one/subsystem=hashicorp-vault/credential-store=my-vault:remove-alias( \
+    alias="#myapp/credential-demo?sample")
+----
+
+Replace the profile, host and server names with those of your domain. These runtime operations act on Vault through the selected server; servers configured for the same Vault destination share the underlying secret data.
+
+IMPORTANT: Each managed server has its own credential-store cache and consuming resources. A Vault update made through one server does not notify the other servers or invalidate their cached credentials. Restart the affected managed servers to pick up the changed values; synchronizing the domain configuration does not propagate changes to secrets in Vault. See <<vault-credential-updates,Picking up credential changes>>.
+
+[[vault-connection-reference]]
+== Connection attributes and authentication
+
+The credential store resource supports the following attributes:
+
+[cols="1,1,3",options="header"]
+|===
+|Attribute |Required |Description
+
+|`host-address`
+|Yes
+|The URL of the Vault server (e.g. `http://localhost:8200`).
+
+|`namespace`
+|No
+|The Vault namespace to use (Vault Enterprise feature).
+
+|`client-ssl-context`
+|No
+|Reference to an Elytron `client-ssl-context` for HTTPS server trust and client certificate authentication.
+
+|`credential-reference`
+|No
+|A credential reference providing the Vault authentication token when token authentication is used.
+|===
+
+=== Authentication methods
+
+The HashiCorp Vault credential store supports two authentication methods:
+
+* *Token authentication:* The Vault token is supplied using the `credential-reference` attribute (either clear-text or referencing another credential store).
+* *Certificate authentication:* When `credential-reference` is omitted, authentication is performed via client certificates configured in the referenced `client-ssl-context` (key manager).
+
+For certificate authentication, enable and configure Vault's certificate authentication method to accept the client certificate and grant the required policies. Presenting a certificate for the TLS connection alone does not grant access to Vault secrets.
+
+NOTE: Authentication methods other than `token` and `certificate` (such as AppRole, Kubernetes, or userpass) are currently not supported.
+
+NOTE: The Vault token can be obtained from another credential store using `credential-reference={store=token-store,alias=vault-token}`. See <<CredentialStore,Credential Store>> for information on creating and protecting that store.
+
+[[vault-alias-format]]
+== Alias format
+
+Aliases identify a specific value within a specific secret in Vault. The examples in this section assume *community* stability with legacy alias support enabled. They use explicit new-format prefixes so that the same aliases also work at *default* stability.
+
+For a compact set of examples, see the <<vault-alias-quick-reference,alias quick reference>>.
+
+The alias format is:
+
+[source,text,options="nowrap"]
+----
+[engine=TYPE][@mount-path][#]secret-path?key-path
+----
+
+Square brackets mark optional components; they are not part of the alias.
+
+[cols="2,5",options="header"]
+|===
+|Component |Description
+
+|`engine=TYPE`
+|Selects the KV engine version: `KVv1` or `KVv2`. Defaults to `KVv2` when omitted.
+
+|`@mount-path`
+|Identifies the mount of the KV engine in Vault. Defaults to `secret` when omitted.
+
+|`#`
+|Marks the start of the secret path. Required after an explicit engine or mount; it can also prefix a secret path to explicitly select the new alias format.
+
+|`secret-path`
+|Required path of the secret within the mount, such as `myapp/database`.
+
+|`?`
+|Required delimiter separating the secret path from the key path.
+
+|`key-path`
+|Required field name within the secret, or a path through nested JSON fields, such as `password` or `database/password`.
+|===
+
+For example, suppose Vault has a KV v2 engine mounted at `secret`, with a secret at `myapp/database` containing the following data:
+
+[source,json,options="nowrap"]
+----
+{
+  "password": "s3cret"
+}
+----
+
+The fully qualified alias for its `password` field is:
+
+[source,text,options="nowrap"]
+----
+engine=KVv2@secret#myapp/database?password
+----
+
+This alias selects the value `s3cret`. With the default engine and mount, it can also be written as `#myapp/database?password`. The following sections explain the components and additional cases in detail.
+
+=== Basic format
+
+For a secret in the default mount, start the alias with `#`, followed by the secret path and a key name separated by `?`:
+
+[source,text,options="nowrap"]
+----
+#myapp/database?password
+----
+
+This retrieves the `password` key from the secret at path `myapp/database` under the default mount (`secret`) using the default engine (KV v2).
+
+The leading `#` selects the new alias format even when legacy support is enabled. The fully qualified equivalent is `@secret#myapp/database?password`. See <<legacy-alias-format,Legacy alias format>> before migrating an existing configuration.
+
+=== Specifying a mount path
+
+Use `@` to specify a non-default mount path. When `@` is present, use `#` to mark the start of the secret path:
+
+[source,text,options="nowrap"]
+----
+@custom-mount#myapp/database?password
+----
+
+=== Specifying the engine type
+
+Use the `engine=` prefix to select a KV engine version. Supported values are `KVv1` and `KVv2` (other engine types, such as `database` or `pki`, are not supported):
+
+[source,text,options="nowrap"]
+----
+engine=KVv1@secret-v1#myapp/config?api_key
+----
+
+When using `engine=` without `@mount-path`, the `#` marker is required to mark the start of the secret path:
+
+[source,text,options="nowrap"]
+----
+engine=KVv1#myapp/config?api_key
+----
+
+=== Multi-part secret paths
+
+Slashes in the secret path are literal Vault path segments:
+
+[source,text,options="nowrap"]
+----
+#myapp/database?password
+#team/backend/services?connection_string
+----
+
+=== Nested key paths
+
+If the Vault secret value is a JSON object, use `/` in the key path to traverse into nested fields:
+
+[source,text,options="nowrap"]
+----
+#myapp/config?database/host
+#myapp/config?database/credentials/password
+----
+
+For example, if the secret at `myapp/config` contains:
+
+[source,json,options="nowrap"]
+----
+{
+  "database": {
+    "host": "prod.db.example.com",
+    "credentials": {
+      "password": "s3cret"
+    }
+  }
+}
+----
+
+then the alias `#myapp/config?database/credentials/password` resolves to `s3cret`. A key path ending at a JSON object does not resolve to a credential in the new format; select a leaf value. A JSON `null` value is treated as absent.
+
+=== Keys containing dots
+
+Dots in key names are treated as literal characters, not separators:
+
+[source,text,options="nowrap"]
+----
+#myapp/database?db.host
+----
+
+This looks up the key literally named `db.host`. When combined with nested traversal:
+
+[source,text,options="nowrap"]
+----
+#myapp?db.config/host
+----
+
+Here `db.config` is a literal key name, and `/` traverses into its value.
+
+=== URL encoding
+
+In new-format aliases, percent-encode reserved characters in component names. Each component is decoded once. In the key path, raw `/` separates nested JSON fields before each segment is decoded:
+
+[cols="2,3",options="header"]
+|===
+|Alias |Selected key
+
+|`#myapp/config?database/host`
+|Field `host` inside object `database`
+
+|`#myapp/config?database%2Fhost`
+|Literal top-level field `database/host`
+
+|`#myapp/config?database%252Fhost`
+|Literal top-level field `database%2Fhost`
+|===
+
+In mount and secret paths, `/` separates path segments and `%2F` decodes to `/`; it does not address a distinct literal-slash segment. Use the following encodings for other special characters:
+
+[cols="1,1",options="header"]
+|===
+|Character |Encoding
+
+|`#` |`%23`
+|`?` |`%3F`
+|`@` |`%40`
+|`%` |`%25`
+|`+` |`%2B`
+|space |`%20`
+|===
+
+An unencoded `+` is decoded as a space in the new format. For a literal percent-encoded name, encode the percent sign: `%2520` selects the literal text `%20`, whereas `%20` selects a space. These rules differ from legacy key handling; see <<legacy-alias-format,Legacy alias format>>.
+
+For example, a secret path containing a `#` character:
+
+[source,text,options="nowrap"]
+----
+#secret%23path?key
+----
+
+[[vault-alias-quick-reference]]
+=== Quick reference
+
+[cols="2,3",options="header"]
+|===
+|Alias |Description
+
+|`#myapp?password`
+|Key `password` from secret `myapp` at default mount
+
+|`#myapp/database?password`
+|Key `password` from secret `myapp/database` at default mount
+
+|`#myapp?db.host`
+|Key literally named `db.host` from secret `myapp`
+
+|`#myapp?database/host`
+|Nested key traversal: `database` -> `host`
+
+|`#myapp?database%2Fhost`
+|Key literally named `database/host`
+
+|`@custom#myapp?password`
+|Secret `myapp` at mount `custom`
+
+|`engine=KVv1@kv-v1#myapp?password`
+|KV v1 engine at mount `kv-v1`
+
+|`engine=KVv2@prod#team/app?database/credentials/password`
+|Fully explicit: KV v2, mount `prod`, multi-part path, nested key
+|===
+
+For example, a credential reference using a custom mount and nested key path is:
+
+[source,xml,options="nowrap"]
+----
+<credential-reference store="my-vault" alias="@prod#services/auth?jwt/signing/key"/>
+----
+
+[[vault-runtime-resolution]]
+== Runtime resolution and dependencies
+
+Vault expressions are resolved during the runtime stage of management operations, not the model stage. The attribute consuming an expression must support expressions and resolve them at runtime.
+
+The referenced credential store can be initialized on demand during runtime resolution, before its service has started. This also allows a Vault-backed `credential-reference` to be used by resources such as Elytron key stores during boot. A configuration in which resolving a credential requires that same credential store to finish initializing forms a dependency cycle and is rejected.
+
+[[vault-tls-migration]]
+== Updating existing Vault TLS configurations
+
+Earlier versions of the Vault integration used the `authentication-context` attribute on the credential store to configure TLS. The current integration uses `client-ssl-context` instead and no longer accepts `authentication-context`. This is a breaking configuration change that affects both existing CLI scripts and saved subsystem XML using the old attribute.
+
+=== Updating existing CLI scripts
+
+CLI commands that pass `authentication-context` to the credential-store `add` operation, or attempt to write that attribute, fail because it is no longer part of the management model. Update these commands before using your scripts with the current integration.
+
+Configure an Elytron `client-ssl-context` with the required trust manager and optional key manager, then change the Vault commands to reference it using `client-ssl-context`, as in <<vault-https-connections,HTTPS connections>>. The value must name the SSL context resource; an Elytron authentication context is a different resource, so renaming the attribute while retaining the old reference is insufficient. Ensure the script creates any required TLS resources before adding the Vault credential store.
+
+=== Importing saved subsystem XML
+
+Saved XML containing `authentication-context` cannot be loaded by the current integration. The server fails to parse the subsystem, so you cannot start it with that configuration and then fix the attribute through the connected CLI. Older subsystem namespaces recognise the removed attribute only to report a migration error.
+
+Before starting the upgraded server, manually update the saved configuration:
+
+. Define an Elytron `client-ssl-context` with the required trust manager and optional key manager, or identify an existing one with the required TLS configuration.
+. Replace `authentication-context` on each affected Vault credential store with `client-ssl-context`, naming that SSL context resource.
+. Change the Vault subsystem namespace to `urn:wildfly:hashicorp-vault:2.0`. Changing the namespace alone does not migrate the attribute or its referenced TLS configuration.
+
+Retain the original configuration and scripts for rollback. Older feature-pack versions that support only the `1.0` namespace cannot load the migrated `2.0` configuration.
+
+[[legacy-alias-format]]
+== Legacy alias format
+
+Prior versions used an alias format where the secret path and key were separated by a dot:
+
+[source,text,options="nowrap"]
+----
+secret/database.password
+----
+
+This format is deprecated. The subsystem selects legacy support automatically from server stability, with no per-store override:
+
+* At *default* stability, legacy aliases are rejected. Use the new format.
+* At *community* stability or lower, legacy aliases are accepted with a deprecation warning. Where possible, the warning suggests an equivalent new-format alias.
+
+=== Format detection and compatibility
+
+An alias starting with `#`, or with a complete new-format header (`@mount#secret?key` or `engine=TYPE[@mount]#secret?key`), always selects the new format. A legacy name containing `@` alone does not select the new format. These explicit prefixes are reserved; an old alias matching one of them must be migrated to an explicit new-format alias for its intended destination.
+
+Otherwise, when legacy support is enabled, an alias containing a dot uses legacy parsing, even if its key contains `?`, `#` or `@`. There is no fallback based on which secret exists. For example, `secret/app.a?b` selects mount `secret`, secret `app`, literal key `a?b` at Community stability. At Default stability, it is a new-format alias selecting key `b` in secret `secret/app.a` under the default mount. An alias that parses successfully is therefore not proof of a correct migration.
+
+An unprefixed alias with a multi-segment secret path can also change destination without containing a dot. At Community stability, `myapp/database?password` selects mount `myapp`, secret `database` and key `password`. At Default stability, it selects mount `secret`, secret `myapp/database` and key `password`. Use `#myapp/database?password` to select the latter destination at either stability level.
+
+In the legacy format:
+
+* When the path contains a slash, the first path segment is the mount. For example, `secret/database.password` selects mount `secret`, secret `database` and key `password`. A path without a slash uses the default mount: `database.password` selects mount `secret`, secret `database` and key `password`.
+* The last dot separates the secret path from the key; trailing dots are discarded.
+* The key is a literal top-level JSON field. `/` does not traverse nested fields, `%xx` is not decoded, and `+`, `?`, `#` and `@` are literal characters.
+* The path follows HTTP path semantics: `%20` selects a space, `%2520` selects the literal text `%20`, and `+` remains a plus. A raw `?` starts a query and a raw `#` starts an ignored fragment.
+
+Compatibility targets aliases from the `1.0.1.Final` credential-store library, subject to the reserved-prefix exception above.
+
+=== Migrating alias references
+
+Use the fully qualified `@mount#secret-path?key-path` spelling when migrating. It keeps the mount and parsing explicit with legacy support enabled or disabled:
+
+[cols="2,2",options="header"]
+|===
+|Legacy format |New format
+
+|`secret/database.password`
+|`@secret#database?password`
+
+|`secret/myapp/config.api_key`
+|`@secret#myapp/config?api_key`
+
+|`custom/myapp.password`
+|`@custom#myapp?password`
+
+|`secret/app.database/host`
+|`@secret#app?database%2Fhost`
+
+|`secret/app.database%2Fhost`
+|`@secret#app?database%252Fhost`
+
+|`secret/app.a+b`
+|`@secret#app?a%2Bb`
+
+|`secret/app.a?b`
+|`@secret#app?a%3Fb`
+
+|`secret/app.a@b`
+|`@secret#app?a%40b`
+
+|`secret/app+name.key`
+|`@secret#app%2Bname?key`
+
+|===
+
+While running at Community stability, convert and verify references individually, including credential references, expressions and scripts. Verify the mount, secret path and key against the intended Vault data, then exercise a reload or restart so validation does not depend only on cached credentials. Changing alias syntax does not require moving Vault data or turning literal keys into nested objects.
+
+Two cases require additional planning:
+
+* Legacy HTTP queries, such as `secret/app?version=1.password`, can select historical KV v2 versions and have no new-format equivalent. Keep using legacy support until that dependency is removed or replaced; replacing the alias with `@secret#app?password` would select the latest version.
+* Legacy aliases can return an entire top-level JSON object as credential text. New-format aliases require a leaf value. If an application needs that JSON text as its password, migrate the secret schema to store it as a JSON string before converting the reference.
+
+Changing an existing server configuration from a lower stability level to Default stability is not supported. Converting Vault aliases does not make other subsystem schemas compatible with Default stability. For a deployment at Default stability, prepare a compatible server configuration using explicit new-format aliases and retain the original configuration for rollback.

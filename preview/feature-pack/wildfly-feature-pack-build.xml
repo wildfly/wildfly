@@ -39,6 +39,7 @@
         <group name="org.jboss.metadata"/>
         <group name="org.wildfly"/>
         <group name="org.wildfly.core"/>
+        <group name="org.wildfly.security.vault"/>
     </package-schemas>
 
     <config name="standalone.xml" model="standalone"/>
@@ -91,6 +92,7 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.hashicorp-vault</extension>
                 <extension>org.wildfly.extension.elytron-oidc-client</extension>
                 <extension>org.wildfly.extension.health</extension>
                 <extension>org.wildfly.extension.jakarta.data</extension>
@@ -150,6 +152,7 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.hashicorp-vault</extension>
                 <extension>org.wildfly.extension.jakarta.data</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
