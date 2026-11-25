@@ -8,7 +8,6 @@ package org.wildfly.test.integration.elytron.certs;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -16,17 +15,12 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509ExtendedKeyManager;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -47,15 +41,6 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
-import org.wildfly.security.auth.realm.KeyStoreBackedSecurityRealm;
-import org.wildfly.security.auth.server.SecurityDomain;
-import org.wildfly.security.auth.server.SecurityRealm;
-import org.wildfly.security.permission.PermissionVerifier;
-import org.wildfly.security.ssl.SSLContextBuilder;
-import org.wildfly.security.ssl.X509RevocationTrustManager;
-import org.wildfly.test.integration.elytron.certs.ocsp.OcspStaplingTestCase;
-import org.wildfly.test.integration.elytron.certs.ocsp.OcspTestBase;
-
 
 /**
  * Common methods that are used for both CRL and OCSP tests.
@@ -67,18 +52,6 @@ public class CommonBase {
 
     @ArquillianResource
     protected ManagementClient managementClient;
-
-    protected void setServerKeyStore(String value) throws Exception {
-        try (CLIWrapper cli = new CLIWrapper(true)) {
-            try {
-                cli.sendLine(String.format(
-                        "/subsystem=elytron/key-manager=serverKeyManager:write-attribute(name=key-store, value=\"%s\")",
-                        value));
-            } finally {
-                cli.sendLine(String.format("reload"));
-            }
-        }
-    }
 
     protected void setSoftFail(boolean value) throws Exception {
         try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -170,33 +143,6 @@ public class CommonBase {
         performConnectionTest(clientContext, expectValid);
     }
 
-    protected static X509ExtendedKeyManager getKeyManager(KeyStore clientKeystore, final String password) throws Exception {
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-        keyManagerFactory.init(clientKeystore, password.toCharArray());
-
-        for (KeyManager current : keyManagerFactory.getKeyManagers()) {
-            if (current instanceof X509ExtendedKeyManager) {
-                return (X509ExtendedKeyManager) current;
-            }
-        }
-
-        throw new IllegalStateException("Unable to obtain X509ExtendedKeyManager.");
-    }
-
-    protected static SSLContext createSSLContextForOcspStapling(KeyStore clientKeystore, KeyStore clientTruststore, String password, boolean softFail) throws Exception {
-        X509RevocationTrustManager.Builder revocationBuilder = X509RevocationTrustManager.builder();
-        revocationBuilder.setTrustManagerFactory(TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()));
-        revocationBuilder.setTrustStore(clientTruststore);
-        revocationBuilder.setCheckRevocation(true);
-        revocationBuilder.setSoftFail(softFail);
-
-        SSLContext clientContext = new SSLContextBuilder().setClientMode(true).setAcceptOCSPStapling(true)
-                .setKeyManager(getKeyManager(clientKeystore, password))
-                .setTrustManager(revocationBuilder.build())
-                .setSecurityDomain(getKeyStoreBackedSecurityDomain("/jks/beetles.keystore"))
-                .build().create();
-        return clientContext;
-    }
     private SSLContext createSSLContext(KeyStore clientKeystore, KeyStore clientTruststore, String password) throws Exception {
         try {
             return SSLContexts.custom().loadTrustMaterial(clientTruststore,
@@ -206,7 +152,7 @@ public class CommonBase {
         }
     }
 
-    protected void performConnectionTest(SSLContext clientContext, boolean expectValid) throws Exception {
+    private void performConnectionTest(SSLContext clientContext, boolean expectValid) throws Exception {
         // perform request from client to server with appropriate client ssl context (certificate)
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<SSLSocket> socketFuture = executorService.submit(() -> {
@@ -241,37 +187,6 @@ public class CommonBase {
         if (expectValid) {
             // Now check that complete HTTPS GET request can be performed successfully.
             performHttpGet(clientContext);
-        }
-    }
-
-    protected void performConnectionOcspStaplingTest(SSLContext clientContext, boolean expectValid) throws Throwable {
-        SSLSocket clientSocket = (SSLSocket) clientContext.getSocketFactory().createSocket(InetAddress.getLoopbackAddress(),
-                8443);
-        ExecutorService clientExecutorService = Executors.newSingleThreadExecutor();
-        Future<byte[]> clientFuture = clientExecutorService.submit(() -> {
-            try {
-                byte[] received = new byte[2];
-                clientSocket.getOutputStream().write(new byte[]{0x12, 0x34});
-                clientSocket.getInputStream().read(received);
-
-                Assert.assertNotNull(clientSocket.getSession().getPeerPrincipal().getName());
-                Assert.assertNotEquals("TLSv1.3", clientSocket.getSession().getProtocol()); // since TLS 1.3 is not enabled by default
-                return received;
-            } catch (Exception e) {
-                throw new RuntimeException("Client exception", e);
-            }
-        });
-        try {
-            Assert.assertNotNull(clientFuture.get());
-            if (!expectValid) {
-                Assert.fail("SSL connection is expected to fail but did not fail.");
-            }
-        } catch (Exception e) {
-            if (expectValid) {
-                throw e;
-            }
-        } finally {
-            safeClose(clientSocket);
         }
     }
 
@@ -315,27 +230,5 @@ public class CommonBase {
             closeable.close();
         } catch (Exception ignored) {
         }
-    }
-
-    protected static SecurityDomain getKeyStoreBackedSecurityDomain(String keyStorePath) throws Exception {
-        SecurityRealm securityRealm = new KeyStoreBackedSecurityRealm(createKeyStore(keyStorePath));
-
-        SecurityDomain.Builder builder = SecurityDomain.builder()
-                .addRealm("KeystoreRealm", securityRealm)
-                .build()
-                .setDefaultRealmName("KeystoreRealm")
-                .setPreRealmRewriter((String s) -> s.toLowerCase(Locale.ENGLISH))
-                .setPermissionMapper((permissionMappable, roles) -> PermissionVerifier.ALL);
-//        builder.setPrincipalDecoder(new X500AttributePrincipalDecoder("2.5.4.3", 1));
-        return builder.build();
-    }
-
-    private static KeyStore createKeyStore(final String path) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("jks");
-        try (InputStream caTrustStoreFile = OcspStaplingTestCase.class.getResourceAsStream(path)) {
-            keyStore.load(caTrustStoreFile, OcspTestBase.PASSWORD_CHAR);
-        }
-
-        return keyStore;
     }
 }
