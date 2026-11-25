@@ -46,11 +46,11 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
-        if (!unit.hasAttachment(SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY)) {
+        if (!unit.hasAttachment(SingletonDeploymentProcessor.CONFIGURATION_KEY)) {
             VirtualFile file = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getChild(SINGLETON_DEPLOYMENT_DESCRIPTOR);
             if (file.exists()) {
                 try {
-                    unit.putAttachment(SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, this.parse(unit, file.getPhysicalFile()));
+                    unit.putAttachment(SingletonDeploymentProcessor.CONFIGURATION_KEY, this.parse(unit, file.getPhysicalFile()));
                 } catch (IOException e) {
                     throw new DeploymentUnitProcessingException(e);
                 }
@@ -60,7 +60,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
 
     @Override
     public void undeploy(DeploymentUnit unit) {
-        unit.removeAttachment(SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY);
+        unit.removeAttachment(SingletonDeploymentProcessor.CONFIGURATION_KEY);
     }
 
     private SingletonDeploymentConfiguration parse(DeploymentUnit unit, File file) throws DeploymentUnitProcessingException {
