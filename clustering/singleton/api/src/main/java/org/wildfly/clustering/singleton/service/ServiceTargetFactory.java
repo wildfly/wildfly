@@ -20,7 +20,7 @@ public interface ServiceTargetFactory {
     /**
      * Creates a service target for singleton service installation from the specified MSC service target.
      * @param target a service target for singleton services installation.
-     * @return
+     * @return a service target that installs singleton services
      */
     ServiceTarget createSingletonServiceTarget(ServiceTarget target);
 }
