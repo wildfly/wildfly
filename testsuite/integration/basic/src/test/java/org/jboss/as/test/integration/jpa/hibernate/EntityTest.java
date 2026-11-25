@@ -40,7 +40,7 @@ public class EntityTest {
         t.setCustomer(c);
         c.setTickets(tickets);
 
-        session.save(c);
+        session.persist(c);
 
         return c;
     }
@@ -48,13 +48,12 @@ public class EntityTest {
     public Flight manyToOneCreate() throws Exception {
         Flight f = new Flight();
         f.setName("Flight number one");
-        f.setId(new Long(1));
 
         Company comp = new Company();
         comp.setName("Airline 1");
         f.setCompany(comp);
 
-        session.save(f);
+        session.persist(f);
 
         return f;
     }
@@ -64,7 +63,6 @@ public class EntityTest {
         Flight f1 = findFlightById(new Long(1));
         Flight f2 = new Flight();
 
-        f2.setId(new Long(2));
         f2.setName("Flight two");
 
         Company us = new Company();
@@ -89,55 +87,55 @@ public class EntityTest {
         f1.setCustomers(customers1);
         f2.setCustomers(customers2);
 
-        session.save(c1);
-        session.save(c2);
-        session.save(c3);
-        session.save(f2);
+        session.persist(c1);
+        session.persist(c2);
+        session.persist(c3);
+        session.persist(f2);
     }
 
     public int testAllCustomersQuery() {
 
         //session.flush();
-        return session.getNamedQuery("allCustomers").list().size();
+        return session.createNamedQuery("allCustomers", Customer.class).list().size();
     }
 
     public Customer testCustomerByIdQuery() {
         Customer c = new Customer();
         c.setName("Peter");
 
-        session.save(c);
+        session.persist(c);
         session.flush();
 
-        return (Customer) session.getNamedQuery("customerById").setParameter("id", c.getId()).uniqueResult();
+        return session.createNamedQuery("customerById", Customer.class).setParameter("id", c.getId()).uniqueResult();
 
     }
 
     public Customer createCustomer(String name) {
         Customer c = new Customer();
         c.setName(name);
-        session.save(c);
+        session.persist(c);
         return c;
     }
 
     public void changeCustomer(Long id, String name) {
-        Customer c = session.load(Customer.class, id);
+        Customer c = session.get(Customer.class, id);
         c.setName(name);
     }
 
 
     public Flight findFlightById(Long id) {
 
-        return session.load(Flight.class, id);
+        return session.get(Flight.class, id);
     }
 
     public Company findCompanyById(Long id) {
 
-        return session.load(Company.class, id);
+        return session.get(Company.class, id);
     }
 
     public Customer findCustomerById(Long id) {
 
-        return session.load(Customer.class, id);
+        return session.get(Customer.class, id);
     }
 
 }

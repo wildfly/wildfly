@@ -13,6 +13,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for a session management provider.
  * @author Paul Ferraro
  */
 public class SessionManagementResourceTransformer implements BiConsumer<ModelVersion, ResourceTransformationDescriptionBuilder> {
@@ -21,8 +22,15 @@ public class SessionManagementResourceTransformer implements BiConsumer<ModelVer
     public void accept(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (DistributableWebSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, SessionManagementResourceDefinitionRegistrar.MARSHALLER)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SessionManagementResourceDefinitionRegistrar.MARSHALLER)
+                    .end();
+        }
+
+        if (DistributableWebSubsystemModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, InfinispanSessionManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, InfinispanSessionManagementResourceDefinitionRegistrar.IDLE_THRESHOLD)
                     .end();
         }
     }

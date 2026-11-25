@@ -1,0 +1,27 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:distributable-web:community:5.0">
+    <session-management default="session">
+        <infinispan-session-management name="session" cache-container="foo" granularity="SESSION" marshaller="PROTOSTREAM" idle-threshold="${exp.idle-threshold:PT10M}">
+            <ranked-affinity delimiter=":" max-routes="4"/>
+        </infinispan-session-management>
+        <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE">
+            <primary-owner-affinity/>
+        </infinispan-session-management>
+        <hotrod-session-management name="remote-session" remote-cache-container="foo" cache-configuration="bar" granularity="SESSION">
+            <local-affinity/>
+        </hotrod-session-management>
+        <hotrod-session-management name="remote-attribute" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" marshaller="PROTOSTREAM" expiration-thread-pool-size="10">
+            <no-affinity/>
+        </hotrod-session-management>
+    </session-management>
+    <single-sign-on-management default="default">
+        <infinispan-single-sign-on-management name="default" cache-container="foo"/>
+        <infinispan-single-sign-on-management name="domain" cache-container="foo" cache="bar"/>
+        <hotrod-single-sign-on-management name="remote" remote-cache-container="foo"/>
+    </single-sign-on-management>
+    <infinispan-routing cache-container="web" cache="routing"/>
+</subsystem>

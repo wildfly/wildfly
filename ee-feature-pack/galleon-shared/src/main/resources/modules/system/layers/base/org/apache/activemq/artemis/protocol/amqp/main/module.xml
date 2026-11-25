@@ -27,7 +27,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.activemq:artemis-amqp-protocol}"/>
+        <artifact name="${org.apache.artemis:artemis-amqp-protocol}"/>
     </resources>
 
     <dependencies>

@@ -11,6 +11,7 @@ import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
+ * A function returning the client statistics for a remote cache.
  * @author Paul Ferraro
  */
 public class RemoteCacheClientStatisticsFactory implements Function<RemoteCacheContainer, RemoteCacheClientStatisticsMXBean> {

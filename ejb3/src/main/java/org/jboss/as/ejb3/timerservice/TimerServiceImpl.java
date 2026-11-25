@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
 import jakarta.ejb.EJBException;
@@ -79,7 +79,7 @@ public class TimerServiceImpl implements ManagedTimerService {
      */
     private final Object waitingOnTxCompletionKey = new Object();
 
-    private final ExecutorService executor;
+    private final Executor executor;
     private final java.util.Timer timer;
     private final TimedObjectInvoker invoker;
     private final TimerPersistence persistence;
@@ -156,6 +156,10 @@ public class TimerServiceImpl implements ManagedTimerService {
         safeClose(listenerHandle);
         listenerHandle = null;
         this.timer.purge(); //WFLY-3823
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override
@@ -932,7 +936,7 @@ public class TimerServiceImpl implements ManagedTimerService {
 
         @Override
         public void run() {
-            executor.submit(this::persistTimer);
+            executor.execute(this::persistTimer);
         }
 
         void persistTimer() {
@@ -981,7 +985,7 @@ public class TimerServiceImpl implements ManagedTimerService {
         public void run() {
             if (executor != null) {
                 if (controlPoint == null) {
-                    executor.submit(delegate);
+                    executor.execute(delegate);
                 } else if (!queued) {
                     queued = true;
                     controlPoint.queueTask(new Runnable() {

@@ -5,6 +5,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -39,10 +40,10 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements 
 
     private final EJBComponentDescriptionFactory[] factories;
 
-    public AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(final boolean appclient, final boolean defaultMdbPoolAvailable, final boolean defaultSlsbPoolAvailable) {
+    public AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(final boolean appclient, final boolean defaultMdbPoolAvailable, final boolean defaultSlsbPoolAvailable, final Supplier<String> defaultResourceAdapterName) {
         this.appclient = appclient;
         this.factories = new EJBComponentDescriptionFactory[] {
-                new MessageDrivenComponentDescriptionFactory(appclient, defaultMdbPoolAvailable),
+                new MessageDrivenComponentDescriptionFactory(appclient, defaultMdbPoolAvailable, defaultResourceAdapterName),
                 new SessionBeanComponentDescriptionFactory(appclient, defaultSlsbPoolAvailable)
         };
     }

@@ -5,5 +5,5 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<package-spec xmlns="urn:jboss:galleon:package:2.0" name="unstable-api-annotation-index.wildfly-ee-feature-pack">
+<package-spec xmlns="urn:jboss:galleon:package:3.0" name="unstable-api-annotation-index.wildfly-ee-feature-pack" stability-level="preview">
 </package-spec>

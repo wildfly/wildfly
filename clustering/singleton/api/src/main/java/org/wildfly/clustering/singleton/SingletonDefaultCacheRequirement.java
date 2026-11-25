@@ -7,33 +7,36 @@ package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public enum SingletonDefaultCacheRequirement implements UnaryRequirement {
 
     /**
-     * @deprecated Use {@link SingletonDefaultCacheRequirement#SINGLETON_SERVICE_CONFIGURATOR_FACTORY} instead.
+     * @deprecated Use {@link SingletonServiceBuilderFactory#DEFAULT_SERVICE_DESCRIPTOR} instead.
      */
-    @Deprecated(forRemoval = true) SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
-    SINGLETON_SERVICE_CONFIGURATOR_FACTORY("org.wildfly.clustering.cache.default-singleton-service-configurator-factory", SingletonServiceConfiguratorFactory.class),
+    @Deprecated(forRemoval = true) SINGLETON_SERVICE_BUILDER_FACTORY(SingletonServiceBuilderFactory.DEFAULT_SERVICE_DESCRIPTOR),
+    /**
+     * @deprecated Use {@link SingletonServiceConfiguratorFactory#DEFAULT_SERVICE_DESCRIPTOR} instead.
+     */
+    @Deprecated SINGLETON_SERVICE_CONFIGURATOR_FACTORY(SingletonServiceConfiguratorFactory.DEFAULT_SERVICE_DESCRIPTOR),
     ;
-    private final String name;
-    private final Class<?> type;
+    private final UnaryServiceDescriptor<?> descriptor;
 
-    SingletonDefaultCacheRequirement(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
+    SingletonDefaultCacheRequirement(UnaryServiceDescriptor<?> descriptor) {
+        this.descriptor = descriptor;
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return this.descriptor.getName();
     }
 
     @Override
     public Class<?> getType() {
-        return this.type;
+        return this.descriptor.getType();
     }
 }

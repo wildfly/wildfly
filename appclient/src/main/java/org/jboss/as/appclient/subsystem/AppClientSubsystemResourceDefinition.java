@@ -25,11 +25,8 @@ import org.jboss.dmr.ModelType;
  */
 public class AppClientSubsystemResourceDefinition extends SimpleResourceDefinition {
 
-    static final String MCF_CAPABILITY = "org.wildfly.management.model-controller-client-factory";
-    static final String EXECUTOR_CAPABILITY = "org.wildfly.management.executor";
-
     public static final RuntimeCapability<Void> APPCLIENT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.appclient", Void.class)
-            //.addRequirements(MCF_CAPABILITY, EXECUTOR_CAPABILITY) TODO determine why this breaks domain mode provisioning
+            //.addRequirements(ModelControllerClientFactory.SERVICE_DESCRIPTOR, Capabilities.MANAGEMENT_EXECUTOR) TODO determine why this breaks domain mode provisioning
             .build();
 
     public static final SimpleAttributeDefinition FILE =

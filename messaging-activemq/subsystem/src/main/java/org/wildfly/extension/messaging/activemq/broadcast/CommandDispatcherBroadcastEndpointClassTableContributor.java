@@ -5,21 +5,20 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.marshalling.ClassTable;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.jboss.IdentityClassTable;
 
 /**
  * {@link ClassTableContributor} for a {@link CommandDispatcherBroadcastEndpoint}.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class CommandDispatcherBroadcastEndpointClassTableContributor implements ClassTableContributor {
+@MetaInfServices(ClassTable.class)
+public class CommandDispatcherBroadcastEndpointClassTableContributor extends IdentityClassTable {
 
-    @Override
-    public List<Class<?>> getKnownClasses() {
-        return Arrays.asList(BroadcastCommand.class);
+    public CommandDispatcherBroadcastEndpointClassTableContributor() {
+        super(List.of(BroadcastCommand.class));
     }
 }

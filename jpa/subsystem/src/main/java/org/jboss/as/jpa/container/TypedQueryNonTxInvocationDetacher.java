@@ -6,10 +6,13 @@
 package org.jboss.as.jpa.container;
 
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import jakarta.persistence.EntityManager;
@@ -18,6 +21,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.Parameter;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * for JPA 2.0 section 3.8.6
@@ -26,12 +30,29 @@ import jakarta.persistence.TypedQuery;
  *
  * @author Scott Marlow
  */
-public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
+public abstract class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
+
+    private static final TypedQueryNonTxInvocationDetacher.Factory FACTORY; static {
+        TypedQueryNonTxInvocationDetacher.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<TypedQueryNonTxInvocationDetacher.Factory>) () -> ServiceLoader.load(TypedQueryNonTxInvocationDetacher.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(TypedQueryNonTxInvocationDetacher.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static <X> TypedQuery<X> create(final EntityManager underlyingEntityManager, TypedQuery<X> underlyingQuery) {
+        return FACTORY.createTypedQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingQuery);
+    }
 
     private final TypedQuery<X> underlyingQuery;
     private final EntityManager underlyingEntityManager;
 
-    TypedQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, TypedQuery<X> underlyingQuery) {
+    protected TypedQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, TypedQuery<X> underlyingQuery) {
         this.underlyingQuery = underlyingQuery;
         this.underlyingEntityManager = underlyingEntityManager;
     }
@@ -50,7 +71,7 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     @Override
     public X getSingleResult() {
         X result = (X)underlyingQuery.getSingleResult();
-        /**
+        /*
          * The purpose of this wrapper class is so that we can detach the returned entities from this method.
          * Call EntityManager.clear will accomplish that.
          */
@@ -219,5 +240,9 @@ public class TypedQueryNonTxInvocationDetacher<X> implements TypedQuery<X> {
     @Override
     public <T> T unwrap(Class<T> cls) {
         return underlyingQuery.unwrap(cls);
+    }
+
+    public interface Factory {
+        <X> TypedQueryNonTxInvocationDetacher<X> createTypedQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, TypedQuery<X> underlyingQuery);
     }
 }

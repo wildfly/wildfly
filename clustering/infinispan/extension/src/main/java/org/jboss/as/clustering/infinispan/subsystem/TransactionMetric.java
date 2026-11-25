@@ -5,19 +5,18 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.interceptors.impl.TxInterceptor;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Enumeration of transaction management metrics for a cache.
  *
  * @author Paul Ferraro
  */
-@SuppressWarnings("rawtypes")
 public enum TransactionMetric implements Metric<TxInterceptor> {
 
     COMMITS("commits", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
@@ -49,7 +48,7 @@ public enum TransactionMetric implements Metric<TxInterceptor> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }

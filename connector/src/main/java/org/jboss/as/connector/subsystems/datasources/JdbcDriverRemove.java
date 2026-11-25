@@ -20,11 +20,11 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.ModuleIdentifierUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
@@ -60,18 +60,20 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? model.get(
                 DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).asString() : null;
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
 
-        final ModuleIdentifier moduleId;
+        final String moduleId;
         final Module module;
+
         try {
-            moduleId = ModuleIdentifier.fromString(moduleName);
+            moduleId = ModuleIdentifierUtil.parseCanonicalModuleIdentifier(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleNotFoundException e) {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));
             return;
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName));
+            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName, e.getLocalizedMessage(),
+                    e.getCause() != null ? e.getCause().getLocalizedMessage() : "-"));
             return;
         }
 

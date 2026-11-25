@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<package-spec xmlns="urn:jboss:galleon:package:3.0" name="bin.appclient">
+    <dependencies>
+        <package name="bin.common"/>
+    </dependencies>
+</package-spec>

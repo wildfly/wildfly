@@ -169,8 +169,8 @@ public class LongRunningThreadsCheckTestCase {
         assertEquals(wm + 1, manager.getName());
         assertTrue(manager.getShortRunningThreadPool() instanceof StatisticsExecutorImpl);
         assertTrue(manager.getLongRunningThreadPool() instanceof StatisticsExecutorImpl);
-        assertEquals(JcaTestsUtil.extractBlockingExecutor((StatisticsExecutorImpl) manager.getShortRunningThreadPool()),
-                JcaTestsUtil.extractBlockingExecutor((StatisticsExecutorImpl) manager.getLongRunningThreadPool()));
+        assertEquals(JcaTestsUtil.extractRealExecutor((StatisticsExecutorImpl) manager.getShortRunningThreadPool()),
+                JcaTestsUtil.extractRealExecutor((StatisticsExecutorImpl) manager.getLongRunningThreadPool()));
     }
 
     /**

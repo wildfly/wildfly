@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.Test;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
  * Unit test for {@link DistributableInactiveSessionStatistics}.

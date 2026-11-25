@@ -4,11 +4,11 @@
  */
 package org.jboss.as.web.common;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -20,7 +20,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -33,7 +32,30 @@ public class SharedTldsMetaDataBuilder {
 
     public static final AttachmentKey<List<TldMetaData>> ATTACHMENT_KEY = AttachmentKey.create(List.class);
 
-    private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
+    private static final String[] JSTL_TAGLIBS = {
+            "c-1_0-rt.tld",
+            "c-1_0.tld",
+            "c-1_2.tld",
+            "c.tld",
+            "fmt-1_0-rt.tld",
+            "fmt-1_0.tld",
+            "fmt-1_1.tld",
+            "fmt.tld",
+            "fn-1_1.tld",
+            "fn.tld",
+            "permittedTaglibs-1_1.tld",
+            "permittedTaglibs.tld",
+            "scriptfree-1_1.tld",
+            "scriptfree.tld",
+            "sql-1_0-rt.tld",
+            "sql-1_0.tld",
+            "sql-1_1.tld",
+            "sql.tld",
+            "x-1_0-rt.tld",
+            "x-1_0.tld",
+            "x-1_1.tld",
+            "x.tld"
+    };
 
     // Not used right now due to hardcoding
     /** The common container config. */
@@ -48,7 +70,7 @@ public class SharedTldsMetaDataBuilder {
         final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
 
         try {
-            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
+            ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader("jakarta.servlet.jstl.api").getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
                 InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
@@ -70,21 +92,20 @@ public class SharedTldsMetaDataBuilder {
         return metadata;
     }
 
-    private TldMetaData parseTLD(InputStream is)
-    throws Exception {
-        try {
+    private TldMetaData parseTLD(final InputStream is) throws Exception {
+        try (is) {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
+            setIfSupported(inputFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-            return TldMetaDataParser.parse(xmlReader    );
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException e) {
-                // Ignore
-            }
+            return TldMetaDataParser.parse(xmlReader);
+        }
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
         }
     }
 

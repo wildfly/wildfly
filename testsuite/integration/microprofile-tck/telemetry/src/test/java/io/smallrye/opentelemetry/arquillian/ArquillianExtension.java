@@ -14,7 +14,6 @@ public class ArquillianExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder extensionBuilder) {
-        extensionBuilder.service(ApplicationArchiveProcessor.class,
-                DeploymentProcessor.class);
+        extensionBuilder.service(ApplicationArchiveProcessor.class, DeploymentProcessor.class);
     }
 }

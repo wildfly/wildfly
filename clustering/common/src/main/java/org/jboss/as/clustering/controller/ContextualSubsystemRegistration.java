@@ -13,6 +13,7 @@ import org.jboss.as.controller.services.path.PathManager;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ContextualSubsystemRegistration extends DecoratingSubsystemRegistration<ManagementResourceRegistration> implements SubsystemRegistration {
 
     private final ManagementRegistrationContext context;

@@ -1099,11 +1099,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
                                 }
                             }
 
+                            Set<String> timers;
                             synchronized (DatabaseTimerPersistence.this) {
-                                Set<String> timers = knownTimerIds.get(timedObjectId);
-                                for (String timer : existing) {
-                                    TimerImpl timer1 = timerService.getTimer(timer);
-                                    if (timer1 != null && timer1.getState() != TimerState.CREATED) {
+                                 timers = knownTimerIds.get(timedObjectId);
+                            }
+                            for (String timer : existing) {
+                                TimerImpl timer1 = timerService.getTimer(timer);
+                                if (timer1 != null && timer1.getState() != TimerState.CREATED) {
+                                    synchronized (DatabaseTimerPersistence.this) {
                                         timers.remove(timer);
                                         listener.timerRemoved(timer);
                                     }

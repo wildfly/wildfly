@@ -19,9 +19,9 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.appclient.logging.AppClientLogger;
-import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
+import org.jboss.as.appclient.subsystem.parsing.AppClientSchemas;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ManagementXmlSchema;
 import org.jboss.as.controller.persistence.ConfigurationExtensionFactory;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
@@ -94,7 +94,6 @@ public final class Main {
                 abort(null);
             } else {
 
-                final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                 final String file = clientArgs.get(0);
                 final List<String> params = clientArgs.subList(1, clientArgs.size());
                 final String deploymentName;
@@ -113,18 +112,21 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
                 final ExtensionRegistry extensionRegistry = configuration.getExtensionRegistry();
-                final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader(), extensionRegistry);
+                AppClientSchemas appClientXmlSchemas = new AppClientSchemas(serverEnvironment.getStability(), Module.getBootModuleLoader(), extensionRegistry);
+                ManagementXmlSchema current = appClientXmlSchemas.getCurrent();
+                QName rootElement = current.getQualifiedName();
+
                 final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
 
                     @Override
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                         ApplicationClientConfigurationPersister persister = new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl,options.propertiesFile, params,
-                                serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
-                        for (Namespace namespace : Namespace.domainValues()) {
-                            if (!namespace.equals(Namespace.CURRENT)) {
-                                persister.registerAdditionalRootElement(new QName(namespace.getUriString(), "server"), parser);
-                            }
+                                serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, current);
+
+                        for (ManagementXmlSchema schema : appClientXmlSchemas.getAdditional()) {
+                            persister.registerAdditionalRootElement(schema.getQualifiedName(), schema);
                         }
+
                         extensionRegistry.setWriterRegistry(persister);
                         return persister;
                     }

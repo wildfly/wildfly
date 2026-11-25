@@ -169,7 +169,7 @@ public class SSLRealmSetupTool {
 
         new SslContextSetup().tearDown(managementClient.getControllerClient());
 
-        controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
+        controller.stop(SSLEJBRemoteRemotingClientTestCase.DEFAULT_JBOSSAS);
     }
 
     private static class SslContextSetup extends AbstractElytronSetupTask {

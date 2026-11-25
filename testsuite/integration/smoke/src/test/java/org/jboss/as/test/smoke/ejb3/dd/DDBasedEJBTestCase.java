@@ -9,17 +9,17 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DDBasedEJBTestCase {
 
     private static final String MODULE_NAME = "dd-based-slsb";
@@ -49,7 +49,7 @@ public class DDBasedEJBTestCase {
 
         String msg = "Simple echo!";
         String echo = bean.echo(msg);
-        Assert.assertEquals("Unexpected return message from bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected return message from bean");
 
     }
 
@@ -68,7 +68,7 @@ public class DDBasedEJBTestCase {
 
         String msg = "Another simple echo!";
         String echo = bean.echo(msg);
-        Assert.assertEquals("Unexpected return message from bean", msg, echo);
+        Assertions.assertEquals(msg, echo, "Unexpected return message from bean");
     }
 
     /**
@@ -84,12 +84,12 @@ public class DDBasedEJBTestCase {
         String localBusinessInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + Echo.class.getName();
         Echo localBusinessIntfView = (Echo) ctx.lookup(localBusinessInterfaceViewJndiName);
         String msgOne = "This is message one!";
-        Assert.assertEquals("Unexpected return message from bean", msgOne, localBusinessIntfView.echo(msgOne));
+        Assertions.assertEquals(msgOne, localBusinessIntfView.echo(msgOne), "Unexpected return message from bean");
 
         String noInterfaceViewJndiName = "java:global/" + MODULE_NAME + "/" + ejbName + "!" + PartialDDSFSB.class.getName();
         PartialDDSFSB noInterfaceView = (PartialDDSFSB) ctx.lookup(noInterfaceViewJndiName);
         String msgTwo = "Yet another message!";
-        Assert.assertEquals("Unexpected return message from no-interface view of bean", msgTwo, noInterfaceView.echo(msgTwo));
+        Assertions.assertEquals(msgTwo, noInterfaceView.echo(msgTwo), "Unexpected return message from no-interface view of bean");
 
     }
 
@@ -102,7 +102,7 @@ public class DDBasedEJBTestCase {
         String msg = "You will be intercepted!!!";
         String returnMsg = interceptedBean.echo(msg);
         String expectedReturnMsg = SimpleInterceptor.class.getName() + "#" + DDBasedInterceptor.class.getName() + "#" + msg;
-        Assert.assertEquals("Unexpected return message from bean", expectedReturnMsg, returnMsg);
+        Assertions.assertEquals(expectedReturnMsg, returnMsg, "Unexpected return message from bean");
 
     }
 }

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-preview-parent</artifactId>
@@ -25,11 +25,12 @@
 
     <name>WildFly Preview: Parent</name>
 
-    <properties>
-        <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
-        <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
-        <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
-    </properties>
+    <modules>
+        <module>channel</module>
+        <module>feature-pack</module>
+        <module>galleon-local</module>
+        <module>product-conf</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -96,14 +97,9 @@
                     <name>!quickly</name>
                 </property>
             </activation>
-
             <modules>
                 <module>build</module>
-                <module>channel</module>
                 <module>dist</module>
-                <module>feature-pack</module>
-                <module>galleon-local</module>
-                <module>product-conf</module>
             </modules>
         </profile>
     </profiles>

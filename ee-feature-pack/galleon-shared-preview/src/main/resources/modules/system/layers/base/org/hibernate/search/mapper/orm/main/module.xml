@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- Hibernate Search ORM Mapper: integrates org.hibernate.search.engine with
+     Hibernate ORM to provide Hibernate Search functionality to
+     JPA Applications -->
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.orm">
+
+    <resources>
+        <artifact name="${org.hibernate.search:hibernate-search-mapper-orm}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.transaction.api"/>
+
+        <module name="io.smallrye.jandex"/>
+        <module name="org.hibernate" />
+        <module name="org.hibernate.models.hibernate-models" services="import"/>
+        <module name="org.hibernate.search.engine" export="true" />
+        <module name="org.hibernate.search.mapper.pojo" export="true" />
+        <module name="org.hibernate.search.jipijapa-hibernatesearch" services="import" />
+        <module name="org.jboss.logging" />
+    </dependencies>
+</module>

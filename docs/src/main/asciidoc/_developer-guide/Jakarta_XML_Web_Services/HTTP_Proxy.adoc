@@ -49,10 +49,10 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
 ...
- 
+
 Service service = Service.create(wsdlURL, new QName("http://org.jboss.ws/jaxws/cxf/httpproxy", "HelloWorldService"));
 HelloWorld port = (HelloWorld) service.getPort(new QName("http://org.jboss.ws/jaxws/cxf/httpproxy", "HelloWorldImplPort"), HelloWorld.class);
- 
+
 Client client = ClientProxy.getClient(port);
 HTTPConduit conduit = (HTTPConduit)client.getConduit();
 ProxyAuthorizationPolicy policy = new ProxyAuthorizationPolicy();
@@ -60,7 +60,7 @@ policy.setAuthorizationType("Basic");
 policy.setUserName(PROXY_USER);
 policy.setPassword(PROXY_PWD);
 conduit.setProxyAuthorization(policy);
- 
+
 port.echo("Foo");
 ----
 
@@ -82,20 +82,20 @@ import java.net.PasswordAuthentication;
 public class ProxyAuthenticator extends Authenticator
 {
    private String user, password;
- 
+
    public ProxyAuthenticator(String user, String password)
    {
       this.user = user;
       this.password = password;
    }
- 
+
    protected PasswordAuthentication getPasswordAuthentication()
    {
       return new PasswordAuthentication(user, password.toCharArray());
    }
 }
- 
+
 ...
- 
+
 Authenticator.setDefault(new ProxyAuthenticator(PROXY_USER, PROXY_PWD));
 ----

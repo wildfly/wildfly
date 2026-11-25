@@ -8,9 +8,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.FilePermission;
 import java.io.IOException;
@@ -29,7 +27,7 @@ import jakarta.jms.TextMessage;
 
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -44,15 +42,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Jakarta Messaging bridge test.
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CreateJMSBridgeSetupTask.class)
 public class JMSBridgeTest {
 
@@ -104,8 +103,8 @@ public class JMSBridgeTest {
         Message receivedMessage = null;
 
         try {
-            assertEquals("Message count bridge metric is not correct", 0L, readMetric("message-count"));
-            assertEquals("Aborted message count bridge metric is not correct", 0L, readMetric("aborted-message-count"));
+            assertEquals(0L, readMetric("message-count"), "Message count bridge metric is not correct");
+            assertEquals(0L, readMetric("aborted-message-count"), "Aborted message count bridge metric is not correct");
             // SEND A MESSAGE on the source queue
             connection = factory.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -125,12 +124,12 @@ public class JMSBridgeTest {
             receivedMessage = consumer.receive(5000);
 
             // ASSERTIONS
-            assertNotNull("did not receive expected message", receivedMessage);
+            assertNotNull(receivedMessage, "did not receive expected message");
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
-            assertNotNull("did not get header set by the Jakarta Messaging bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
-            assertEquals("Message count bridge metric is not correct", 1L, readMetric("message-count"));
-            assertEquals("Aborted message count bridge metric is not correct", 0L, readMetric("aborted-message-count"));
+            assertNotNull(receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST), "did not get header set by the Jakarta Messaging bridge");
+            assertEquals(1L, readMetric("message-count"), "Message count bridge metric is not correct");
+            assertEquals(0L, readMetric("aborted-message-count"), "Aborted message count bridge metric is not correct");
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

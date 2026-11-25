@@ -50,7 +50,7 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler {
         if (dataSourceConfigController == null || !((XaDataSource) dataSourceConfigController.getValue()).isEnabled()) {
 
 
-            final ServiceTarget serviceTarget = context.getServiceTarget();
+            final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
             final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)

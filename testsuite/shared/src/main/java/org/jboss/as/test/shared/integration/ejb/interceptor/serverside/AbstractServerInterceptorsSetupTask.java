@@ -12,7 +12,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_AT
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;
@@ -96,7 +96,7 @@ public abstract class AbstractServerInterceptorsSetupTask {
 
             final ModelNode operationResult = managementClient.getControllerClient().execute(op);
             // check whether the operation was successful
-            assertTrue(Operations.isSuccessfulOutcome(operationResult));
+            assertThat(Operations.isSuccessfulOutcome(operationResult)).as(operationResult.asString()).isTrue();
         }
 
 

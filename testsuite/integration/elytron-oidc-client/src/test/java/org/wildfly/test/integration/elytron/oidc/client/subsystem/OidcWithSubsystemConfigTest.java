@@ -6,26 +6,24 @@
 package org.wildfly.test.integration.elytron.oidc.client.subsystem;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jose4j.jws.AlgorithmIdentifiers.NONE;
 import static org.jose4j.jws.AlgorithmIdentifiers.HMAC_SHA256;
-import static org.jose4j.jws.AlgorithmIdentifiers.RSA_USING_SHA256;
+import static org.jose4j.jws.AlgorithmIdentifiers.NONE;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA512;
-import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.CLIENT_SECRET;
+import static org.jose4j.jws.AlgorithmIdentifiers.RSA_USING_SHA256;
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST;
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST_URI;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A128CBC_HS256;
-import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_PASS;
+import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A192CBC_HS384;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_ALIAS;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_CLASSPATH;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_FILE_NAME;
+import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.KEYSTORE_PASS;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.PKCS12_KEYSTORE_TYPE;
-import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.A192CBC_HS384;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.RSA_OAEP;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.RSA_OAEP_256;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 
-import io.restassured.RestAssured;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,16 +40,20 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest;
+import org.wildfly.test.integration.elytron.oidc.client.deployment.OidcWithDeploymentConfigTest;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
+
+import io.restassured.RestAssured;
 
 /**
  * Tests for the OpenID Connect authentication mechanism.
@@ -60,7 +62,9 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ OidcWithSubsystemConfigTest.PreviewStabilitySetupTask.class, OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class })
+@ServerSetup({ OidcWithSubsystemConfigTest.CommunityStabilitySetupTask.class,
+        OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class,
+        OidcBaseTest.WildFlyServerSetupTask.class})
 public class OidcWithSubsystemConfigTest extends OidcBaseTest {
 
     private static final String SUBSYSTEM_OVERRIDE_APP = "SubsystemOverrideOidcApp";
@@ -78,7 +82,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(WRONG_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(WRONG_SECRET_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(SUBSYSTEM_OVERRIDE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
-        APP_NAMES.put(DIRECT_ACCCESS_GRANT_ENABLED_CLIENT, KeycloakConfiguration.ClientAppType.DIRECT_ACCESS_GRANT_OIDC_CLIENT);
+        APP_NAMES.put(DIRECT_ACCESS_GRANT_ENABLED_CLIENT, KeycloakConfiguration.ClientAppType.DIRECT_ACCESS_GRANT_OIDC_CLIENT);
         APP_NAMES.put(BEARER_ONLY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(BEARER_ONLY_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
@@ -99,10 +103,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SIGNATURE_ALGORITHM_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
-    }
-
-    public OidcWithSubsystemConfigTest() {
-        super(Stability.PREVIEW);
+        APP_NAMES.put(FORM_WITH_OIDC_OIDC_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     @Deployment(name = PROVIDER_URL_APP)
@@ -280,6 +281,37 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
                 .addClasses(SimpleSecuredServlet.class);
     }
 
+    @Deployment(name = FORM_WITH_OIDC_EAR_APP)
+    public static Archive<?> createFormWithOidcDeployment() {
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, FORM_WITH_OIDC_EAR_APP+".ear");
+        ear.addAsManifestResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_application.xml", "application.xml");
+
+        final WebArchive form = ShrinkWrap.create(WebArchive.class, "form.war");
+        form.addClasses(SimpleServlet.class);
+        form.addClasses(SimpleSecuredServlet.class);
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_web.xml", "web.xml");
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_jboss-web.xml", "jboss-web.xml");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_login.jsp", "login.jsp");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_error.jsp", "error.jsp");
+
+        ear.addAsModule(form);
+
+        final WebArchive oidc = ShrinkWrap.create(WebArchive.class, "oidc.war");
+        oidc.addClasses(SimpleServlet.class);
+        oidc.addClasses(SimpleSecuredServlet.class);
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_web.xml", "web.xml");
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_jboss-web.xml", "jboss-web.xml");
+        ear.addAsModule(oidc);
+        return ear;
+    }
+
     @Test
     @OperateOnDeployment(SUBSYSTEM_OVERRIDE_APP)
     public void testSubsystemOverride() throws Exception {
@@ -375,7 +407,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             Utils.applyUpdate(operation, client);
 
             operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + BASIC_AUTH_PROVIDER_URL_APP + ".war", ModelDescriptionConstants.ADD);
-            operation.get("client-id").set(DIRECT_ACCCESS_GRANT_ENABLED_CLIENT);
+            operation.get("client-id").set(DIRECT_ACCESS_GRANT_ENABLED_CLIENT);
             operation.get("public-client").set(false);
             operation.get("provider").set(KEYCLOAK_PROVIDER);
             operation.get("ssl-required").set("EXTERNAL");
@@ -647,6 +679,18 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             operation.get("request-object-signing-algorithm").set(HMAC_SHA256);
             Utils.applyUpdate(operation, client);
 
+            // only config the WAR that is in the EAR
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + FORM_WITH_OIDC_OIDC_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(FORM_WITH_OIDC_OIDC_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider").set(KEYCLOAK_PROVIDER);
+            operation.get("ssl-required").set("EXTERNAL");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + FORM_WITH_OIDC_OIDC_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set(CLIENT_SECRET);
+            Utils.applyUpdate(operation, client);
+
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
@@ -654,7 +698,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ModelControllerClient client = managementClient.getControllerClient();
             for (String appName : APP_NAMES.keySet()) {
-                if (! appName.equals(CORS_CLIENT) && ! appName.equals(DIRECT_ACCCESS_GRANT_ENABLED_CLIENT)) {
+                if (! appName.equals(CORS_CLIENT) && ! appName.equals(DIRECT_ACCESS_GRANT_ENABLED_CLIENT)) {
                     removeSecureDeployment(client, appName);
                 }
             }
@@ -686,7 +730,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         }
     }
 
-    public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
+    public static class CommunityStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Community {
         @Override
         protected void doSetup(ManagementClient managementClient) throws Exception {
             // Write a system property so the model gets stored with a lower stability level.

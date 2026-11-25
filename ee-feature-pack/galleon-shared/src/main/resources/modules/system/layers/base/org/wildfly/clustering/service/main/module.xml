@@ -18,7 +18,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
-        <module name="org.wildfly.common"/>
     </dependencies>
 
 </module>

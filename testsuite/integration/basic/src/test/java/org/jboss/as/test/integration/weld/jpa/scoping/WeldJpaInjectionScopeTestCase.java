@@ -73,5 +73,25 @@ public class WeldJpaInjectionScopeTestCase {
         }
         Assert.fail("NoResultException should occur but didn't!");
     }
+
+    // [WFLY-19973] (Weld injected) @PersistenceContext (initial) properties attribute should be processed
+    @Test
+    public void testInitialPersistenceContextPropertiesAreSet() throws Exception {
+        Assert.assertEquals("true",bean.getInitialPropertyValue());
+    }
+
+    // [WFLY-19973] (Weld injected) @PersistenceContext (later set) properties attribute should be available
+    @Test
+    public void testEntityManagerPropertiesAreSaved() throws Exception {
+        bean.setAdditionalPropertyValue("WeldJpaInjectionScopeTestCase.testproperty");
+        Assert.assertEquals("WeldJpaInjectionScopeTestCase.testproperty",bean.getAdditionalPropertyValue());
+    }
+
+    // [WFLY-19973] (Weld injected) @PersistenceContext (later set) ensure that property can be added to empty property map
+    @Test
+    public void testEntityManagerPropertiesEmptyCase() throws Exception {
+        Assert.assertEquals("AddedToEmptyHashMap", bean.addPropertyToEmptyPropertyMap("AddedToEmptyHashMap"));
+    }
+
 }
 

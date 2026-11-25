@@ -18,7 +18,6 @@
                     <path name="org/infinispan/notifications/cachelistener/event"/>
                     <path name="org/infinispan/notifications/cachemanagerlistener/event"/>
                     <path name="org/infinispan/remoting/transport"/>
-                    <path name="org/infinispan/util/concurrent"/>
                     <path name="org/infinispan/util/function"/>
                 </include-set>
             </exports>

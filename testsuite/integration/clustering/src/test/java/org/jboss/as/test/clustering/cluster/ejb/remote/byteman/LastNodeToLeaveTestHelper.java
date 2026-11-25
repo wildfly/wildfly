@@ -5,9 +5,6 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote.byteman;
 
-import org.jboss.byteman.rule.helper.Helper;
-import org.jboss.byteman.rule.Rule;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.jboss.byteman.rule.Rule;
+import org.jboss.byteman.rule.helper.Helper;
 
 public class LastNodeToLeaveTestHelper extends Helper {
 

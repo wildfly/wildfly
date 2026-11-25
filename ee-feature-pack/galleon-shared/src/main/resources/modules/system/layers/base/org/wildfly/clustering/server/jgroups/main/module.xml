@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.server.jgroups">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-server-jgroups}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jgroups"/>
+        <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.function"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.local"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+    </dependencies>
+</module>

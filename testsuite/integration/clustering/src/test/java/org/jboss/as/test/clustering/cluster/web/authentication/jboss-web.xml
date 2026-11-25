@@ -4,6 +4,6 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<jboss-web version="6.0" xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<jboss-web version="6.0" xmlns="http://www.jboss.com/xml/ns/javaee">
     <security-domain>authentication</security-domain>
 </jboss-web>

@@ -95,7 +95,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 continue;
             }
             try {
-                Module depModule = loader.loadModule(dependency.getIdentifier());
+                Module depModule = loader.loadModule(dependency.getDependencyModule());
                 ServiceLoader<ServletContainerInitializer> serviceLoader = depModule.loadService(ServletContainerInitializer.class);
                 for (ServletContainerInitializer service : serviceLoader) {
                     if(sciClasses.add(service.getClass())) {
@@ -104,7 +104,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             } catch (ModuleLoadException e) {
                 if (!dependency.isOptional()) {
-                    throw UndertowLogger.ROOT_LOGGER.errorLoadingSCIFromModule(dependency.getIdentifier().toString(), e);
+                    throw UndertowLogger.ROOT_LOGGER.errorLoadingSCIFromModule(dependency.getDependencyModule(), e);
                 }
             }
         }

@@ -4,7 +4,9 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<ironjacamar>
+<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.ironjacamar.org/doc/schema https://www.ironjacamar.org/doc/schema/ironjacamar_1_3.xsd">
     <config-property name="raProperty">4</config-property>
     <connection-definitions>
         <connection-definition

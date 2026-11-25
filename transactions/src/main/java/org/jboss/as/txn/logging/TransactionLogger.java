@@ -7,7 +7,10 @@ package org.jboss.as.txn.logging;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+
+import java.lang.invoke.MethodHandles;
 
 import jakarta.resource.spi.work.Work;
 import jakarta.resource.spi.work.WorkCompletedException;
@@ -36,7 +39,7 @@ public interface TransactionLogger extends BasicLogger {
     /**
      * A logger with the category of the default transaction package.
      */
-    TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(TransactionLogger.class, "org.jboss.as.txn");
+    TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), TransactionLogger.class, "org.jboss.as.txn");
 
     /**
      * If a transaction could not be rolled back
@@ -252,4 +255,20 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 45, value = "Could not register initial reference for InboundTransactionCurrent implementation")
     RuntimeException cannotRegister(@Cause Exception e);
+
+    @LogMessage(level = INFO)
+    @Message(id = 46, value = "Transactions subsystem: starting transactions recovery suspension")
+    void scanSuspensionInitiated();
+
+    @LogMessage(level = INFO)
+    @Message(id = 47, value = "Transactions subsystem: transactions recovery suspension completed")
+    void scanSuspensionCompleted();
+
+    @LogMessage(level = INFO)
+    @Message(id = 48, value = "Transactions subsystem: waiting for in-flight transactions to terminate")
+    void waitingForInFlightTransactions();
+
+    @LogMessage(level = INFO)
+    @Message(id = 49, value = "Transactions subsystem: all in-flight transactions terminated")
+    void inFlightTransactionsTerminated();
 }

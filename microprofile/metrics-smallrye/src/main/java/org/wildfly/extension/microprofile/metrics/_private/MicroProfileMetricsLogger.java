@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.microprofile.metrics._private;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -21,7 +23,7 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    MicroProfileMetricsLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileMetricsLogger.class,
+    MicroProfileMetricsLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileMetricsLogger.class,
             "org.wildfly.extension.microprofile.metrics.smallrye");
 
     // no longer used

@@ -21,6 +21,7 @@ import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.SecurityIdentityMetaData;
 import org.jboss.metadata.javaee.spec.RunAsMetaData;
+import org.wildfly.security.jakarta.authz.RunAsIdentityHelper;
 
 /**
  * Handles the {@link jakarta.annotation.security.RunAs} annotation merging
@@ -54,15 +55,19 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
             return;
         }
         if (!runAs.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setRunAs(runAs.getClassLevelAnnotations().get(0));
-        }
+            final String runAsRole = runAs.getClassLevelAnnotations().get(0);
+            componentConfiguration.setRunAs(runAsRole);
 
-        String principal = DEFAULT_RUN_AS_PRINCIPAL;
-        if (runAsPrincipal != null
-                && !runAsPrincipal.getClassLevelAnnotations().isEmpty()) {
-            principal = runAsPrincipal.getClassLevelAnnotations().get(0);
+            // Resolve effective principal using helper
+            String explicitPrincipal = null;
+            if (runAsPrincipal != null && !runAsPrincipal.getClassLevelAnnotations().isEmpty()) {
+                explicitPrincipal = runAsPrincipal.getClassLevelAnnotations().get(0);
+            }
+
+            RunAsIdentityHelper helper = RunAsIdentityHelper.getInstance();
+            String principal = helper.resolveRunAsPrincipal(runAsRole, explicitPrincipal);
+            componentConfiguration.setRunAsPrincipal(principal);
         }
-        componentConfiguration.setRunAsPrincipal(principal);
     }
 
     @Override
@@ -109,7 +114,10 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
                 else {
                     // we only set the run-as-principal to default, if it's not already set (via annotation) on the component
                     if (componentConfiguration.getRunAsPrincipal() == null) {
-                        componentConfiguration.setRunAsPrincipal(DEFAULT_RUN_AS_PRINCIPAL);
+                        // Use helper to resolve effective principal
+                        RunAsIdentityHelper helper = RunAsIdentityHelper.getInstance();
+                        String effectivePrincipal = helper.resolveRunAsPrincipal(componentConfiguration.getRunAs(), null);
+                        componentConfiguration.setRunAsPrincipal(effectivePrincipal);
                     }
                 }
 

@@ -12,11 +12,14 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-server-spi}"/>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-server-spi}"/>
     </resources>
 
     <dependencies>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.wildfly.clustering.cache.spi"/>
+        <module name="org.wildfly.clustering.function"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.server.api"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

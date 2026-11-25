@@ -11,6 +11,7 @@ import static org.wildfly.extension.microprofile.config.smallrye.MicroProfileCon
 import static org.wildfly.extension.microprofile.config.smallrye.MicroProfileConfigExtension.SUBSYSTEM_PATH;
 import static org.wildfly.extension.microprofile.config.smallrye.MicroProfileConfigExtension.VERSION_1_0_0;
 import static org.wildfly.extension.microprofile.config.smallrye.MicroProfileConfigExtension.VERSION_1_1_0;
+import static org.wildfly.extension.microprofile.config.smallrye.MicroProfileConfigExtension.VERSION_2_0_0;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,15 +51,13 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
     }
 
     @Test
-    public void testRejectingTransformersEAP_XP4() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_XP_4, VERSION_1_1_0);
+    public void testTransformers_2_0_0() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, VERSION_2_0_0);
     }
 
-    private static String getMicroProfileConfigSmallryeGAV(ModelTestControllerVersion version) {
-        if (version.isEap()) {
-            return "org.jboss.eap:wildfly-microprofile-config-smallrye:" + version.getMavenGavVersion();
-        }
-        return "org.wildfly:wildfly-microprofile-config-smallrye:" + version.getMavenGavVersion();
+    @Test
+    public void testRejectingTransformersEAP_XP4() throws Exception {
+        testRejectingTransformers(ModelTestControllerVersion.EAP_XP_4, VERSION_1_1_0);
     }
 
     @Override
@@ -67,11 +66,27 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
                 WELD_CAPABILITY_NAME);
     }
 
+    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion microprofileConfigVersion) throws Exception {
+        // Test that the current model can be successfully transformed to an older version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, microprofileConfigVersion)
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-microprofile-config-smallrye"))
+                .skipReverseControllerCheck()
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(microprofileConfigVersion).isSuccessfulBoot());
+
+        // Verify that the standard subsystem configuration transforms successfully
+        checkSubsystemModelTransformation(mainServices, microprofileConfigVersion);
+    }
+
     private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion microprofileConfigVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, microprofileConfigVersion)
-                .addMavenResourceURL(getMicroProfileConfigSmallryeGAV(controllerVersion))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-microprofile-config-smallrye"))
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 

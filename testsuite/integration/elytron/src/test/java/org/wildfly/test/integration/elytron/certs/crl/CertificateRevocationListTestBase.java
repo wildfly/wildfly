@@ -23,9 +23,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.MiscPEMGenerator;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,9 +41,11 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.CliUtils;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
+import org.junit.Assert;
+import org.junit.runner.RunWith;
 import org.wildfly.security.x500.cert.BasicConstraintsExtension;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 import org.wildfly.security.x500.cert.X509CertificateBuilder;
@@ -51,17 +60,6 @@ import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
 import org.wildfly.test.security.common.elytron.SimpleTrustManager;
-
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509v2CRLBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.MiscPEMGenerator;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
 
 /**
  * Auxiliary methods and variables for @{@link CertificateRevocationListTestCase}.
@@ -276,13 +274,14 @@ public class CertificateRevocationListTestBase extends CommonBase {
         Assert.assertTrue(WORKING_DIR_CACRL.delete());
     }
 
-    protected static void configureSSLContext(String sslContextName) throws Exception {
-        try(CLIWrapper cli = new CLIWrapper(true)) {
+    protected void configureSSLContext(String sslContextName) throws Exception {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine("batch");
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, sslContextName));
             cli.sendLine("run-batch");
-            cli.sendLine("reload");
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -292,7 +291,8 @@ public class CertificateRevocationListTestBase extends CommonBase {
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, "applicationSSC"));
             cli.sendLine("run-batch");
-            cli.sendLine("reload");
+        } finally {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -378,21 +378,21 @@ public class CertificateRevocationListTestBase extends CommonBase {
 
             elements.add(singleCrlServerTrustManager);
 
-            // Create two way server ssl context with prepared key and trust managers.
+            // Create two-way server ssl context with prepared key and trust managers.
             SimpleServerSslContext twoWayServerSslContext =
                     SimpleServerSslContext.builder().withName(TWO_WAY_SSL_CONTEXT_NAME).withKeyManagers(
                             serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
                             serverTrustManager.getName()).build();
             elements.add(twoWayServerSslContext);
 
-            // Create another two way server ssl context to use the trust manager that supports multiple CRLs
+            // Create another two-way server ssl context to use the trust manager that supports multiple CRLs
             SimpleServerSslContext otherTwoWaySslContext =
                     SimpleServerSslContext.builder().withName(TWO_WAY_MULTIPLE_CRL_SSL_CONTEXT).withKeyManagers(
                             serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
                             multipleCrlServerTrustManager.getName()).build();
             elements.add(otherTwoWaySslContext);
 
-            // Creates another two way server ssl context to use the trust manager that has configured a single CRL
+            // Creates another two-way server ssl context to use the trust manager that has configured a single CRL
             // using the certificate-revocation-lists attribute
             SimpleServerSslContext singleCrlTwoWaySslContext =
                     SimpleServerSslContext.builder().withName(TWO_WAY_SINGLE_CRL_SSL_CONTEXT).withKeyManagers(

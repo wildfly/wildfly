@@ -7,24 +7,61 @@ registries:
     url: https://repo.maven.apache.org/maven2/
   jboss-public-repository-group:
     type: maven-repository
-    url: https://repository.jboss.org/nexus/content/groups/public/
+    url: https://repository.jboss.org/nexus/repository/public/
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    labels:
+      - "dependencies"
+      - "skip-teamcity"
     schedule:
       interval: "daily"
     ignore:
        # Only allow for patch release upgrades
       - dependency-name: '*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # WildFly Clustering updates are usually non-trivial
+      - dependency-name: 'org.wildfly.clustering:*'
+      # WildFly Core releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.core:*'
+      # Elytron releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.security*'
+      # Glow and Galleon releases are promptly followed by manual PRs
+      - dependency-name: 'org.wildfly.glow:*'
+      - dependency-name: 'org.wildfly.galleon-plugins:*'
+      - dependency-name: 'org.jboss.galleon:*'
+      # Dependabot doesn't understand how to upgrade Hibernate ORM correctly,
+      # and when we do we want to check other components where we align with what ORM uses.
+      - dependency-name: 'org.hibernate.orm:*'
+      - dependency-name: 'org.hibernate:hibernate-core'
+      - dependency-name: 'org.hibernate.validator:*'
+      - dependency-name: 'org.jboss.ironjacamar:*'
       # Dependencies exclusive to Hibernate Search:
       # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
       - dependency-name: 'org.elasticsearch.client:*'
       - dependency-name: 'org.apache.lucene:*'
       - dependency-name: 'com.carrotsearch:hppc'
       - dependency-name: 'org.apache.avro:avro'
+      # These versions are constrained by the MicroProfile Telemetry spec
+      - dependency-name: 'io.opentelemetry:*'
+      # Webservices updates are handled manually based on the weekly report
+      - dependency-name: 'com.sun.xml.bind.external*'
+      - dependency-name: 'com.sun.xml.fastinfoset*'
+      - dependency-name: 'net.shibboleth:shib-support'
+      - dependency-name: 'org.apache.commons.commons-secure-xml'
+      - dependency-name: 'org.apache.cxf*'
+      - dependency-name: 'org.apache.neethi*'
+      - dependency-name: 'org.apache.santuario*'
+      - dependency-name: 'org.apache.velocity*'
+      - dependency-name: 'org.apache.ws.xmlschema*'
+      - dependency-name: 'org.apache.wss4j*'
+      - dependency-name: 'org.glassfish.jaxb*'
+      - dependency-name: 'org.jasypt*'
+      - dependency-name: 'org.jboss.ws*'
+      - dependency-name: 'org.opensaml*'
+      - dependency-name: 'wsdl4j*'
     rebase-strategy: "disabled"
-    open-pull-requests-limit: 8
+    open-pull-requests-limit: 10
     registries:
       - maven-central
       - jboss-public-repository-group
@@ -32,5 +69,8 @@ updates:
     # Workflow files stored in the
     # default location of `.github/workflows`
     directory: "/"
+    labels:
+      - "dependencies"
+      - "skip-teamcity"
     schedule:
       interval: "daily"

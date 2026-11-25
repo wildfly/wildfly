@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-lra</artifactId>
@@ -30,7 +30,6 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
         <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
         <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
@@ -60,15 +59,31 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
-            <artifactId>lra-test-arquillian-extension</artifactId>
-            <version>${version.org.jboss.narayana}</version>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.resteasy.microprofile</groupId>
+            <artifactId>microprofile-rest-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.lra</groupId>
+            <artifactId>lra-test-arquillian-extension</artifactId>
+            <version>${version.org.jboss.narayana.lra}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-service-base</artifactId>
-            <version>${version.org.jboss.narayana}</version>
+            <version>${version.org.jboss.narayana.lra}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

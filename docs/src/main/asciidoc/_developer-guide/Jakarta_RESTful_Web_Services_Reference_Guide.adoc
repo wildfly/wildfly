@@ -1,5 +1,5 @@
 [[Jakarta_RESTful_Web_Services_Reference_Guide]]
-= Jakarta RESTful Web Services Reference Guide
+= Jakarta RESTful Web Services Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -15,7 +15,7 @@ https://resteasy.dev/docs[RESTEasy {resteasyversion} documentation].
 == Jakarta RESTful Web Services Activation
 
 This section outlines the three options you have for deploying Jakarta RESTful Web Services
-applications in WildFly {wildflyVersion}. These three methods are specified in the
+applications in WildFly. These three methods are specified in the
 Jakarta RESTful Web Services 3.1 specification in section 2.3.2.
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-applicationpath]]
@@ -38,7 +38,7 @@ This will make your Jakarta RESTful Web Services resources available under `/`
 
 [WARNING]
 
-Note that that the path is `/mypath` not `/mypath/*`
+Note that the path is `/mypath`, not `/mypath/*`.
 
 [[subclassing-jakarta.ws.rs.core.application-and-using-web.xml]]
 === Subclassing jakarta.ws.rs.core.Application and using web.xml

@@ -16,7 +16,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 
 /**
@@ -26,10 +26,9 @@ import org.jboss.modules.security.ImmediatePermissionFactory;
  */
 public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
-    private static final ModuleIdentifier JBOSS_AS_SYSTEM_JMX_ID = ModuleIdentifier.create("org.jboss.as.system-jmx");
-    private static final ModuleIdentifier PROPERTIES_EDITOR_MODULE_ID = ModuleIdentifier.create("org.jboss.common-beans");
-
+    private static final String JBOSS_MODULES_ID = "org.jboss.modules";
+    private static final String JBOSS_AS_SYSTEM_JMX_ID = "org.jboss.as.system-jmx";
+    private static final String PROPERTIES_EDITOR_MODULE_ID = "org.jboss.common-beans";
     private static final ImmediatePermissionFactory REGISTER_PERMISSION_FACTORY = new ImmediatePermissionFactory(new MBeanTrustPermission("register"));
 
     /**
@@ -43,15 +42,15 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final JBossServiceXmlDescriptor serviceXmlDescriptor = deploymentUnit.getAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY);
-        if(serviceXmlDescriptor == null) {
-            return; // Skip deployments with out a service xml descriptor
+        if (serviceXmlDescriptor == null) {
+            return; // Skip deployments without a service xml descriptor
         }
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_AS_SYSTEM_JMX_ID, true, false, false, false));
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JBOSS_MODULES_ID).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JBOSS_AS_SYSTEM_JMX_ID).setOptional(true).build());
         // depend on Properties editor module which uses ServiceLoader approach to load the appropriate org.jboss.common.beans.property.finder.PropertyEditorFinder
-        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), PROPERTIES_EDITOR_MODULE_ID, false, false, true, false));
-
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, PROPERTIES_EDITOR_MODULE_ID).setImportServices(true).build());
         // All SARs require the ability to register MBeans.
         moduleSpecification.addPermissionFactory(REGISTER_PERMISSION_FACTORY);
     }

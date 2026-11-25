@@ -5,26 +5,27 @@
 
 package org.jboss.as.test.clustering.cluster.provider;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
+import org.jboss.as.test.clustering.cluster.provider.bean.legacy.LegacyServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = ServiceProviderRegistrationTestCase.class.getSimpleName();
 
@@ -42,21 +43,31 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(ServiceProviderRetriever.class.getPackage());
+        war.addPackage(ServiceProviderRetrieverBean.class.getPackage());
+        war.addPackage(LegacyServiceProviderRetrieverBean.class.getPackage());
         war.setWebXML(ServiceProviderRegistrationTestCase.class.getPackage(), "web.xml");
         war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return war;
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
+        this.test(ServiceProviderRetrieverBean.class);
+    }
+
+    @Test
+    void legacy() throws Exception {
+        this.test(LegacyServiceProviderRetrieverBean.class);
+    }
+
+    public void test(Class<? extends ServiceProviderRetriever> beanClass) throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
+            ServiceProviderRetriever bean = directory.lookupStateless(beanClass, ServiceProviderRetriever.class);
 
             Collection<String> names = bean.getProviders();
             assertEquals(2, names.size());
-            assertTrue(names.toString(), names.contains(NODE_1));
-            assertTrue(names.toString(), names.contains(NODE_2));
+            assertTrue(names.contains(NODE_1), names.toString());
+            assertTrue(names.contains(NODE_2), names.toString());
 
             undeploy(DEPLOYMENT_1);
 

@@ -9,6 +9,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -20,6 +21,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 import static org.wildfly.extension.microprofile.lra.coordinator.MicroProfileLRACoordinatorSubsystemDefinition.ATTRIBUTES;
@@ -63,8 +65,8 @@ class MicroProfileLRACoordinatorAdd extends AbstractBoottimeAddStepHandler {
         builder.provides(MicroProfileLRACoordinatorSubsystemDefinition.LRA_RECOVERY_SERVICE_CAPABILITY);
         // JTA is required to be loaded before the LRA recovery setup
         builder.requiresCapability(MicroProfileLRACoordinatorSubsystemDefinition.REF_JTA_RECOVERY_CAPABILITY, XAResourceRecoveryRegistry.class);
-
-        final LRARecoveryService lraRecoveryService = new LRARecoveryService();
+        Supplier<ExecutorService> executorSupplier = Services.requireServerExecutor(builder);
+        final LRARecoveryService lraRecoveryService = new LRARecoveryService(executorSupplier);
         builder.setInstance(lraRecoveryService);
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }

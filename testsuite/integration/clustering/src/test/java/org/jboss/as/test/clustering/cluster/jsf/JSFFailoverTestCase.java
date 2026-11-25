@@ -6,19 +6,19 @@ package org.jboss.as.test.clustering.cluster.jsf;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.jsf.webapp.Game;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class JSFFailoverTestCase extends AbstractJSFFailoverTestCase {
 
     private static final String MODULE_NAME = JSFFailoverTestCase.class.getSimpleName();

@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -30,11 +29,6 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
 
 import org.apache.http.Header;
-
-import org.hamcrest.MatcherAssert;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.logging.Logger;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -46,6 +40,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.wildfly.security.auth.realm.KeyStoreBackedSecurityRealm;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -63,7 +63,10 @@ import org.wildfly.test.integration.elytron.certs.ocsp.OcspTestBase;
  * @author Jan Stourac <jstourac@redhat.com>
  */
 public class CommonBase {
-    private Logger logger = Logger.getLogger(CommonBase.class);
+    private final Logger logger = Logger.getLogger(CommonBase.class);
+
+    @ArquillianResource
+    protected ManagementClient managementClient;
 
     protected void setServerKeyStore(String value) throws Exception {
         try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -84,7 +87,7 @@ public class CommonBase {
                         "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=soft-fail, value=\"%s\")",
                         value));
             } finally {
-                cli.sendLine(String.format("reload"));
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }
@@ -101,7 +104,7 @@ public class CommonBase {
                             "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=certificate-revocation-list)");
                 }
             } finally {
-                cli.sendLine(String.format("reload"));
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }
@@ -118,7 +121,7 @@ public class CommonBase {
                             "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=ocsp.prefer-crls)");
                 }
             } finally {
-                cli.sendLine(String.format("reload"));
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }
@@ -135,7 +138,7 @@ public class CommonBase {
                             "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=ocsp.responder)");
                 }
             } finally {
-                cli.sendLine(String.format("reload"));
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }
@@ -152,7 +155,7 @@ public class CommonBase {
                             "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=maximum-cert-path)");
                 }
             } finally {
-                cli.sendLine(String.format("reload"));
+                ServerReload.executeReloadAndWaitForCompletion(managementClient);
             }
         }
     }

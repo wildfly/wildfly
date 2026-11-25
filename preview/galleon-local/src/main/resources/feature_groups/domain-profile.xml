@@ -6,10 +6,11 @@
 
 <feature-group-spec name="domain-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <feature-group name="servlet-unsecured-domain-profile" />
+    <feature-group name="servlet-domain-profile" />
 
     <feature-group name="basic-profile"/>
     <feature-group name="infinispan-local"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
+    <feature spec="subsystem.jakarta-data"/>
 </feature-group-spec>

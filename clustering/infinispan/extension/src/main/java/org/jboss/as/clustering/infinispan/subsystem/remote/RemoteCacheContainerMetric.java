@@ -8,15 +8,15 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import java.util.function.ToIntFunction;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
+ * Enumerates metrics for a remote cache container.
  * @author Paul Ferraro
  */
 public enum RemoteCacheContainerMetric implements Metric<RemoteCacheManagerMXBean>, ToIntFunction<RemoteCacheManagerMXBean> {
@@ -51,12 +51,12 @@ public enum RemoteCacheContainerMetric implements Metric<RemoteCacheManagerMXBea
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 
     @Override
-    public ModelNode execute(RemoteCacheManagerMXBean manager) throws OperationFailedException {
+    public ModelNode execute(RemoteCacheManagerMXBean manager) {
         return new ModelNode(this.applyAsInt(manager));
     }
 }

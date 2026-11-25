@@ -5,17 +5,16 @@
 
 package org.wildfly.clustering.ejb.timer;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.server.manager.ManagerConfiguration;
 
 /**
  * Encapsulates the configuration of a {@link TimerManagerFactory}.
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public interface TimerManagerFactoryConfiguration<I> {
+public interface TimerManagerFactoryConfiguration<I> extends ManagerConfiguration<I> {
 
     TimerServiceConfiguration getTimerServiceConfiguration();
-    Supplier<I> getIdentifierFactory();
     TimerRegistry<I> getRegistry();
     boolean isPersistent();
 }

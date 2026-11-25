@@ -9,13 +9,12 @@ import jakarta.resource.spi.work.DistributableWork;
 import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#scheduleWork(Address, DistributableWork).
  * @author Paul Ferraro
  */
-public class ScheduleWorkCommand implements Command<Void, CommandDispatcherTransport> {
+public class ScheduleWorkCommand implements TransportCommand<Void> {
     private static final long serialVersionUID = -661447249010320508L;
 
     private final Address address;

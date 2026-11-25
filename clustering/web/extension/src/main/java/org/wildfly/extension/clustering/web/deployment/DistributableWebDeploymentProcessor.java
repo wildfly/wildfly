@@ -20,7 +20,6 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 
 /**
@@ -32,50 +31,54 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
     private static final String WEB_API = "org.wildfly.clustering.web.api";
     private static final String MARSHALLING_API = "org.wildfly.clustering.marshalling.api";
     private static final String PROTOSTREAM = "org.infinispan.protostream";
+    private static final String EJB_CLIENT = "org.wildfly.clustering.ejb.client";
     private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
     private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
     private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
+    private static final String FACES_API = "org.wildfly.clustering.faces.api";
     private static final String FACES_MOJARRA = "org.wildfly.clustering.faces.mojarra";
     private static final String UNDERTOW = "org.wildfly.clustering.web.undertow";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
-        DistributableSessionManagementProvider<DistributableSessionManagementConfiguration<DeploymentUnit>> provider = context.getAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY);
+        DistributableSessionManagementProvider provider = context.getAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY);
         if (provider != null) {
             unit.putAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY, provider);
 
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
 
-            specification.addSystemDependency(new ModuleDependency(loader, WEB_API, false, false, false, false));
+            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WEB_API).build());
 
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
-                specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
-                specification.addSystemDependency(new ModuleDependency(loader, UNDERTOW, false, false, true, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, PROTOSTREAM).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, UNDERTOW).setImportServices(true).build());
 
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
                 if (support.hasCapability(Capabilities.WELD_CAPABILITY_NAME)) {
                     try {
                         WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
                         if (weldCapability.isPartOfWeldDeployment(unit)) {
-                            specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_CORE, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_EJB, false, false, true, false));
-                            specification.addSystemDependency(new ModuleDependency(loader, WELD_WEB, false, false, true, false));
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, EJB_CLIENT).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, EL_EXPRESSLY).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_CORE).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_EJB).setImportServices(true).build());
+                            specification.addSystemDependency(ModuleDependency.Builder.of(loader, WELD_WEB).setImportServices(true).build());
                         }
                     } catch (NoSuchCapabilityException e) {
                         throw new IllegalStateException(e);
                     }
                 }
             } else {
-                specification.addSystemDependency(new ModuleDependency(loader, MARSHALLING_API, false, false, false, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, MARSHALLING_API).build());
             }
 
             if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_4_0)) {
-                specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
-                specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, EL_EXPRESSLY).setImportServices(true).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, FACES_API).setImportServices(true).build());
+                specification.addSystemDependency(ModuleDependency.Builder.of(loader, FACES_MOJARRA).setImportServices(true).build());
             }
         }
     }

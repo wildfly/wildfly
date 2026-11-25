@@ -27,7 +27,7 @@ public class HealthHTTPSecurityService implements Service {
 
 
     static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(ServiceName.parse(HEALTH_HTTP_SECURITY_CAPABILITY));
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(ServiceName.parse(HEALTH_HTTP_SECURITY_CAPABILITY));
 
         Consumer<Boolean> consumer = serviceBuilder.provides(ServiceName.parse(HEALTH_HTTP_SECURITY_CAPABILITY));
         serviceBuilder.setInstance(new HealthHTTPSecurityService(consumer, securityEnabled)).install();

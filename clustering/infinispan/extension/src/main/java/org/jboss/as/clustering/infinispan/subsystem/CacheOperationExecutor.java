@@ -8,23 +8,23 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.controller.OperationExecutor;
-import org.jboss.as.clustering.controller.OperationFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
-import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.resource.executor.RuntimeOperation;
+import org.wildfly.subsystem.resource.executor.RuntimeOperationExecutor;
+import org.wildfly.subsystem.resource.executor.RuntimeOperationFunction;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
+ * An executor for cache runtime operations.
  * @author Paul Ferraro
  */
-public abstract class CacheOperationExecutor<C> implements OperationExecutor<C>, Function<Cache<?, ?>, C> {
+public abstract class CacheOperationExecutor<C> implements RuntimeOperationExecutor<C>, Function<Cache<?, ?>, C> {
 
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
     private final BinaryCapabilityNameResolver resolver;
@@ -39,9 +39,9 @@ public abstract class CacheOperationExecutor<C> implements OperationExecutor<C>,
     }
 
     @Override
-    public ModelNode execute(OperationContext context, ModelNode op, Operation<C> operation) throws OperationFailedException {
-        ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(name));
-        return (executor != null) ? executor.execute(new OperationFunction<>(context, op, this, operation)) : null;
+    public ModelNode execute(OperationContext context, ModelNode op, RuntimeOperation<C> operation) throws OperationFailedException {
+        String[] resolved = this.resolver.apply(context.getCurrentAddress());
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE, resolved[0], resolved[1]));
+        return (executor != null) ? executor.execute(new RuntimeOperationFunction<>(context, op, this, operation)) : null;
     }
 }

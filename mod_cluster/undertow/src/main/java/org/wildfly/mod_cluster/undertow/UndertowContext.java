@@ -5,6 +5,8 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import java.util.Set;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequestEvent;
 import jakarta.servlet.ServletRequestListener;
@@ -13,7 +15,6 @@ import jakarta.servlet.http.HttpSessionListener;
 
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ListenerInfo;
-import io.undertow.servlet.core.InMemorySessionManagerFactory;
 import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 import org.jboss.modcluster.container.Context;
@@ -114,7 +115,7 @@ public class UndertowContext implements Context {
 
     @Override
     public boolean isDistributable() {
-        return !(this.deployment.getDeploymentInfo().getSessionManagerFactory() instanceof InMemorySessionManagerFactory);
+        return this.deployment.getSessionManager().getTransientSessions() == Set.<String>of();
     }
 
     @Override

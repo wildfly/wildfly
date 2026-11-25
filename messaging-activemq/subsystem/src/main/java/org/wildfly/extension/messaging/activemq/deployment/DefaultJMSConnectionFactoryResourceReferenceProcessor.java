@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.injection.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
 
 import jakarta.jms.ConnectionFactory;
 

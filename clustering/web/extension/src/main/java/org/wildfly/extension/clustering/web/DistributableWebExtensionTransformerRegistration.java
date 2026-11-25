@@ -22,7 +22,7 @@ public class DistributableWebExtensionTransformerRegistration implements Extensi
 
     @Override
     public String getSubsystemName() {
-        return DistributableWebExtension.SUBSYSTEM_NAME;
+        return DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override
@@ -30,7 +30,7 @@ public class DistributableWebExtensionTransformerRegistration implements Extensi
         // Register transformers for all but the current model
         for (DistributableWebSubsystemModel model : EnumSet.complementOf(EnumSet.of(DistributableWebSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            TransformationDescription transformation = new DistributableWebResourceTransformer().apply(version).build();
+            TransformationDescription transformation = new DistributableWebSubsystemResourceTransformer().apply(version).build();
             TransformationDescription.Tools.register(transformation, registration, version);
         }
     }

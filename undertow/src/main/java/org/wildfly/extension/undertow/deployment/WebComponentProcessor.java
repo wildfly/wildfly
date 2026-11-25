@@ -50,7 +50,7 @@ import org.jboss.metadata.web.spec.TldMetaData;
  * For ManagedBean Servlets no action is necessary at this stage, as the servlet is already registered as a component.
  * For Jakarta Contexts and Dependency Injection and EE components a component definition is added to the deployment.
  * <p/>
- * For now we are just using managed bean components as servlets. We may need a custom component type in future.
+ * For now we are just using managed bean components as servlets. We may need a custom component type in the future.
  */
 public class WebComponentProcessor implements DeploymentUnitProcessor {
 
@@ -93,7 +93,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             ComponentDescription description = componentByClass.get(clazz);
             if (description != null) {
                 //for now just make sure it has a single view
-                //this will generally be a managed bean, but it could also be an Jakarta Enterprise Beans
+                //this will generally be a managed bean, but it could also be a Jakarta Enterprise Beans bean
                 //TODO: make sure the component is a managed bean
                 if (!(description.getViews().size() == 1)) {
                     throw UndertowLogger.ROOT_LOGGER.wrongComponentType(clazz);

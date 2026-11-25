@@ -5,41 +5,47 @@
 
 package org.jboss.as.txn.service;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.function.Consumer;
+
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTANodeNameXAResourceOrphanFilter;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.JTAActionStatusServiceXAResourceOrphanFilter;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateJTAXAResourceOrphanFilter;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinationManagerXAResourceOrphanFilter;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 
 import org.jboss.as.txn.integration.LocalUserTransactionOperationsProvider;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.LastResource;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 /**
  * Sets up the {@link JTAEnvironmentBean}
  *
  * @author Jaikiran Pai
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
+public final class JTAEnvironmentBeanService implements Service {
 
+    private final Consumer<JTAEnvironmentBean>  jtaEnvBeanConsumer;
     private final String nodeIdentifier;
-    private boolean useActionStatusServiceRecoveryFilter;
+    private final boolean jts;
+    private final boolean useActionStatusServiceRecoveryFilter;
 
-    public JTAEnvironmentBeanService(final String nodeIdentifier) {
+    public JTAEnvironmentBeanService(final Consumer<JTAEnvironmentBean>  jtaEnvBeanConsumer, final String nodeIdentifier, final boolean jts) {
+        this.jtaEnvBeanConsumer = jtaEnvBeanConsumer;
         this.nodeIdentifier = nodeIdentifier;
+        this.jts = jts;
         this.useActionStatusServiceRecoveryFilter = Boolean.valueOf(System.getProperty("org.jboss.narayana.wildfly.useActionStatusServiceRecoveryFilter.deprecated", "true"));
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
         jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
         // recovery nodes
@@ -54,10 +60,12 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
         jtaEnvironmentBean.setTransactionManagerJNDIContext("java:jboss/TransactionManager");
         jtaEnvironmentBean.setTransactionSynchronizationRegistryJNDIContext("java:jboss/TransactionSynchronizationRegistry");
         jtaEnvironmentBean.setUserTransactionOperationsProviderClassName(LocalUserTransactionOperationsProvider.class.getName());
+        jtaEnvironmentBean.setTransactionManagerClassName(jts ? com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName() : com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
+        jtaEnvBeanConsumer.accept(jtaEnvironmentBean);
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
         final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
         // reset the XA orphan filters
         jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(null);
@@ -67,10 +75,5 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
         jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(null);
         jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(null);
 
-    }
-
-    @Override
-    public JTAEnvironmentBean getValue() throws IllegalStateException, IllegalArgumentException {
-        return jtaPropertyManager.getJTAEnvironmentBean();
     }
 }

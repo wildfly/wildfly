@@ -28,7 +28,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationClientTestCase {
 
-    private static Archive archive;
+    private static final String APP_NAME = SimpleApplicationClientTestCase2.class.getSimpleName();
+    private static EnterpriseArchive archive;
+
+    public SimpleApplicationClientTestCase2() {
+        super(APP_NAME);
+    }
 
     @Override
     public Archive<?> getArchive() {
@@ -44,6 +49,11 @@ public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationC
         lib.addClasses(Employee.class);
         lib.addAsManifestResource(PersistenceUnitPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsLibrary(lib);
+
+        final JavaArchive otherLib = ShrinkWrap.create(JavaArchive.class, "otherlib.jar");
+        otherLib.addClass(Status.class);
+        ear.addAsLibrary(otherLib);
+
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejb.addClasses(SimpleApplicationClientTestCase2.class, AppClientStateSingleton.class);
         ear.addAsModule(ejb);

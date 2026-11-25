@@ -38,8 +38,9 @@ public class StaticInterceptorsDependenciesDeploymentUnitProcessor implements De
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification deploymentModuleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        for(final String interceptorModule : interceptorModules) {
-            deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModule, false, false, true, false));
+
+        for (String interceptorModule : interceptorModules) {
+            deploymentModuleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, interceptorModule).setImportServices(true).build());
         }
     }
 }

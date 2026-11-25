@@ -7,6 +7,7 @@ package org.jboss.as.txn.deployment;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.UserTransaction;
@@ -29,6 +30,7 @@ import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.UserTransactionBindingService;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
 import org.jboss.as.txn.service.UserTransactionService;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -52,7 +54,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
         if(moduleDescription == null) {
             return;
         }
-        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        final ServiceTarget serviceTarget = phaseContext.getRequirementServiceTarget();
         // bind to module
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
         bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
@@ -77,13 +79,13 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName contextServiceName) {
 
         final ServiceName userTransactionServiceName = contextServiceName.append("UserTransaction");
-        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
-        serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
-            .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class,userTransactionBindingService.getUserTransactionAccessControlServiceInjector())
-            .addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class,
-                    new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
-            .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
-            .install();
+        final ServiceBuilder<?> sb = serviceTarget.addService(userTransactionServiceName);
+        final Supplier<UserTransactionAccessControlService> accessControlServiceSupplier = sb.requires(UserTransactionAccessControlService.SERVICE_NAME);
+        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService(accessControlServiceSupplier, "UserTransaction");
+        sb.setInstance(userTransactionBindingService);
+        sb.addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class, new ManagedReferenceInjector<>(userTransactionBindingService.getManagedObjectInjector()));
+        sb.addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector());
+        sb.install();
         final Map<ServiceName, Set<ServiceName>> jndiComponentDependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPONENT_JNDI_DEPENDENCIES);
         Set<ServiceName> jndiDependencies = jndiComponentDependencies.get(contextServiceName);
         if (jndiDependencies == null) {

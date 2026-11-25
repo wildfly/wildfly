@@ -54,6 +54,8 @@ public class UDPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
                         .withPort(PORT)
                         .withHostName(HOSTNAME)
                         .withTransportProtocol("UDP")
+                        .setMaxReconnectAttempts(5) // an arbitary number to avoid intermittent failures.
+                                                    // This is pointless with UDP, but I'm adding this to keep all builder use consistent
                         .build();
                 auditLog.create(cli);
 

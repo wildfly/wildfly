@@ -12,16 +12,16 @@
         <servlet-class>org.jboss.as.test.integration.web.sso.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>EJBServlet</servlet-name>
-        <servlet-class>org.jboss.as.test.integration.web.sso.EJBServlet</servlet-class>
+        <servlet-name>NotAnEJBServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.web.sso.NotAnEJBServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
         <url-pattern>/Logout</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>EJBServlet</servlet-name>
-        <url-pattern>/EJBServlet</url-pattern>
+        <servlet-name>NotAnEJBServlet</servlet-name>
+        <url-pattern>/NotAnEJBServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>1</session-timeout>
@@ -47,18 +47,4 @@
     <security-role>
         <role-name>Users</role-name>
     </security-role>
-    <ejb-ref>
-        <ejb-ref-name>ejb/OptimizedEJB</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionHome</home>
-        <remote>org.jboss.as.test.integration.web.sso.interfaces.StatelessSession</remote>
-        <ejb-link>jbosstest-web-ejbs.jar#SecuredEJB</ejb-link>
-    </ejb-ref>
-    <ejb-local-ref>
-        <ejb-ref-name>ejb/local/OptimizedEJB</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHome</local-home>
-        <local>org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocal</local>
-        <ejb-link>jbosstest-web-ejbs.jar#SecuredEJB</ejb-link>
-    </ejb-local-ref>
 </web-app>

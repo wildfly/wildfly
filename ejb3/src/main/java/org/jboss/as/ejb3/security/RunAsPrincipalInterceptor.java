@@ -13,11 +13,9 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
-import org.wildfly.security.auth.server.RealmIdentity;
-import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
-import org.wildfly.security.authz.AuthorizationFailureException;
+import org.wildfly.security.jakarta.authz.RunAsIdentityHelper;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -25,9 +23,13 @@ import org.wildfly.security.authz.AuthorizationFailureException;
 public class RunAsPrincipalInterceptor implements Interceptor {
     public static final String ANONYMOUS_PRINCIPAL = "anonymous";
     private final String runAsPrincipal;
+    private final String runAsRole;
+    private final RunAsIdentityHelper runAsHelper;
 
-    public RunAsPrincipalInterceptor(final String runAsPrincipal) {
+    public RunAsPrincipalInterceptor(final String runAsPrincipal, final String runAsRole, final RunAsIdentityHelper runAsHelper) {
         this.runAsPrincipal = runAsPrincipal;
+        this.runAsRole = runAsRole;
+        this.runAsHelper = runAsHelper;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
@@ -44,25 +46,8 @@ public class RunAsPrincipalInterceptor implements Interceptor {
         final SecurityIdentity oldIncomingRunAsIdentity = ejbComponent.getIncomingRunAsIdentity();
         SecurityIdentity newIdentity;
         try {
-            // The run-as-principal operation should succeed if the current identity is authorized to
-            // run as a user with the given name or if the caller has sufficient permission
-            if (runAsPrincipal.equals(ANONYMOUS_PRINCIPAL)) {
-                try {
-                    newIdentity = currentIdentity.createRunAsAnonymous();
-                } catch (AuthorizationFailureException ex) {
-                    newIdentity = currentIdentity.createRunAsAnonymous(false);
-                }
-            } else {
-                if (! runAsPrincipalExists(securityDomain, runAsPrincipal)) {
-                    newIdentity = securityDomain.createAdHocIdentity(runAsPrincipal);
-                } else {
-                    try {
-                        newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
-                    } catch (AuthorizationFailureException ex) {
-                        newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal, false);
-                    }
-                }
-            }
+            // Use helper to load RunAs identity
+            newIdentity = runAsHelper.loadRunAsIdentity(securityDomain, runAsPrincipal, runAsRole);
             ejbComponent.setIncomingRunAsIdentity(currentIdentity);
             return newIdentity.runAs(context);
         } catch (PrivilegedActionException e) {
@@ -78,18 +63,6 @@ public class RunAsPrincipalInterceptor implements Interceptor {
             }
         } finally {
             ejbComponent.setIncomingRunAsIdentity(oldIncomingRunAsIdentity);
-        }
-    }
-
-    private boolean runAsPrincipalExists(final SecurityDomain securityDomain, final String runAsPrincipal) throws RealmUnavailableException {
-        RealmIdentity realmIdentity = null;
-        try {
-            realmIdentity = securityDomain.getIdentity(runAsPrincipal);
-            return realmIdentity.exists();
-        } finally {
-            if (realmIdentity != null) {
-                realmIdentity.dispose();
-            }
         }
     }
 }

@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
+public class RaCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
     public static void setBaseAddress(String rar) {
         baseAddress = new ModelNode();

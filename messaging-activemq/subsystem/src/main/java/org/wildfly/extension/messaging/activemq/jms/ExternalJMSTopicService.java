@@ -4,7 +4,6 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
-import java.util.Collection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
@@ -14,7 +13,6 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.api.core.client.TopologyMember;
-import org.apache.activemq.artemis.core.client.impl.TopologyMemberImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory;
@@ -106,11 +104,8 @@ public class ExternalJMSTopicService implements Service<Topic> {
                         public void nodeDown(long eventUID, String nodeID) {
                         }
                     };
+                    config.createTopic(cf, managementQueue, topicName);
                     locator.addClusterTopologyListener(listener);
-                    Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
-                    if (members == null || members.isEmpty()) {
-                        config.createTopic(cf, managementQueue, topicName);
-                    }
                 } else {
                     config.createTopic(cf, managementQueue, topicName);
                 }

@@ -105,6 +105,10 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
+import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
+import org.wildfly.extension.undertow.session.AffinitySessionIdentifierCodec;
+import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
+import org.wildfly.extension.undertow.session.SessionAffinityProvider;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
@@ -142,6 +146,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
@@ -191,7 +196,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Consumer<DeploymentInfo> deploymentInfoConsumer;
     private final Supplier<UndertowService> undertowService;
     private final Supplier<SessionManagerFactory> sessionManagerFactory;
-    private final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory;
+    private final Supplier<SessionAffinityProvider> sessionAffinityProvider;
     private final Supplier<ServletContainerService> container;
     private final Supplier<ComponentRegistry> componentRegistry;
     private final Supplier<Host> host;
@@ -211,7 +216,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Consumer<DeploymentInfo> deploymentInfoConsumer,
             final Supplier<UndertowService> undertowService,
             final Supplier<SessionManagerFactory> sessionManagerFactory,
-            final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory,
+            final Supplier<SessionAffinityProvider> sessionAffinityProvider,
             final Supplier<ServletContainerService> container,
             final Supplier<ComponentRegistry> componentRegistry,
             final Supplier<Host> host,
@@ -225,7 +230,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
         this.undertowService = undertowService;
         this.sessionManagerFactory = sessionManagerFactory;
-        this.sessionConfigWrapperFactory = sessionConfigWrapperFactory;
+        this.sessionAffinityProvider = sessionAffinityProvider;
         this.container = container;
         this.componentRegistry = componentRegistry;
         this.host = host;
@@ -271,7 +276,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
 
-            handleDistributable(deploymentInfo);
             if (!isElytronActive()) {
                 if (securityDomain != null || mergedMetaData.isUseJBossAuthorization()) {
                     throw UndertowLogger.ROOT_LOGGER.legacySecurityUnsupported();
@@ -391,16 +395,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
 
-            ControlPoint controlPoint = this.controlPoint != null ? this.controlPoint.get() : null;
-            if (controlPoint != null) {
-                deploymentInfo.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, allowSuspendedRequests));
-            }
-
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
         }
-
     }
 
     @Override
@@ -455,16 +453,24 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
-    private void handleDistributable(final DeploymentInfo deploymentInfo) {
+    private DeploymentInfo createDeploymentInfo() {
+        DeploymentInfo deployment = new DeploymentInfo();
+
         SessionManagerFactory managerFactory = this.sessionManagerFactory != null ? this.sessionManagerFactory.get() : null;
         if (managerFactory != null) {
-            deploymentInfo.setSessionManagerFactory(managerFactory);
+            deployment.setSessionManagerFactory(managerFactory);
         }
 
-        Function<CookieConfig, SessionConfigWrapper> sessionConfigWrapperFactory = this.sessionConfigWrapperFactory != null ? this.sessionConfigWrapperFactory.get() : null;
-        if (sessionConfigWrapperFactory != null) {
-            deploymentInfo.setSessionConfigWrapper(sessionConfigWrapperFactory.apply(this.container.get().getAffinityCookieConfig()));
+        SessionAffinityProvider sessionAffinityProvider = this.sessionAffinityProvider != null ? this.sessionAffinityProvider.get() : null;
+        if (sessionAffinityProvider != null) {
+            CookieConfig config = this.container.get().getAffinityCookieConfig();
+            SessionConfigWrapper wrapper = (config != null) ? new AffinitySessionConfigWrapper(config, sessionAffinityProvider) : new CodecSessionConfigWrapper(new AffinitySessionIdentifierCodec(sessionAffinityProvider));
+            deployment.setSessionConfigWrapper(wrapper);
         }
+
+        UnaryOperator<DeploymentInfo> decorator = this.controlPoint != null ? new ControlPointDeploymentInfoConfigurator(this.controlPoint.get(), this.allowSuspendedRequests) : UnaryOperator.identity();
+
+        return decorator.apply(deployment);
     }
 
     private DeploymentInfo createServletConfig() throws StartException {
@@ -474,7 +480,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 mergedMetaData.resolveAnnotations();
             }
             mergedMetaData.resolveRunAs();
-            final DeploymentInfo d = new DeploymentInfo();
+            final DeploymentInfo d = this.createDeploymentInfo();
             d.setContextPath(contextPath);
             if (mergedMetaData.getDescriptionGroup() != null) {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
@@ -1169,7 +1175,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             authenticationManager.configure(deploymentInfo);
         }
 
-        deploymentInfo.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+        deploymentInfo.addThreadSetupAction(JACCContextIdHandler.threadSetupHandler(jaccContextId));
+        deploymentInfo.addOuterHandlerChainWrapper(JACCContextIdHandler.handlerWrapper(jaccContextId));
         if(mergedMetaData.isUseJBossAuthorization()) {
             UndertowLogger.ROOT_LOGGER.configurationOptionIgnoredWhenUsingElytron("use-jboss-authorization");
         }
@@ -1385,7 +1392,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Consumer<DeploymentInfo> deploymentInfoConsumer,
                 final Supplier<UndertowService> undertowService,
                 final Supplier<SessionManagerFactory> sessionManagerFactory,
-                final Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory,
+                final Supplier<SessionAffinityProvider> sessionAffinityProvider,
                 final Supplier<ServletContainerService> container,
                 final Supplier<ComponentRegistry> componentRegistry,
                 final Supplier<Host> host,
@@ -1397,7 +1404,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
-                    sessionConfigWrapperFactory, container, componentRegistry, host, controlPoint,
+                    sessionAffinityProvider, container, componentRegistry, host, controlPoint,
                     suspendController, serverEnvironment, rawSecurityDomain, rawMechanismFactory, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,

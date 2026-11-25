@@ -11,7 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -22,11 +24,16 @@ import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * {@link ServerSetupTask} that runs a list of batchable management operations on a set of containers.
+ * A snapshot of the server configuration is always taken before setup and restored during tear-down,
+ * ensuring the server returns to its original state after the test completes.
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class ManagementServerSetupTask implements ServerSetupTask {
 
@@ -40,6 +47,12 @@ public class ManagementServerSetupTask implements ServerSetupTask {
     }
 
     public interface ContainerConfiguration {
+        /**
+         * Returns {@link Stability} required for the container during the test.
+         * @return {@link Stability} required for the container during the test.
+         */
+        Stability getRequiredStability();
+
         /**
          * Returns the setup script for a container.
          * @return a list of CLI command batches
@@ -82,7 +95,6 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
         /**
          * Adds a container configuration.
-         * @param container a container identifier
          * @param configuration a container configuration
          * @return a reference to this builder
          */
@@ -90,6 +102,14 @@ public class ManagementServerSetupTask implements ServerSetupTask {
     }
 
     public interface ContainerConfigurationBuilder extends Builder<ContainerConfiguration> {
+        /**
+         * Defines {@link Stability} required for the container during the test.
+         * The default required stability is {@link Stability#DEFAULT} meaning no reload is required by default.
+         * @param stability {@link Stability} required for the container during the test.
+         * @return a reference to this builder
+         */
+        ContainerConfigurationBuilder requireStability(Stability stability);
+
         /**
          * Defines a script to run during test setup.
          * @param script a list of CLI batches
@@ -101,7 +121,10 @@ public class ManagementServerSetupTask implements ServerSetupTask {
          * Defines a script to run during test tear-down.
          * @param script a list of CLI batches
          * @return a reference to this builder
+         * @deprecated No longer needs to be provided for management model operations as snapshot restore is performed automatically.
+         * Useful for operations that have side effects outside the management model that are not restored by restoring the snapshot, such as Elytron key store {@literal :store()} operation.
          */
+        @Deprecated
         ContainerConfigurationBuilder tearDownScript(List<List<String>> script);
     }
 
@@ -115,11 +138,11 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
         /**
          * Adds the specified parameterized command to the associated set.
-         * @param command a CLI command
+         * @param commandPattern a CLI command
          * @return a reference to this builder
          */
-        default B add(String pattern, Object... params) {
-            return this.add(String.format(Locale.ROOT, pattern, params));
+        default B add(String commandPattern, Object... params) {
+            return this.add(String.format(Locale.ROOT, commandPattern, params));
         }
     }
 
@@ -182,8 +205,15 @@ public class ManagementServerSetupTask implements ServerSetupTask {
      */
     public static ContainerConfigurationBuilder createContainerConfigurationBuilder() {
         return new ContainerConfigurationBuilder() {
+            private Stability requiredStability = Stability.DEFAULT;
             private List<List<String>> setupScript = List.of();
             private List<List<String>> tearDownScript = List.of();
+
+            @Override
+            public ContainerConfigurationBuilder requireStability(Stability stability) {
+                this.requiredStability = Objects.requireNonNull(stability);
+                return this;
+            }
 
             @Override
             public ContainerConfigurationBuilder setupScript(List<List<String>> batches) {
@@ -199,9 +229,15 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
             @Override
             public ContainerConfiguration build() {
+                Stability requiredStability = this.requiredStability;
                 List<List<String>> setupScript = Collections.unmodifiableList(this.setupScript);
                 List<List<String>> tearDownScript = Collections.unmodifiableList(this.tearDownScript);
                 return new ContainerConfiguration() {
+                    @Override
+                    public Stability getRequiredStability() {
+                        return requiredStability;
+                    }
+
                     @Override
                     public List<List<String>> getSetupScript() {
                         return setupScript;
@@ -222,7 +258,7 @@ public class ManagementServerSetupTask implements ServerSetupTask {
      */
     public static ScriptBuilder createScriptBuilder() {
         return new ScriptBuilder() {
-            private List<List<String>> batches = new LinkedList<>();
+            private final List<List<String>> batches = new LinkedList<>();
 
             @Override
             public List<List<String>> build() {
@@ -257,6 +293,7 @@ public class ManagementServerSetupTask implements ServerSetupTask {
     }
 
     private final ContainerSetConfiguration config;
+    private final Map<String, ServerSetupTask> snapshotRestoreTasks = new ConcurrentHashMap<>();
 
     public ManagementServerSetupTask(ContainerSetConfiguration config) {
         this.config = config;
@@ -276,12 +313,25 @@ public class ManagementServerSetupTask implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient client, String containerId) throws Exception {
+        ContainerConfiguration containerConfig = this.config.getContainerConfiguration(containerId);
+        if (containerConfig != null) {
+            Stability requiredStability = containerConfig.getRequiredStability();
+            ServerSetupTask snapshotRestoreTask = Stability.DEFAULT.enables(requiredStability) ? new SnapshotRestoreSetupTask() : new StabilityServerSetupSnapshotRestoreTasks(requiredStability);
+            snapshotRestoreTask.setup(client, containerId);
+            this.snapshotRestoreTasks.put(containerId, snapshotRestoreTask);
+        }
+
         this.configure(client, containerId, ContainerConfiguration::getSetupScript);
     }
 
     @Override
     public void tearDown(ManagementClient client, String containerId) throws Exception {
         this.configure(client, containerId, ContainerConfiguration::getTearDownScript);
+
+        ServerSetupTask snapshotRestoreTask = this.snapshotRestoreTasks.remove(containerId);
+        if (snapshotRestoreTask != null) {
+            snapshotRestoreTask.tearDown(client, containerId);
+        }
     }
 
     private void configure(ManagementClient client, String containerId, Function<ContainerConfiguration, List<List<String>>> script) throws Exception {

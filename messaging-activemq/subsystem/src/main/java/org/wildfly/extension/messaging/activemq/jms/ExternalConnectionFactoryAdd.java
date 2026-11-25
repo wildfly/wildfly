@@ -5,14 +5,13 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_ID;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
@@ -31,7 +30,10 @@ import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -51,8 +53,10 @@ import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 
+import java.util.Collections;
 import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.AttributeDefinition;
+import org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition;
 
 /**
  * Update adding a connection factory to the subsystem. The
@@ -78,11 +82,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         final ExternalConnectionFactoryConfiguration config = createConfiguration(context, name, model);
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
-        ServiceBuilder<?> builder = context.getServiceTarget()
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget()
                 .addService(serviceName)
                 .addAliases(JMSServices.getConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name));
         ExternalConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
+            builder.requires(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName());
             // mapping between the {discovery}-groups and the cluster names they use
             Map<String, String> clusterNames = new HashMap<>();
             Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
@@ -106,6 +111,11 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             } else {
                 final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(dgname);
                 Supplier<SocketBinding> groupBindingSupplier = builder.requires(groupBinding);
+                if (!context.isBooting()) {
+                    if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                        MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(dgname), Collections.emptySet());
+                    }
+                }
                 groupBindings.put(key, groupBindingSupplier);
             }
             service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), commandDispatcherFactories, groupBindings, clusterNames, jmsFactoryType, ha, enable1Prefixes, config);
@@ -119,11 +129,11 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
-                    final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                    final ServiceName outboundSocketName = context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                     Supplier<OutboundSocketBinding> outboundSupplier = builder.requires(outboundSocketName);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSupplier);
                 } else {
-                    final ServiceName socketName = SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                    final ServiceName socketName = context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                     Supplier<SocketBinding> socketBindingsSupplier = builder.requires(socketName);
                     socketBindings.put(connectorSocketBinding, socketBindingsSupplier);
                 }
@@ -139,7 +149,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         builder.install();
         for (String entry : Common.ENTRIES.unwrap(context, model)) {
             MessagingLogger.ROOT_LOGGER.debugf("Referencing %s with JNDI name %s", serviceName, entry);
-            BinderServiceUtil.installBinderService(context.getServiceTarget(), entry, service, serviceName);
+            BinderServiceUtil.installBinderService(context.getCapabilityServiceTarget(), entry, service, serviceName);
         }
     }
 
@@ -248,8 +258,10 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : attributes) {
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attr : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             if (DESERIALIZATION_BLACKLIST.equals(attr)) {
                 if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
                     DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);

@@ -4,12 +4,14 @@
  */
 package org.wildfly.clustering.ejb.bean;
 
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
+
 /**
  * Configuration for legacy bean management.
  * @author Paul Ferraro
  */
 @Deprecated
-public interface LegacyBeanManagementConfiguration extends BeanPassivationConfiguration {
+public interface LegacyBeanManagementConfiguration extends EvictionConfiguration {
     String DEFAULT_CONTAINER_NAME = "ejb";
 
     String getContainerName();

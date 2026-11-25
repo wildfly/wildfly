@@ -4,10 +4,11 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -50,27 +51,30 @@ public class JSFModuleIdFactoryTestCase {
    }
 
     @Test
-    @Ignore("Depends on https://issues.redhat.com/browse/WFLY-17405")
     public void modIdsTest() {
-        Assert.assertEquals(API_MODULE, factory.getApiModId("main").getName());
-        Assert.assertEquals("main", factory.getApiModId("main").getSlot());
-        Assert.assertEquals(IMPL_MODULE, factory.getImplModId("main").getName());
-        Assert.assertEquals("main", factory.getImplModId("main").getSlot());
-        Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("main").getName());
-        Assert.assertEquals("main", factory.getInjectionModId("main").getSlot());
+        String apiModIdMain = factory.getApiModId("main");
+        String implModIdMain = factory.getImplModId("main");
+        String injectionModIdMain = factory.getInjectionModId("main");
 
-        Assert.assertEquals(API_MODULE, factory.getApiModId("myfaces").getName());
-        Assert.assertEquals("myfaces", factory.getApiModId("myfaces").getSlot());
-        Assert.assertEquals(IMPL_MODULE, factory.getImplModId("myfaces").getName());
-        Assert.assertEquals("myfaces", factory.getImplModId("myfaces").getSlot());
-        Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("myfaces").getName());
-        Assert.assertEquals("myfaces", factory.getInjectionModId("myfaces").getSlot());
 
-        Assert.assertEquals(API_MODULE, factory.getApiModId("myfaces2").getName());
-        Assert.assertEquals("myfaces2", factory.getApiModId("myfaces2").getSlot());
-        Assert.assertEquals(IMPL_MODULE, factory.getImplModId("myfaces2").getName());
-        Assert.assertEquals("myfaces2", factory.getImplModId("myfaces2").getSlot());
-        Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("myfaces2").getName());
-        Assert.assertEquals("myfaces2", factory.getInjectionModId("myfaces2").getSlot());
+        Assert.assertEquals(canonicalModuleIdentifier(API_MODULE, "main"), apiModIdMain);
+        Assert.assertEquals(canonicalModuleIdentifier(IMPL_MODULE, "main"), implModIdMain);
+        Assert.assertEquals(canonicalModuleIdentifier(INJECTION_MODULE, "main"), injectionModIdMain);
+
+        String apiModIdMyfaces = factory.getApiModId("myfaces");
+        String implModIdMyfaces = factory.getImplModId("myfaces");
+        String injectionModIdMyfaces = factory.getInjectionModId("myfaces");
+
+        Assert.assertEquals(canonicalModuleIdentifier(API_MODULE, "myfaces"), apiModIdMyfaces);
+        Assert.assertEquals(canonicalModuleIdentifier(IMPL_MODULE, "myfaces"), implModIdMyfaces);
+        Assert.assertEquals(canonicalModuleIdentifier(INJECTION_MODULE, "myfaces"), injectionModIdMyfaces);
+
+        String apiModIdMyfaces2 = factory.getApiModId("myfaces2");
+        String implModIdMyfaces2 = factory.getImplModId("myfaces2");
+        String injectionModIdMyfaces2 = factory.getInjectionModId("myfaces2");
+
+        Assert.assertEquals(canonicalModuleIdentifier(API_MODULE, "myfaces2"), apiModIdMyfaces2);
+        Assert.assertEquals(canonicalModuleIdentifier(IMPL_MODULE, "myfaces2"), implModIdMyfaces2);
+        Assert.assertEquals(canonicalModuleIdentifier(INJECTION_MODULE, "myfaces2"), injectionModIdMyfaces2);
     }
 }

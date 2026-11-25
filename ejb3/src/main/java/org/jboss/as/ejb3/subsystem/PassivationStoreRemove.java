@@ -11,11 +11,12 @@ import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -38,7 +39,7 @@ public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
     @Override
     protected ServiceName serviceName(final String name) {
-        return new StatefulSessionBeanCacheProviderServiceNameProvider(name).getServiceName();
+        return ServiceNameFactory.resolveServiceName(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, name);
     }
 
     /**

@@ -26,6 +26,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -42,10 +43,16 @@ import static org.jboss.logging.Logger.Level.WARN;
  */
 @MessageLogger(projectCode = "WFLYMSGAMQ", length = 4)
 public interface MessagingLogger extends BasicLogger {
+    static final String MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME = "jboss.messaging.discovery.warning.disabled";
     /**
      * The logger with the category of the package.
      */
-    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
+    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
+
+    /**
+     * Logger with a dedicated category so users can suppress discovery warnings via logging configuration.
+     */
+    MessagingLogger DISCOVERY_WARNING_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MessagingLogger.class, "org.wildfly.extension.messaging-activemq.discovery-warning");
 
     /**
      * Logs a info message indicating AIO was not found.
@@ -904,4 +911,42 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 119, value = "'%s' wasn't found among existing JMS resources.")
     OperationFormatException jndiWasNotFound(String jndiName);
+
+    // id 120 was the first-writer-wins WARN emitted by the old WildFlyRecoveryRegistry.setSupplier(). Since
+    // WFLY-22283 the registry keeps a collection of suppliers, so duplicate registration is expected and no
+    // longer warned. Kept commented out (rather than deleted) so id 120 is not accidentally reused.
+    // @LogMessage(level = WARN)
+    // @Message(id = 120, value = "XA resource recovery registry supplier has already been set, skipping duplicate registration")
+    // void recoveryRegistrySupplierAlreadySet();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 121, value = "System property 'artemis.discovery.enabled' is already set to '%s'.")
+    void discoveryEnabledPropertyAlreadySet(String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 122, value = "Discovery/broadcast groups are configured; setting system property 'artemis.discovery.enabled=true'.")
+    void settingDiscoveryEnabledProperty();
+
+    @LogMessage(level = WARN)
+    @Message(id = 123, value = "Native UDP multicast, which cannot be verified as secure, has been configured for " +
+            "discovery groups %s and broadcast groups %s. " +
+            "On an unsecured network, unauthorized parties could discover broker addresses or impersonate brokers. " +
+            "If your network is secured, you can suppress this warning by setting " +
+            "-D" + MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME + "=true or by setting the log category " +
+            "'org.wildfly.extension.messaging-activemq.discovery-warning' to OFF.")
+    void udpMulticastWarning(Set<String> discoveryGroups, Set<String> broadcastGroups);
+
+    @Message(id = 124, value = "System property 'artemis.discovery.enabled' is set to '%s'; valid values are 'true' or 'false'.")
+    OperationFailedException invalidDiscoveryEnabledPropertyValue(String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 125, value = "System property 'artemis.disableXxe' is already set to '%s'.")
+    void xxeDisabledPropertyAlreadySet(String value);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 126, value = "Setting system property 'artemis.disableXxe=true'.")
+    void settingXxeDisabledProperty();
+
+    @Message(id = 127, value = "System property 'artemis.disableXxe' is set to '%s'; valid values are 'true' or 'false'.")
+    OperationFailedException invalidXxeDisabledPropertyValue(String value);
 }

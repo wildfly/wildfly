@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.version.Stability;
 import org.junit.Assume;
 
 /**
@@ -26,7 +27,9 @@ public @interface Version {
     String EAP = "jboss-eap-";
 
     enum AsVersion {
-        EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0)),
+        EAP_8_0_0(EAP, 8, 0, 0, 17, 11, "EAP8.0", ModelVersion.create(22, 0), Stability.DEFAULT),
+        EAP_8_1_0(EAP, 8, 1, 0, 21, 17, "EAP8.1", ModelVersion.create(28, 0), Stability.DEFAULT),
+        WFLY_31_0_0(WILDFLY, 31, 0, 0, 17, 11, "WildFly31.0", ModelVersion.create(24, 0), Stability.COMMUNITY),
         ;
 
 
@@ -40,19 +43,22 @@ public @interface Version {
         final String version;
         final String hostExclude;
         final ModelVersion modelVersion;
+        private final Stability stability;
 
         /**
          * Metadata related to the server version we are using as secondary
-         * @param basename Base name of the server, used to locate the zip file that contains the secondary under test.
-         * @param major Major release number
-         * @param minor Minor release number
-         * @param micro Micro release number
-         * @param maxVM The maximum Java version under which a legacy host can properly execute tests
-         * @param minVM The minimum Java version under which a legacy host can properly execute tests
-         * @param hostExclude The host-exclude name that represents this secondary
-         * @param modelVersion The Kernel version of this secondary
+         *
+         * @param basename            Base name of the server, used to locate the zip file that contains the secondary under test.
+         * @param major               Major release number
+         * @param minor               Minor release number
+         * @param micro               Micro release number
+         * @param maxVM               The maximum Java version under which a legacy host can properly execute tests
+         * @param minVM               The minimum Java version under which a legacy host can properly execute tests
+         * @param hostExclude         The host-exclude name that represents this secondary
+         * @param modelVersion        The Kernel version of this secondary
+         * @param stability           The stability level of this secondary host controller
          */
-        AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM, String hostExclude, ModelVersion modelVersion){
+        AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM, String hostExclude, ModelVersion modelVersion, Stability stability) {
             this.basename = basename;
             this.major = major;
             this.minor = minor;
@@ -62,6 +68,7 @@ public @interface Version {
             this.minVM = minVM;
             this.hostExclude = hostExclude;
             this.modelVersion = modelVersion;
+            this.stability = stability;
         }
 
         public String getBaseName() {
@@ -118,9 +125,7 @@ public @interface Version {
          */
         public void assumeMaxVM() {
             if (System.getProperty("jboss.test.host.secondary.jvmhome") == null) {
-                String javaSpecVersion = System.getProperty("java.specification.version");
-                int vm = "1.8".equals(javaSpecVersion) ? 8 : Integer.parseInt(javaSpecVersion);
-                Assume.assumeFalse(vm > maxVM);
+                Assume.assumeFalse(Runtime.version().feature() > maxVM);
             }
         }
 
@@ -132,17 +137,8 @@ public @interface Version {
             return modelVersion;
         }
 
-        int compare(int major, int minor) {
-            if (this.major < major) {
-                return -1;
-            }
-            if (this.major > major) {
-                return  1;
-            }
-            if (this.minor == minor) {
-                return 0;
-            }
-            return this.minor < minor ? -1 : 1;
+        public Stability getStability() {
+            return stability;
         }
     }
 }

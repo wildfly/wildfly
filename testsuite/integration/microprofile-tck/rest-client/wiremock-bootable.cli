@@ -1,4 +1,4 @@
-module add --name=com.github.tomakehurst.wiremock --resources=${wiremock.resource.path} --module-xml=${module.xml.path}
-/subsystem=ee:list-add(name=global-modules,value={name=com.github.tomakehurst.wiremock})
+module add --name=org.wiremock --resources=${wiremock.resource.path} --module-xml=${module.xml.path}
+/subsystem=ee:list-add(name=global-modules,value={name=org.wiremock})
 deployment-overlay add --name=tckOverlay --content=/WEB-INF/lib/*.jar/META-INF/beans.xml=${beansxml.path} --deployments=*.war --redeploy-affected
 deployment-overlay add --name=tckWarOverlay --content=/WEB-INF/beans.xml=${beansxml.path} --deployments=*.war --redeploy-affected

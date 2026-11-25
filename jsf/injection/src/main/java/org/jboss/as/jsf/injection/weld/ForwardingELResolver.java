@@ -5,12 +5,27 @@
 package org.jboss.as.jsf.injection.weld;
 
 import java.beans.FeatureDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import jakarta.el.ELContext;
 import jakarta.el.ELResolver;
 
 public abstract class ForwardingELResolver extends ELResolver {
+
+    // This method was removed in EL 6.0 so in an EL 5 env we need to invoke the delegate reflectively
+    private static final Method GET_FEATURE_DESCRIPTORS;
+
+    static {
+        Method m = null;
+        try {
+            m = ELResolver.class.getDeclaredMethod("getFeatureDescriptors", ELContext.class, Object.class);
+        } catch (NoSuchMethodException e) {
+            // We're running an EL version where this has been removed
+        }
+        GET_FEATURE_DESCRIPTORS = m;
+    }
 
     protected abstract ELResolver delegate();
 
@@ -19,9 +34,13 @@ public abstract class ForwardingELResolver extends ELResolver {
         return delegate().getCommonPropertyType(context, base);
     }
 
-    @Override
     public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
-        return delegate().getFeatureDescriptors(context, base);
+        try {
+            //noinspection unchecked
+            return (Iterator<FeatureDescriptor>) GET_FEATURE_DESCRIPTORS.invoke(delegate(), context, base);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -6,13 +6,12 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#workManagerRemove(java.util.Map).
  * @author Paul Ferraro
  */
-public class RemoveWorkManagerCommand implements Command<Void, CommandDispatcherTransport> {
+public class RemoveWorkManagerCommand implements TransportCommand<Void> {
     private static final long serialVersionUID = 2582985650458275860L;
 
     private final Address address;

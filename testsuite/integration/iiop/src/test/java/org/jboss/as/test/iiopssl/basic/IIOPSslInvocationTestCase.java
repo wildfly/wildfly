@@ -12,7 +12,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
-import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -63,7 +62,7 @@ public class IIOPSslInvocationTestCase {
         }
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "client.jar");
-        jar.addClasses(ClientEjb.class, IIOPSslStatelessHome.class, IIOPSslStatelessRemote.class, IIOPSslInvocationTestCase.class, Util.class, NetworkUtils.class)
+        jar.addClasses(ClientEjb.class, IIOPSslStatelessHome.class, IIOPSslStatelessRemote.class, IIOPSslInvocationTestCase.class, NetworkUtils.class)
                 .addAsManifestResource(IIOPSslInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml");
         return jar;

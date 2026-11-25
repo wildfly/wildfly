@@ -6,7 +6,6 @@
 package org.wildfly.extension.clustering.web.deployment;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -22,8 +21,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.logging.ServerLogger;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * {@link DeploymentUnitProcessor} that parses a standalone distributable-web deployment descriptor.
@@ -32,7 +33,10 @@ import org.jboss.vfs.VirtualFile;
 public class DistributableWebDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
     private static final String DISTRIBUTABLE_WEB_DEPLOYMENT_DESCRIPTOR = "WEB-INF/distributable-web.xml";
-    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
+    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactoryUtil.create();
+    static {
+        XML_INPUT_FACTORY.setXMLResolver(NoopXMLResolver.create());
+    }
 
     private final XMLMapper mapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(DistributableWebDeploymentSchema.class));
 
@@ -68,8 +72,6 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
             }
         } catch (XMLStreamException e) {
             throw ServerLogger.ROOT_LOGGER.errorLoadingDeploymentStructureFile(file.getPath(), e);
-        } catch (FileNotFoundException e) {
-            throw ServerLogger.ROOT_LOGGER.deploymentStructureFileNotFound(file);
         } catch (IOException e) {
             throw ServerLogger.ROOT_LOGGER.deploymentStructureFileNotFound(file);
         }

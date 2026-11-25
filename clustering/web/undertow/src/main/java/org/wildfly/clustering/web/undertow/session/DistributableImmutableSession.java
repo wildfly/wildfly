@@ -4,14 +4,13 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
@@ -26,22 +25,21 @@ public class DistributableImmutableSession implements Session {
 
     private final SessionManager manager;
     private final String id;
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes;
     private final long creationTime;
     private final long lastAccessedTime;
     private final int maxInactiveInterval;
+    private final boolean invalid;
 
     public DistributableImmutableSession(SessionManager manager, ImmutableSession session) {
         this.manager = manager;
         this.id = session.getId();
-        ImmutableSessionAttributes attributes = session.getAttributes();
-        for (String name: attributes.getAttributeNames()) {
-            this.attributes.put(name, attributes.getAttribute(name));
-        }
+        this.attributes = Map.copyOf(session.getAttributes());
         ImmutableSessionMetaData metaData = session.getMetaData();
         this.creationTime = metaData.getCreationTime().toEpochMilli();
-        this.lastAccessedTime = metaData.getLastAccessStartTime().toEpochMilli();
-        this.maxInactiveInterval = (int) metaData.getTimeout().getSeconds();
+        this.lastAccessedTime = metaData.getLastAccessStartTime().orElse(metaData.getCreationTime()).toEpochMilli();
+        this.maxInactiveInterval = metaData.getMaxIdle().map(Duration::getSeconds).orElse(-1L).intValue();
+        this.invalid = !session.isValid();
     }
 
     @Override
@@ -107,5 +105,10 @@ public class DistributableImmutableSession implements Session {
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
         return null;
+    }
+
+    @Override
+    public boolean isInvalid() {
+        return this.invalid;
     }
 }

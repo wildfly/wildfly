@@ -36,6 +36,7 @@
                 <param name="use-qualified-name" value="false"/>
             </feature>
         </feature>
+        <feature spec="subsystem.jakarta-data"/>
     </feature>
 
     <feature spec="domain.system-property">

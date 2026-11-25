@@ -26,14 +26,6 @@ enum Element {
     ANNOTATION_PROPERTY_REPLACEMENT(EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT.getXmlName()),
 
     CONCURRENT("concurrent"),
-    CONTEXT_SERVICES("context-services"),
-    CONTEXT_SERVICE("context-service"),
-    MANAGED_THREAD_FACTORIES("managed-thread-factories"),
-    MANAGED_THREAD_FACTORY("managed-thread-factory"),
-    MANAGED_EXECUTOR_SERVICES("managed-executor-services"),
-    MANAGED_EXECUTOR_SERVICE("managed-executor-service"),
-    MANAGED_SCHEDULED_EXECUTOR_SERVICES("managed-scheduled-executor-services"),
-    MANAGED_SCHEDULED_EXECUTOR_SERVICE("managed-scheduled-executor-service"),
 
     DEFAULT_BINDINGS("default-bindings"),
 

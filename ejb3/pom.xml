@@ -9,7 +9,7 @@ vi:ts=4:sw=4:expandtab
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -19,7 +19,7 @@ vi:ts=4:sw=4:expandtab
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -31,14 +31,14 @@ vi:ts=4:sw=4:expandtab
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -74,21 +74,8 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -99,24 +86,12 @@ vi:ts=4:sw=4:expandtab
             <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -128,12 +103,17 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-local</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -166,11 +146,6 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-request-controller</artifactId>
             <exclusions>
                 <exclusion>
@@ -178,6 +153,11 @@ vi:ts=4:sw=4:expandtab
                     <artifactId>jboss-invocation</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
 
         <dependency>
@@ -222,6 +202,11 @@ vi:ts=4:sw=4:expandtab
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-security-manager-action</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security.jakarta</groupId>
+            <artifactId>jakarta-authorization</artifactId>
         </dependency>
 
         <dependency>
@@ -298,15 +283,6 @@ vi:ts=4:sw=4:expandtab
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
                   projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -389,6 +365,11 @@ projects that depend on this project.-->
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-subclass</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
@@ -396,14 +377,20 @@ projects that depend on this project.-->
             <scope>test</scope>
         </dependency>
 
+        <!-- TODO remove Infinispan dependencies after deprecated passivation store resources are finally removed -->
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons-jakarta</artifactId>
-            <scope>test</scope>
+            <artifactId>infinispan-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core-jakarta</artifactId>
+            <artifactId>infinispan-core</artifactId>
+        </dependency>
+
+        <!-- Internal test dependencies -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -420,4 +407,25 @@ projects that depend on this project.-->
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

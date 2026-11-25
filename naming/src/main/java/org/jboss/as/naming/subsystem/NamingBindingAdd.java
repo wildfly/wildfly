@@ -4,6 +4,7 @@
  */
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 
 import java.net.MalformedURLException;
@@ -38,7 +39,6 @@ import org.jboss.as.naming.service.ExternalContextBinderService;
 import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
@@ -104,7 +104,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(referenceFactory));
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
 
@@ -131,7 +131,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
         ContextListAndJndiViewManagedReferenceFactory factory = new ObjectFactoryManagedReference(objectFactoryClassInstance, name, environment);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
 
@@ -144,7 +144,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     private ObjectFactory createObjectFactory(OperationContext context, ModelNode model) throws OperationFailedException {
-        final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
+        final String moduleID = parseCanonicalModuleIdentifier(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final Module module;
         try {
@@ -186,7 +186,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final ObjectFactory objectFactoryClassInstance = new ExternalContextObjectFactory();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final Hashtable<String, String> environment = getObjectFactoryEnvironment(context, model);
@@ -241,7 +241,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         final String lookup = NamingBindingResourceDefinition.LOOKUP.resolveModelAttribute(context, model).asString();
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);

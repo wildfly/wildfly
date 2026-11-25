@@ -14,12 +14,15 @@
         <artifact name="${io.micrometer:micrometer-commons}"/>
         <artifact name="${io.micrometer:micrometer-core}"/>
         <artifact name="${io.micrometer:micrometer-registry-otlp}"/>
+        <artifact name="${io.micrometer:micrometer-registry-prometheus}"/>
     </resources>
 
     <dependencies>
+        <module name="com.google.protobuf"/>
         <module name="io.opentelemetry.otlp"/>
         <module name="io.opentelemetry.proto"/>
-        <module name="com.google.protobuf"/>
+        <!-- This is only required if the 'registry=prometheus' resource is configured -->
+        <module name="io.prometheus" optional="true"/>
 
         <module name="jakarta.servlet.api"/>
         <module name="java.management"/>

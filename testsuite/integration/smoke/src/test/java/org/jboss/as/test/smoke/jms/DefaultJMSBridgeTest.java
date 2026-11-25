@@ -5,9 +5,7 @@
 
 package org.jboss.as.test.smoke.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 
@@ -24,7 +22,7 @@ import jakarta.jms.TextMessage;
 
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
@@ -33,15 +31,16 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Jakarta Messaging bridge test.
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DefaultCreateJMSBridgeSetupTask.class)
 public class DefaultJMSBridgeTest {
 
@@ -102,10 +101,10 @@ public class DefaultJMSBridgeTest {
             receivedMessage = consumer.receive(5000);
 
             // ASSERTIONS
-            assertNotNull("did not receive expected message", receivedMessage);
+            assertNotNull(receivedMessage, "did not receive expected message");
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
-            assertTrue("got header set by the Jakarta Messaging bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST) == null);
+            assertNull(receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST), "got header set by the Jakarta Messaging bridge");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

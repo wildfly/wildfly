@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
@@ -15,10 +16,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import io.smallrye.config.PropertiesConfigSource;
-
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeMarshallers;
@@ -32,10 +32,11 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
@@ -90,7 +91,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
-            .setCapabilityReference("org.wildfly.management.path-manager")
+            .setCapabilityReference(PathManager.SERVICE_DESCRIPTOR.getName())
             .build();
 
     static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO, ROOT)
@@ -98,7 +99,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
-            .setCapabilityReference("org.wildfly.management.path-manager")
+            .setCapabilityReference(PathManager.SERVICE_DESCRIPTOR.getName())
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = {ORDINAL, PROPERTIES, CLASS, DIR};
@@ -107,7 +108,9 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()))
                 .setAddHandler(new ConfigSourceDefinitionAddHandler(providers, sources))
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
@@ -119,8 +122,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         String className = classModel.get(NAME).asString();
         String moduleName = classModel.get(MODULE).asString();
         try {
-            ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-            Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+            Module module = Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
             Class<?> clazz = module.getClassLoader().loadClass(className);
             return clazz;
         } catch (Exception e) {
@@ -128,7 +130,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
         }
     }
 
-    private static class ConfigSourceDefinitionAddHandler extends AbstractAddStepHandler {
+    private static class ConfigSourceDefinitionAddHandler extends AbstractBoottimeAddStepHandler {
         private Registry<ConfigSourceProvider> providers;
         private final Registry<ConfigSource> sources;
 
@@ -138,8 +140,9 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             this.sources = sources;
         }
 
+
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             String name = context.getCurrentAddressValue();
             int ordinal = ORDINAL.resolveModelAttribute(context, model).asInt();

@@ -45,17 +45,27 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         //test configuration put in standalone.xml
-        return readResource("datasources-minimal.xml");
+        return readResource("datasources-full.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_7_1.xsd";
+        return "schema/wildfly-datasources_7_2.xsd";
     }
 
     @Test
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");
+    }
+
+    @Test
+    public void testFullConfig7_0() throws Exception {
+        standardSubsystemTest("datasources-full-7.0.xml", false);
+    }
+
+    @Test
+    public void testFullConfig6_0() throws Exception {
+        standardSubsystemTest("datasources-full-6.0.xml", false);
     }
 
     @Test
@@ -115,12 +125,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
-        String mavenGroupId = controllerVersion.getMavenGroupId();
-        String artifactId = "wildfly-connector";
-        if (controllerVersion.isEap() && controllerVersion.getMavenGavVersion().equals(controllerVersion.getCoreVersion())) { // EAP 6
-            artifactId = "jboss-as-connector";
-        }
-        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion());
+        initializer.addMavenResourceURL(controllerVersion.createGAV("wildfly-connector"));
         initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.0.28.Final")
                 .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.0.28.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")

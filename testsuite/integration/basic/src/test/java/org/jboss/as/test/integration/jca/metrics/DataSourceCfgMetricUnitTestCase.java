@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DataSourceCfgMetricUnitTestCase extends JCAMetrictsTestBase {
+public class DataSourceCfgMetricUnitTestCase extends JCAMetricsTestBase {
 
     @BeforeClass
     public static void before() {
@@ -91,7 +91,7 @@ public class DataSourceCfgMetricUnitTestCase extends JCAMetrictsTestBase {
     @Test
     public void testStatementDefaultProperties() throws Exception {
         setModel("statement-properties.xml");
-        assertEquals("NOWARN", readAttribute(baseAddress, "track-statements").asString());
+        assertEquals("nowarn", readAttribute(baseAddress, "track-statements").asString());
         assertFalse(readAttribute(baseAddress, "share-prepared-statements").asBoolean());
         removeDs();
     }

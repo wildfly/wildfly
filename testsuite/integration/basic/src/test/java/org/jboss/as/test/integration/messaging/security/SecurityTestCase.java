@@ -81,8 +81,8 @@ public class SecurityTestCase {
             sf.createSession(ActiveMQDefaultConfiguration.getDefaultClusterUser(), ActiveMQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
         } catch (ActiveMQException e) {
-            assertEquals(ActiveMQExceptionType.CLUSTER_SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ229099"));
+            assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage(), e.getMessage().startsWith("AMQ229031"));
         } finally {
             if (sf != null) {
                 sf.close();

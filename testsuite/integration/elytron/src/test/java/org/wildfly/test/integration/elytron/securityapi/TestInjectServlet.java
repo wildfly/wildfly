@@ -25,7 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * A simple servlet to test using the custom method of {@link TestCustomPrincipal}, for the Jakarta annotation
  * {@link Inject}.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 @WebServlet(urlPatterns = "/inject")
 public class TestInjectServlet extends HttpServlet {

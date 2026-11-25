@@ -9,15 +9,16 @@
 
     <container qualifier="jboss" default="true">
         <configuration>
-            <property name="jbossHome">${jboss.home}</property>
+            <property name="allowConnectingToRunningServer">true</property>
             <property name="javaVmArguments">${microprofile.jvm.args}</property>
-            <property name="serverConfig">standalone-microprofile.xml</property>
+            <property name="javaHome">${container.java.home}</property>
+            <property name="jbossHome">${jboss.home}</property>
+            <property name="jbossArguments">${jboss.args}</property>
             <property name="managementAddress">127.0.0.1</property>
             <property name="managementPort">9990</property>
-            <property name="allowConnectingToRunningServer">true</property>
+            <property name="serverConfig">standalone-microprofile.xml</property>
             <property name="waitForPorts">9990</property>
             <property name="waitForPortsTimeoutInSeconds">10</property>
-            <property name="javaHome">${container.java.home}</property>
         </configuration>
     </container>
 </arquillian>

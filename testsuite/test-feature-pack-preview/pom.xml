@@ -17,27 +17,27 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-test-feature-pack-preview</artifactId>
 
-    <name>WildFly Preview: Test Feature Pack</name>
+    <name>WildFly Preview: Test Feature-Pack</name>
     <packaging>pom</packaging>
     <description>
-        Provides a Galleon feature pack for use in provisioning installations for testsuite use.
+        Provides a Galleon feature-pack for use in provisioning installations for testsuite use.
     </description>
 
 
     <properties>
         <!-- Don't deploy the testsuite modules -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <dependencies>
 
-        <!-- feature pack dependencies -->
+        <!-- feature-pack dependencies -->
 
         <dependency>
             <groupId>${project.groupId}</groupId>

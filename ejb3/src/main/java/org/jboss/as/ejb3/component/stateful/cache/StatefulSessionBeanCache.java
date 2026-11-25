@@ -7,9 +7,9 @@ package org.jboss.as.ejb3.component.stateful.cache;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.Restartable;
 import org.wildfly.clustering.ejb.bean.BeanStatistics;
 import org.wildfly.clustering.ejb.remote.AffinitySupport;
+import org.wildfly.service.BlockingLifecycle;
 
 /**
  * A stateful session bean cache.
@@ -18,14 +18,14 @@ import org.wildfly.clustering.ejb.remote.AffinitySupport;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends Restartable, BeanStatistics, AffinitySupport<K> {
+public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends BlockingLifecycle, BeanStatistics, AffinitySupport<K> {
     ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
      * Creates and caches a stateful bean using a generated identifier.
-     * @return the identifier of the created session bean
+     * @return the newly created session bean
      */
-    K createStatefulSessionBean();
+    StatefulSessionBean<K, V> createStatefulSessionBean();
 
     /**
      * Returns the stateful bean with the specified identifier, or null if no such bean exists.

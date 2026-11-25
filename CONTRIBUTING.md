@@ -1,31 +1,72 @@
 # Contributing guide
 
-**First off all, thank you for taking the time to contribute into WildFly!** The below contents will help you through the steps for getting started with WildFly. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions.
+**First of all, thank you for taking the time to contribute to WildFly!**
+The contents below will help you through the steps for getting started with WildFly.
+Please make sure to read the relevant section before making your contribution.
+It will make it a lot easier for us maintainers and smooth out the experience for all involved.
+The community looks forward to your contributions.
 
-* Git Setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
+* Git setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
 * Contributing: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/contributing.adoc
 * Pull request standard: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/pullrequest_standards.adoc
 
-If you like our project, but just don’t have time to contribute, that’s fine. There are other easy ways to support the project and show your appreciation.
+[//]: # ( TODO Replace these links with published version of the documents once we do publish it with a permalink)
+
+If you like our project, but just don’t have time to contribute, that’s fine.
+There are other easy ways to support the project and show your appreciation.
 
 * Mention the project at local meetups and tell your friends/colleagues.
-* Tweet about it and also check out our [twitter page](https://twitter.com/WildFlyAS) and [mastodon page](https://fosstodon.org/@wildflyas).
-* Check out our [youtube](https://www.youtube.com/@WildFlyAS) contents.
+* Post about it and also check out our [X.com (Twitter) page](https://x.com/WildFlyAS) and [Mastodon page](https://fosstodon.org/@wildflyas).
+* Check out our [YouTube](https://www.youtube.com/@WildFlyAS) videos.
+
+# Legal
+
+All contributions to this repository are licensed under the [Apache License](https://www.apache.org/licenses/LICENSE-2.0), version 2.0 or later, or, if another license is specified as governing the file or directory being modified, such other license.
+
+All contributions are subject to the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
+The DCO text is also included verbatim in the [dco.txt](dco.txt) file in the root directory of the repository.
+
+## Compliance with Laws and Regulations
+
+All contributions must comply with applicable laws and regulations, including U.S. export control and sanctions restrictions.
+For background, see the Linux Foundation’s guidance:
+[Navigating Global Regulations and Open Source: US OFAC Sanctions](https://www.linuxfoundation.org/blog/navigating-global-regulations-and-open-source-us-ofac-sanctions).
 
 # Issues
 
----
+WildFly uses Jira to manage issues.
+All issues can be found [here](https://redhat.atlassian.net/browse/WFLY).
 
-WildFly uses JIRA to manage issues. All issues can be found [here](https://issues.redhat.com/projects/WFLY/issues/).
+To create a new issue, comment on an existing issue, or assign an issue to yourself, you'll need to first [create a Jira account](https://redhat.atlassian.net/).
 
-To create a new issue, comment on an existing issue, or assign an issue to yourself, you'll need to first [create a JIRA account](https://issues.redhat.com/).
+**Important:** After creating your account, you must log in to Red Hat Jira at [https://redhat.atlassian.net/jira/for-you](https://redhat.atlassian.net/jira/for-you) to properly authenticate before you can create issues in the WFLY and WFCORE projects. Simply being logged into your Atlassian account is not sufficient.
 
 # Good First Issues
 
----
+Check out our issues with the `good-first-issue` label.
+These are a triaged set of issues that are great for getting started on our project.
+These can be found [here](https://redhat.atlassian.net/issues?jql=labels%20%3D%20%22good-first-issue%22%20AND%20project%20IN%20(WFLY%2C%20WFCORE)%20AND%20resolution%20%3D%20Unresolved).
 
-Check out our issues with the `good-first-issue` label. These are a triaged set of issues that are great for getting started on our project. These can be found [here](https://issues.redhat.com/issues/?filter=12403174).
+Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else.
+To assign an issue to yourself, simply click on "Start Progress".
+This will automatically assign the issue to you.
+If you're not able to assign it to yourself that way, post a message in the [wildfly-developers Zulip stream](https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers) and someone will help get it assigned to you.
 
-Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. To assign an issue to yourself, simply click on "Start Progress". This will automatically assign the issue to you. If you're not able to assign it to yourself that way, post a message in the [wildfly-developers Zulip stream](https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers) and someone will help get it assigned to you.
+Lastly, this project is an open source project.
+Please act responsibly, be nice, polite and enjoy!
 
-Lastly, this project is an open source project. Please act responsibly, be nice, polite and enjoy!
+# Using Eclipse
+
+1. Install the latest version of eclipse
+2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using JDK 17
+3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
+   (get it from: http://www.eclipse.org/m2e/
+   or install "Maven Integration for Eclipse" from the Eclipse Marketplace)
+4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
+   set forbidden reference to WARNING
+5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
+   formatter configs in [ide-configs/eclipse](https://github.com/wildfly/wildfly-core/tree/main/ide-configs) in the wildfly-core repository.
+6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
+   and deselect all actions except for "Remove trailing whitespace"
+7. Use import on the root pom, which will pull in all modules
+8. Wait (m2e takes a while on initial import)

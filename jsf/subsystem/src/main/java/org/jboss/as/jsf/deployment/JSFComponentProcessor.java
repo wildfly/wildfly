@@ -38,6 +38,7 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * Sets up Jakarta Server Faces managed beans as components using information in the annotations and
@@ -227,7 +228,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
 
         for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
             try (InputStream is = facesConfig.openStream()) {
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader parser = inputFactory.createXMLStreamReader(is);
                 boolean finished = false;

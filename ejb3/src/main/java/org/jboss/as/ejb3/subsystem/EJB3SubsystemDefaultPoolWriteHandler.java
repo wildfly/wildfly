@@ -175,10 +175,12 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
         if (poolName.isDefined()) {
             // now install default pool config service which points to an existing pool config service
             final ServiceName poolConfigDependencyServiceName = context.getCapabilityServiceName(STRICT_MAX_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class, poolName.asString());
-            final ServiceBuilder<?> sb = context.getServiceTarget().addService(poolConfigServiceName);
+            final ServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(poolConfigServiceName);
             final Consumer<PoolConfig> poolConfigConsumer = sb.provides(poolConfigServiceName);
             final Supplier<PoolConfig> poolConfigSupplier = sb.requires(poolConfigDependencyServiceName);
-            sb.setInstance(new DefaultPoolConfigService(poolConfigConsumer, poolConfigSupplier)).install();
+            sb.setInstance(new DefaultPoolConfigService(poolConfigConsumer, poolConfigSupplier))
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install();
         }
     }
     private static final class DefaultPoolConfigService implements Service {

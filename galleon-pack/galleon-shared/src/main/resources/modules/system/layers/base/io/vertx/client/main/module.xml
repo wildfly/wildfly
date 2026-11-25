@@ -13,7 +13,6 @@
     <dependencies>
         <!-- Add optional dependencies to the possible clients -->
         <module name="io.vertx.client.amqp" optional="true" export="true"/>
-        <module name="io.vertx.client.kafka" optional="true" export="true"/>
         <module name="io.vertx.client.mqtt" optional="true" export="true"/>
     </dependencies>
 </module>

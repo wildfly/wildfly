@@ -84,7 +84,7 @@ public class TracerEnableTestCase {
             operation.get("enabled").set("true");
             ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 30_000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }

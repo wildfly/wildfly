@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.Provider;
 
 /**
- * Temporal fix to catch exceptions thrown in Jakarta RESTful Web Services endpoints, see https://issues.jboss.org/browse/RESTEASY-1758
+ * Temporary fix to catch exceptions thrown in Jakarta RESTful Web Services endpoints, see https://issues.redhat.com/browse/RESTEASY-1758
  *
  * @author Pavol Loffay
  */

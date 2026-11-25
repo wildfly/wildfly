@@ -1,4 +1,8 @@
+syntax = "proto3";
+
 package jakarta.faces.component;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(500)
@@ -24,6 +28,6 @@ enum PropertyKeysPrivate {
  * @TypeId(502)
  */
 message StateHolderSaver {
-	optional	string	className	 = 1;
-	optional	bytes	savedState	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	className	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	savedState	 = 2;
 }

@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-elytron-oidc-client</artifactId>
@@ -33,6 +33,31 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-version</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
@@ -59,11 +84,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-container-managed</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
@@ -71,11 +91,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -90,12 +105,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-jose-util</artifactId>
+            <artifactId>wildfly-elytron-http-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -137,6 +147,11 @@
             <artifactId>wildfly-elytron-credential-source-impl</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -144,15 +159,6 @@
             <plugin>
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.ee.galleon.pack.version}</version>
-                        </feature-pack>
-                    </feature-packs>
-                </configuration>
                 <executions>
                     <execution>
                         <id>scan-oidc</id>
@@ -172,43 +178,46 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <stdout>none</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
-                </configuration>
                 <executions>
                     <execution>
+                        <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
-                    <!-- Provision a cloud server -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <!-- content that is installed in wildfly home -->
+                            <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly.jar</bootableJarName>
+                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
+                        </configuration>
                         <goals>
                             <goal>package</goal>
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
-                        <configuration>
-                            <!-- content that is installed in wildfly home -->
-                            <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                            <output-file-name>test-wildfly.jar</output-file-name>
-                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -288,7 +297,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                         </configuration>
@@ -352,7 +360,7 @@
             </build>
         </profile>
 
-        <!-- Test against the wildfly-preview feature pack -->
+        <!-- Test against the wildfly-preview feature-pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -362,7 +370,6 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
-                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <glow.phase>test-compile</glow.phase>
                 <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
             </properties>
@@ -385,7 +392,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                         </configuration>
@@ -479,7 +485,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -520,7 +525,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -569,7 +573,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -581,7 +584,7 @@
                             <execution>
                                 <id>server-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -656,7 +659,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -668,7 +670,7 @@
                             <execution>
                                 <id>server-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>

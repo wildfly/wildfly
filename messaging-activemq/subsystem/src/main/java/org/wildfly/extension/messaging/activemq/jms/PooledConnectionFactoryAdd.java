@@ -33,6 +33,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
@@ -59,13 +61,9 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
-        super.populateModel(context, operation, resource);
-        handleCredentialReferenceUpdate(context, resource.getModel());
-    }
-
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : attributes) {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attr : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             if (DESERIALIZATION_BLACKLIST.equals(attr)) {
                 if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
                     DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
@@ -78,6 +76,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 attr.validateAndSet(operation, model);
             }
         }
+
+        handleCredentialReferenceUpdate(context, resource.getModel());
     }
 
     @Override
@@ -88,7 +88,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
 
         final ModelNode resolvedModel = model.clone();
-        for(final AttributeDefinition attribute : attributes) {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        for (AttributeDefinition attribute : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             resolvedModel.get(attribute.getName()).set(attribute.resolveModelAttribute(context, resolvedModel ));
         }
 
@@ -202,7 +203,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     static void installStatistics(OperationContext context, String name) {
         ServiceName raActivatorsServiceName = PooledConnectionFactoryService.getResourceAdapterActivatorsServiceName(name);
         PooledConnectionFactoryStatisticsService statsService = new PooledConnectionFactoryStatisticsService(context.getResourceRegistrationForUpdate(), true);
-        context.getServiceTarget().addService(raActivatorsServiceName.append("statistics"), statsService)
+        context.getCapabilityServiceTarget().addService(raActivatorsServiceName.append("statistics"), statsService)
                 .addDependency(raActivatorsServiceName, ResourceAdapterDeployment.class, statsService.getRADeploymentInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();

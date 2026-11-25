@@ -1,0 +1,30 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.extension.clustering.server.provider;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.wildfly.clustering.server.local.LocalGroup;
+import org.wildfly.clustering.server.local.provider.DefaultLocalServiceProviderRegistrar;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.BlockingLifecycle;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
+
+/**
+ * @author Paul Ferraro
+ */
+public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
+
+    @Override
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
+        ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
+        return ServiceInstaller.BlockingBuilder.of(group.map(DefaultLocalServiceProviderRegistrar::new))
+                .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
+                .withLifecycle(BlockingLifecycle.autoClose())
+                .build();
+    }
+}

@@ -4,6 +4,8 @@
  */
 package org.jboss.as.ejb3.context;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 import jakarta.ejb.EJBLocalObject;
 import jakarta.ejb.EJBObject;
 import jakarta.ejb.SessionContext;
@@ -34,6 +36,16 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     public SessionContextImpl(SessionBeanComponentInstance instance) {
         super(instance);
         stateful = instance.getComponent() instanceof StatefulSessionComponent;
+
+        // rls debug  todo remove once analysis is complete
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            java.security.Principal p = instance.getComponent().getCallerPrincipal();
+            if (p != null) {
+                ROOT_LOGGER.trace("## SessionContextImpl  principal: " + p.getName());
+                //new Throwable("## SessionContextImpl  principal: " + p.getName()
+                //+ ",  this: " + this).printStackTrace();
+            }
+        }
     }
 
     public <T> T getBusinessObject(Class<T> businessInterface) throws IllegalStateException {

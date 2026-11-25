@@ -6,7 +6,7 @@ package org.jboss.as.test.smoke.deployment.rar.tests.redeployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 import javax.naming.Context;
@@ -14,7 +14,7 @@ import javax.naming.Context;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -30,15 +30,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5968 test for undeployment and re-deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup(ReDeploymentTestCase.ReDeploymentTestCaseSetup.class)
 public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
@@ -116,7 +117,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
         deployer.undeploy(deploymentName);
         deployer.deploy(deploymentName);
         MultipleAdminObject1 adminObject1 = (MultipleAdminObject1) context.lookup("redeployed/Name3");
-        assertNotNull("AO1 not found", adminObject1);
+        assertNotNull(adminObject1, "AO1 not found");
         deployer.undeploy(deploymentName);
     }
 

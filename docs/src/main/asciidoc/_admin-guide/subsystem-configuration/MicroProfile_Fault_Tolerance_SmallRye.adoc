@@ -11,9 +11,9 @@ endif::[]
 
 == Specification
 
-WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile Fault Tolerance 4.0.
+WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile Fault Tolerance 4.1.
 
-This MicroProfile specification provides the following interceptor bindings:
+This MicroProfile specification provides the following interceptor bindings in its `org.eclipse.microprofile.faulttolerance` package:
 
 * `@Timeout` to define a maximum duration or an execution.
 * `@Retry` to attempt execution again in case of a failure.
@@ -22,10 +22,10 @@ This MicroProfile specification provides the following interceptor bindings:
 * `@Bulkhead` to limit concurrent executions so that one method doesn't overload the entire system.
 * `@Asynchronous` to execute a method asynchronously.
 
-For complete documentation please refer to MicroProfile Fault Tolerance 4.0 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-4.0/microprofile-fault-tolerance-spec-4.0.html[specification].
+For complete documentation please refer to MicroProfile Fault Tolerance 4.1 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-4.1/microprofile-fault-tolerance-spec-4.1.html[specification].
 
 Support for https://microprofile.io/project/eclipse/microprofile-fault-tolerance[MicroProfile Fault Tolerance] is
-provided as by the `microprofile-fault-tolerance-smallrye` subsystem.
+provided by the `microprofile-fault-tolerance-smallrye` subsystem.
 
 The MicroProfile Fault Tolerance implementation is provided by the https://github.com/smallrye/smallrye-fault-tolerance[SmallRye Fault Tolerance] project.
 
@@ -34,13 +34,9 @@ The MicroProfile Fault Tolerance implementation is provided by the https://githu
 == Required Extension
 
 This extension is automatically included in the `standalone-microprofile` server profiles,
-however, it is not included by default in the default configuration of WildFly.
+however, it is not included in the default configuration of WildFly.
 
-NOTE: The MicroProfile Metrics extension and subsystem are required by this extension to provide Metrics integration,
-please follow the instructions in the <<required-extension-microprofile-metrics-smallrye,MicroProfile Metrics Subsystem Configuration section>>.
-If the Metrics subsystem is not available, no metrics data will be collected.
-
-You can add the extension to a configuration without it either by using the following CLI operations:
+You can add the extension to an existing server profile by using the following CLI operations:
 
 [source,options="nowrap"]
 ----
@@ -58,7 +54,7 @@ You can add the extension to a configuration without it either by using the foll
 [standalone@localhost:9990 /] reload
 ----
 
-Or by adding an element to the application server profile XML to `<extensions>` section:
+Alternatively, the same can be achieved by adding an element to the application server profile XML to `<extensions>` section:
 
 [source,xml,options="nowrap"]
 ----
@@ -72,13 +68,29 @@ and then the subsystem in the `<profile>` section:
 <subsystem xmlns="urn:wildfly:microprofile-fault-tolerance-smallrye:1.0"/>
 ----
 
-The subsystem itself does not have any configurable elements.
+The subsystem itself does not have any configurable attributes nor resources.
+
+[[metrics-microprofile-fault-tolerance-smallrye]]
+== Metrics
+
+This extension requires the MicroProfile Telemetry extension and subsystem
+to provide metrics collection integration as defined by the specification.
+Please follow the instructions in the <<MicroProfile_Telemetry,MicroProfile Telemetry Subsystem section>>.
+
+If the Micrometer subsystem is available, metrics collection will be also done by Micrometer.
+In cases where both subsystems are available, metrics will be collected using both system unless disabled explicitly
+using the MicroProfile Config properties below.
+
+If neither subsystem is available, no Fault Tolerance metrics data will be collected.
+
+NOTE: Please note that while the specification defines metrics integration with MicroProfile Metrics,
+WildFly no longer provides this specification implementation, subsystem and thus neither the integration.
 
 
 == Configuration
 
 Apart from configuration properties defined by the specification, the SmallRye implementation provides the following
-configuration properties:
+configuration properties which can be provided using standard MicroProfile Config mechanisms:
 
 .SmallRye Fault Tolerance configuration properties
 |===
@@ -91,5 +103,13 @@ configuration properties:
 |`io.smallrye.faulttolerance.mainThreadPoolQueueSize`
 |`-1` (unbounded)
 |Size of the queue that the thread pool should use.
+
+|`smallrye.faulttolerance.micrometer.disabled`
+|`false`
+|Explicitly disable metrics collection using Micrometer.
+
+|`smallrye.faulttolerance.opentelemetry.disabled`
+|`false`
+|Explicitly disable metrics collection using MicroProfile Telemetry.
 
 |===

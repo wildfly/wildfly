@@ -7,6 +7,8 @@ package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -16,7 +18,7 @@ import org.jboss.logging.annotations.MessageLogger;
 
 @MessageLogger(projectCode = "WFLYTRACEXT", length = 4)
 public interface TracingExtensionLogger extends BasicLogger {
-    TracingExtensionLogger ROOT_LOGGER = Logger.getMessageLogger(TracingExtensionLogger.class, TracingExtensionLogger.class.getPackage().getName());
+    TracingExtensionLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), TracingExtensionLogger.class, TracingExtensionLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating MicroProfile OpenTracing Subsystem")

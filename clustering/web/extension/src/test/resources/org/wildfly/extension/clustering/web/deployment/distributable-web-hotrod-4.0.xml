@@ -5,7 +5,7 @@
   -->
 
 <distributable-web xmlns="urn:jboss:distributable-web:4.0">
-    <hotrod-session-management remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+    <hotrod-session-management remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" expiration-thread-pool-size="10">
         <no-affinity/>
     </hotrod-session-management>
 </distributable-web>

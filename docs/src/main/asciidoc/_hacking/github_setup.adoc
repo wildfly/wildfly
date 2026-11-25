@@ -29,7 +29,9 @@ Create a Personal Access Token to work with on the command line.
 https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token[Account Security - Creating a personal access token]
 
 == Jira account
-Create an account for Red Hat's Jira [https://issues.redhat.com/] Choose "Sign up"
+Create an account for Red Hat's Jira [https://redhat.atlassian.net/] Choose "Sign up"
+
+NOTE: After creating your account, you must log in at https://redhat.atlassian.net/jira/for-you with your personal account to properly authenticate with Red Hat Jira before you can create issues.
 
 = Getting started
 == Fork

@@ -292,16 +292,13 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
                     (stType == null || SynchronizationType.SYNCHRONIZED.name().equals(stType.asString()))?
                             SynchronizationType.SYNCHRONIZED: SynchronizationType.UNSYNCHRONIZED;
 
-            Map<String, String> properties;
+            final Map<String, String> properties = new HashMap<>();
             AnnotationValue value = annotation.value("properties");
             AnnotationInstance[] props = value != null ? value.asNestedArray() : null;
             if (props != null) {
-                properties = new HashMap<>();
                 for (int source = 0; source < props.length; source++) {
                     properties.put(props[source].value("name").asString(), props[source].value("value").asString());
                 }
-            } else {
-                properties = null;
             }
             // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
             final JPADeploymentSettings jpaDeploymentSettings = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);

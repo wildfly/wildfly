@@ -32,51 +32,61 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_7_4_0,
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
+        );
     }
 
-    ModelTestControllerVersion version;
+    private final ModelTestControllerVersion controllerVersion;
 
-    public ModClusterTransformersTestCase(ModelTestControllerVersion version) {
+    public ModClusterTransformersTestCase(ModelTestControllerVersion controllerVersion) {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
-        this.version = version;
-    }
-
-    private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
-        return String.format(pattern, version.getMavenGavVersion());
+        this.controllerVersion = controllerVersion;
     }
 
     private static ModClusterSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
-        switch (controllerVersion) {
-            case EAP_7_4_0:
-                return ModClusterSubsystemModel.VERSION_7_0_0;
-            case EAP_8_0_0:
-                return ModClusterSubsystemModel.VERSION_8_0_0;
-        }
-        throw new IllegalArgumentException();
+        return switch (controllerVersion) {
+            case EAP_7_4_0 -> ModClusterSubsystemModel.VERSION_7_0_0;
+            case EAP_8_0_0, EAP_8_1_0 -> ModClusterSubsystemModel.VERSION_8_0_0;
+            case WILDFLY_41_0_0 -> ModClusterSubsystemModel.VERSION_9_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
-    private static String[] getDependencies(ModelTestControllerVersion version) {
-        switch (version) {
-            case EAP_7_4_0:
-                return new String[] {
-                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
-                        "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                };
-            case EAP_8_0_0:
-                return new String[] {
-                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
-                        "org.jboss.mod_cluster:mod_cluster-core:2.0.1.Final-redhat-00001",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                };
-        }
-        throw new IllegalArgumentException();
+    private String[] getDependencies(ModelTestControllerVersion version) {
+        return switch (version) {
+            case EAP_7_4_0 -> new String[] {
+                    "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    "org.jboss.mod_cluster:mod_cluster-core:2.0.1.Final-redhat-00001",
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    // TODO Replace with -redhat version once EAP 8.1 is released
+                    "org.jboss.mod_cluster:mod_cluster-core:2.1.0.Final",
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    "org.jboss.mod_cluster:mod_cluster-core:2.1.0.Final",
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-mod_cluster-extension"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     @Test
     public void testTransformations() throws Exception {
-        this.testTransformations(version);
+        this.testTransformations(controllerVersion);
     }
 
     private void testTransformations(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -84,10 +94,8 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         ModelVersion modelVersion = model.getVersion();
         String[] dependencies = getDependencies(controllerVersion);
 
-
         Set<String> resources = new HashSet<>();
         resources.add(String.format("subsystem-transform-%d_%d_%d.xml", modelVersion.getMajor(), modelVersion.getMinor(), modelVersion.getMicro()));
-
 
         for (String resource : resources) {
             String subsystemXml = readResource(resource);
@@ -123,7 +131,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testRejections() throws Exception {
-        this.testRejections(version);
+        this.testRejections(controllerVersion);
     }
 
     private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {

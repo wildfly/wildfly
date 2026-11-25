@@ -7,7 +7,6 @@ package org.jboss.as.webservices.util;
 import java.lang.ref.WeakReference;
 
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 
@@ -19,7 +18,7 @@ import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
  */
 public class ModuleClassLoaderProvider extends ClassLoaderProvider {
 
-    private static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
+    private static final String ASIL = "org.jboss.as.webservices.server.integration";
     private WeakReference<ClassLoader> integrationClassLoader;
 
     @Override

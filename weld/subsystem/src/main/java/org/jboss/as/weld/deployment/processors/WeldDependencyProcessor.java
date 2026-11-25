@@ -54,7 +54,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
-        ModuleDependency weldSubsystemDependency = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false, false);
+        ModuleDependency weldSubsystemDependency = ModuleDependency.Builder.of(moduleLoader, JBOSS_AS_WELD_ID).build();
         weldSubsystemDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         weldSubsystemDependency.addImportFilter(PathFilters.is("org/jboss/as/weld/injection"), true);
         weldSubsystemDependency.addImportFilter(PathFilters.acceptAll(), false);
@@ -62,7 +62,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(weldSubsystemDependency);
 
         // Due to serialization of Jakarta Enterprise Beans
-        ModuleDependency weldEjbDependency = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_EJB_ID, true, false, false, false);
+        ModuleDependency weldEjbDependency = ModuleDependency.Builder.of(moduleLoader, JBOSS_AS_WELD_EJB_ID).setOptional(true).build();
         weldEjbDependency.addImportFilter(PathFilters.is("org/jboss/as/weld/ejb"), true);
         weldEjbDependency.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(weldEjbDependency);
@@ -75,6 +75,6 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
             String moduleIdentifier, boolean optional) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setOptional(optional).setImportServices(true).build());
     }
 }

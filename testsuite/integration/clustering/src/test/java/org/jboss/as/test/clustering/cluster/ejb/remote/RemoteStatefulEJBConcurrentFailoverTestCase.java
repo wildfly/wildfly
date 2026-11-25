@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.PropertyPermission;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -24,24 +26,20 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SlowStatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validates mid-invocation failover behavior of a remotely accessed @Stateful EJB.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
-
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -64,7 +62,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         this.test(new GracefulRestartLifecycle());
     }
 
@@ -75,7 +73,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
             AtomicInteger count = new AtomicInteger();
 
             // Allow sufficient time for client to receive full topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             String target = bean.increment().getNode();
             count.incrementAndGet();
@@ -131,7 +129,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
         public void run() {
             try {
                 int value = this.bean.increment().getValue();
-                Assert.assertEquals(this.value.incrementAndGet(), value);
+                assertEquals(this.value.incrementAndGet(), value);
             } finally {
                 this.latch.countDown();
             }

@@ -85,7 +85,7 @@
         </xs:attribute>
         <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
             <xs:annotation>
-                <xs:documentation>Indicates whether or not this channel will collect statistics.</xs:documentation>
+                <xs:documentation>Deprecated. This attribute is effectively ignored. Use the statistics-enabled attribute on the stack resource instead.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

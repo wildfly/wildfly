@@ -10,7 +10,6 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,7 +20,6 @@ import jakarta.persistence.spi.ClassTransformer;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
-import org.jboss.jandex.Index;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.TempClassLoaderFactory;
 
@@ -98,7 +96,11 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private volatile ClassLoader cachedTempClassLoader;
 
-    private volatile Map<URL, Index> annotationIndex;
+    private volatile String scopeAnnotationName="";
+    private volatile List<String> qualifierAnnotationNames = List.of();
+    private volatile boolean isDuplicate;
+
+    private static final String ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_CLASS = "org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl";
 
     @Override
     public void setPersistenceUnitName(String name) {
@@ -196,16 +198,6 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public URL getPersistenceUnitRootUrl() {
         return persistenceUnitRootUrl;
-    }
-
-    @Override
-    public void setAnnotationIndex(Map<URL, Index> indexes) {
-        annotationIndex = indexes;
-    }
-
-    @Override
-    public Map<URL, Index> getAnnotationIndex() {
-        return annotationIndex;
     }
 
     @Override
@@ -380,7 +372,19 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     }
 
     @Override
+    public boolean needsJPADelegatingClassFileTransformer() {
+        return Configuration.needClassFileTransformer(this);
+    }
+
+    @Override
     public void addTransformer(ClassTransformer classTransformer) {
+        // WFLY-19694 Do not add Hibernate ORM 6.x/7.x bytecode enhancement class transformers
+        // (e.g. org.hibernate.jpa.internal.enhance.EnhancingClassTransformerImpl)
+        // which were already added earlier via org.jboss.as.jpa.hibernate.WildFlyClassTransformer
+        // or org.wildfly.persistence.jipijapa.hibernate7.WildFlyClassTransformer
+        if (classTransformer.getClass().getName().equals(ORG_HIBERNATE_ORM_PROVIDER_CLASS_ENHANCER_CLASS)) {
+            return;
+        }
         transformers.add(classTransformer);
         if (ROOT_LOGGER.isTraceEnabled()) {
             ROOT_LOGGER.tracef("added entity class transformer '%s' for '%s'",
@@ -418,4 +422,35 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     public void setSharedCacheMode(SharedCacheMode sharedCacheMode) {
         this.sharedCacheMode = sharedCacheMode;
     }
+
+    @Override
+    public void setScopeAnnotationName(String scopeAnnotationName) {
+        this.scopeAnnotationName = scopeAnnotationName;
+    }
+
+    @Override
+    public String getScopeAnnotationName() {
+        return scopeAnnotationName;
+    }
+
+    @Override
+    public void setQualifierAnnotationNames(List<String> qualifierAnnotationNames) {
+        this.qualifierAnnotationNames = List.copyOf(qualifierAnnotationNames);
+    }
+
+    @Override
+    public List<String> getQualifierAnnotationNames() {
+        return qualifierAnnotationNames;
+    }
+
+    @Override
+    public boolean isDuplicate() {
+        return isDuplicate;
+    }
+
+    @Override
+    public void setDuplicate(boolean b) {
+        this.isDuplicate = b;
+    }
+
 }

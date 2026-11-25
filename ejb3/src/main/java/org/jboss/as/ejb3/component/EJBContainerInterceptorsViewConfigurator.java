@@ -51,7 +51,7 @@ import org.jboss.modules.Module;
 
 /**
  * A {@link ViewConfigurator} which sets up the Jakarta Enterprise Beans view with the relevant {@link Interceptor}s
- * which will carry out invocation on the container-interceptor(s) applicable for an Jakarta Enterprise Beans, during an Jakarta Enterprise Beans method invocation
+ * which will carry out invocation on the container-interceptor(s) applicable for a Jakarta Enterprise Beans bean, during a Jakarta Enterprise Beans method invocation
  *
  * @author Jaikiran Pai
  */

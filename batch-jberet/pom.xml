@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-batch-jberet</artifactId>
@@ -29,7 +29,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -84,6 +84,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
@@ -110,14 +114,6 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
                   projects that depend on this project.-->
             <scope>provided</scope>
@@ -176,4 +172,44 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>latest.ee.specific.dependencies</id>
+            <activation>
+                <property>
+                    <!-- This profile exists to make it is easy to stop doing what WildFly does downstream.
+                         It's not meant to be turned off/on by external callers. -->
+                    <name>!WRONGLY.disable.latest.ee.specific.dependencies</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

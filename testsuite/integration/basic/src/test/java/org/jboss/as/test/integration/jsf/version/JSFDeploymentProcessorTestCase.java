@@ -25,7 +25,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -96,7 +96,7 @@ public class JSFDeploymentProcessorTestCase {
                         text.contains(facesVersion));
             }
         }
-        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient,
+        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient.getControllerClient(),
                 TEST_HANDLER_NAME, LOG_MESSAGE));
     }
 

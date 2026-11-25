@@ -114,6 +114,9 @@ If we replace the `Emitter` with the `generate()` method from the original metho
 
 User's applications intended to return published values to users via e.g. Jakarta RESTFul Webservices will need to do their own subscriptions and buffering of the data. Care must be taken to not let the cache grow uncontrolled, which could cause OutOfMemoryErrors.
 
+== Packaging
+MicroProfile Reactive Messaging applications are meant to be packaged in Web Archives (i.e. `.war` files). While other deployment types might work, we only test the `.war` case thoroughly. You may package the classes using MicroProfile Reactive Messaging in `.jar` archives, and put those inside the `.war` file's `WEB-INF/lib` folder, as long as you don't change the default classloading behaviour, which is to add such `.jar` files to the `.war` classloader.
+
 [[microprofile-reactive-messaging-smallrye-config-connectors]]
 === Connectors
 MicroProfile Reactive Messaging is designed to be flexible enough to integrate with a wide variety of external messaging systems. This functionality is provided via 'connectors'.
@@ -149,6 +152,18 @@ Then the property prefixes mandated by the MicroProfile Reactive Messaging speci
 
 Note that although these prefixes are understood by the subsystem, the full set depends on the connector you want to configure. Different connectors understand different properties.
 
+[[microprofile-reactive-messaging-env-var-format]]
+==== Environment Variable Format
+
+Since connectors are configured using MicroProfile Config, the configuration properties can also be set as environment variables. This is the typical approach for Kubernetes and OpenShift deployments where configuration is passed via Helm charts or pod environment settings.
+
+The mapping from MicroProfile Config property names to environment variable names follows the MicroProfile Config specification: the property name is uppercased and each non-alphanumeric character (dots, hyphens) is replaced with an underscore (`_`). For example:
+
+* `mp.messaging.connector.smallrye-kafka.bootstrap.servers` becomes `MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_BOOTSTRAP_SERVERS`
+* `mp.messaging.outgoing.to-kafka.wildfly.elytron.ssl.context` becomes `MP_MESSAGING_OUTGOING_TO_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT`
+* `kafka.bootstrap.servers` becomes `KAFKA_BOOTSTRAP_SERVERS`
+
+The configuration examples in the following sections show both the `microprofile-config.properties` format and the equivalent environment variable format.
 
 ==== Kafka Connector
 
@@ -164,6 +179,19 @@ mp.messaging.outgoing.to.value.serializer=org.apache.kafka.common.serialization.
 mp.messaging.incoming.from.connector=smallrye-kafka
 mp.messaging.incoming.from.topic=my-topic
 mp.messaging.incoming.from.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer
+```
+
+The same configuration using environment variables:
+```
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+MP_MESSAGING_OUTGOING_TO_CONNECTOR=smallrye-kafka
+MP_MESSAGING_OUTGOING_TO_TOPIC=my-topic
+MP_MESSAGING_OUTGOING_TO_VALUE_SERIALIZER=org.apache.kafka.common.serialization.IntegerSerializer
+
+MP_MESSAGING_INCOMING_FROM_CONNECTOR=smallrye-kafka
+MP_MESSAGING_INCOMING_FROM_TOPIC=my-topic
+MP_MESSAGING_INCOMING_FROM_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.IntegerDeserializer
 ```
 
 Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
@@ -203,6 +231,18 @@ mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test
 
 # Channel configuration would follow here, but is left out for brevity
 ----
+
+The same configuration using environment variables:
+[source]
+----
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_CONNECTOR_SMALLRYE_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+NOTE: The `microprofile-config.properties` examples above use MicroProfile Config property substitution (`${USER}`, `${PASSWORD}`) to avoid hardcoding credentials. When using environment variables, supply the actual credential values directly, or use your deployment platform's secret injection mechanism (e.g. Kubernetes Secrets).
+
 Each of these lines has the following meaning:
 
 * `mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:9092` - specifies the Kafka servers to connect to. This is the same as in the previous examples
@@ -210,6 +250,48 @@ Each of these lines has the following meaning:
 * `mp.messaging.connector.smallrye-kafka.security.protocol` - specifies the protocol mechanism to use. See `security.protocol` in the Kafka documentation for other choices. In this case we are using `SASL_SSL` which means that communication is over SSL, and that SASL is used to authenticate
 * `mp.messaging.connector.smallrye-kafka.sasl.jaas.config=...` - specifies how we will authenticate with Kafka. In order to not hardcode the credentials in our `microprofile-config.properties file` we are using the property substitution feature of MicroProfile Config. In this case, if you have defined the `USER` and `PASSWORD` environment variables they will be passed in as part of the configuration
 * `mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test` - this is not needed if Kafka is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to Kafka.
+
+[[microprofile-reactive-messaging-secure-kafka-channel-level]]
+The above example uses the connector-level prefix `mp.messaging.connector.smallrye-kafka` which applies settings to all Kafka channels. The same configuration can be defined on individual channels instead, using the `mp.messaging.outgoing.[channel-name]` and `mp.messaging.incoming.[channel-name]` prefixes. For example, using channels named `to-kafka` and `from-kafka`:
+
+[source]
+----
+mp.messaging.outgoing.to-kafka.bootstrap.servers=localhost:9092
+mp.messaging.outgoing.to-kafka.sasl.mechanism=PLAIN
+mp.messaging.outgoing.to-kafka.security.protocol=SASL_SSL
+mp.messaging.outgoing.to-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username="${USER}" \
+  password="${PASSWORD}";
+mp.messaging.outgoing.to-kafka.wildfly.elytron.ssl.context=test
+
+mp.messaging.incoming.from-kafka.bootstrap.servers=localhost:9092
+mp.messaging.incoming.from-kafka.sasl.mechanism=PLAIN
+mp.messaging.incoming.from-kafka.security.protocol=SASL_SSL
+mp.messaging.incoming.from-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username="${USER}" \
+  password="${PASSWORD}";
+mp.messaging.incoming.from-kafka.wildfly.elytron.ssl.context=test
+
+# Channel-specific connector and topic configuration would follow here
+----
+
+The same configuration using environment variables:
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_OUTGOING_TO_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_OUTGOING_TO_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_OUTGOING_TO_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_OUTGOING_TO_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+
+MP_MESSAGING_INCOMING_FROM_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+MP_MESSAGING_INCOMING_FROM_KAFKA_SASL_MECHANISM=PLAIN
+MP_MESSAGING_INCOMING_FROM_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+MP_MESSAGING_INCOMING_FROM_KAFKA_SASL_JAAS_CONFIG=org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="password";
+MP_MESSAGING_INCOMING_FROM_KAFKA_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
+This approach allows you to use different security settings for different channels, for example connecting to different Kafka clusters.
 
 ===== Kafka User API
 In order to be able to get more information about messages received from Kafka, and to be able to influence how Kafka handles messages, there is a user API for Kafka. This API lives in the https://github.com/smallrye/smallrye-reactive-messaging/tree/{smallrye-reactive-messaging-tag}/smallrye-reactive-messaging-kafka-api/src/main/java/io/smallrye/reactive/messaging/kafka/api[`io/smallrye/reactive/messaging/kafka/api`] package.
@@ -277,6 +359,22 @@ mp.messaging.incoming.from-kafka.topic=some-topic
 mp.messaging.incoming.from-kafka.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer
 mp.messaging.incoming.from-kafka.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
 ```
+
+The same configuration using environment variables:
+```
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+MP_MESSAGING_OUTGOING_TO_KAFKA_CONNECTOR=smallrye-kafka
+MP_MESSAGING_OUTGOING_TO_KAFKA_TOPIC=some-topic
+MP_MESSAGING_OUTGOING_TO_KAFKA_VALUE_SERIALIZER=org.apache.kafka.common.serialization.IntegerSerializer
+MP_MESSAGING_OUTGOING_TO_KAFKA_KEY_SERIALIZER=org.apache.kafka.common.serialization.StringSerializer
+
+MP_MESSAGING_INCOMING_FROM_KAFKA_CONNECTOR=smallrye-kafka
+MP_MESSAGING_INCOMING_FROM_KAFKA_TOPIC=some-topic
+MP_MESSAGING_INCOMING_FROM_KAFKA_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.IntegerDeserializer
+MP_MESSAGING_INCOMING_FROM_KAFKA_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
+```
+
 This configuration looks a lot like the previous configuration that we saw, but note that we need to specify the `key.serializer` for the outgoing channel, and the `key.deserializer` for the incoming channel. As before, they are implementations of `org.apache.kafka.common.serialization.Serializer` and `org.apache.kafka.common.serialization.Deserializer` respectively. Kafka provides implementations for basic types, and you may write your own and include them in the deployment.
 
 ===== A note on `org.apache.kafka` classes
@@ -309,17 +407,31 @@ mp.messaging.incoming.from.connector=smallrye-amqp
 mp.messaging.incoming.from.address=my-topic
 ```
 
+The same configuration using environment variables:
+```
+AMQP_HOST=localhost
+AMQP_PORT=5672
+AMQP_USERNAME=artemis
+AMQP_PASSWORD=artemis
+
+MP_MESSAGING_OUTGOING_TO_CONNECTOR=smallrye-amqp
+MP_MESSAGING_OUTGOING_TO_ADDRESS=my-topic
+
+MP_MESSAGING_INCOMING_FROM_CONNECTOR=smallrye-amqp
+MP_MESSAGING_INCOMING_FROM_ADDRESS=my-topic
+```
+
 Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
 
 The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an AMQP broker running on `localhost:5672`. As before we could also have done these for an individual channel by for example specifying  `mp.messaging.outgoing.to.host=localhost` instead. If the host is not specified, it defaults to `localhost`.
 
 `mp.messaging.outgoing.to.connector=smallrye-amqp` says that we want to use AMQP to back the `to` channel. Note that the value `smallrye-amqp` is SmallRye Reactive Messaging specific, and will only be understood if the AMQP connector is enabled.
 
-`mp.messaging.outgoing.to.address=my-topic` says that we will send data via `to` channel to the AMQP queue on address called `my-topic`.
+`mp.messaging.outgoing.to.address=my-topic` says that we will send data via the `to` channel to the AMQP address called `my-topic`.
 
 `mp.messaging.incoming.from.connector=smallrye-amqp` says that we want to use AMQP to back the `from` channel. As above, the value `smallrye-amqp` is SmallRye Reactive Messaging specific.
 
-`mp.messaging.incoming.from.address=my-topic` says says that the channel named `from` will read data from the AMQP topic (or queue) on address called `my-topic`.
+`mp.messaging.incoming.from.address=my-topic` says that the channel named `from` will receive data from the AMQP address called `my-topic`.
 
 
 The full set of properties understood by the SmallRye Reactive Messaging's AMQP connector can be found in the SmallRye Reactive Messaging AMQP connector https://smallrye.io/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/amqp/amqp/[documentation].
@@ -327,9 +439,51 @@ The full set of properties understood by the SmallRye Reactive Messaging's AMQP 
 The prefixes discussed above are stripped off before passing the property to the AMQP connector.
 
 
+.Queue semantics with Apache ActiveMQ Artemis
+The minimal configuration above selects an AMQP address. Whether messages sent to that address use point-to-point queue semantics or publish/subscribe semantics depends on the broker and link configuration.
+
+Artemis supports `anycast` routing, which routes a message to a single queue on an address, and `multicast` routing, which routes a message to every subscription queue on an address.
+
+With Artemis defaults, the minimal example auto-creates `my-topic` as a multicast address if it does not already exist, because the client supplies no routing hint. The broker's `default-address-routing-type` address setting controls this fallback and defaults to `MULTICAST`. When Artemis auto-creates a multicast address, there might not yet be a subscription queue. Messages sent before a receiver establishes that queue are not retained for that receiver. This can occur during application startup or restarts; the sender being ready does not guarantee that the receiver has attached.
+
+To request anycast queue semantics with Artemis for an address that the broker will auto-create, add the following properties to the minimal configuration:
+
+[source,properties]
+----
+mp.messaging.outgoing.to.capabilities=queue
+mp.messaging.outgoing.to.use-anonymous-sender=false
+mp.messaging.incoming.from.capabilities=queue
+----
+
+The equivalent environment variables are:
+
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_CAPABILITIES=queue
+MP_MESSAGING_OUTGOING_TO_USE_ANONYMOUS_SENDER=false
+MP_MESSAGING_INCOMING_FROM_CAPABILITIES=queue
+----
+
+The `queue` capability requests anycast routing on both links, so either the sender or the receiver can attach first. This requires the broker to allow automatic creation of addresses and queues, and the connecting user to have permission to create them. When the sender attaches first, the queue is created before messages are sent, allowing messages to wait for the receiver. If the address already exists, ensure that its routing type and queues support anycast.
+
+SmallRye uses an anonymous sender by default when the broker supports it. SmallRye does not pass the configured capabilities when creating an anonymous sender, so `use-anonymous-sender=false` is needed for the outgoing `queue` capability to take effect. Disabling anonymous sending also means that outgoing message metadata cannot dynamically select a different destination address.
+
+Alternatively, preconfigure an anycast address and queue on the broker. For example, add the following address to the `<addresses>` element inside `<core>` in Artemis's `broker.xml`:
+
+[source,xml]
+----
+<address name="my-topic">
+    <anycast>
+        <queue name="my-topic"/>
+    </anycast>
+</address>
+----
+
+With this address and queue already present, the minimal client configuration above can be used without the additional link settings. Applications that require publish/subscribe semantics should instead configure multicast addresses and the required subscription queues. See the https://artemis.apache.org/components/artemis/documentation/latest/address-model.html[Artemis address model documentation] for more information.
+
 ===== Connecting to a secure AMQP broker
 
-If connecting to a Kafka instance secured with SSL and SASL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to-amqp.` and `mp.messaging.incoming.from-amqp.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-kafka` prefix).
+If connecting to an AMQP broker secured with SSL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to.` and `mp.messaging.incoming.from.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-amqp` prefix).
 
 [source]
 ----
@@ -345,18 +499,128 @@ mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test
 
 # Channel configuration would follow here, but is left out for brevity
 ----
-//
-//mp.messaging.outgoing.to.connector=smallrye-amqp
-//mp.messaging.outgoing.to.address=my-topic
-//
-//mp.messaging.incoming.from.connector=smallrye-amqp
-//mp.messaging.incoming.from.address=my-queue
+
+The same configuration using environment variables:
+[source]
+----
+AMQP_HOST=localhost
+AMQP_PORT=5672
+AMQP_USERNAME=artemis
+AMQP_PASSWORD=artemis
+AMQP_USE_SSL=true
+MP_MESSAGING_CONNECTOR_SMALLRYE_AMQP_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
 Each of the new lines has the following meaning:
 
 * `amqp-use-ssl=true` - specifies that we want to use a secure connection when connecting to the broker.
 * `mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test` - this is not needed if AMQ broker is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to AMQ broker.
 
-Instead of configuring these properties on the connector level, we could also have defined them on the individual channels. E.g.: `mp.messaging.incoming.from.wildfly.elytron.ssl.context=test` would choose the `test` SSLContext for the `from` incoming channel.
+The above example uses the connector-level prefix `mp.messaging.connector.smallrye-amqp` which applies settings to all AMQP channels. The same configuration can be defined on individual channels instead. For example:
+
+[source]
+----
+mp.messaging.outgoing.to.wildfly.elytron.ssl.context=test
+mp.messaging.incoming.from.wildfly.elytron.ssl.context=test
+----
+
+Or using environment variables:
+[source]
+----
+MP_MESSAGING_OUTGOING_TO_WILDFLY_ELYTRON_SSL_CONTEXT=test
+MP_MESSAGING_INCOMING_FROM_WILDFLY_ELYTRON_SSL_CONTEXT=test
+----
+
+This approach allows you to use different security settings for different channels, for example connecting to different AMQP brokers.
+
+== Tracing messages with MicroProfile Telemetry
+
+The Kafka and AMQP connectors both allow to use MicroProfile Telemetry to trace incoming and outgoing messages. This functionality is disabled in WildFly by default.
+
+If the MicroProfile Telemetry subsystem is present, we can turn on OpenTelemetry tracing of the messages.
+
+[NOTE]
+The link:./MicroProfile_Telemetry.adoc[MicroProfile Telemetry subsystem] must be present for the settings in this section to take effect. If the MicroProfile subsystem is not present, these settings will be ignored.
+
+In order to turn it on, we need to add the `/subsystem=microprofile-reactive-messaging-smallrye/opentelemetry-tracing=config` resource. This resource has two attributes allowing you to enable tracing per connector:
+
+* `amqp-connector` - configures the AMQP connector for the tracing integration
+* `kafka-connector` - configures the AMQP connector for the tracing integration
+
+The value for these attributes may be one of the following:
+
+* `NEVER` - This is the default value, and will be used if the mentioned resource does not exist, or if the resource exists and the attribute is not set. This turns off the MicroProfile Telemetry tracing integration, and does not allow you to turn it on in deployed applications.
+* `OFF` - Turns off the MicroProfile Telemetry tracing integration by default, but allows you to turn it on in deployed applications.
+* `ON` - Turns on the MicroProfile Telemetry tracing integration by default, but allows you to turn it off in deployed applications.
+* `ALWAYS` - Turns on the MicroProfile Telemetry tracing integration, and does not allow you to turn it off in deployed applications.
+
+Here is an example of forcing the MicroProfile Telemetry tracing integration for the AMQP connector:
+----
+/subsystem=microprofile-reactive-messaging-smallrye/opentelemetry-tracing=config:add(amqp-connector=ALWAYS)
+----
+
+This is an example of having the OpenTelemetry tracing integration off by default, but allowing deployed applications to turn it on for the Kafka connector:
+----
+/subsystem=microprofile-reactive-messaging-smallrye/opentelemetry-tracing=config:add(amqp-connector=OFF)
+----
+
+=== MicroProfile Config settings to configure tracing for deployed applications
+
+If MicroProfile Telemetry tracing is desired, as shown in the link:./MicroProfile_Telemetry.adoc#configuration[MicroProfile Telemetry subsystem] section, we *must* set the `otel.sdk.disabled` MicroProfile Config property to `true`.
+
+As mentioned in the previous section we can control tracing on the application level if the subsystem value for our connector is `OFF` or `ON`. This is done via the MicroProfile Config properties shown below.
+
+
+These properties control tracing for an individual channel:
+** `mp.messaging.incoming.[channel-name].tracing-enabled` - Tracing setting for an outgoing channel. What type of connector this channel uses depends on the 'sibling' `mp.messaging.incoming.[channel-name].connector` property (as covered above)
+** `mp.messaging.outgoing.[channel-name].tracing-enabled` - Tracing setting for an incoming channel. The type of connector used by the channel is determined by the value of the `mp.messaging.outgoing.[channel-name].connector` property
+
+Then we have the following properties as connector level:
+
+* `mp.messaging.connector.smallrye-amqp.tracing-enabled` - Connector level tracing setting for the AMQP connector
+* `mp.messaging.connector.smallrye-kafka.tracing-enabled` - Connector level tracing setting for the Kafka connector
+
+The resultant value of the `tracing-enabled` setting for a channel is determined as follows.
+
+First we check the lowest level property, i.e on the channel level. If this value is set, we use this value. If it is not set, we check the value on the connector level, and if it is set we use the connector level value. The resultant value is then considered in conjunction with the value of the relevant `xxx-connector` attribute in the subsystem.
+
+If we don't have a resultant value, the default value indicated by the subsystem attribute will be used.
+
+So, if we deploy an application with the following entries in its `META-INF/microprofile-config.properties` file:
+
+----
+# Setting needed to allow MicroProfile Telemetry for the application
+otel.sdk.disabled=false
+
+# Make the AMQP connector use tracing
+mp.messaging.connector.smallrye-amqp.tracing-enabled=true
+
+# Incoming channel using AQMP
+mp.messaging.incoming.from-amqp.connector=smallrye-amqp
+mp.messaging.incoming.from-amqp.tracing-enabled=false
+mp.messaging.outgoing.from-amqp.address=testamqp
+
+# Outgoing channel using AQMP
+mp.messaging.incoming.to-amqp.connector=smallrye-amqp
+mp.messaging.outgoing.from-amqp.address=testamqp
+
+# Incoming channel using Kafka
+mp.messaging.incoming.from-kafka.connector=smallrye-kafka
+mp.messaging.incoming.from-kafka.tracing-enabled=true
+mp.messaging.outgoing.from-kafka.address=testkafka
+
+# Outgoing channel using Kafka
+mp.messaging.incoming.to-kafka.connector=smallrye-kafka
+mp.messaging.outgoing.from-kafka.address=testkafka
+----
+
+Now, if `amqp-connector=OFF` and `kafka-connector=OFF` in the subsystem, we get the following behavior for each channel.
+* The incoming `from-amqp` channel will not have tracing, since it's `mp.messaging.incoming.from-amqp.tracing-enabled` property is set to `false`. This is at the channel level which overrides everything else.
+* The outgoing `to-amqp` channel will have tracing. It does not have any channel configuration of tracing, so it uses the connector value of `mp.messaging.connector.smallrye-amqp.tracing-enabled` which is `true`
+* The incoming `from-kafka` channel will have tracing, since it's `mp.messaging.incoming.from-kafka.tracing-enabled` property is set to `true`. This is at the channel level which overrides everything else.
+* The outgoing `to-kafka` channel will not have tracing. It does not have any channel or connector configuration of tracing, and the subsystem attribute `kafka-connector` is set to `OFF`, which defaults to `false` in the absence of the mentioned properties.
+
+If on the other hand we had both `amqp-connector=ON` and `kafka-connector=ON`, we would get tracing for both the Kafka channels. The AMQP channels would have the same values as in the previous example.
 
 == Component Reference
 

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,7 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
     private ProcessHandle handleDelegate;
     private Path stdoutLog;
     private String lastExecutedCmd;
+    private final Map<String, String> lastEnv;
 
     ScriptProcess(final Path containerHome, final String scriptBaseName, final Shell shell, final long timeout) {
         this.containerHome = containerHome;
@@ -71,7 +73,8 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
         this.script = containerHome.resolve("bin").resolve(scriptName);
         this.timeout = timeout;
         this.prefixCmds = Arrays.asList(shell.getPrefix());
-        lastExecutedCmd = "";
+        this.lastExecutedCmd = "";
+        this.lastEnv = new HashMap<>();
     }
 
     void start(final Map<String, String> env, final String... arguments) throws IOException, TimeoutException, InterruptedException {
@@ -104,6 +107,9 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
         if (env != null && !env.isEmpty()) {
             builder.environment().putAll(env);
         }
+        // Capture the final environment state for error reporting
+        lastEnv.clear();
+        lastEnv.putAll(builder.environment());
         final Process process = builder.start();
         if (check != null) {
             waitFor(process, check);
@@ -124,6 +130,13 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
         return Files.readAllLines(stdoutLog, StandardCharsets.UTF_8);
     }
 
+    String getStdoutAsString() throws IOException {
+        if (stdoutLog == null) {
+            return "";
+        }
+        return String.join(System.lineSeparator(), getStdout());
+    }
+
     String getErrorMessage(final String msg) {
         final StringBuilder errorMessage = new StringBuilder(msg)
                 .append(System.lineSeparator())
@@ -132,8 +145,15 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
                 .append(lastExecutedCmd)
                 .append(System.lineSeparator())
                 .append("Environment:")
-                .append(System.lineSeparator())
-                .append("Output:")
+                .append(System.lineSeparator());
+        for (Map.Entry<String, String> entry : lastEnv.entrySet()) {
+            errorMessage.append("  ")
+                    .append(entry.getKey())
+                    .append("=")
+                    .append(entry.getValue())
+                    .append(System.lineSeparator());
+        }
+        errorMessage.append("Output:")
                 .append(System.lineSeparator());
         try {
             for (String line : getStdout()) {
@@ -168,8 +188,23 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
 
     @Override
     public void close() {
-        destroy(delegate);
-        delegate = null;
+        try {
+            if (this.delegate != null) {
+                // First attempt to destroy all the child processes
+                delegate.children().forEachOrdered(child -> {
+                    if (child.destroyForcibly()) {
+                        try {
+                            child.onExit().get(timeout, TimeUnit.SECONDS);
+                        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                            LOGGER.errorf(e, "Failed to destroy child %s", child);
+                        }
+                    }
+                });
+            }
+        } finally {
+            destroy(delegate);
+            delegate = null;
+        }
     }
 
     @Override
@@ -324,5 +359,9 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
                 LOGGER.error("The process was interrupted while waiting to be destroyed.", e);
             }
         }
+    }
+
+    public String getLastExecutedCmd() {
+        return lastExecutedCmd;
     }
 }

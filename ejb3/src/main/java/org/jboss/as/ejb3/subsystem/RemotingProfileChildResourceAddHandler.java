@@ -10,7 +10,6 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDescriptor;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
@@ -21,17 +20,12 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 
-public class RemotingProfileChildResourceAddHandler extends RemotingProfileChildResourceHandlerBase implements OperationDescriptor {
+public class RemotingProfileChildResourceAddHandler extends RemotingProfileChildResourceHandlerBase {
 
     private final Collection<AttributeDefinition> attributes;
 
     protected RemotingProfileChildResourceAddHandler(AttributeDefinition... attributes) {
         this.attributes = Arrays.asList(attributes);
-    }
-
-    @Override
-    public Collection<? extends AttributeDefinition> getAttributes() {
-        return this.attributes;
     }
 
     @Override

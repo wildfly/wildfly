@@ -6,24 +6,24 @@
 package org.wildfly.clustering.ejb.cache.timer;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.cache.function.RemappingFunction;
-import org.wildfly.clustering.ee.cache.offset.Offset;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.cache.function.RemappingFunction;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.offset.Offset;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
-public class TimerMetaDataEntryFunction<C> extends RemappingFunction<RemappableTimerMetaDataEntry<C>, Supplier<Offset<Duration>>> {
+public class TimerMetaDataEntryFunction<C> extends RemappingFunction<RemappableTimerMetaDataEntry<C>, java.util.function.Supplier<Offset<Duration>>> {
 
     public TimerMetaDataEntryFunction(OffsetValue<Duration> lastTimeoutDelta) {
         super(lastTimeoutDelta::getOffset);
     }
 
     TimerMetaDataEntryFunction(Offset<Duration> lastTimeoutOffsetDelta) {
-        super(Functions.constantSupplier(lastTimeoutOffsetDelta));
+        super(Supplier.of(lastTimeoutOffsetDelta));
     }
 
     Offset<Duration> getOffset() {

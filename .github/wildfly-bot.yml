@@ -6,7 +6,7 @@ wildfly:
 
     - id: batch-jberet
       directories: [ batch-jberet ]
-      notify: [ liweinan ]
+      notify: [ jamezp ]
 
     - id: bean-validation
       directories: [ bean-validation ]
@@ -16,7 +16,13 @@ wildfly:
       directories: 
         - clustering
         - testsuite/integration/clustering
-      notify: [ pferraro ]
+      notify:
+        - pferraro
+        - rhusar
+
+    - id: concurrency
+      directories: [ concurrency ]
+      notify: [ emmartins ]
 
     - id: connector
       directories: [ connector ]
@@ -35,18 +41,24 @@ wildfly:
         - elytron-oidc-client
         - testsuite/integration/elytron
         - testsuite/integration/elytron-oidc-client
-      notify: [ fjuma ]
+      notify: []
 
     - id: health
       directories:
         - health
         - microprofile/health-smallrye
         - testsuite/integration/microprofile-tck/health
-      notify: [ xstefank ]
+      notify: [ pferraro ]
 
     - id: iiop
-      directories: [ iiop-openjdk ]
+      directories:
+        - iiop-openjdk
+        - testsuite/integration/iiop
       notify: [ tadamski ]
+
+    - id: jakarta-data
+      directories: [ jakarta-data ]
+      notify: [ scottmarlow ]
 
     - id: jaxrs
       directories: [ jaxrs ]
@@ -69,7 +81,9 @@ wildfly:
       notify: [ yersan ]
 
     - id: messaging-activemq
-      directories: [ messaging-activemq ]
+      directories:
+        - messaging-activemq
+        - testsuite/integration/hornetq-client
       notify: [ ehsavoie ]
 
     - id: metrics
@@ -82,7 +96,7 @@ wildfly:
         - observability/micrometer-api
       notify: [ jasondlee ]
       
-    - id: opentelemtry
+    - id: opentelemetry
       directories:
         - observability/opentelemetry
         - observability/opentelemetry-api
@@ -99,8 +113,9 @@ wildfly:
       notify: [ ropalka ]
 
     - id: picketlink
-      directories: [ picketlink ]
-      notify: [ fjuma ]
+      directories:
+        - legacy/picketlink
+      notify: []
 
     - id: pojo
       directories: [ pojo ]
@@ -115,8 +130,9 @@ wildfly:
       notify: [ kabir ]
 
     - id: security
-      directories: [ security ]
-      notify: [ fjuma ]
+      directories:
+        - legacy/security
+      notify: []
 
     - id: spec-api
       directories: [ spec-api ]
@@ -142,13 +158,13 @@ wildfly:
       directories:
         - microprofile/jwt-smallrye
         - testsuite/integration/microprofile-tck/jwt
-      notify: [ fjuma ]
+      notify: []
       
     - id: microprofile-lra
       directories:
         - microprofile/lra
         - testsuite/integration/microprofile-tck/lra
-      notify: [ xstefank ]
+      notify: [ xstefank, marcosgopen ]
       
     - id: microprofile-openapi
       directories:
@@ -194,11 +210,6 @@ wildfly:
         - testsuite/integration/vdx
       notify: [ bstansberry ]
       
-    - id: testsuite-ws
-      directories:
-        - testsuite/integration/ws
-      notify: [ jimma ]
-      
     - id: testsuite-mixed-domain
       directories:
         - testsuite/mixed-domain
@@ -213,15 +224,17 @@ wildfly:
 
     - id: undertow
       directories: [ undertow ]
-      notify: [ fl4via ]
+      notify: [ fl4via, ropalka ]
 
     - id: web-common
       directories: [ web-common ]
-      notify: [ pferraro, fl4via ]
+      notify: [ pferraro, fl4via, ropalka ]
 
     - id: webservices
-      directories: [ webservices ]
-      notify: [ jimma ]
+      directories:
+        - webservices
+        - testsuite/integration/ws
+      notify: [ fabiobrz ]
 
     - id: weld
       directories: [ weld ]
@@ -232,14 +245,16 @@ wildfly:
       notify: [ mmusgrov ]
 
   emails:
-    - mstefank@redhat.com
+    - mskaceli@redhat.com
     - pberan@redhat.com
-    - rbudinsk@redhat.com
+    - khermano@redhat.com
+    - mjusko@redhat.com
     - brian.stansberry@redhat.com
   
   format:
+    skip: "(?i)no\\s+(?:jira|issue)\\s+(?:required|needed)"
     description:
       regexes:
-        - pattern: "https://issues.redhat.com/browse/WFLY-\\d+"
-          message: "The description must contain a link to the JIRA issue \n(https://issues.redhat.com/browse/WFLY-XYZ)"
+        - pattern: "https://redhat.atlassian.net/browse/WFLY-\\d+"
+          failMessage: "The description must contain a link to the JIRA issue \n(https://redhat.atlassian.net/browse/WFLY-XYZ)"
 

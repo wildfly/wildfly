@@ -5,6 +5,8 @@
   -->
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-reactive-messaging-amqp">
     <props>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
+        <prop name="org.wildfly.description" value="Support for MicroProfile Reactive Messaging AMQP connector."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
         <prop name="org.wildfly.rule.add-on" value="reactive-messaging,amqp"/>
         <prop name="org.wildfly.rule.properties-file-match-mp-amqp-property" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.connector.smallrye-amqp.*"/>

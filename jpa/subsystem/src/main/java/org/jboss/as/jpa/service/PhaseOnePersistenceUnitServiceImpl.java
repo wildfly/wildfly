@@ -17,6 +17,7 @@ import java.util.concurrent.RejectedExecutionException;
 import jakarta.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
@@ -55,6 +56,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
     private final ServiceName deploymentUnitServiceName;
     private final ProxyBeanManager proxyBeanManager;
     private final Object wrapperBeanManagerLifeCycle;
+    private final IntegrationWithCDIBagImpl integrationWithCDIBag;
 
     private volatile EntityManagerFactoryBuilder entityManagerFactoryBuilder;
 
@@ -65,13 +67,15 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
             final ServiceName deploymentUnitServiceName,
-            final ProxyBeanManager proxyBeanManager) {
+            final ProxyBeanManager proxyBeanManager,
+            final IntegrationWithCDIBagImpl integrationWithCDIBag) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.classLoader = classLoader;
         this.deploymentUnitServiceName = deploymentUnitServiceName;
         this.proxyBeanManager = proxyBeanManager;
         this.wrapperBeanManagerLifeCycle = proxyBeanManager != null ? persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager): null;
+        this.integrationWithCDIBag = integrationWithCDIBag;
     }
 
     @Override
@@ -90,6 +94,8 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                             // run as security privileged action
                             @Override
                             public Void run() {
+                                ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+                                Thread.currentThread().setContextClassLoader(classLoader);
                                 try {
                                     ROOT_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
                                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
@@ -112,6 +118,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));
                                 } finally {
+                                    Thread.currentThread().setContextClassLoader(oldTCCL);
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
                                 }
@@ -227,6 +234,10 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
         return wrapperBeanManagerLifeCycle;
     }
 
+    public IntegrationWithCDIBagImpl getIntegrationWithCDIBag() {
+        return integrationWithCDIBag;
+    }
+
     /**
      * Create EE container entity manager factory
      *
@@ -238,11 +249,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             TwoPhaseBootstrapCapable twoPhaseBootstrapCapable = (TwoPhaseBootstrapCapable)persistenceProviderAdaptor;
             return twoPhaseBootstrapCapable.getBootstrap(pu, properties.getValue());
         } finally {
-            try {
-                persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
-            } finally {
-                pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-            }
+            persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
         }
     }
 }

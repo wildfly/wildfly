@@ -38,7 +38,7 @@ public class ArchiveValidationAdd extends AbstractBoottimeAddStepHandler {
         ServiceName serviceName = ConnectorServices.ARCHIVE_VALIDATION_CONFIG_SERVICE;
         ServiceName jcaConfigServiceName = ConnectorServices.CONNECTOR_CONFIG_SERVICE;
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final ArchiveValidationService.ArchiveValidation config = new ArchiveValidationService.ArchiveValidation(enabled, failOnError, failOnWarn);
         final ArchiveValidationService service = new ArchiveValidationService(config);

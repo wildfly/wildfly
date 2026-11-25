@@ -214,6 +214,11 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         hibernateExtendedBeanManager.beanManagerIsAvailableForUse();
     }
 
+    @Override
+    public void addClassFileTransformer(PersistenceUnitMetadata pu) {
+        pu.addTransformer(new WildFlyClassTransformer());
+    }
+
     /* start of TwoPhaseBootstrapCapable methods */
 
     public EntityManagerFactoryBuilder getBootstrap(final PersistenceUnitInfo info, final Map map) {
@@ -221,5 +226,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     }
 
     /* end of TwoPhaseBootstrapCapable methods */
+
 }
 

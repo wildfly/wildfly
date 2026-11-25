@@ -12,7 +12,7 @@ import jakarta.security.enterprise.CallerPrincipal;
 /**
  * A simple {@link jakarta.security.enterprise.CallerPrincipal} with a custom field and method.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 public class TestCustomPrincipal extends CallerPrincipal {
 

@@ -18,7 +18,6 @@
         </include>
     </feature-group>
 
-    <feature-group name="undertow-ajp-listener"/>
     <feature-group name="modcluster"/>
     <feature-group name="infinispan-dist"/>
     <feature-group name="jgroups"/>

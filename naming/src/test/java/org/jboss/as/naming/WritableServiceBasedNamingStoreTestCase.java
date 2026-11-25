@@ -5,6 +5,8 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.test.shared.AssumeTestGroupUtil.assumeJDKVersionBefore;
+
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -227,6 +229,9 @@ public class WritableServiceBasedNamingStoreTestCase {
      */
     @Test
     public void testPermissions() throws Exception {
+
+        // SecurityManager is not supported on SE 24+
+        assumeJDKVersionBefore(24);
 
         final NamingContext namingContext = new NamingContext(store, null);
         final String name = "a/b";

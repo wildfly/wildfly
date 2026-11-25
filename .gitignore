@@ -19,7 +19,10 @@ target
 *.iml
 *.ipr
 *.iws
-.idea
+.idea/*
+!.idea/icon.png
+# ignore vscode files
+.vscode/*
 # ignore NetBeans files
 nbactions.xml
 nb-configuration.xml
@@ -58,3 +61,6 @@ client/shade/dependency-reduced-pom.xml
 
 #OS X stuff
 .DS_Store
+
+# Coding Agent files
+.serena/

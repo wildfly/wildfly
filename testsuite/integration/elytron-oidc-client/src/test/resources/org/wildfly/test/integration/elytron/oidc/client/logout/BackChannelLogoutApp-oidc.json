@@ -1,0 +1,11 @@
+{
+    "client-id" : "BackChannelLogoutApp",
+    "public-client" : "false",
+    "provider-url" : "${logout.auth.server.url}",
+    "ssl-required" : "EXTERNAL",
+    "logout-path" : "${logout.path.value.prop}",
+    "logout-callback-path" : "${logout.callback.path.value.prop}",
+    "credentials" : {
+        "secret" : "${client.secret.prop}"
+    }
+}

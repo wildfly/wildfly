@@ -33,16 +33,31 @@ import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import io.undertow.util.Headers;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Server implements Service<Server> {
+    // TODO Extract interface from this class and relocate it to an SPI module
+
+    /**
+     * Describes the service providing the default server.
+     */
+    static final NullaryServiceDescriptor<Server> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.undertow.default-server", Server.class);
+
+    /**
+     * Describes the service providing a server, identified by server name.
+     */
+    public static final UnaryServiceDescriptor<Server> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.undertow.server", DEFAULT_SERVICE_DESCRIPTOR);
+
     private final Consumer<Server> serverConsumer;
     private final Supplier<ServletContainerService> servletContainer;
     private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
+    private volatile String finalRoute = null;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
@@ -71,6 +86,8 @@ public class Server implements Service<Server> {
         UndertowLogger.ROOT_LOGGER.startedServer(name);
         undertowService.get().registerServer(this);
         serverConsumer.accept(this);
+
+        finalRoute = computeRoute();
     }
 
     @Override
@@ -89,10 +106,8 @@ public class Server implements Service<Server> {
            if (!listener.isSecure()) {
                SocketBinding binding = listener.getBinding().get();
                SocketBinding redirectBinding = listener.getRedirectSocket() != null ? listener.getRedirectSocket().get() : null;
-               if (redirectBinding!=null) {
+               if (redirectBinding != null) {
                    securePortMappings.put(binding.getAbsolutePort(), redirectBinding.getAbsolutePort());
-               }else{
-                   securePortMappings.put(binding.getAbsolutePort(), -1);
                }
            }
        }
@@ -126,7 +141,8 @@ public class Server implements Service<Server> {
     }
 
     public int lookupSecurePort(final int unsecurePort) {
-        return securePortMappings.get(unsecurePort);
+        final Integer securePort = securePortMappings.get(unsecurePort);
+        return securePort != null ? securePort : -1;
     }
 
     public ServletContainerService getServletContainer() {
@@ -158,6 +174,10 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
+        return finalRoute;
+    }
+
+    private String computeRoute() {
         final UndertowService service = this.undertowService.get();
         final String defaultServerRoute = service.getInstanceId();
         if (service.isObfuscateSessionRoute()) {

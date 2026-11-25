@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -24,6 +24,9 @@
     <packaging>jar</packaging>
 
     <name>WildFly Test Suite: Shared</name>
+    <description>
+        Test utilities for shared used across testsuite modules in the main WildFly repo. Not for use elsewhere.
+    </description>
 
     <dependencyManagement>
         <dependencies>
@@ -45,6 +48,27 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- n.b. while this catch-all module is a dependency hell (e.g. JUnit 4 base classes and JUnit 5), fear not, this dependency is managed with * exclusion,
+         so anything used from a module that imports this still has to be explicit about its real dependencies.
+         All assertions in this module are `org.assertj` so they are reusable regardless of the actual testing framework. -->
+
+        <!-- Testing dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.org.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>commons-codec</groupId>
@@ -122,11 +146,6 @@
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>compile</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
@@ -141,20 +160,25 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-core-client</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
+            <artifactId>artemis-journal</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-server</artifactId>
         </dependency>
 
@@ -233,6 +257,11 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
         </dependency>
+        <!-- This is required by the ReadCredentialServlet. -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-auth-server</artifactId>
@@ -260,23 +289,29 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.arquillian.testcontainers</groupId>
+            <artifactId>arquillian-testcontainers</artifactId>
+            <version>${version.org.arquillian.testcontainers}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <!-- This enforcer.skip property was set to true in the properties. However this doesn't work if the
-                     property is passed on the command line. Therefore we need to explicitly skip it.
+                <!-- This enforcer.skip property was set to true in the properties. However, this doesn't work if the
+                     property is passed on the command line. Therefore, we need to explicitly skip it.
                 -->
                 <!-- Arquillian dependency versions -->
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

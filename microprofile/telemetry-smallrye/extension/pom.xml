@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile-telemetry</artifactId>
@@ -86,6 +86,10 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -105,18 +109,15 @@
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
       projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -146,6 +147,26 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

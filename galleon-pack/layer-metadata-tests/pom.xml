@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-galleon-pack-layer-tests</artifactId>
@@ -25,6 +25,11 @@
     <name>WildFly: Galleon Pack Layer Tests</name>
     <description>Tests for the layer metadata rules</description>
     <packaging>jar</packaging>
+
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <skipPublishing>true</skipPublishing>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -47,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api-events</artifactId>
+            <artifactId>opentelemetry-api-incubator</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

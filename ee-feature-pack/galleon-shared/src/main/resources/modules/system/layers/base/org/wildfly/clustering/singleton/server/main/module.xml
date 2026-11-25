@@ -25,20 +25,22 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.context"/>
-        <module name="org.wildfly.clustering.ee.cache" services="import"/>
-        <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.clustering.cache.infinispan.embedded" services="import"/>
+        <module name="org.wildfly.clustering.cache.spi" services="import"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.infinispan" services="import"/>
+        <module name="org.wildfly.clustering.server.jgroups" services="import"/>
         <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
-        <module name="org.wildfly.clustering.singleton.service"/>
+        <module name="org.wildfly.clustering.singleton.compat"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jaxrs-server">
     <props>
+        <prop name="org.wildfly.category" value="Base WildFly server"/>
+        <prop name="org.wildfly.description" value="An extension of 'datasources-web-server' with support for Jakarta RESTful Web Services, CDI and JPA."/>
         <prop name="org.wildfly.rule.kind" value="base-layer"/>
     </props>
     <dependencies>
@@ -16,10 +18,10 @@
         <layer name="bean-validation" optional="true"/>
         <layer name="cdi" optional="true"/>
         <layer name="jpa" optional="true"/>
-        <!-- The above content is copied from the wildfly-ee feature pack variant of this file.
-             In standard WildFly the wildfly feature pack also declares this layer, but since that FP
+        <!-- The above content is copied from the wildfly-ee feature-pack variant of this file.
+             In standard WildFly the wildfly feature-pack also declares this layer, but since that FP
              depends on wildfly-ee, its minimal content gets applied 'on top' of what wildfly-ee
-             does. But the wildfly-preview feature pack does not depend on wildfly-ee, so we need
+             does. But the wildfly-preview feature-pack does not depend on wildfly-ee, so we need
              to declare here both the 'wildfly-ee' content and the 'wildfly' content. This next
              bit is the 'wildfly' content. -->
         <layer name="microprofile-rest-client" optional="true"/>

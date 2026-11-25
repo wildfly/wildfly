@@ -8,6 +8,7 @@ package org.jboss.as.service.logging;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import javax.xml.namespace.QName;
 import javax.management.ObjectName;
 
@@ -32,7 +33,7 @@ public interface SarLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    SarLogger ROOT_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.service");
+    SarLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), SarLogger.class, "org.jboss.as.service");
 
     /**
      * A message indicating a failure to execute a legacy service method, represented by the {@code methodName}

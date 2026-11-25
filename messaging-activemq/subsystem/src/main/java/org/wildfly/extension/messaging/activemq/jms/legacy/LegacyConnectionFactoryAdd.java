@@ -77,9 +77,10 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
         ModelNode discoveryGroup = DISCOVERY_GROUP.resolveModelAttribute(context, model);
         String discoveryGroupName = discoveryGroup.isDefined() ? discoveryGroup.asString() : null;
 
-        LegacyConnectionFactoryService service = LegacyConnectionFactoryService.installService(name, activeMQServerServiceName, context.getServiceTarget(), incompleteCF, discoveryGroupName, CONNECTORS.unwrap(context, model));
+        LegacyConnectionFactoryService service = LegacyConnectionFactoryService.installService(name, activeMQServerServiceName,
+                context.getCapabilityServiceTarget(), incompleteCF, discoveryGroupName, CONNECTORS.unwrap(context, model));
         for (String legacyEntry : LegacyConnectionFactoryDefinition.ENTRIES.unwrap(context, model)) {
-            BinderServiceUtil.installBinderService(context.getServiceTarget(), legacyEntry, service, null);
+            BinderServiceUtil.installBinderService(context.getCapabilityServiceTarget(), legacyEntry, service, null);
         }
     }
 

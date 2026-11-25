@@ -10,11 +10,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Predicate;
 
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.ejb.timer.TimerType;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public class MutableTimerMetaDataEntry<C> implements TimerMetaDataEntry<C> {
 

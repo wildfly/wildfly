@@ -8,6 +8,7 @@ package org.jboss.as.clustering.jgroups.logging;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -29,11 +30,17 @@ import org.jgroups.View;
 @MessageLogger(projectCode = "WFLYCLJG", length = 4)
 public interface JGroupsLogger extends BasicLogger {
     String ROOT_LOGGER_CATEGORY = "org.jboss.as.clustering.jgroups";
+    String CONFIG_LOGGER_CATEGORY = "org.wildfly.clustering.jgroups.config";
 
     /**
      * The root logger.
      */
-    JGroupsLogger ROOT_LOGGER = Logger.getMessageLogger(JGroupsLogger.class, ROOT_LOGGER_CATEGORY);
+    JGroupsLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JGroupsLogger.class, ROOT_LOGGER_CATEGORY);
+
+    /**
+     * The logger used for configuration messages.
+     */
+    JGroupsLogger CONFIG_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JGroupsLogger.class, CONFIG_LOGGER_CATEGORY);
 
     /**
      * Logs an informational message indicating the JGroups subsystem is being activated.
@@ -84,8 +91,8 @@ public interface JGroupsLogger extends BasicLogger {
 //    @Message(id = 9, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
 //    IllegalStateException duplicateNodeName(String name);
 
-    @Message(id = 10, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
-    OperationFailedException transportNotDefined(String stackName);
+//    @Message(id = 10, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
+//    OperationFailedException transportNotDefined(String stackName);
 
 //    @Message(id = 11, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
 //    OperationFailedException protocolListNotDefined(String stackName);
@@ -165,4 +172,35 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 35, value = "Disconnected '%s' channel. '%s' left cluster '%s'")
     void disconnected(String channelName, String nodeName, String clusterName);
+
+    @Message(id = 36, value = "Unable to load module %s for protocol %s")
+    OperationFailedException unableToLoadProtocolModule(String moduleName, String protocolName);
+
+    /**
+     * Warning for when a service requests a non-blocking NIO channel from TLS-secured ManagedSocketFactory.
+     * TLS can only be supported for blocking socket-based communication and NIO channels used by protocols such as FD_SOCK2 cannot be wrapped with TLS.
+     * The channel will be created without TLS encryption, so to secure failure detection communication, use TCP transport-based failure detection (TCP.enable_suspect_events) or the socket-based FD_SOCK protocol.
+     * TCP_NIO2 cannot be configured with TLS in the model; so this does not apply to it.
+     *
+     * @param serviceName name of the service that requested the channel to be created
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 37, value = "Service '%s' requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
+    void secureSocketChannelNotAvailable(String serviceName);
+
+    /**
+     * Warning for when an unknown service requests a non-blocking NIO channel from TLS-secured ManagedSocketFactory.
+     * @see {@link #secureSocketChannelNotAvailable(String)}.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 38, value = "Unknown service requires a non-blocking socket for which TLS support is not available.  To secure cluster communication for this service, use a blocking socket variant of the associated protocol.")
+    void secureSocketChannelNotAvailable();
+
+    @LogMessage(level = WARN)
+    @Message(id = 39, value = "Configuration of channel %s does not require member authentication. Consider blocking untrusted cluster members by requiring TLS client authentication on the channel transport or by adding the AUTH protocol to the protocol stack.")
+    void allowsUnauthenticatedMembers(String channelName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 40, value = "Configuration of channel %s does not guarantee message confidentiality between cluster members. Consider encrypting intra-cluster communication by configuring the channel transport with TLS or by adding the ASYM_ENCRYPT or SYM_ENCRYPT protocol to the protocol stack.")
+    void allowsPublicMessages(String channelName);
 }

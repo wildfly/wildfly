@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-galleon-pack-layer-tests</artifactId>
@@ -26,10 +26,34 @@
     <description>Tests for the layer metadata rules</description>
     <packaging>jar</packaging>
 
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <skipPublishing>true</skipPublishing>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <scope>test</scope>
         </dependency>

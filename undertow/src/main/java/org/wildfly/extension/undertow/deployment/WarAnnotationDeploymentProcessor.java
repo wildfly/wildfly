@@ -68,7 +68,6 @@ import org.jboss.metadata.web.spec.ServletSecurityMetaData;
 import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.WebMetaData;
-import org.jboss.modules.ModuleIdentifier;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -119,10 +118,10 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex));
         }
 
-        Map<ModuleIdentifier, CompositeIndex> additionalModelAnnotations = deploymentUnit.getAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE);
+        Map<String, CompositeIndex> additionalModelAnnotations = deploymentUnit.getAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE_NAME);
         if (additionalModelAnnotations != null) {
             final List<WebMetaData> additional = new ArrayList<WebMetaData>();
-            for (Entry<ModuleIdentifier, CompositeIndex> entry : additionalModelAnnotations.entrySet()) {
+            for (Entry<String, CompositeIndex> entry : additionalModelAnnotations.entrySet()) {
                 for(Index index : entry.getValue().getIndexes()) {
                     additional.add(processAnnotations(index));
                 }
@@ -391,19 +390,13 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         // @DeclareRoles
         final List<AnnotationInstance> declareRolesAnnotations = index.getAnnotations(declareRoles);
         if (declareRolesAnnotations != null && !declareRolesAnnotations.isEmpty()) {
-            SecurityRolesMetaData securityRoles = metaData.getSecurityRoles();
-            if (securityRoles == null) {
-               securityRoles = new SecurityRolesMetaData();
-               metaData.setSecurityRoles(securityRoles);
-            }
+            SecurityRolesMetaData securityRoles = getSecurityRolesMetaData(metaData);
             for (final AnnotationInstance annotation : declareRolesAnnotations) {
                 if (annotation.value() == null) {
                     throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidDeclareRolesAnnotation(annotation.target()));
                 }
                 for (String role : annotation.value().asStringArray()) {
-                    SecurityRoleMetaData sr = new SecurityRoleMetaData();
-                    sr.setRoleName(role);
-                    securityRoles.add(sr);
+                    addSecurityRole(securityRoles, role);
                 }
             }
         }
@@ -482,8 +475,10 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     }
                     AnnotationValue rolesAllowedValue = httpConstraint.value("rolesAllowed");
                     if (rolesAllowedValue != null) {
+                        SecurityRolesMetaData securityRoles = getSecurityRolesMetaData(metaData);
                         for (String role : rolesAllowedValue.asStringArray()) {
                             rolesAllowed.add(role);
+                            addSecurityRole(securityRoles, role);
                         }
                     }
                 }
@@ -510,8 +505,10 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             AnnotationValue rolesAllowedValue = httpMethodConstraint.value("rolesAllowed");
                             rolesAllowed = new ArrayList<String>();
                             if (rolesAllowedValue != null) {
+                                SecurityRolesMetaData securityRoles = getSecurityRolesMetaData(metaData);
                                 for (String role : rolesAllowedValue.asStringArray()) {
                                     rolesAllowed.add(role);
+                                    addSecurityRole(securityRoles, role);
                                 }
                             }
                             methodConstraint.setRolesAllowed(rolesAllowed);
@@ -602,6 +599,24 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 dg.setIcons(icons);
         }
         return dg;
+    }
+
+    private static SecurityRolesMetaData getSecurityRolesMetaData(WebMetaData metaData) {
+        SecurityRolesMetaData securityRoles = metaData.getSecurityRoles();
+        if (securityRoles == null) {
+            securityRoles = new SecurityRolesMetaData();
+            metaData.setSecurityRoles(securityRoles);
+        }
+        return securityRoles;
+    }
+
+    private static void addSecurityRole(SecurityRolesMetaData securityRoles, String role) {
+        if (role == null || role.isEmpty() || "*".equals(role) || "**".equals(role)) {
+            return;
+        }
+        SecurityRoleMetaData sr = new SecurityRoleMetaData();
+        sr.setRoleName(role);
+        securityRoles.add(sr);
     }
 
 }

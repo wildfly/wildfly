@@ -38,10 +38,10 @@ class JwtDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, EE_SECURITY_API, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, EE_SECURITY_IMPL, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, MP_JWT_API, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, SMALLRYE_JWT, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_JWT, false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EE_SECURITY_API).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, EE_SECURITY_IMPL).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, MP_JWT_API).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, SMALLRYE_JWT).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ELYTRON_JWT).setImportServices(true).build());
     }
 }

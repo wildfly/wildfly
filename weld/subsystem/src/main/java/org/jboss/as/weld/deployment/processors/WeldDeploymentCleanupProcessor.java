@@ -4,7 +4,10 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import static org.jboss.as.weld.deployment.AttachmentKeys.START_COMPLETION_DEPENDENCIES;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -76,6 +79,16 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
                 weldStartCompletionServiceBuilder.requires(componentStartSN);
             }
         }
+        // require misc services from the top level deployment
+        for (ServiceName sn : getMiscServiceDependencies(deploymentUnit)) {
+            weldStartCompletionServiceBuilder.requires(sn);
+        }
+        // require misc services from sub-deployments
+        for (DeploymentUnit sub : subDeployments) {
+            for (ServiceName sn : getMiscServiceDependencies(sub)) {
+                weldStartCompletionServiceBuilder.requires(sn);
+            }
+        }
 
         weldStartCompletionServiceBuilder.setInstance(new WeldStartCompletionService(bootstrapSupplier,
                 WeldDeploymentProcessor.getSetupActions(deploymentUnit), module.getClassLoader()));
@@ -92,5 +105,10 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
             serviceNames.add(component.getStartServiceName());
         }
         return serviceNames;
+    }
+
+    private List<ServiceName> getMiscServiceDependencies(DeploymentUnit deploymentUnit) {
+        List<ServiceName> list = deploymentUnit.getAttachmentList(START_COMPLETION_DEPENDENCIES);
+        return list == null ? Collections.emptyList() : list;
     }
 }

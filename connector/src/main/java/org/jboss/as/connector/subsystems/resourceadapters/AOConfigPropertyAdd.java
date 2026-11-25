@@ -44,7 +44,7 @@ public class AOConfigPropertyAdd extends AbstractAddStepHandler {
         ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, aoName, configPropertyName);
         ServiceName aoServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, aoName);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final AOConfigPropertiesService service = new AOConfigPropertiesService(configPropertyName, configPropertyValue);
         serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)

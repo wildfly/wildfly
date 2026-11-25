@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class Hibernate2LCacheStatsTestCase {
 
-    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v51.InfinispanRegionFactory</property>";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v6.InfinispanRegionFactory</property>";
     private static final String MODULE_DEPENDENCIES = "Dependencies: org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevelStats_test";
@@ -132,11 +132,10 @@ public class Hibernate2LCacheStatsTestCase {
         try {
             Set<Satellite> satellites1 = new HashSet<Satellite>();
             Satellite sat = new Satellite();
-            sat.setId(new Integer(1));
             sat.setName("MOON");
             satellites1.add(sat);
 
-            Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1, new Integer(1));
+            Planet s1 = sfsb.prepareData("EARTH", "MILKY WAY", "SUN", satellites1);
             Planet s2 = sfsb.getPlanet(s1.getPlanetId());
 
             DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);

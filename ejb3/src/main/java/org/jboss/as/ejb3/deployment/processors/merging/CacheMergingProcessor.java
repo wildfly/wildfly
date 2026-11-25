@@ -6,20 +6,29 @@
 package org.jboss.as.ejb3.deployment.processors.merging;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.cache.EJBBoundCacheMetaData;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.msc.service.ServiceName;
 
 public class CacheMergingProcessor extends AbstractMergingProcessor<StatefulComponentDescription> {
 
@@ -28,9 +37,30 @@ public class CacheMergingProcessor extends AbstractMergingProcessor<StatefulComp
     }
 
     @Override
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        super.deploy(phaseContext);
+
+        DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        EEModuleDescription moduleDescription = unit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+
+        // Collect distinct cache providers required by deployment
+        Set<ServiceName> names = new TreeSet<>();
+        for (ComponentDescription description : moduleDescription.getComponentDescriptions()) {
+            if (description instanceof StatefulComponentDescription statefulDescription) {
+                names.add(statefulDescription.getCacheProviderServiceName(support));
+            }
+        }
+        // Make providers available to next phase
+        for (ServiceName name : names) {
+            phaseContext.addDependency(name, StatefulSessionBeanCacheProvider.ATTACHMENT_KEY);
+        }
+    }
+
+    @Override
     protected void handleAnnotations(DeploymentUnit deploymentUnit, EEApplicationClasses applicationClasses,
             DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass,
-            StatefulComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+            StatefulComponentDescription description) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
         //we only care about annotations on the bean class itself
         if (clazz == null) {
@@ -41,7 +71,7 @@ public class CacheMergingProcessor extends AbstractMergingProcessor<StatefulComp
             return;
         }
         if (!cache.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setCache(cache.getClassLevelAnnotations().get(0));
+            description.setCache(cache.getClassLevelAnnotations().get(0));
         }
     }
 

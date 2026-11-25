@@ -5,18 +5,16 @@
 
 package org.jboss.as.connector.services.workmanager.transport;
 
-import org.wildfly.clustering.dispatcher.Command;
-
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#viewAccepted(org.jgroups.View).
  * @author Paul Ferraro
  */
-public class JoinCommand implements Command<Void, CommandDispatcherTransport> {
+public class JoinCommand implements TransportCommand<Void> {
 
     private static final long serialVersionUID = 2120774292518363374L;
 
     @Override
-    public Void execute(CommandDispatcherTransport transport) throws Exception {
+    public Void execute(CommandDispatcherTransport transport) {
         transport.join();
         return null;
     }

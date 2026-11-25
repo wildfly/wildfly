@@ -22,9 +22,9 @@ import org.jboss.modules.ModuleLoader;
  */
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
-    public static final String JBOSSWS_API = "org.jboss.ws.api";
-    public static final String JBOSSWS_SPI = "org.jboss.ws.spi";
-    public static final String[] JAVAEE_APIS = {
+    private static final String JBOSSWS_API = "org.jboss.ws.api";
+    private static final String JBOSSWS_SPI = "org.jboss.ws.spi";
+    private static final String[] JAVAEE_APIS = {
             "jakarta.xml.ws.api",
             "jakarta.xml.soap.api"
     };
@@ -39,12 +39,13 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+
         if (addJBossWSDependencies) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
+            moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JBOSSWS_API).setExport(true).setImportServices(true).build());
+            moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JBOSSWS_SPI).setExport(true).setImportServices(true).build());
         }
-        for(String api : JAVAEE_APIS) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
+        for (String api : JAVAEE_APIS) {
+            moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, api).setImportServices(true).build());
         }
     }
 }

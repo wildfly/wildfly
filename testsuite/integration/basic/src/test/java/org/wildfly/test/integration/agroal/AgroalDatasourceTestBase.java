@@ -13,7 +13,6 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -63,7 +62,7 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
             executeOperation(client, builder.build());
 
             // Reload before continuing
-            ServerReload.executeReloadAndWaitForCompletion(client, TimeoutUtil.adjust(50000));
+            ServerReload.executeReloadAndWaitForCompletion(client);
         }
     }
 

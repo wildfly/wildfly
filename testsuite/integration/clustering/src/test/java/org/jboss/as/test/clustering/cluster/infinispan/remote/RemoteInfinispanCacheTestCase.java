@@ -5,17 +5,16 @@
 
 package org.jboss.as.test.clustering.cluster.infinispan.remote;
 
-import static org.jboss.as.test.clustering.InfinispanServerUtil.infinispanServerTestRule;
-
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.infinispan.AbstractCacheTestCase;
 import org.jboss.as.test.clustering.cluster.infinispan.bean.remote.RemoteCacheBean;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.ClassRule;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Paul Ferraro
@@ -23,8 +22,8 @@ import org.junit.rules.TestRule;
 @ServerSetup(RemoteInfinispanCacheTestCase.InfinispanServerSetupTask.class)
 public class RemoteInfinispanCacheTestCase extends AbstractCacheTestCase {
 
-    @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
+    @RegisterExtension
+    public static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -50,12 +49,6 @@ public class RemoteInfinispanCacheTestCase extends AbstractCacheTestCase {
                             .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
                             .add("/subsystem=infinispan/remote-cache-container=remote:add(default-remote-cluster=infinispan-server-cluster, marshaller=PROTOSTREAM, properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s})", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
                             .add("/subsystem=infinispan/remote-cache-container=remote/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
-                        .endBatch()
-                        .build())
-                    .tearDownScript(createScriptBuilder()
-                        .startBatch()
-                            .add("/subsystem=infinispan/remote-cache-container=remote:remove")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
                         .endBatch()
                         .build())
                     .build());

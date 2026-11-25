@@ -7,7 +7,6 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.as.clustering.msc.InjectedValueDependency;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
@@ -19,7 +18,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.DefaultStatefulBeanSessionTimeoutWriteHandler;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceBuilder;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.service.ServiceDependency;
 
 /**
  * User: jpai
@@ -40,11 +39,11 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
             }
         });
         StatefulComponentDescription description = (StatefulComponentDescription) configuration.getComponentDescription();
-        SupplierDependency<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory = new InjectedValueDependency<>(description.getCacheFactoryServiceName(), (Class<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>>) (Class<?>) StatefulSessionBeanCacheFactory.class);
+        ServiceDependency<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory = ServiceDependency.on(description.getCacheFactoryServiceName());
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, ComponentStartService service) {
-                cacheFactory.register(builder);
+                cacheFactory.accept(builder);
             }
         });
         return new StatefulSessionComponentCreateService(configuration, this.ejbJarConfiguration, cacheFactory);

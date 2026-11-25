@@ -201,10 +201,18 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         try {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(resolver);
+            setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            //setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE); cause failure
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(stream);
             return xmlReader;
         } catch (XMLStreamException xmlse) {
             throw EjbLogger.ROOT_LOGGER.failedToParse(xmlse, "ejb-jar.xml: " + ejbJarXml.getPathName());
+        }
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
         }
     }
 

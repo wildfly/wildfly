@@ -11,6 +11,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.xml.IntVersionSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.as.controller.xml.XMLComponentFactory;
+import org.jboss.as.controller.xml.XMLElement;
 import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
@@ -28,6 +30,7 @@ public enum SingletonDeploymentSchema implements XMLElementSchema<SingletonDeplo
     public static final SingletonDeploymentSchema CURRENT = VERSION_1_0;
 
     private final VersionedNamespace<IntVersion, SingletonDeploymentSchema> namespace;
+    private final XMLComponentFactory<MutableSingletonDeploymentConfiguration, Void> factory = XMLComponentFactory.newInstance(this);
 
     SingletonDeploymentSchema(int major, int minor) {
         this.namespace = IntVersionSchema.createURN(List.of(IntVersionSchema.JBOSS_IDENTIFIER, this.getLocalName()), new IntVersion(major, minor));
@@ -45,7 +48,10 @@ public enum SingletonDeploymentSchema implements XMLElementSchema<SingletonDeplo
 
     @Override
     public void readElement(XMLExtendedStreamReader reader, MutableSingletonDeploymentConfiguration configuration) throws XMLStreamException {
-        new SingletonDeploymentXMLReader(this).readElement(reader, configuration);
+        XMLElement<MutableSingletonDeploymentConfiguration, Void> element = this.factory.element(this.getQualifiedName())
+                .addAttribute(this.factory.attribute(this.resolve("policy")).withConsumer(MutableSingletonDeploymentConfiguration::setPolicy).build())
+                .build();
+        element.getReader().readElement(reader, configuration);
     }
 
     @Override

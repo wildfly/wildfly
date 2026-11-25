@@ -9,8 +9,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.mockito.Mockito;
-import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * @author Paul Ferraro
@@ -19,7 +19,7 @@ public class BeanMetaDataEntryFunctionTestCase extends AbstractBeanMetaDataEntry
 
     @Override
     public void accept(RemappableBeanMetaDataEntry<UUID> entry) {
-        OffsetValue<Instant> operand = entry.getLastAccess().rebase();
+        OffsetValue<Instant> operand = entry.getLastAccessTime().rebase();
 
         BeanMetaDataEntry<UUID> mutableEntry = new MutableBeanMetaDataEntry<>(entry, operand);
 

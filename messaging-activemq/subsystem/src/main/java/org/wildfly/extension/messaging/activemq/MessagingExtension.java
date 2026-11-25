@@ -86,8 +86,6 @@ import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
 
 /**
  * Domain extension that integrates Apache ActiveMQ Artemis 2.x.
@@ -277,6 +275,8 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_18_0_0 = ModelVersion.create(18, 0, 0);
+    protected static final ModelVersion VERSION_17_0_0 = ModelVersion.create(17, 0, 0);
     protected static final ModelVersion VERSION_16_0_0 = ModelVersion.create(16, 0, 0);
     protected static final ModelVersion VERSION_15_0_0 = ModelVersion.create(15, 0, 0);
     protected static final ModelVersion VERSION_14_0_0 = ModelVersion.create(14, 0, 0);
@@ -294,9 +294,9 @@ public class MessagingExtension implements Extension {
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_16_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_18_0_0;
 
-    private static final MessagingSubsystemParser_16_0 CURRENT_PARSER = new MessagingSubsystemParser_16_0();
+    private static final MessagingSubsystemParser_18_0 CURRENT_PARSER = new MessagingSubsystemParser_18_0();
 
     // ARTEMIS-2273 introduced audit logging at a info level which is rather verbose. We need to use static loggers
     // to ensure the log levels are set to WARN and there is a strong reference to the loggers. This hack will likely
@@ -348,8 +348,6 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        // Initialize the Netty logger factory
-        InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystemRegistration.registerXMLElementWriter(CURRENT_PARSER);
 
@@ -401,8 +399,8 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        // use method references for legacay versions that may never be instantiated
-        // and use an instance for the current version that will be use if the extension is loaded.
+        // use method references for legacy versions that may never be instantiated
+        // and use an instance for the current version that will be used if the extension is loaded.
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, MessagingSubsystemParser_3_0::new);
@@ -419,6 +417,8 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_1.NAMESPACE, MessagingSubsystemParser_13_1::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_14_0.NAMESPACE, MessagingSubsystemParser_14_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_15_0.NAMESPACE, MessagingSubsystemParser_15_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_16_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_16_0.NAMESPACE, MessagingSubsystemParser_16_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_17_0.NAMESPACE, MessagingSubsystemParser_17_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_18_0.NAMESPACE, CURRENT_PARSER);
     }
 }

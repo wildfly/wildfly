@@ -45,6 +45,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -60,13 +61,17 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class DomainHostExcludesTest {
 
-    private static final String[] EXCLUDED_EXTENSIONS_7X = {
-            "org.jboss.as.web",
-            "org.jboss.as.messaging",
+    // A set of extensions that are available in the server under test modules but
+    // are not configured by default in the legacy host.
+    // These extensions will be added on the server under test, and are expected
+    // to be ignored by the legacy hosts.
+    private static final String[] EXCLUDED_EXTENSIONS = {
+            "org.jboss.as.xts",
+            "org.wildfly.extension.rts",
             "org.jboss.as.threads"
     };
 
-    public static final Set<String> EXTENSIONS_SET_7X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_7X));
+    public static final Set<String> EXTENSIONS_SET = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS));
 
     private static final PathElement HOST = PathElement.pathElement("host", "secondary");
     private static final PathAddress HOST_EXCLUDE = PathAddress.pathAddress("host-exclude", "test");
@@ -75,12 +80,8 @@ public abstract class DomainHostExcludesTest {
 
     private static DomainTestSupport testSupport;
 
-    private static Version.AsVersion version;
-
     /** Subclasses call from a @BeforeClass method */
     protected static void setup(Class<?> clazz, String hostRelease, ModelVersion secondaryApiVersion) throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
-        version = clazz.getAnnotation(Version.class).value();
-
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
         // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer secondary hosts
@@ -129,7 +130,7 @@ public abstract class DomainHostExcludesTest {
             for (ModelNode host : hosts.asList()) {
                 if (HOST.getValue().equals(host.asString())) {
                     gone = false;
-                    Thread.sleep(100);
+                    TimeUnit.MILLISECONDS.sleep(100);
                     break;
                 }
             }
@@ -157,7 +158,7 @@ public abstract class DomainHostExcludesTest {
         asbgs.add("full-ha-sockets");
 
         ModelNode extensions = addOp.get("excluded-extensions");
-        for (String ext : getExcludedExtensions()) {
+        for (String ext : EXCLUDED_EXTENSIONS) {
             extensions.add(ext);
         }
 
@@ -165,15 +166,14 @@ public abstract class DomainHostExcludesTest {
     }
 
     private static void addExtensions(boolean evens, ModelControllerClient client) throws IOException, MgmtOperationException {
-        for (int i = 0; i < getExcludedExtensions().length; i++) {
+        for (int i = 0; i < EXCLUDED_EXTENSIONS.length; i++) {
             if ((i % 2 == 0) == evens) {
-                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, getExcludedExtensions()[i])), client);
+                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, EXCLUDED_EXTENSIONS[i])), client);
             }
         }
     }
 
     private static void startSecondary() throws TimeoutException, InterruptedException {
-
         DomainLifecycleUtil legacyUtil = testSupport.getDomainSecondaryLifecycleUtil();
         long start = System.currentTimeMillis();
         legacyUtil.start();
@@ -205,7 +205,7 @@ public abstract class DomainHostExcludesTest {
     }
 
     @Test
-    public void test002ServerBoot() throws IOException, MgmtOperationException, InterruptedException, OperationFailedException {
+    public void test002ServerBoot() throws IOException, MgmtOperationException, OperationFailedException {
 
         ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
 
@@ -221,28 +221,18 @@ public abstract class DomainHostExcludesTest {
 
     }
 
-    private void awaitServerLaunch(ModelControllerClient client, PathAddress serverAddr) throws InterruptedException {
-        long timeout = TimeoutUtil.adjust(20000);
-        long expired = System.currentTimeMillis() + timeout;
-        ModelNode op = Util.getReadAttributeOperation(serverAddr, "server-state");
-        do {
-            try {
-                ModelNode state = DomainTestUtils.executeForResult(op, client);
-                if ("running".equalsIgnoreCase(state.asString())) {
-                    return;
-                }
-            } catch (IOException | MgmtOperationException e) {
-                // ignore and try again
-            }
-
-            TimeUnit.MILLISECONDS.sleep(250L);
-        } while (System.currentTimeMillis() < expired);
-
-        Assert.fail("Server did not start in " + timeout + " ms");
+    private void awaitServerLaunch(ModelControllerClient client, PathAddress serverAddr) throws IOException, MgmtOperationException {
+        PathAddress configAddr = PathAddress.pathAddress(serverAddr.getElement(0),
+                PathElement.pathElement(SERVER_CONFIG, serverAddr.getLastElement().getValue()));
+        DomainTestUtils.waitUntilState(client, configAddr, "STARTED");
+        MixedDomainTestSupport.assertNoBootErrors(client, serverAddr);
     }
 
     @Test
     public void test003PostBootUpdates() throws IOException, MgmtOperationException {
+
+        // FIXME remove when WFCORE-7572 is fixed
+        AssumeTestGroupUtil.assumeLegacyEEDistribution();
 
         ModelControllerClient primaryClient = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient();
         ModelControllerClient secondaryClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
@@ -267,7 +257,7 @@ public abstract class DomainHostExcludesTest {
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 0);
         for (ModelNode ext : result.asList()) {
-            Assert.assertFalse(ext.asString(), getExtensionsSet().contains(ext.asString()));
+            Assert.assertFalse(ext.asString(), EXTENSIONS_SET.contains(ext.asString()));
         }
     }
 
@@ -348,20 +338,6 @@ public abstract class DomainHostExcludesTest {
         if (!secondaryUtil.isHostControllerStarted()) {
             startSecondary();
         }
-    }
-
-    private Set<String> getExtensionsSet() {
-        if (version.getMajor() >= 7) {
-            return EXTENSIONS_SET_7X;
-        }
-        throw new IllegalStateException("Unknown version " + version);
-    }
-
-    private static String[] getExcludedExtensions() {
-        if (version.getMajor() >= 7) {
-            return EXCLUDED_EXTENSIONS_7X;
-        }
-        throw new IllegalStateException("Unknown version " + version);
     }
 
     private static class TestExpressionResolver extends ExpressionResolverImpl {

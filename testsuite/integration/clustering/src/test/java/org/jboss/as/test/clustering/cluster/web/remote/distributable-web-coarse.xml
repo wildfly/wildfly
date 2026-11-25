@@ -4,8 +4,8 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:5.0">
     <infinispan-session-management cache-container="web" cache="hotrod-persistence" granularity="SESSION">
-        <local-affinity/>
+        <primary-owner-affinity/>
     </infinispan-session-management>
 </distributable-web>

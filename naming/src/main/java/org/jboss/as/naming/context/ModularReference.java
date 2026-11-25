@@ -8,7 +8,6 @@ package org.jboss.as.naming.context;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Reference implementation that captures a module name and allows object factories to be loaded and created from
@@ -18,7 +17,7 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class ModularReference extends Reference {
     private static final long serialVersionUID = -4805781394834948096L;
-    private final ModuleIdentifier moduleIdentifier;
+    private final String moduleName;
 
     /**
      * Create a ModuleReference from a target type and factory class.
@@ -39,7 +38,7 @@ public class ModularReference extends Reference {
      * @return A ModularReference
      */
     public static ModularReference create(final String className, final Class<?> factoryClass) {
-        return new ModularReference(className, factoryClass.getName(), Module.forClass(factoryClass).getIdentifier());
+        return new ModularReference(className, factoryClass.getName(), Module.forClass(factoryClass).getName());
     }
 
 
@@ -64,7 +63,7 @@ public class ModularReference extends Reference {
      * @return A ModularReference
      */
     public static ModularReference create(final String className, final RefAddr addr, final Class<?> factoryClass) {
-        return new ModularReference(className, addr, factoryClass.getName(), Module.forClass(factoryClass).getIdentifier());
+        return new ModularReference(className, addr, factoryClass.getName(), Module.forClass(factoryClass).getName());
     }
 
     /**
@@ -72,11 +71,11 @@ public class ModularReference extends Reference {
      *
      * @param className The class name of the target object type
      * @param factory The object factory class name
-     * @param moduleIdentifier The module name to load the factory class
+     * @param moduleName The module name to load the factory class
      */
-    public ModularReference(final String className, final String factory, final ModuleIdentifier moduleIdentifier) {
+    private ModularReference(final String className, final String factory, final String moduleName) {
         super(className, factory, null);
-        this.moduleIdentifier = moduleIdentifier;
+        this.moduleName = moduleName;
     }
 
     /**
@@ -85,11 +84,11 @@ public class ModularReference extends Reference {
      * @param className The class name of the target object type
      * @param addr The address of the object
      * @param factory The object factory class name
-     * @param moduleIdentifier The module name to load the factory class
+     * @param moduleName The module name to load the factory class
      */
-    public ModularReference(final String className, final RefAddr addr, final String factory, final ModuleIdentifier moduleIdentifier) {
+    private ModularReference(final String className, final RefAddr addr, final String factory, final String moduleName) {
         super(className, addr, factory, null);
-        this.moduleIdentifier = moduleIdentifier;
+        this.moduleName = moduleName;
     }
 
     /**
@@ -97,7 +96,7 @@ public class ModularReference extends Reference {
      *
      * @return The module name
      */
-    public ModuleIdentifier getModuleIdentifier() {
-        return moduleIdentifier;
+    public String getModuleName() {
+        return moduleName;
     }
 }

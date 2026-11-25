@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.shared;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 

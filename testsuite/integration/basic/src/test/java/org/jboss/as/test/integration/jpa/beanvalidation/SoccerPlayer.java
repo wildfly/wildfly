@@ -7,9 +7,9 @@ package org.jboss.as.test.integration.jpa.beanvalidation;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * @author Madhumita Sadhukhan

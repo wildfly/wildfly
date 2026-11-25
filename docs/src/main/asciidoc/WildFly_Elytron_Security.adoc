@@ -1,5 +1,6 @@
 [[WildFly_Elytron_Security]]
 = WildFly Elytron Security
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -8,7 +9,6 @@
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 14
 :numbered:
 
 ifdef::env-github[]
@@ -106,6 +106,7 @@ include::_elytron/Web_Single_Sign_On.adoc[]
 include::_elytron/Audit.adoc[]
 include::_elytron/Credential_Store.adoc[]
 include::_elytron/Encrypted_Expressions.adoc[]
+include::_elytron/HashiCorp_Vault_Integration.adoc[]
 include::_elytron/Custom_Components.adoc[]
 include::_elytron/Elytron_WildFly_Java_Security_Manager.adoc[]
 include::_elytron/Migrate_Legacy_Security_to_Elytron_Security.adoc[]

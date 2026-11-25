@@ -16,6 +16,8 @@ import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -24,7 +26,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 @MessageLogger(projectCode = "WFLYRTS", length = 4)
 public interface RTSLogger extends BasicLogger {
 
-    RTSLogger ROOT_LOGGER = Logger.getMessageLogger(RTSLogger.class, "org.wildfly.extension.rts");
+    RTSLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), RTSLogger.class, "org.wildfly.extension.rts");
 
     @Message(id = 1, value = "Can't import global transaction to wildfly transaction client.")
     IllegalStateException failueOnImportingGlobalTransactionFromWildflyClient(@Cause jakarta.transaction.SystemException se);

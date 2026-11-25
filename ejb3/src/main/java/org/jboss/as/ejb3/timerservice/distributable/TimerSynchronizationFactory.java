@@ -9,8 +9,7 @@ import java.util.function.Consumer;
 
 import jakarta.transaction.Synchronization;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.Timer;
 
 /**
@@ -21,8 +20,8 @@ import org.wildfly.clustering.ejb.timer.Timer;
  */
 public interface TimerSynchronizationFactory<I> {
 
-    Synchronization createActivateSynchronization(Timer<I> timer, Batch batch, Batcher<Batch> batcher);
-    Synchronization createCancelSynchronization(Timer<I> timer, Batch batch, Batcher<Batch> batcher);
+    Synchronization createActivateSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch);
+    Synchronization createCancelSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch);
 
     Consumer<Timer<I>> getActivateTask();
     Consumer<Timer<I>> getCancelTask();

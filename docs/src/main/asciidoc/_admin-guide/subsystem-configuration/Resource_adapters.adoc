@@ -26,31 +26,31 @@ _resource-adapters_:
     <resource-adapters>
        <resource-adapter>
           <archive>eis.rar</archive>
-          <!-- Resource adapter level config-property -->
-          <config-property name="Server">localhost</config-property>
-          <config-property name="Port">19000</config-property>
-          <transaction-support>XATransaction</transaction-support>
-          <connection-definitions>
-             <connection-definition class-name="com.acme.eis.ra.EISManagedConnectionFactory"
-                                    jndi-name="java:/eis/AcmeConnectionFactory"
-                                    pool-name="AcmeConnectionFactory">
-                <!-- Managed connection factory level config-property -->
-                <config-property name="Name">Acme Inc</config-property>
-                <pool>
-                   <min-pool-size>10</min-pool-size>
-                   <max-pool-size>100</max-pool-size>
-                </pool>
-                <security>
-                   <application/>
-                </security>
-             </connection-definition>
-         </connection-definitions>
-         <admin-objects>
-             <admin-object class-name="com.acme.eis.ra.EISAdminObjectImpl"
-                           jndi-name="java:/eis/AcmeAdminObject">
-                <config-property name="Threshold">10</config-property>
-             </admin-object>
-         </admin-objects>
+          <!-- Resource adapter level config-property -->
+          <config-property name="Server">localhost</config-property>
+          <config-property name="Port">19000</config-property>
+          <transaction-support>XATransaction</transaction-support>
+          <connection-definitions>
+             <connection-definition class-name="com.acme.eis.ra.EISManagedConnectionFactory"
+                                    jndi-name="java:/eis/AcmeConnectionFactory"
+                                    pool-name="AcmeConnectionFactory">
+                <!-- Managed connection factory level config-property -->
+                <config-property name="Name">Acme Inc</config-property>
+                <pool>
+                   <min-pool-size>10</min-pool-size>
+                   <max-pool-size>100</max-pool-size>
+                </pool>
+                <security>
+                   <application/>
+                </security>
+             </connection-definition>
+         </connection-definitions>
+         <admin-objects>
+             <admin-object class-name="com.acme.eis.ra.EISAdminObjectImpl"
+                           jndi-name="java:/eis/AcmeAdminObject">
+                <config-property name="Threshold">10</config-property>
+             </admin-object>
+         </admin-objects>
        </resource-adapter>
     </resource-adapters>
 </subsystem>
@@ -67,17 +67,15 @@ A resource adapter archive can be automatically activated with a
 configuration by including an META-INF/ironjacamar.xml in the archive.
 
 The schema can be found at
-http://docs.jboss.org/ironjacamar/schema/ironjacamar_1_0.xsd
+https://docs.jboss.org/ironjacamar/schema/ironjacamar_1_0.xsd
 
 [[ra-component-reference]]
 == Component Reference
 
 The resource adapter subsystem is provided by the
-http://www.jboss.org/ironjacamar[IronJacamar] project. For a detailed
+https://ironjacamar.org/[IronJacamar] project. For a detailed
 description of the available configuration properties, please consult
 the project documentation.
 
-* IronJacamar homepage: http://www.jboss.org/ironjacamar
-* Project Documentation: http://www.jboss.org/ironjacamar/docs
-* Schema description:
-http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingra_descriptor
+* IronJacamar homepage: https://ironjacamar.org/
+* Schema description: https://docs.jboss.org/ironjacamar/schema/

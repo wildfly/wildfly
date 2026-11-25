@@ -78,7 +78,7 @@ or to all beans in the deployment by using `*` as the `ejb-name`.
 ==== The security namespace urn:security
 
 This allows you to set the security domain and the run-as principal for
-an Jakarta Enterprise Beans.
+a Jakarta Enterprise Beans bean.
 
 [source,xml,options="nowrap"]
 ----
@@ -142,7 +142,7 @@ defined in the server configuration (i.e. `standalone.xml` or
 [[the-clustering-namespace-urnclustering1.0]]
 ==== The clustering namespace urn:clustering:1.0
 
-This namespace is deprecated and as of WildFly {wildflyVersion} its use has no effect.
+This namespace is deprecated and its use has no effect.
 The clustering behavior of Jakarta Enterprise Beans are determined by the profile in use on
 the server.
 

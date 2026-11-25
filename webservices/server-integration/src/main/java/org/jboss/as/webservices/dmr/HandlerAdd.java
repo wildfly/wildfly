@@ -60,7 +60,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final String handlerName = address.getElement(address.size() - 1).getValue();
             final String handlerClass = Attributes.CLASS.resolveModelAttribute(context, model).asString();
 
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);
             if (registry.getService(configServiceName) == null) {

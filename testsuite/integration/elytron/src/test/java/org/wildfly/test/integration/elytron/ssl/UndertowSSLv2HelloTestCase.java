@@ -23,11 +23,14 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -88,6 +91,9 @@ public class UndertowSSLv2HelloTestCase {
     @ClassRule
     public static IbmVerification ibmVerification =
             new IbmVerification(TestSuiteEnvironment.isIbmJvm());
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     // just to make server setup task work
     @Deployment(testable = false)
@@ -250,8 +256,8 @@ public class UndertowSSLv2HelloTestCase {
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, sslContextName));
             cli.sendLine("run-batch");
-            cli.sendLine("reload");
         }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void restoreConfiguration() throws Exception {
@@ -260,8 +266,8 @@ public class UndertowSSLv2HelloTestCase {
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, "applicationSSC"));
             cli.sendLine("run-batch");
-            cli.sendLine("reload");
         }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     public static class IbmVerification implements TestRule {

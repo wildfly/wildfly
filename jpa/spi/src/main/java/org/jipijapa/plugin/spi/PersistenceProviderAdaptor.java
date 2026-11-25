@@ -94,5 +94,8 @@ public interface PersistenceProviderAdaptor {
     Object beanManagerLifeCycle(BeanManager beanManager);
 
     void markPersistenceUnitAvailable(Object wrapperBeanManagerLifeCycle);
+
+    default void addClassFileTransformer(PersistenceUnitMetadata pu) {
+    }
 }
 

@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -89,7 +90,12 @@ public class StopFromDifferentNodeTestCase {
             if (h2Server == null) {
                 //We need a TCP server that can be shared between the two servers.
                 //To allow remote connections, start the TCP server using the option -tcpAllowOthers
-                h2Server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                try {
+                    System.setProperty("h2.bindAddress", TestSuiteEnvironment.getServerAddress());
+                    h2Server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                } finally {
+                    System.clearProperty("h2.bindAddress");
+                }
             }
 
             if (savedDefaultJobRepository == null) {

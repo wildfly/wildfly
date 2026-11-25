@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-jaxrs</artifactId>
@@ -27,14 +27,14 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -45,7 +45,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
         </dependency>
 
@@ -73,6 +73,11 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
 
@@ -84,6 +89,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
 
         <dependency>
@@ -99,11 +109,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
         </dependency>
 
         <dependency>
@@ -131,15 +136,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -160,7 +156,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Test depedencies -->
+        <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -181,4 +177,24 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -11,8 +11,8 @@ import java.time.Instant;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.ee.cache.offset.Offset;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.server.offset.Offset;
+import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -54,14 +54,14 @@ public class DefaultBeanMetaDataEntryMarshaller implements ProtoStreamMarshaller
                     creationTime = reader.readObject(Instant.class);
                     break;
                 case LAST_ACCESS_OFFSET_INDEX:
-                    lastAccessOffset = reader.readObject(lastAccessOffset.getClass());
+                    lastAccessOffset = reader.readObject(lastAccessOffset.getClass().asSubclass(Offset.class));
                     break;
                 default:
                     reader.skipField(tag);
             }
         }
         DefaultBeanMetaDataEntry<SessionID> entry = new DefaultBeanMetaDataEntry<>(name, groupId, creationTime);
-        entry.getLastAccess().setOffset(lastAccessOffset);
+        entry.getLastAccessTime().setOffset(lastAccessOffset);
         return entry;
     }
 
@@ -75,7 +75,7 @@ public class DefaultBeanMetaDataEntryMarshaller implements ProtoStreamMarshaller
         if (groupId != null) {
             writer.writeObject(GROUP_IDENTIFIER_INDEX, groupId);
         }
-        OffsetValue<Instant> lastAccess = metaData.getLastAccess();
+        OffsetValue<Instant> lastAccess = metaData.getLastAccessTime();
         Instant creationTime = lastAccess.getBasis();
         if (!DEFAULT_CREATION_TIME.equals(creationTime)) {
             writer.writeObject(CREATION_TIME_INDEX, creationTime);

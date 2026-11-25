@@ -40,8 +40,8 @@ import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
@@ -110,7 +110,9 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
-    protected final InjectedValue<ResourceAdaptersSubsystemService> resourceAdaptersSubsystem = new InjectedValue<>();
+    protected final InjectedValue<CopyOnWriteArrayListMultiMap> configuredAdaptersInjector = new InjectedValue<>();
+
+    protected final InjectedValue<File> reportDirectoryInjector = new InjectedValue<>();
 
     protected String raRepositoryRegistrationId;
     protected String connectorServicesRegistrationName;
@@ -266,8 +268,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return executorServiceInjector;
     }
 
-    public Injector<ResourceAdaptersSubsystemService> getResourceAdaptersSubsystem() {
-        return resourceAdaptersSubsystem;
+    public Injector<CopyOnWriteArrayListMultiMap> getConfiguredAdaptersInjector() {
+        return configuredAdaptersInjector;
+    }
+
+    public Injector<File> getReportDirectoryInjector() {
+        return reportDirectoryInjector;
     }
 
     protected final ExecutorService getLifecycleExecutorService() {
@@ -566,8 +572,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected File getReportDirectory() {
-            if (resourceAdaptersSubsystem.getOptionalValue() != null) {
-                return resourceAdaptersSubsystem.getValue().getReportDirectory();
+            if (reportDirectoryInjector.getOptionalValue() != null) {
+                return reportDirectoryInjector.getValue();
             } else {
                 return null;
             }

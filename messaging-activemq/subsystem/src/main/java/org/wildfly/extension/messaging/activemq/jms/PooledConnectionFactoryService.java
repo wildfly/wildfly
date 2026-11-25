@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
@@ -95,6 +96,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
@@ -165,6 +167,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
+    // Supplier of the XA resource recovery registry contributed to WildFlyRecoveryRegistry while this service is up.
+    private volatile Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier;
 
 
     public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
@@ -273,7 +277,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                         ServiceName serviceName,
                                         PooledConnectionFactoryService service,
                                         ModelNode model) throws OperationFailedException {
-        ServiceBuilder serviceBuilder = createServiceBuilder(context.getServiceTarget(), serverServiceName, serviceName, service);
+        ServiceBuilder serviceBuilder = createServiceBuilder(context.getCapabilityServiceTarget(), serverServiceName, serviceName, service);
         ModelNode credentialReference = ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
         if (credentialReference.isDefined()) {
             service.getCredentialSourceSupplierInjector().inject(CredentialReference.getCredentialSourceSupplier(context, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE, model, serviceBuilder));
@@ -416,8 +420,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
             inboundProperties.add(simpleProperty15("queuePrefix", String.class.getName(), JMS_QUEUE_PREFIX));
             inboundProperties.add(simpleProperty15("topicPrefix", String.class.getName(), JMS_TOPIC_PREFIX));
 
-            WildFlyRecoveryRegistry.container = container;
-
             OutboundResourceAdapter outbound = createOutbound(outboundProperties);
             InboundResourceAdapter inbound = createInbound(inboundProperties);
             ResourceAdapter ra = createResourceAdapter15(properties, outbound, inbound);
@@ -454,6 +456,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
             sb.requires(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)));
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+            recoveryRegistrySupplier = sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.registerSupplier(recoveryRegistrySupplier);
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
             // Mock the deployment service to allow it to start
@@ -575,6 +579,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
 
     public void stop(StopContext context) {
-        // Service context takes care of this
+        // The service context tears down the installed services; deregister our recovery registry
+        // supplier so a stopped connection factory no longer contributes to XA recovery lookups.
+        WildFlyRecoveryRegistry.deregisterSupplier(recoveryRegistrySupplier);
     }
 }

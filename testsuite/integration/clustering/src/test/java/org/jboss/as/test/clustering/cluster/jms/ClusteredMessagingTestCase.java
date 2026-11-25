@@ -5,32 +5,35 @@
 
 package org.jboss.as.test.clustering.cluster.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.Destination;
-import jakarta.jms.JMSConsumer;
-import jakarta.jms.JMSContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.test.api.Authentication;
 
@@ -38,7 +41,7 @@ import org.wildfly.test.api.Authentication;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
 
@@ -52,7 +55,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     private static final String jmsTopicLookup = "jms/" + jmsTopicName;
 
     public ClusteredMessagingTestCase() {
-        super(TWO_NODES, new String[] {});
+        super(NODE_1_2, Set.of());
     }
 
     protected static ModelControllerClient createClient1() {
@@ -63,6 +66,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
         return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort() + getPortOffsetForNode(NODE_2), Authentication.getCallbackHandler());
     }
 
+    @BeforeEach
     @Override
     public void beforeTestMethod() throws Exception {
         super.beforeTestMethod();
@@ -75,6 +79,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
         });
     }
 
+    @AfterEach
     @Override
     public void afterTestMethod() throws Exception {
         super.afterTestMethod();
@@ -88,7 +93,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testClusteredQueue() throws Exception {
+    void clusteredQueue() throws Exception {
         InitialContext contextFromServer1 = createJNDIContext(NODE_1);
         InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 
@@ -115,7 +120,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testClusteredTopic() throws Exception {
+    void clusteredTopic() throws Exception {
         InitialContext contextFromServer1 = createJNDIContext(NODE_1);
         InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 

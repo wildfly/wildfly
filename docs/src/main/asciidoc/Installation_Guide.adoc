@@ -1,6 +1,6 @@
 [[Installation_Guide]]
 = Installation Guide
-WildFly team;
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -9,7 +9,6 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 14
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -23,32 +22,30 @@ endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
 
-(C) 2020 The original authors.
-
 ifdef::basebackend-html[toc::[]]
 :numbered:
 
 link:#Zipped_Installation[Zipped distribution], 
-link:#Galleon_Provisioning[Galleon provisioning] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
+link:#Galleon_Provisioning[Galleon provisioning], link:#WildFly_Maven_Plugin_Provisioning[WildFly Maven Plugin] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
 installation strategy that best fits your application requirements.
 
 = WildFly or WildFly Preview
 
-The WildFly project now produces two appserver variants, link:WildFly_and_WildFly_Preview{outfilesuffix}[standard WildFly and WildFly Preview],
+The WildFly project now produces three appserver variants, link:Different_Flavors_of_WildFly{outfilesuffix}[standard WildFly, WildFly EE 10 and WildFly Preview],
 so you'll want to decide which is right for you. For most users the standard WildFly variant is the right choice,
-but if you'd like a technical preview look at what's coming in the future, try out WildFly Preview.
+but if you need to stick with EE 10 for a little while longer, try WildFly EE 10, and if you'd like a technical preview look at what's coming in the future, try out WildFly Preview.
 
 [[Zipped_Installation]]
 = Installing WildFly from a zipped distribution
 
-http://www.wildfly.org/downloads[Downloading the WildFly release zip] and unzipping it is the traditional way to install
+https://www.wildfly.org/downloads/[Downloading the WildFly release zip] and unzipping it is the traditional way to install
 a complete WildFly server with support for both standalone and managed domain operating modes. A WildFly distribution
 contains a large number of default configurations allowing you to select the server features and operating modes.
 
 A WildFly distribution based installation is well suited when:
 
-* You want to rely on a traditional Jakarta EE application deployment.
-* You want a Jakarta EE or MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
+* You want to rely on a traditional EE application deployment style, using a server provisioned without any deployments with the server then instructed to install deployments.
+* You want a server that offers all Jakarta and MicroProfile specifications.
 * You are not (yet) concerned by server installation size and memory footprint.
 * You are not yet sure of the kind of operating mode and application you are targeting.
 * Your server instances will contain one or more application deployments.
@@ -57,23 +54,22 @@ If that is the kind of installation you are aiming at, the guides that you shoul
 
 * The link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] shows you
 how to install, start and configure the server.
-* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Jakarta EE
+* The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build
 applications and deploy them to WildFly.
 
 [[Galleon_Provisioning]]
 = Installing WildFly with Galleon
 
 Galleon provisioning tooling allows you to construct a customized WildFly installation according to your application needs. 
-Some applications don't need a fully featured server supporting all operating modes and containing all Jakarta EE capabilities. 
+Some applications don't need a fully featured server supporting all operating modes and containing all Jakarta and MicroProfile capabilities.
 Galleon tooling allows you to select the server capabilities you want to see installed. 
 
 A WildFly server provisioned with Galleon is well suited when:
 
-* You want to rely on a traditional Jakarta EE application deployment.
+* You want to rely on a traditional EE application deployment style, using a server provisioned without any deployments with the server then instructed to install deployments.
 * You want to easily update an installation to the latest WildFly version.
-* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
-(although Galleon can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
+* Your application requires only a subset of the Jakarta or MicroProfile APIs
+(although Galleon can provision a server that supports the full set of Jakarta and MicroProfile platform APIs).
 * You are concerned by server installation size and memory footprint.
 * You are only using standalone operating mode (with support for High Availability or not).
 * Your server instances will contain one or more application deployments.
@@ -82,9 +78,29 @@ If that is the kind of installation you are aiming at, the guides that you shoul
 
 * The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to
 provision customized WildFly server using Galleon.
-* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Jakarta EE
+* The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build
 applications and deploy them to WildFly.
+
+[[WildFly_Maven_Plugin_Provisioning]]
+= Installing WildFly with the WildFly Maven Plugin
+
+The link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin] exposes a `package` goal that allows you 
+to provision a customized WildFly installation containing your application.
+
+Using the WildFly Maven Plugin is well suited when:
+
+* You are building your application using Maven.
+* Your application requires only a subset of the Jakarta or MicroProfile APIs
+(although the WildFly Maven Plugin can provision a server that supports the full set of Jakarta and MicroProfile platform APIs).
+* You are concerned by server installation size and memory footprint.
+* You are only using standalone operating mode (with support for High Availability or not).
+* Your server instances will contain one or more application deployments.
+* You are using WildFly link:https://docs.wildfly.org/wildfly-charts/[Helm Charts] to deploy your application on the cloud.
+
+If that is the kind of installation you are aiming at, the guide that you should read next is:
+
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] 
+shows you how to configure a Maven `pom.xml` file to provision a customized WildFly server containing your application.
 
 [[Bootable_JAR]]
 = WildFly Bootable JAR
@@ -93,8 +109,12 @@ A bootable JAR contains both a customized WildFly server and your deployment. Su
 then run with a simple java command such as ``java -jar myapp-bootable.jar``
 
 A bootable JAR is built using Maven. You need to integrate the  
-link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[bootable JAR Maven plugin] 
+link:https://github.com/wildfly/wildfly-maven-plugin[WildFly Maven plugin] 
 in the Maven project of your application.
+
+[NOTE]
+The ability to build a WildFly Bootable JAR has been added to the link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin].  
+The use of the link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[WildFly Bootable JAR Maven plugin] has been deprecated. 
 
 A Bootable JAR is well suited when:
 
@@ -104,7 +124,32 @@ A Bootable JAR is well suited when:
 * You are only using standalone operating mode (with support for High Availability or not).
 * You are building your application using Maven.
 
-If that is the kind of installation you are aiming at, the guide that you should read next is:
+If that is the kind of installation you are aiming at, the guides that you should read next are:
 
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide]
+shows you how to configure a Maven `pom.xml` file to provision a customized WildFly server containing your application.
 * The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
 into a bootable JAR.
+
+[[wildfly_sbom]]
+= Software Bill of Materials (SBOM)
+
+WildFly installations include a Software Bill of Materials (SBOM) in https://cyclonedx.org/[CycloneDX] JSON format, gzip-compressed.
+
+It is located at the root of the installation as `sbom.cdx.json.gz`, or inside the jar at `META-INF/sbom/sbom.cdx.json.gz` in the case of a WildFly Bootable JAR.
+
+The SBOM lists all the WildFly server artifacts that were installed during provisioning. For more details on the generated SBOM,
+refer to the https://docs.wildfly.org/galleon-plugins/#_galleon_plugins[Galleon Plugins documentation].
+
+[NOTE]
+====
+The SBOM structure may change in future releases of WildFly.
+====
+
+== Availability
+
+* **Standard Distributions**: Standard WildFly release zips contain the
+`sbom.cdx.json.gz` file for the full server distribution.
+* **Galleon-Provisioned Servers**: When provisioning a customized server
+using Galleon tools (Galleon CLI or WildFly Maven Plugin), the generated
+`sbom.cdx.json.gz` reflects the artifacts actually installed for that server configuration.

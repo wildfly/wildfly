@@ -12,9 +12,8 @@ import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 /**
  * Unit test for distributable-web subsystem.
@@ -23,21 +22,25 @@ import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequireme
 @RunWith(value = Parameterized.class)
 public class DistributableWebSubsystemTestCase extends AbstractSubsystemSchemaTest<DistributableWebSubsystemSchema> {
 
+    private final DistributableWebSubsystemSchema schema;
+
     @Parameters
     public static Iterable<DistributableWebSubsystemSchema> parameters() {
         return EnumSet.allOf(DistributableWebSubsystemSchema.class);
     }
 
     public DistributableWebSubsystemTestCase(DistributableWebSubsystemSchema schema) {
-        super(DistributableWebExtension.SUBSYSTEM_NAME, new DistributableWebExtension(), schema, DistributableWebSubsystemSchema.CURRENT);
+        super(DistributableWebSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new DistributableWebExtension(), schema, DistributableWebSubsystemSchema.CURRENT);
+
+        this.schema = schema;
     }
 
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization()
-                .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
-                .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
-                .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
+        return new AdditionalInitialization(this.schema)
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
+                .require(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, "foo")
                 ;
     }
 }

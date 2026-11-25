@@ -46,6 +46,25 @@
                 <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
+
+        <container qualifier="forced-security-manager" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
+                <!-- This container is used to check behavior with SM enabled, so we always want it on -->
+                <property name="jbossArguments">${jboss.args} -secmgr</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>

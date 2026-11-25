@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**
@@ -52,14 +53,17 @@ public class CalendarTimerTask extends TimerTask {
         if (currentTimeout == null) {
             return null;
         }
-        Calendar cal = new GregorianCalendar();
-        cal.setTime(currentTimeout);
-        // now compute the next timeout date
-        Calendar nextTimeout = ((CalendarTimer) timer).getCalendarTimeout().getNextTimeout(cal);
-        if (nextTimeout != null) {
-            return nextTimeout.getTime();
-        }
-        return null;
+        Calendar nextTimeout = new GregorianCalendar();
+        nextTimeout.setTime(currentTimeout);
+
+        CalendarBasedTimeout timeout = ((CalendarTimer) timer).getCalendarTimeout();
+        Date now = new Date();
+        do {
+            nextTimeout = timeout.getNextTimeout(nextTimeout);
+            // Ensure next timeout is in the future
+        } while ((nextTimeout != null) && nextTimeout.getTime().before(now));
+
+        return (nextTimeout != null) ? nextTimeout.getTime() : null;
     }
 
     @Override

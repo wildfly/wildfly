@@ -1,9 +1,9 @@
 WildFly Preview Basic Testsuite
 ===============================
 
-This test suite use TestContainers.
+This test suite uses TestContainers.
 On Linux you might be using podman instead of docker.
-For those tests to run properly you need to follow these instructions (taken from https://quarkus.io/blog/quarkus-devservices-testcontainers-podman/)
+For those tests to run properly, you need to follow these instructions (taken from https://quarkus.io/blog/quarkus-devservices-testcontainers-podman/)
 
 `
     # Install the required podman packages from dnf. If you're not using rpm based distro, replace with respective package manager

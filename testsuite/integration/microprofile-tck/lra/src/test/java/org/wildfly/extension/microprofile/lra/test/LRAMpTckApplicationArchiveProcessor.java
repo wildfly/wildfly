@@ -12,11 +12,8 @@ import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
-import java.io.File;
 
 /**
  * @author Martin Stefanko
@@ -24,8 +21,8 @@ import java.io.File;
 public class LRAMpTckApplicationArchiveProcessor implements ApplicationArchiveProcessor {
 
     @Override
-    public void process(Archive<?> archive, TestClass testClass) {
-        if (archive instanceof WebArchive) {
+    public void process(Archive<?> applicationArchive, TestClass testClass) {
+        if (applicationArchive instanceof WebArchive) {
             JavaArchive extensionsJar = ShrinkWrap.create(JavaArchive.class, "extension.jar");
 
             extensionsJar.addClasses(NarayanaLRARecovery.class, LRAConstants.class);
@@ -37,13 +34,8 @@ public class LRAMpTckApplicationArchiveProcessor implements ApplicationArchivePr
                 "       version=\"4.0\" bean-discovery-mode=\"all\">\n" +
                 "</beans>"), "beans.xml");
 
-            WebArchive war = (WebArchive) archive;
+            WebArchive war = (WebArchive) applicationArchive;
             war.addAsLibraries(extensionsJar);
-
-            final File archiveDir = new File("target/archives");
-            archiveDir.mkdirs();
-            File moduleFile = new File(archiveDir, "test-lra-extension.war");
-            war.as(ZipExporter.class).exportTo(moduleFile, true);
         }
     }
 }

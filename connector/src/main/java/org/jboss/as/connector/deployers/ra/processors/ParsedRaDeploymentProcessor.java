@@ -7,6 +7,7 @@ package org.jboss.as.connector.deployers.ra.processors;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -21,8 +22,8 @@ import org.jboss.as.connector.services.resourceadapters.deployment.registry.Reso
 import org.jboss.as.connector.subsystems.jca.Constants;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.Capabilities;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -193,7 +194,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector());
 
             if (support.hasCapability(Capabilities.RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY_NAME)) {
-                builder.addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, raDeploymentService.getResourceAdaptersSubsystem());
+                builder.addDependency(ConnectorServices.RESOURCEADAPTERS_CONFIGURED_ADAPTERS_SERVICE, CopyOnWriteArrayListMultiMap.class, raDeploymentService.getConfiguredAdaptersInjector());
+                builder.addDependency(ConnectorServices.RESOURCEADAPTERS_REPORT_DIRECTORY_SERVICE, File.class, raDeploymentService.getReportDirectoryInjector());
             }
 
             builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);

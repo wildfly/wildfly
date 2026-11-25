@@ -5,43 +5,51 @@
 
 package org.wildfly.extension.clustering.web.routing.infinispan;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.controller.ServiceNameFactory;
-import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
-import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.server.service.registry.DistributedRegistryServiceConfiguratorProvider;
-import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.service.routing.RoutingProvider;
-import org.wildfly.extension.clustering.web.routing.LocalRouteServiceConfigurator;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.wildfly.clustering.infinispan.service.CacheConfigurationServiceInstaller;
+import org.wildfly.clustering.infinispan.service.CacheServiceInstaller;
+import org.wildfly.clustering.marshalling.protostream.util.StringKeyMapEntry;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
+import org.wildfly.common.iteration.CompositeIterable;
+import org.wildfly.extension.clustering.web.routing.LocalRoutingProvider;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Routing provider backed by an Infinispan cache.
  * @author Paul Ferraro
  */
-public class InfinispanRoutingProvider implements RoutingProvider {
+public class InfinispanRoutingProvider extends LocalRoutingProvider {
 
-    private final InfinispanRoutingConfiguration config;
+    private final BinaryServiceConfiguration configuration;
+    private final UnaryOperator<ConfigurationBuilder> configurator;
 
-    public InfinispanRoutingProvider(InfinispanRoutingConfiguration config) {
-        this.config = config;
+    public InfinispanRoutingProvider(BinaryServiceConfiguration configuration, UnaryOperator<ConfigurationBuilder> configurator) {
+        this.configuration = configuration;
+        this.configurator = configurator;
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
-        String containerName = this.config.getContainerName();
-        String cacheName = this.config.getCacheName();
+    public Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route) {
+        BinaryServiceConfiguration serverConfiguration = this.configuration.withChildName(serverName);
+        List<ServiceInstaller> installers = new LinkedList<>();
 
-        CapabilityServiceConfigurator localRouteConfigurator = new LocalRouteServiceConfigurator(serverName, route);
-        CapabilityServiceConfigurator registryEntryConfigurator = new RouteRegistryEntryProviderServiceConfigurator(containerName, serverName);
-        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, serverName), containerName, serverName, cacheName, this.config);
-        CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, serverName), containerName, serverName);
-        CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedCacheGroupServiceConfiguratorProvider.class, containerName, serverName);
-        CapabilityServiceConfigurator registryConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedRegistryServiceConfiguratorProvider.class, containerName, serverName);
-        return List.of(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator, registryConfigurator, groupConfigurator);
+        installers.add(ServiceInstaller.BlockingBuilder.of(route.combine(ServiceDependency.<Void>empty(), StringKeyMapEntry::new))
+                .provides(serverConfiguration.resolveServiceName(ClusteringServiceDescriptor.REGISTRY_ENTRY))
+                .build());
+
+        installers.add(new CacheConfigurationServiceInstaller(serverConfiguration, CacheConfigurationServiceInstaller.fromTemplate(this.configuration).map(this.configurator)));
+        installers.add(new CacheServiceInstaller(serverConfiguration));
+
+        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(serverConfiguration).forEach(installers::add);
+
+        return new CompositeIterable<>(List.of(installers, super.getServiceInstallers(serverName, route)));
     }
 }

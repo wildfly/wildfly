@@ -6,13 +6,12 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#clearDistributedStatistics(java.util.Map).
  * @author Paul Ferraro
  */
-public class ClearDistributedStatisticsCommand implements Command<Void, CommandDispatcherTransport> {
+public class ClearDistributedStatisticsCommand implements TransportCommand<Void> {
     private static final long serialVersionUID = -1590205163985739077L;
 
     private final Address address;

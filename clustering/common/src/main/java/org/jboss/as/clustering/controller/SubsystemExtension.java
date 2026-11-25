@@ -23,6 +23,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  * Generic extension implementation that registers a single subsystem.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class SubsystemExtension<S extends Enum<S> & SubsystemSchema<S>> implements Extension {
 
     private final String name;

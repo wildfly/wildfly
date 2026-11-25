@@ -13,4 +13,8 @@
     <resources>
         <artifact name="${io.grpc:grpc-api}"/>
     </resources>
+
+    <dependencies>
+        <module name="com.google.guava" />
+    </dependencies>
 </module>

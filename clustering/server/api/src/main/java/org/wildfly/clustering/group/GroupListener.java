@@ -8,7 +8,9 @@ package org.wildfly.clustering.group;
 /**
  * Listener for {@link Group} membership changes.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.GroupMembershipListener}.
  */
+@Deprecated(forRemoval = true)
 public interface GroupListener {
     /**
      * Indicates that the membership of the group has changed.

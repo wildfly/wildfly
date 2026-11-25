@@ -125,7 +125,7 @@ out of sync. Some application may find the `refresh-interval` configuration not 
 need to programmatically refresh timers. This can be done with Jakarta Interceptors configured for those business methods
 that need this capability, as illustrated in the following steps:
 
-* Implement an Jakarta Interceptors that enables `wildfly.ejb.timer.refresh.enabled` to true. For example,
+* Implement a Jakarta Interceptors interceptor that enables `wildfly.ejb.timer.refresh.enabled` to true. For example,
 
 [source,java,options="nowrap"]
 ----

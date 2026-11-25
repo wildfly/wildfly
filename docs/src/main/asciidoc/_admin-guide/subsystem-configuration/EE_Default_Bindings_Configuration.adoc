@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The Jakarta EE Specification mandates the existence of a default instance
+The EE Platform specification mandates the existence of a default instance
 for each of the following resources:
 
 * Context Service
@@ -46,7 +46,7 @@ they might not be required or covered by non-default resources. In such case def
 
 The default bindings are optional, if the jndi name for a default
 binding is not configured then the related resource will not be
-available to Jakarta EE applications.
+available to EE applications.
 
 [NOTE]
 

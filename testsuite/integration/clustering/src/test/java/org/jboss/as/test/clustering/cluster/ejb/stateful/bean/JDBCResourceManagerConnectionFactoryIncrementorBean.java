@@ -6,10 +6,10 @@
 package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.sql.DataSource;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateful;
-import javax.sql.DataSource;
 
 /**
  * @author Paul Ferraro

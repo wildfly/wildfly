@@ -6,8 +6,6 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
@@ -99,11 +97,13 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
@@ -176,6 +176,8 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
     private ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier;
     private final boolean createBinderService;
     private final CapabilityServiceSupport capabilityServiceSupport;
+    // Supplier of the XA resource recovery registry contributed to WildFlyRecoveryRegistry while this service is up.
+    private volatile Supplier<XAResourceRecoveryRegistry> recoveryRegistrySupplier;
 
 
     public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
@@ -236,6 +238,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace,
                 capabilityServiceSupport, false);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName);
+        serviceBuilder.requires(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName());
         installService0(serviceBuilder, configuration, service, groupConfiguration, connectorsSocketBindings, sslContextNames, capabilityServiceSupport);
         return service;
     }
@@ -273,7 +276,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             Set<String> connectorsSocketBindings,
             Set<String> sslContextNames,
             ModelNode model) throws OperationFailedException {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(serviceName);
         serviceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
         // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
         serviceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
@@ -290,11 +293,11 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         for (final String connectorSocketBinding : connectorsSocketBindings) {
             // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
             if (outbounds.get(connectorSocketBinding)) {
-                final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                final ServiceName outboundSocketName = context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                 Supplier<OutboundSocketBinding> outboundSocketBindingSupplier = serviceBuilder.requires(outboundSocketName);
                 service.outboundSocketBindings.put(connectorSocketBinding, outboundSocketBindingSupplier);
             } else {
-                final ServiceName socketName = SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                final ServiceName socketName = context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                 Supplier<SocketBinding> socketBindingSupplier = serviceBuilder.requires(socketName);
                 service.socketBindings.put(connectorSocketBinding, socketBindingSupplier);
             }
@@ -479,8 +482,6 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
 
             configureCredential(properties);
 
-            WildFlyRecoveryRegistry.container = container;
-
             OutboundResourceAdapter outbound = createOutbound(outboundProperties);
             InboundResourceAdapter inbound = createInbound(inboundProperties);
             ResourceAdapter ra = createResourceAdapter15(properties, outbound, inbound);
@@ -516,6 +517,8 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                                     activator.getCcmInjector());
             sb.requires(NamingService.SERVICE_NAME);
             sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+            recoveryRegistrySupplier = sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY));
+            WildFlyRecoveryRegistry.registerSupplier(recoveryRegistrySupplier);
             sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
 
@@ -635,7 +638,9 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
 
     @Override
     public void stop(StopContext context) {
-        // Service context takes care of this
+        // The service context tears down the installed services; deregister our recovery registry
+        // supplier so a stopped connection factory no longer contributes to XA recovery lookups.
+        WildFlyRecoveryRegistry.deregisterSupplier(recoveryRegistrySupplier);
     }
     public BroadcastCommandDispatcherFactory getCommandDispatcherFactory(String name) {
         return this.commandDispatcherFactories.get(name).get();

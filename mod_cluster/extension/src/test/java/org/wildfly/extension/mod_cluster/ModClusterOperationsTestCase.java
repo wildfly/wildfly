@@ -12,10 +12,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -65,6 +65,6 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
     }
 
     private KernelServices buildKernelServices() throws Exception {
-        return createKernelServicesBuilder(new AdditionalInitialization().require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "proxy1")).setSubsystemXml(this.getSubsystemXml()).build();
+        return createKernelServicesBuilder(new AdditionalInitialization().require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "proxy1")).setSubsystemXml(this.getSubsystemXml()).build();
     }
 }

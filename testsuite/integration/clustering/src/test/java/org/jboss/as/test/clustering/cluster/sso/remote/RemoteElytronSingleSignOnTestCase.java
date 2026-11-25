@@ -5,23 +5,30 @@
 
 package org.jboss.as.test.clustering.cluster.sso.remote;
 
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.InfinispanServerUtil;
+import org.jboss.as.test.clustering.cluster.sso.AbstractSingleSignOnTestCase;
 import org.jboss.as.test.clustering.cluster.sso.ElytronSSOServerSetupTask;
 import org.jboss.as.test.clustering.cluster.sso.IdentityServerSetupTask;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ InfinispanServerSetupTask.class, RemoteElytronSingleSignOnTestCase.ServerSetupTask.class, ElytronSSOServerSetupTask.class, IdentityServerSetupTask.class })
-public class RemoteElytronSingleSignOnTestCase extends AbstractRemoteSingleSignOnTestCase {
+public class RemoteElytronSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
+
+    @RegisterExtension
+    public static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -39,12 +46,14 @@ public class RemoteElytronSingleSignOnTestCase extends AbstractRemoteSingleSignO
         return SSOTestBase.createSsoEar();
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=sso, cache-configuration=default)")
-                    .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=other:remove")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder().setupScript(createScriptBuilder()
+                    .startBatch()
+                        .add("/subsystem=distributable-web/hotrod-single-sign-on-management=other:add(remote-cache-container=sso, cache-configuration=default)")
+                        .add("/subsystem=distributable-web:write-attribute(name=default-single-sign-on-management, value=other)")
+                    .endBatch()
+                    .build()).build());
         }
     }
 }

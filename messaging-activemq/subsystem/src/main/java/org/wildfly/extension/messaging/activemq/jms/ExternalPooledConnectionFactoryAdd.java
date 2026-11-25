@@ -7,6 +7,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.isSubsystemResource;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
@@ -28,6 +29,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
@@ -36,6 +39,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 
 /**
@@ -58,7 +62,8 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
 
         final ModelNode resolvedModel = model.clone();
-        for(final AttributeDefinition attribute : attributes) {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        for (AttributeDefinition attribute : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             resolvedModel.get(attribute.getName()).set(attribute.resolveModelAttribute(context, resolvedModel ));
         }
 
@@ -92,6 +97,11 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 PathAddress dgAddress = address.getParent().append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
                 try {
                     dgResource = context.readResourceFromRoot(dgAddress, false);
+                    if (!context.isBooting()) {
+                        if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                            MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(discoveryGroupName), Collections.emptySet());
+                        }
+                    }
                 } catch(Resource.NoSuchResourceException ex) {
                     dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
                     dgResource = context.readResourceFromRoot(dgAddress, false);
@@ -100,6 +110,11 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 PathAddress dgAddress = serverAddress.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, discoveryGroupName);
                 try {
                     dgResource = context.readResourceFromRoot(dgAddress, false);
+                    if (!context.isBooting()) {
+                        if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                            MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(Set.of(discoveryGroupName), Collections.emptySet());
+                        }
+                    }
                 } catch(Resource.NoSuchResourceException ex) {
                     dgAddress = address.getParent().append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, discoveryGroupName);
                     dgResource = context.readResourceFromRoot(dgAddress, false);
@@ -147,8 +162,10 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : attributes) {
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attr : registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.ADD).getOperationDefinition().getParameters()) {
             if (DESERIALIZATION_BLACKLIST.equals(attr)) {
                 if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
                     DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);

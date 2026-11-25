@@ -10,10 +10,10 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -38,7 +38,7 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
                 return builder
                         .setDefaultValue(new ModelNode("org.wildfly.extension.mod_cluster"))
                         .setRequired(false)
-                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        .setValidator(ModuleNameValidator.INSTANCE)
                         ;
             }
         },

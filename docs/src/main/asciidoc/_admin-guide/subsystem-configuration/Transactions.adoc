@@ -76,7 +76,7 @@ configuration, while the `node-identifer` attribute is defined directly under `/
 resource in the model.
 
 The description of individual attributes and their meaning can be found in the
-link:wildscribe{outfilesuffix/}subsystem/transactions[Model Reference Guide].
+link:feature-pack/doc/reference/subsystem/transactions/index.html[/subsystem=transactions model reference].
 
 ==== jts
 

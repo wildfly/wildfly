@@ -6,7 +6,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.client.hotrod">
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-client-hotrod-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-client-hotrod}"/>
     </resources>
 
     <dependencies>
@@ -26,11 +26,11 @@
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
+        <module name="org.infinispan.api"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.counter"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
-        <module name="org.infinispan.query.client"/>
-        <module name="org.infinispan.query.dsl"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.security.elytron-private"/>

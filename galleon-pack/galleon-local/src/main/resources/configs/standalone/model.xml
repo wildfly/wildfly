@@ -13,6 +13,6 @@
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>
         <!-- Unstable API Annotation Index -->
-        <package name="unstable-api-annotation-index.wildfly-galleon-pack"/>
+        <package name="unstable-api-annotation-index.wildfly-galleon-pack" optional="true" valid-for-stability="preview"/>
     </packages>
 </config>

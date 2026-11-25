@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -194,6 +195,8 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             is = tld.openStream();
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             inputFactory.setXMLResolver(NoopXMLResolver.create());
+            setIfSupported(inputFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            setIfSupported(inputFactory, XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
@@ -209,6 +212,12 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             } catch (IOException e) {
                 // Ignore
             }
+        }
+    }
+
+    private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
         }
     }
 

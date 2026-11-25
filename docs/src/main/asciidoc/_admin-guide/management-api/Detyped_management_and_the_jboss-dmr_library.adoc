@@ -44,7 +44,7 @@ of the jboss-dmr library.
 Even if you don't use jboss-dmr directly (probably the case for all but
 a few users), some of the information in this section may be useful.
 When you invoke operations using the application server's Command Line
-Interface, the return values are just the text representation of of a
+Interface, the return values are just the text representation of a
 jboss-dmr `ModelNode`. If your CLI commands require complex parameter
 values, you may yourself end up writing the text representation of a
 `ModelNode`. And if you use the HTTP management API, all response bodies
@@ -52,7 +52,7 @@ as well as the request body for any POST will be a JSON representation
 of a `ModelNode`.
 
 The source code for jboss-dmr is available on
-https://github.com/jbossas/jboss-dmr[Github]. The maven coordinates for
+https://github.com/jbossas/jboss-dmr[GitHub]. The Maven coordinates for
 a jboss-dmr release are `org.jboss.jboss-dmr:jboss-dmr`.
 
 [[modelnode-and-modeltype]]
@@ -154,9 +154,9 @@ Not all type conversions are possible:
 bsh % node.set("A string");
 bsh % print(node.asInt());
 // Error: // Uncaught Exception: Method Invocation node.asInt : at Line: 20 : in file: <unknown file> : node .asInt ( )
- 
+
 Target exception: java.lang.NumberFormatException: For input string: "A string"
- 
+
 java.lang.NumberFormatException: For input string: "A string"
  at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
  at java.lang.Integer.parseInt(Integer.java:449)
@@ -209,9 +209,9 @@ Use the `protect()` method to make a `ModelNode` immutable:
 bsh % clone.protect();
 bsh % clone.set("A different string");
 // Error: // Uncaught Exception: Method Invocation clone.set : at Line: 15 : in file: <unknown file> : clone .set ( "A different string" )
- 
+
 Target exception: java.lang.UnsupportedOperationException
- 
+
 java.lang.UnsupportedOperationException
  at org.jboss.dmr.ModelNode.checkProtect(ModelNode.java:1441)
  at org.jboss.dmr.ModelNode.set(ModelNode.java:351)
@@ -338,9 +338,9 @@ some non-list type, you cannot use the `add` method:
 ----
 bsh % node.add(5);
 // Error: // Uncaught Exception: Method Invocation node.add : at Line: 18 : in file: <unknown file> : node .add ( 5 )
- 
+
 Target exception: java.lang.IllegalArgumentException
- 
+
 java.lang.IllegalArgumentException
  at org.jboss.dmr.ModelValue.addChild(ModelValue.java:120)
  at org.jboss.dmr.ModelNode.add(ModelNode.java:1007)

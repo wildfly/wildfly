@@ -24,7 +24,7 @@ public class AttributeDefaultsTest extends AbstractSubsystemTest {
     @Test
     public void testAttributeValues() {
         Assert.assertNotEquals(ServerDefinition.GLOBAL_MAX_DISK_USAGE.getName(), ServerDefinition.GLOBAL_MAX_DISK_USAGE.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultMaxDiskUsage());
-        Assert.assertNotEquals(ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getName(), ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getDefaultValue().asLong(), ActiveMQDefaultConfiguration.getDefaultMaxGlobalSize());
+        Assert.assertNotEquals(ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getName(), ServerDefinition.GLOBAL_MAX_MEMORY_SIZE.getDefaultValue().asLong(), ActiveMQDefaultConfiguration.getDefaultMaxGlobalSizeAsPercentOfJvmMaxMemory(ActiveMQDefaultConfiguration.DEFAULT_GLOBAL_MAX_MEMORY_PERCENT));
         Assert.assertNotEquals(ServerDefinition.JOURNAL_POOL_FILES.getName(), ServerDefinition.JOURNAL_POOL_FILES.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles());
 //        Assert.assertNotEquals(ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getName(), ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE.getDefaultValue().asInt(), ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize());
 

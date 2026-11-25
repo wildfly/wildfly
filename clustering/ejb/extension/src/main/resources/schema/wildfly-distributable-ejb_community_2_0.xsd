@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<xs:schema targetNamespace="urn:jboss:domain:distributable-ejb:community:2.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="urn:jboss:domain:distributable-ejb:community:2.0"
+           elementFormDefault="qualified"
+           version="2.0">
+
+    <xs:element name="subsystem" type="tns:subsystem"/>
+
+    <xs:complexType name="subsystem">
+        <xs:sequence>
+            <xs:element name="bean-management" type="tns:bean-management">
+                <xs:annotation>
+                    <xs:documentation>Contains defined bean management providers</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:choice>
+                <xs:element name="local-client-mappings-registry" type="tns:empty">
+                    <xs:annotation>
+                        <xs:documentation>Configures support for local client mappings registry</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="infinispan-client-mappings-registry" type="tns:infinispan-client-mappings-registry">
+                    <xs:annotation>
+                        <xs:documentation>Configures support for cluster-aware client mappings registry</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="infinispan-timer-management" type="tns:infinispan-timer-management">
+                    <xs:annotation>
+                        <xs:documentation>References an existing timer management provider</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="bean-management">
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="infinispan-bean-management" type="tns:infinispan-bean-management">
+                <xs:annotation>
+                    <xs:documentation>An Infinispan-based bean management provider</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="default" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>Identifies the default bean management provider for ejb applications.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="infinispan-bean-management">
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The name of this bean management provider</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="tns:infinispan"/>
+        <xs:attribute name="max-active-beans" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The maximum number active beans to retain in memory at a time, after which the least recently used will passivate.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="idle-threshold" type="xs:duration">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines the duration in ISO 8601 format after which a bean should be considered idle, and thus eligible for passivation.
+                    If unspecified, beans will not be passivated based on idle time.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="infinispan-client-mappings-registry">
+        <xs:attributeGroup ref="tns:infinispan"/>
+    </xs:complexType>
+
+    <xs:attributeGroup name="infinispan">
+        <xs:attribute name="cache-container" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>References a cache-container defined by the Infinispan subsystem.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    References a cache within the associated cache-container.
+                    If unspecified, the default cache of the associated cache-container is assumed.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:complexType name="infinispan-timer-management">
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>References the name of an existing bean management provider</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="tns:infinispan"/>
+        <xs:attribute name="max-active-timers" type="xs:integer">
+            <xs:annotation>
+                <xs:documentation>The maximum number active timers to retain in memory at a time, after which the least recently used will passivate.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="idle-threshold" type="xs:duration">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines the duration in ISO 8601 format after which a timer should be considered idle, and thus eligible for passivation.
+                    If unspecified, timers will not be passivated based on idle time.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller" default="JBOSS">
+            <xs:annotation>
+                <xs:documentation>Indicates the marshalling implementation used for serializing the timeout context of a timer.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="empty">
+        <xs:sequence/>
+    </xs:complexType>
+
+    <xs:simpleType name="marshaller">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="JBOSS">
+                <xs:annotation>
+                    <xs:documentation>
+                        Marshaller based on JBoss Marshalling.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PROTOSTREAM">
+                <xs:annotation>
+                    <xs:documentation>
+                        Marshaller based on ProtoStream.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

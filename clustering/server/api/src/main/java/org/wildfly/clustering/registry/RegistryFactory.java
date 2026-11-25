@@ -12,7 +12,9 @@ import java.util.Map;
  * @param <K> the type of the registry entry key
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.registry.RegistryFactory}.
  */
+@Deprecated(forRemoval = true)
 public interface RegistryFactory<K, V> {
 
     /**

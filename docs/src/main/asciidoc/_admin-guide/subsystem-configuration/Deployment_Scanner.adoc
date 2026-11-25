@@ -23,7 +23,7 @@ found in `standalone.xml`:
 
 You can define more `deployment-scanner` entries to scan for deployments
 from more locations. The configuration showed will scan the
-`JBOSS_HOME/standalone/deployments` directory every five seconds. The
+`$JBOSS_HOME/standalone/deployments` directory every five seconds. The
 runtime model is shown below, and uses default values for attributes not
 specified in the xml:
 
@@ -60,7 +60,7 @@ case the value is treated as relative to that path.
 |relative-to |STRING |Reference to a filesystem path defined in the
 "paths" section of the server configuration, or one of the system
 properties specified on startup. In the example above
-jboss.server.base.dir resolves to JBOSS_HOME/standalone
+jboss.server.base.dir resolves to $JBOSS_HOME/standalone
 
 |scan-enabled |BOOLEAN |If true scanning is enabled
 

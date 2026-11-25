@@ -1,6 +1,6 @@
 # Reporting of CVEs and Security Issues
 
-## The WildFly community and our sponsor, Red Hat, take security bugs very seriously
+## The WildFly community and our sponsor, Commonhaus, take security bugs very seriously
 
 We aim to take immediate action to address serious security-related problems that involve our projects. 
 

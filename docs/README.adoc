@@ -23,12 +23,11 @@ You can activate the docs profile from the root directory with either `-Pdocs` o
 
 == Configuring the POM
 
-In the POM there are currently 4 main properties:
+In the POM there are currently 3 main properties:
 
 1. `appservername`
-2. `javaee_version`
-3. `oracle-javadoc`
-4. `wildflyversion`
+2. `oracle-javadoc`
+3. `wildflyversion`
 
 Currently the only property that may need to be changed is the `wildflyversion` property. This defaults to the property
 `product.docs.server.version` which can be found in the parent POM. It already should be set to the current major
@@ -40,14 +39,16 @@ version, but should likely be checked.
 Building the documentation can be done with the following command:
 
 .Generate Only
-```
+[source]
+----
 mvn clean package
-```
+----
 
 .Generate and Copy
-```
+[source]
+----
 mvn clean package -Pcopy-site
-```
+----
 
 The `asciidoctor-maven-plugin` will execute and generate html5 files. The files are generated in the
 `target/generated-docs` directory. You can optionally activate the `copy-site` profile to copy the generated site. See
@@ -78,14 +79,28 @@ Once copied you'll need to add the directory to the git repository; `git add ./1
 
 === Edit and Build Index
 
-Next in the `wildfly.github.io` repository you'll need to edit the `index.adoc` and add the newly created directory. We
-try to keep the listings in release order with the new release on top.
+Next in the `wildfly.github.io` repository you'll need to add the newly created directory and link to it from the index page.
 
-Once you edit the `index.adoc` you'll need to regenerate the `index.html` file. This can be done with the `asciidoctor`
+In the `index.adoc`, edit the `:wildfly-latest-major:` attribute to set it to the new release of WildFly (only the major version).
+
+In the `archives.adoc`, add a table row for the previous version of WildFly.
+
+Once you edit these 2 files, you'll need to regenerate their HTML files. This can be done with the `asciidoctor`
 command.
 
-```
-asciidoctor index.adoc
-```
+[source]
+----
+asciidoctor index.adoc archives.adoc
+----
+
+=== Update publish GitHub pages workflow
+
+In your `wildfly.github.io` checkout, edit the `.github/workflows/jekyll-gh-pages.yml` file and update the `WILDFLY_DOC_DIR_VERSION_TO_SCAN` environment variable with the value of the new documentation version directory (for example, `16` for WildFly 16). The value of this variable indicates the new documentation directory that needs to be scanned to prepare the pre-built search index.
+
+=== Update the Docs sitemap
+
+In your `wildfly.github.io` checkout, edit the `sitemap.xml` file. In all lines with URLs that include the previous WildFly version, update to the new WildFly version.
+
+=== Submit Your Changes
 
 After all that is complete you can commit your changes and submit a PR.

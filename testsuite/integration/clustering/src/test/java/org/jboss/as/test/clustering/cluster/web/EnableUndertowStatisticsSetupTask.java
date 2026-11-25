@@ -15,7 +15,7 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 public class EnableUndertowStatisticsSetupTask extends CLIServerSetupTask {
 
     public EnableUndertowStatisticsSetupTask() {
-        this.builder.node(AbstractClusteringTestCase.FOUR_NODES)
+        this.builder.node(AbstractClusteringTestCase.NODE_1_2_3_4.toArray(new String[0]))
                 .setup("/subsystem=undertow:write-attribute(name=statistics-enabled, value=true)")
                 .teardown("/subsystem=undertow:undefine-attribute(name=statistics-enabled)")
                 ;

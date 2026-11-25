@@ -87,7 +87,6 @@ public class RunAsMDBUnitTestCase {
         jar.addPackage(CommonCriteria.class.getPackage());
         // TODO WFLY-15289 Should these permissions be required?
         jar.addAsResource(createPermissionsXmlAsset(new ElytronPermission("setRunAsPrincipal"),
-                new ElytronPermission("handleSecurityEvent"),
                 new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
         return jar;
     }

@@ -10,5 +10,6 @@
         <include name="management"/>
         <include name="logging"/>
         <include name="undertow-load-balancer"/>
+        <include name="web-console"/>
     </layers>
 </config>

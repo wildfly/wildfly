@@ -5,8 +5,7 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.API_MODULE;
-import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.EXPORTED_MODULES;
+import java.util.List;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
@@ -21,9 +20,18 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
-    public OpenTelemetryDependencyProcessor() {
-
-    }
+    private static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
+    private static final List<String> EXPORTED_MODULES = List.of(
+        "io.opentelemetry.api",
+        "io.opentelemetry.context",
+        "io.opentelemetry.exporter",
+        "io.opentelemetry.instrumentation.annotations",
+        "io.opentelemetry.instrumentation.api",
+        "io.opentelemetry.otlp",
+        "io.opentelemetry.sdk",
+        "io.opentelemetry.semconv",
+        "io.smallrye.opentelemetry"
+    );
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
@@ -31,23 +39,20 @@ class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-
         try {
-            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME,
-                    WeldCapability.class);
+            final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
+            WeldCapability weldCapability = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                .getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
             if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
                 // Export the -api module only if CDI is available
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, API_MODULE,
-                        false, true, true, false));
+                moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, API_MODULE).setExport(true).setImportServices(true).build());
             }
 
             // Export all other modules regardless of CDI availability
             for (String module : EXPORTED_MODULES) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true,
-                        true, false));
+                moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, module).setExport(true).setImportServices(true).build());
             }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             throw new IllegalStateException();

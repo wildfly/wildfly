@@ -6,6 +6,8 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
+
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 
@@ -26,14 +28,27 @@ public interface WeldCapability {
      * Registers a CDI Portable Extension for the {@link DeploymentUnit} passed as argument to
      * this method.
      * <p>
-     * The extension is registered if only if the DeploymentUnit is part of a Weld Deployment. Specifically,
+     * The extension is registered if and only if the DeploymentUnit is part of a Weld Deployment. Specifically,
      * if a call to {@link #isPartOfWeldDeployment(DeploymentUnit)} using the DeploymentUnit argument
-     * returns {@code true}. Otherwise this method will return immediately.
+     * returns {@code true}. Otherwise, this method will return immediately.
      *
      * @param extension An instance of the CDI portable extension to add.
      * @param unit      The deployment unit where the extension will be registered.
      */
     void registerExtensionInstance(final Extension extension, final DeploymentUnit unit);
+
+    /**
+     * Registers a CDI Build Compatible Extension for the {@link DeploymentUnit} passed as argument to
+     * this method.
+     * <p>
+     * The extension is registered if and only if the DeploymentUnit is part of a Weld Deployment. Specifically,
+     * if a call to {@link #isPartOfWeldDeployment(DeploymentUnit)} using the DeploymentUnit argument
+     * returns {@code true}. Otherwise, this method will return immediately.
+     *
+     * @param extension An instance of the CDI portable extension to add.
+     * @param unit      The deployment unit where the extension will be registered.
+     */
+    void registerBuildCompatibleExtension(final Class<? extends BuildCompatibleExtension> extension, final DeploymentUnit unit);
 
     /**
      * Adds the Bean Manager service associated to the {@link DeploymentUnit} to ServiceBuilder passed as argument.

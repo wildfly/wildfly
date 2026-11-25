@@ -31,7 +31,7 @@
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                The configuration of entries for a ActiveMQ server.
+                The configuration of entries for an ActiveMQ server.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -48,7 +48,7 @@
         <xs:attribute name="name" type="xs:string" use="optional" default="default">
             <xs:annotation>
                 <xs:documentation>
-                    The name to use for this ActiveMQ Server. Must correspond to a ActiveMQ server installed in
+                    The name to use for this ActiveMQ Server. Must correspond to an ActiveMQ server installed in
                     the main configuration.
                 </xs:documentation>
             </xs:annotation>

@@ -5,11 +5,11 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.msc.service.Service;
+import java.util.function.Supplier;
+
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that controls delivery for a specific MDB.
@@ -18,23 +18,21 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Flavia Rainone
  */
-public class MdbDeliveryControllerService implements Service<MdbDeliveryControllerService> {
+public class MdbDeliveryControllerService implements Service {
 
-    private final InjectedValue<MessageDrivenComponent> mdbComponent = new InjectedValue<MessageDrivenComponent>();
+    private final Supplier<MessageDrivenComponent> mdbComponent;
 
-    public MdbDeliveryControllerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public MdbDeliveryControllerService(Supplier<MessageDrivenComponent> mdbComponent) {
+        this.mdbComponent = mdbComponent;
     }
 
-    public InjectedValue<MessageDrivenComponent> getMdbComponent() {
-        return mdbComponent;
+    @Override
+    public void start(StartContext context) {
+        this.mdbComponent.get().startDelivery();
     }
 
-    public void start(final StartContext context) throws StartException {
-        mdbComponent.getValue().startDelivery();
-    }
-
-    public void stop(final StopContext context) {
-        mdbComponent.getValue().stopDelivery();
+    @Override
+    public void stop(StopContext context) {
+        mdbComponent.get().stopDelivery();
     }
 }

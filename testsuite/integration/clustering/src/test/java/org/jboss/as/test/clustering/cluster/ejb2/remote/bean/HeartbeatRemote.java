@@ -5,8 +5,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 
-import jakarta.ejb.EJBObject;
 import java.util.Date;
+
+import jakarta.ejb.EJBObject;
 
 /**
  * The remote / business interface for the Heartbeat Enterprise Beans 2.x bean

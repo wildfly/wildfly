@@ -1,5 +1,6 @@
 [[index]]
-= WildFly Documentation
+= WildFly {wildflyVersion} Documentation
+WildFly authors;
 :ext-relative: {outfilesuffix}
 
 ifdef::env-github[]
@@ -40,18 +41,19 @@ of configuration options available via the WildFly management model.
 [[installation-guides]]
 == Installation Guides
 
-* The link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly and WildFly Preview] document introduces the different
-appserver variants produced by the WildFly project: the standard WildFly variant and the early-look tech preview
+* The link:Different_Flavors_of_WildFly{outfilesuffix}[Different Flavors of WildFly] document introduces the different
+appserver variants produced by the WildFly project: the standard WildFly variant, the WildFly EE 10 variant and the early-look tech preview
 WildFly Preview variant.
 * The link:Installation_Guide{outfilesuffix}[Installation Guide] helps you identify
 the kind of WildFly installation that best fits your application's deployment needs:
 a WildFly zip installation, a WildFly server provisioned with Galleon or a WildFly bootable JAR.
 
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] shows you how to package a WildFly server along with your application as part of your application's Maven build.
 * The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
 into a bootable JAR.
 
 * The link:Galleon_Guide{outfilesuffix}[Galleon Provisioning Guide] shows you how to 
-provision a customized WildFly server using Galleon.
+provision a customized WildFly server using the Galleon CLI tool.
 
 * The link:Getting_Started_on_OpenShift{outfilesuffix}[Getting Started with WildFly on OpenShift Guide] shows you how to use WildFly on OpenShift.
 
@@ -72,21 +74,14 @@ you how to create a cluster, how to configure the web container and Jakarta Ente
 container for clustering and how to configure load balancing
 and failover.
 
-* The link:wildscribe[WildFly model reference] provides information about all standalone server and managed domain
+* The link:feature-pack/doc/index.html[Feature-pack documentation] provides information about the WildFly feature-pack, including all standalone server and managed domain
 configuration options, using information generated directly from the WildFly management model.
 
 [[developer-guides]]
 == Developer Guides
 
-* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
-Started Developing Applications Guide] shows you how to build Jakarta EE
-applications and deploy them to WildFly. The guide starts by showing you
-the simplest _helloworld_ application using just Servlet and Jakarta Contexts and Dependency Injection, and
-then adds in Jakarta Faces, persistence and transactions, Jakarta Enterprise Beans, Bean Validation,
-RESTful web services and more. Finally, you'll get the opportunity to create
-your own skeleton project. Each tutorial is accompanied by a quickstart,
-which contains the source code, deployment descriptors and a Maven based
-build.
+* The link:Application_Development_Guide{outfilesuffix}[Application Development Guide] shows you how to build WildFly
+applications from scratch.
 
 * The link:Developer_Guide{outfilesuffix}[Developer Guide] takes
 you through every deployment descriptor and every annotation offered by
@@ -112,18 +107,18 @@ features which have been removed from WildFly.
 
 == Client Guide
 
-* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new Wildfly client and how to use it.
+* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new WildFly client and how to use it.
 
 [[quickstarts]]
 == Quickstarts
 
-* The link:Quickstarts{outfilesuffix}[WildFly Quickstarts] describe how to use the WildFly examples, which introduce a particular technology or feature of the application server.
+* The link:https://docs.wildfly.org/quickstart[WildFly Quickstarts] provides a set of ready-to-use example applications, which introduce a particular technology or feature of the application server.
 
 [[more-resources]]
 == More Resources
 
 * link:Glossary.html[Glossary]
 * https://wildfly.org[project page]
-* https://issues.redhat.com/browse/WFLY[issue tracker]
+* https://redhat.atlassian.net/browse/WFLY[issue tracker]
 * https://groups.google.com/g/wildfly[user forum]
 * https://github.com/wildfly/wildfly/[Source code at GitHub]

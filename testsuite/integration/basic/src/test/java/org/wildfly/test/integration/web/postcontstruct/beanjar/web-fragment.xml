@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<web-fragment version='5.0' xmlns='https://jakarta.ee/xml/ns/jakartaee'
+              xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+              xsi:schemaLocation='https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd'
+              metadata-complete="true">
+    <context-param>
+        <param-name>foo</param-name>
+        <param-value>bar</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>test</servlet-name>
+        <servlet-class>org.wildfly.test.integration.web.postcontstruct.beanjar.WrapperServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>test</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    <env-entry>
+        <env-entry-name>envEntry</env-entry-name>
+        <env-entry-type>java.lang.Integer</env-entry-type>
+        <env-entry-value>33</env-entry-value>
+    </env-entry>
+</web-fragment>

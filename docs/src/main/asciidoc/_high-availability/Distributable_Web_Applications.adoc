@@ -18,10 +18,10 @@ e.g.
 ./WEB-INF/web.xml:
 [source,xml]
 ----
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
     <distributable/>
 </web-app>
 ----
@@ -53,6 +53,8 @@ We can introspect its configuration:
         "cache" => undefined,
         "cache-container" => "web",
         "granularity" => "SESSION",
+        "idle-threshold" => undefined,
+        "marshaller" => "JBOSS",
         "affinity" => {"primary-owner" => undefined}
     }
 }
@@ -76,6 +78,9 @@ This is generally more expensive than ATTRIBUTE granularity, but preserves any c
 ATTRIBUTE:::
 Stores each session attribute within a separate cache entry.
 This is generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+idle-threshold::
+Specifies the duration after which a session should be considered idle and eligible for passivation/eviction.
+If unspecified, sessions will not be passivated based on idle time.
 affinity::
 This resource defines the affinity that a web request should have for a given server.
 The affinity of the associated web session determines the algorithm for generating the route to be appended onto the session ID (within the JSESSIONID cookie, or when encoding URLs).
@@ -182,7 +187,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <session-management name="foo"/>
 </distributable-web>
 ----
@@ -196,7 +201,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -213,7 +218,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <infinispan-session-management cache-container="foo" cache="bar" granularity="SESSION">
         <primary-owner-affinity/>
     </infinispan-session-management>
@@ -229,7 +234,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
             <local-affinity/>
         </infinispan-session-management>
@@ -259,7 +264,7 @@ e.g.
             </cookie-config>
         </session-config>
     </shared-session-config>
-    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -269,7 +274,7 @@ e.g.
 
 One of the primary design goals of WildFly's distributed session manager was the parity of HttpSession semantics between distributable and non-distributable web applications.
 In order to provide predictable behavior suitable for most web applications, the default distributed session manager configuration is quite conservative, generally favoring consistency over availability.
-However, these defaults may not be appropriate for your application.
+While these defaults are suitable for most applications, they may not be ideal for others.
 In general, the effective performance of the distributed session manager is constrained by:
 
 . Replication/persistence payload size
@@ -296,32 +301,24 @@ For read-heavy applications, this can dramatically reduce the replication/persis
 [[session_concurrency]]
 === Session concurrency
 
-WildFly's default distributed session manager behavior is also conservative with respect to concurrent access to a given session.
-By default, a request acquires exclusive access to its associated session for the duration of a request, and until any async child context is complete.
-This maximizes the performance of a single request, as each request corresponds to a single cache transaction; allows for repeatable read semantics to the session; and ensures that subsequent requests are not prone to stale reads, even when handled by another cluster member.
+By default, WildFly's distributed session manager configuration permits concurrent access to a given session on a single cluster member at a time,
+as mandated by https://jakarta.ee/specifications/servlet/6.1/jakarta-servlet-spec-6.1.html#distributed-environments[§7.7.2 of the Jakarta Servlet specification].
 
-However, if multiple requests attempt to access the same session concurrently, their processing will be effectively serialized.  This might not be feasible, especially for heavily asynchronous web applications.
+By default, the first request for a given session acquires exclusive, cluster-wide access to its associated session, and maintains that exclusivity until the last concurrent request for that session has completed.
+Concurrent requests for the same session arriving on other cluster members will be blocked until all requests for the given session have completed on the cluster member retaining exclusive access.
+This level of concurrency should be sufficient for most applications using a load balancer properly configured with session affinity.
 
-Relaxing transaction isolation from REPEATABLE_READ to READ_COMMITTED on the associated cache configuration will allow concurrent requests to perform lock-free (but potentially stale) reads by deferring locking to the first attempt to write to the session.
-This improves the throughput of requests for the same session for highly asynchronous web applications whose session access is read-heavy.
-
-e.g.
-[source]
-----
-/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=locking:write-attribute(name=isolation, value=READ_COMMITTED)
-----
-
-For asynchronous web applications whose session access is write-heavy, merely relaxing transaction isolation is not likely to be sufficient.
-These web applications will likely benefit from disabling cache transactions altogether.
-When transactions are disabled, cache entries are locked and released for every write to the session, resulting in last-write-wins semantics.
-For write-heavy applications, this typically improves the throughput of concurrent requests for the same session, at the cost of longer response times for individual requests.
+If your application uses the HttpSession in a sufficiently read-only manner and/or can tolerate potentially dirty reads, you may consider disabling transactions on the Infinispan cache used to store HttpSession attributes and metadata.
+Disabling transactions will permit concurrent access to a given session by any cluster member.
+When transactions are disabled, however, changes to an HttpSession on one cluster member will not be visible to a concurrent request for the same session on a different cluster member, and updates will have last-write-wins semantics.
+Disabling transactions on the default cache configuration for sessions is achieved using the following command:
 
 [source]
 ----
 /subsystem=infinispan/cache-container=web/distributed-cache=dist/component=transaction:write-attribute(name=mode, value=NONE)
 ----
 
-NOTE: Relaxing transaction isolation currently prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint dictated by the servlet specification.
+NOTE: Relaxing transaction isolation or disabling transactions prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint mandated by the Jakarta Servlet specification.
 
 [[session_attribute_immutability]]
 === Session attribute immutability
@@ -361,12 +358,31 @@ Alternatively, immutable classes can be enumerated via the distributable-web dep
 e.g.
 [source,xml]
 ----
-<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+<distributable-web xmlns="urn:jboss:distributable-web:community:5.0">
     <session-management>
         <immutable-class>foo.bar.ImmutableClass</immutable-class>
         <immutable-class>...</immutable-class>
     </session-management>
 </distributable-web>
+----
+
+[[session_idle_eviction]]
+=== Idle time-based session eviction
+
+For applications with many sessions where not all sessions are actively used,
+configuring `idle-threshold` can help optimize memory usage by passivating sessions that haven't been accessed recently.
+
+The `idle-threshold` attribute allows you to specify how long a session can remain idle before becoming eligible for passivation.
+This works alongside the existing `max-active-sessions` limit but provides time-based eviction rather than purely count-based eviction.
+
+When a session exceeds the idle threshold, it will be passivated to the underlying cache store,
+freeing up memory while preserving the session state.
+When the session is accessed again, it will be activated.
+
+[source]
+----
+# Sets idle threshold to 15 minutes
+/subsystem=distributable-web/infinispan-session-management=default:write-attribute(name=idle-threshold, value=PT15M)
 ----
 
 [[session_attribute_marshalling]]

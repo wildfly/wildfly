@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import static org.assertj.core.api.Assertions.fail;
+
 import javax.transaction.xa.XAResource;
 
 import jakarta.transaction.RollbackException;
@@ -14,7 +16,6 @@ import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.Assert;
 
 /**
  * Transaction util class which works with transaction like
@@ -96,9 +97,9 @@ public final class TxTestUtil {
             Transaction tx = tm.getTransaction();
 
             if(!isExpectTransaction && tx != null && tx.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                Assert.fail("We do not expect transaction would be active - we haven't activated it in BMT bean");
+                fail("We do not expect transaction would be active - we haven't activated it in BMT bean");
             } else if (isExpectTransaction && (tx == null || tx.getStatus() != Status.STATUS_ACTIVE)) {
-                Assert.fail("We do expect tranaction would be active - we have alredy activated it in BMT bean");
+                fail("We do expect tranaction would be active - we have alredy activated it in BMT bean");
             }
         } catch (SystemException e) {
             throw new RuntimeException("Cannot get the current transaction from injected TransationManager!", e);

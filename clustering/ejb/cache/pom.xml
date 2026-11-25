@@ -6,7 +6,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ejb-cache</artifactId>
@@ -38,39 +38,11 @@
         <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-client</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
         </dependency>
 
         <!-- External dependencies -->
@@ -99,38 +71,51 @@
             <artifactId>jboss-marshalling</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.common</groupId>
-            <artifactId>wildfly-common</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
         </dependency>
 
         <!-- Internal test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
-        </dependency>
-
-        <!-- External test dependencies -->
-        <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>protoparser</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

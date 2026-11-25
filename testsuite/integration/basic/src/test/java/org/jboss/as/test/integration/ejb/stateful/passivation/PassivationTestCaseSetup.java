@@ -29,14 +29,14 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
 
     /**
      * This test setup originally depended upon manipulating the passivation-store for the default (passivating) cache.
-     * However, since WFLY-14953, passivation stores have been superceeded by bean-management-providers
+     * However, since WFLY-14953, passivation stores have been superseded by bean-management-providers
      * (i.e. use /subsystem=distributable-ejb/infinispan-bean-management=default instead of /subsystem=ejb3/passivation-store=infinispan)
      */
     private static final PathAddress INFINISPAN_BEAN_MANAGEMENT_PATH = PathAddress.pathAddress(PathElement.pathElement("subsystem", "distributable-ejb"),
             PathElement.pathElement("infinispan-bean-management", "default"));
 
     /*
-     * Set the max-acive-beans attribute of the bean-management provider to 1 to force passivation.
+     * Set the max-active-beans attribute of the bean-management provider to 1 to force passivation.
      */
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {

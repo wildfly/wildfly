@@ -8,6 +8,7 @@ package org.wildfly.extension.microprofile.health;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -19,27 +20,84 @@ import io.smallrye.health.SmallRyeHealth;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 
 public class MicroProfileHealthReporter {
+    // TODO: Extract a sensible interface
+    public static final NullaryServiceDescriptor<MicroProfileHealthReporter> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.extension.microprofile.health.reporter", MicroProfileHealthReporter.class);
+    public static final AttachmentKey<MicroProfileHealthReporter> ATTACHMENT_KEY = AttachmentKey.create(MicroProfileHealthReporter.class);
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
-    private final boolean defaultServerProceduresDisabled;
+    private final boolean globalDefaultProceduresDisabled;
     private final String defaultReadinessEmptyResponse;
     private final String defaultStartupEmptyResponse;
-    private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
     private final HealthCheck emptyDeploymentStartupCheck;
+    private final Map<String, DeploymentConfiguration> deploymentsConfiguration = new ConcurrentHashMap<>();
 
-    private boolean userChecksProcessed = false;
+    /**
+     * Evaluate whether any deployment is disabling default procedures server-wide, i.e. by setting
+     * {@code mp.health.disable-default-procedures=true}
+     * @return {@code true} if any deployment is disabling the default procedures, {@code false} otherwise
+     */
+    private boolean isAnyDeploymentDisablingDefaultProcedures() {
+        return deploymentsConfiguration.entrySet().stream().anyMatch(dc -> dc.getValue().getDisableDefaultProcedures());
+    }
+
+    /**
+     * Evaluate whether any user defined checks have been processed, for any deployments.
+     * @return {@code true} if any deployment has being tracked, {@code false} otherwise.
+     */
+    private boolean userChecksProcessed() {
+        return !deploymentsConfiguration.isEmpty();
+    }
+
+    /**
+     * Whether default procedures should be added or not to the returned health checks.
+     * Default procedures will be added when they're <i>not</i> disabled globally,
+     * <b>and</b> they're <i>not</i> disabled by any deployments.
+     * @return {@code true} if default procedures should be added, {@code false} otherwise.
+     */
+    private boolean defaultProceduresShouldBeAdded() {
+        return !globalDefaultProceduresDisabled && !isAnyDeploymentDisablingDefaultProcedures();
+    }
+
+    /**
+     * Track a deployment configuration.
+     * @param deployment The deployment name
+     * @param disableDefaultProcedures Flag that tells whether the given deployment is disabling default procedures,
+     *                                 see the {@code mp.health.disable-default-procedures} MicroProfile Config property.
+     */
+    public void addDeploymentConfiguration(final String deployment, final Boolean disableDefaultProcedures) {
+        if (disableDefaultProcedures) {
+            // Log: deployment-level setting is overriding the global setting
+            MicroProfileHealthLogger.LOGGER.addDefaultProceduresDisabledByDeployment(deployment);
+        }
+        deploymentsConfiguration.put(deployment, new DeploymentConfiguration(disableDefaultProcedures));
+    }
+
+    /**
+     * Remove a deployment configuration.
+     * @param deployment The deployment name
+     */
+    public void removeDeploymentConfiguration(final String deployment) {
+        if (deploymentsConfiguration.get(deployment).getDisableDefaultProcedures()) {
+            // Log: deployment-level setting is being removed
+            MicroProfileHealthLogger.LOGGER.removeDefaultProceduresDisabledByDeployment(deployment);
+        }
+        deploymentsConfiguration.remove(deployment);
+    }
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
         private final String name;
@@ -58,14 +116,13 @@ public class MicroProfileHealthReporter {
         }
     }
 
-
     public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus,
-                                      String emptyStartupChecksStatus, boolean defaultServerProceduresDisabled,
+                                      String emptyStartupChecksStatus, boolean defaultProceduresDisabled,
                                       String defaultReadinessEmptyResponse, String defaultStartupEmptyResponse) {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
         this.emptyDeploymentStartupCheck  = new EmptyDeploymentCheckStatus("empty-startup-checks", emptyStartupChecksStatus);
-        this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;
+        this.globalDefaultProceduresDisabled = defaultProceduresDisabled;
         this.defaultReadinessEmptyResponse = defaultReadinessEmptyResponse;
         this.defaultStartupEmptyResponse = defaultStartupEmptyResponse;
     }
@@ -77,20 +134,21 @@ public class MicroProfileHealthReporter {
         deploymentChecks.putAll(readinessChecks);
         deploymentChecks.putAll(startupChecks);
 
-        HashMap<HealthCheck, ClassLoader> serverChecks= new HashMap<>();
-        serverChecks.putAll(serverReadinessChecks);
-        if (deploymentChecks.size() == 0 && !defaultServerProceduresDisabled) {
-            serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
-            serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
-            serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+        HashMap<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
+        if (defaultProceduresShouldBeAdded()) {
+            serverChecks.putAll(serverReadinessChecks);
+            if (deploymentChecks.size() == 0) {
+                serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
+                serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+                serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+            }
         }
-
         return getHealth(serverChecks, deploymentChecks);
     }
 
     public SmallRyeHealth getLiveness() {
         final Map<HealthCheck, ClassLoader> serverChecks;
-        if (livenessChecks.size() == 0 && !defaultServerProceduresDisabled) {
+        if (livenessChecks.size() == 0 && defaultProceduresShouldBeAdded()) {
             serverChecks = Collections.singletonMap(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
         } else {
             serverChecks = Collections.emptyMap();
@@ -100,11 +158,14 @@ public class MicroProfileHealthReporter {
 
     public SmallRyeHealth getReadiness() {
         final Map<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
-        serverChecks.putAll(serverReadinessChecks);
+        final boolean addDefaultProcedures = defaultProceduresShouldBeAdded();
+        if (addDefaultProcedures) {
+            serverChecks.putAll(serverReadinessChecks);
+        }
         if (readinessChecks.size() == 0) {
-            if (defaultServerProceduresDisabled) {
+            if (!addDefaultProcedures) {
                 return getHealth(serverChecks, readinessChecks,
-                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                    userChecksProcessed() ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultReadinessEmptyResponse));
             } else {
                 serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
@@ -117,9 +178,9 @@ public class MicroProfileHealthReporter {
     public SmallRyeHealth getStartup() {
         Map<HealthCheck, ClassLoader> serverChecks = Collections.emptyMap();
         if (startupChecks.size() == 0) {
-            if (defaultServerProceduresDisabled) {
+            if (!defaultProceduresShouldBeAdded()) {
                 return getHealth(serverChecks, startupChecks,
-                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                    userChecksProcessed() ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultStartupEmptyResponse));
             } else {
                 serverChecks = Collections.singletonMap(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
@@ -162,7 +223,7 @@ public class MicroProfileHealthReporter {
         if (checks != null) {
             for (Map.Entry<HealthCheck, ClassLoader> entry : checks.entrySet()) {
                 // use the classloader of the deployment's module instead of the TCCL (which is the server's ModuleClassLoader
-                // to ensure that any resources that checks the TCCL (such as MP Config) will use the correct one
+                // to ensure that any resources that checks the TCCL (such as MicroProfile Config) will use the correct one
                 // when the health checks are called.
                 final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
@@ -270,7 +331,20 @@ public class MicroProfileHealthReporter {
         startupChecks.remove(check);
     }
 
-    public void setUserChecksProcessed(boolean userChecksProcessed) {
-        this.userChecksProcessed = userChecksProcessed;
+    /**
+     * Holds a deployment MicroProfile Health related configuration.
+     * Currently, the only field is the flag that tells whether the deployment is disabling default
+     * procedures, but it can be expanded in the future.
+     */
+    private static final class DeploymentConfiguration {
+        final Boolean disableDefaultProcedures;
+
+        private DeploymentConfiguration(Boolean disableDefaultProcedures) {
+            this.disableDefaultProcedures = disableDefaultProcedures;
+        }
+
+        public Boolean getDisableDefaultProcedures() {
+            return disableDefaultProcedures;
+        }
     }
 }

@@ -5,11 +5,10 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
-import java.util.function.Consumer;
-
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * A bean decorator that executes a given task on close.
@@ -20,11 +19,11 @@ import org.wildfly.clustering.ejb.bean.BeanMetaData;
 public class OnCloseBean<K, V extends BeanInstance<K>> implements Bean<K, V> {
 
     private final Bean<K, V> bean;
-    private final Consumer<Bean<K, V>> task;
+    private final Consumer<Bean<K, V>> closeTask;
 
-    public OnCloseBean(Bean<K, V> bean, Consumer<Bean<K, V>> task) {
+    public OnCloseBean(Bean<K, V> bean, Consumer<Bean<K, V>> closeTask) {
         this.bean = bean;
-        this.task = task;
+        this.closeTask = closeTask;
     }
 
     @Override
@@ -48,14 +47,14 @@ public class OnCloseBean<K, V extends BeanInstance<K>> implements Bean<K, V> {
     }
 
     @Override
-    public void remove(Consumer<V> removeTask) {
+    public void remove(java.util.function.Consumer<V> removeTask) {
         this.bean.remove(removeTask);
     }
 
     @Override
     public void close() {
         try {
-            this.task.accept(this.bean);
+            this.closeTask.accept(this.bean);
         } finally {
             this.bean.close();
         }

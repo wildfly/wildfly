@@ -8,15 +8,16 @@ package org.wildfly.clustering.ejb.timer;
 import java.util.function.Function;
 
 import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 
 /**
  * Encapsulates the configuration of a {@link TimerManagementProvider}.
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public interface TimerManagementConfiguration {
+public interface TimerManagementConfiguration extends EvictionConfiguration {
 
     Function<Module, ByteBufferMarshaller> getMarshallerFactory();
 
-    Integer getMaxActiveTimers();
 }

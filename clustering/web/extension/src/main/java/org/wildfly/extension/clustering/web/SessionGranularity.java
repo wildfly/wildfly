@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**
  * Enumerates the session granularity values.

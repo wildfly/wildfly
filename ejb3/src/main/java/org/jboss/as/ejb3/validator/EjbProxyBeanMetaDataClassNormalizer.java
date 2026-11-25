@@ -18,14 +18,13 @@ import jakarta.enterprise.inject.spi.PassivationCapable;
 
 import org.hibernate.validator.cdi.spi.BeanNames;
 import org.hibernate.validator.metadata.BeanMetaDataClassNormalizer;
+import org.jboss.as.ee.component.ViewService;
 
 /**
+ * This class is used to provide bean validation with the bean class instead of Jakarta Enterprise Beans proxy class.
+ * This is necessary as Jakarta Enterprise Beans proxy does not contain generics data.
  *
- * This class is used to provide bean validation with a interface instead of Jakarta Enterprise Beans proxy. This is necessary as Jakarta Enterprise Beans proxy
- * does not contain generics data.
  * @see <a href="https://issues.redhat.com/browse/WFLY-11566">WFLY-11566</a>
- *
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 
 public class EjbProxyBeanMetaDataClassNormalizer implements BeanMetaDataClassNormalizer, Bean<BeanMetaDataClassNormalizer>, PassivationCapable {
@@ -36,8 +35,13 @@ public class EjbProxyBeanMetaDataClassNormalizer implements BeanMetaDataClassNor
 
     @Override
     public <T> Class<? super T> normalize(Class<T> clazz) {
-        if (EjbProxy.class.isAssignableFrom(clazz) && clazz.getSuperclass() != Object.class) {
-            return clazz.getSuperclass();
+        if (EjbProxy.class.isAssignableFrom(clazz)) {
+            Class<?> beanClass = ViewService.getBeanClassForProxy(clazz);
+            if (beanClass != null) {
+                @SuppressWarnings("unchecked")
+                Class<? super T> result = (Class<? super T>) beanClass;
+                return result;
+            }
         }
         return clazz;
     }

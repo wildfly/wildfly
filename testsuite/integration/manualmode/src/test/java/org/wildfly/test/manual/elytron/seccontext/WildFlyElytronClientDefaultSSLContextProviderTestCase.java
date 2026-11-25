@@ -4,7 +4,6 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.client.helpers.Operations.createAddOperation;
 import static org.jboss.as.controller.client.helpers.Operations.createAddress;
 import static org.jboss.as.controller.client.helpers.Operations.createRemoveOperation;
@@ -161,11 +160,11 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
             Assert.assertTrue(managementClient.getControllerClient().execute(modelNode).asString().contains("\"outcome\" => \"success\""));
 
             // Remove the reference to the legacy security realm and update the https-listener to use the ssl-context we just created
-            CLIWrapper cli = new CLIWrapper(true);
-            cli.sendLine("batch");
-            cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=twoWaySSC)");
-            cli.sendLine("run-batch");
-            cli.sendLine("reload");
+            try (CLIWrapper cli = new CLIWrapper(true)) {
+                cli.sendLine("batch");
+                cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=twoWaySSC)");
+                cli.sendLine("run-batch");
+            }
         } catch (Exception e) {
             Assert.fail();
         }
@@ -180,7 +179,7 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
     }
 
     private void reloadServer(ModelControllerClient managementClient) {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient, (int) SECONDS.toMillis(90), false, SERVER_ADDRESS, getManagementPort());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient, ServerReload.TIMEOUT, false, SERVER_ADDRESS, getManagementPort());
     }
 
     private int getManagementPort() {

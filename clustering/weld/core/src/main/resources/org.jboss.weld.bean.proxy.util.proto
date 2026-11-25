@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package org.jboss.weld.bean.proxy.util;
+
+import "java.lang.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
+
+/**
+ * @TypeId(479)
+ */
+message SerializableClientProxy {
+	org.wildfly.clustering.marshalling.protostream.Any	beanId	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	contextId	 = 2;
+}

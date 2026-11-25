@@ -58,7 +58,7 @@ public class ServerInterceptorsViewConfigurator implements ViewConfigurator {
         }
         final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
         for (final Method method : viewMethods) {
-            viewConfiguration.addViewInterceptor(method, new UserInterceptorFactory(weaved(serverInterceptorsAroundInvoke), weaved(serverInterceptorsAroundTimeout)), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
+            viewConfiguration.addViewInterceptor(method, new UserInterceptorFactory(weaved(serverInterceptorsAroundInvoke), weaved(serverInterceptorsAroundTimeout)), InterceptorOrder.View.USER_SPECIFIC_SERVER_INTERCEPTORS);
         }
     }
 

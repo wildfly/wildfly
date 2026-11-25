@@ -50,6 +50,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");
 
+    public static final ServiceName JBOSS_TXN_ORB_PORTABILITY_ENVIRONMENT = JBOSS_TXN.append("OrbPortabilityEnvironment");
+
     public static final ServiceName JBOSS_TXN_CMR = JBOSS_TXN.append("CMR");
 
     public static final ServiceName JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT = JBOSS_TXN.append("context", "local");

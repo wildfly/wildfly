@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -35,9 +36,8 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor;
 
 public class MessagingActiveMQSubsystem_13_1_TestCase extends AbstractSubsystemBaseTest {
 
@@ -182,9 +182,10 @@ public class MessagingActiveMQSubsystem_13_1_TestCase extends AbstractSubsystemB
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.resolve("ee"),
-                ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
-                JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(),
+        return AdditionalInitialization.withCapabilities(RuntimeCapability.resolveCapabilityName(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, "ee"),
+                RuntimeCapability.resolveCapabilityName(LegacyClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, "ee"),
+                ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName(),
+                LegacyClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName(),
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
                 CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1",

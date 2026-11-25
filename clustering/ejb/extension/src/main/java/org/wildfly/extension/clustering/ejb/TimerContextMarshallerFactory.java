@@ -7,18 +7,18 @@ package org.wildfly.extension.clustering.ejb;
 
 import java.util.function.Function;
 
-import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
+import org.wildfly.clustering.marshalling.protostream.modules.ModuleClassResolver;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
+ * Enumerates factories for creating a timer context marshaller, i.e. {@link jakarta.ejb.Timer#getInfo()}.
  * @author Paul Ferraro
  */
 public enum TimerContextMarshallerFactory implements Function<Module, ByteBufferMarshaller> {
@@ -26,17 +26,15 @@ public enum TimerContextMarshallerFactory implements Function<Module, ByteBuffer
     JBOSS() {
         @Override
         public ByteBufferMarshaller apply(Module module) {
-            MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-            config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
-            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(config), module.getClassLoader());
+            return new JBossByteBufferMarshaller(MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).load(module.getClassLoader()).build(), module.getClassLoader());
         }
     },
     PROTOSTREAM() {
         @Override
         public ByteBufferMarshaller apply(Module module) {
-            SerializationContextBuilder builder = new SerializationContextBuilder(new ModuleClassLoaderMarshaller(module.getModuleLoader())).load(module.getClassLoader());
-            return new ProtoStreamByteBufferMarshaller(builder.build());
+            ProtoStreamConfiguration configuration = ProtoStreamConfiguration.Builder.with(new ModuleClassResolver(module)).build();
+            ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(configuration).build();
+            return new ProtoStreamByteBufferMarshaller(context);
         }
     },
     ;

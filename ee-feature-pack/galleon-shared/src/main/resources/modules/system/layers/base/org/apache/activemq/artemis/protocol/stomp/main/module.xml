@@ -27,7 +27,7 @@
     </properties>
     
     <resources>
-        <artifact name="${org.apache.activemq:artemis-stomp-protocol}"/>
+        <artifact name="${org.apache.artemis:artemis-stomp-protocol}"/>
     </resources>
 
     <dependencies>

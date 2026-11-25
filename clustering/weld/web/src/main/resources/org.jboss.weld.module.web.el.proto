@@ -1,15 +1,19 @@
+syntax = "proto3";
+
 package org.jboss.weld.module.web.el;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(480)
  */
 message WeldMethodExpression {
-	optional	bytes	expression	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expression	 = 1;
 }
 
 /**
  * @TypeId(481)
  */
 message WeldValueExpression {
-	optional	bytes	expression	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	expression	 = 1;
 }

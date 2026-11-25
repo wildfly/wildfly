@@ -81,13 +81,15 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service {
                 Object instance;
                 BasicInjectionTarget target = injectionTarget instanceof BasicInjectionTarget ? (BasicInjectionTarget) injectionTarget: null;
                 if(target != null && target.getBean() != null) {
+                    // instance is a bean, Weld will trigger injection and post construct as part of bean creation
                     instance = beanManager.getReference(target.getBean(), target.getAnnotatedType().getBaseType(), context);
                 } else {
+                    // instance is not a bean, invoke produce/inject/postConstruct manually
                     instance = injectionTarget.produce(context);
+                    injectionTarget.inject(instance, context);
+                    injectionTarget.postConstruct(instance);
                 }
 
-                injectionTarget.inject(instance, context);
-                injectionTarget.postConstruct(instance);
                 return new WeldManagedReference(injectionTarget, context, instance);
             }
         };

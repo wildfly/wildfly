@@ -19,7 +19,7 @@
     <feature spec="domain.socket-binding-group.socket-binding">
         <param name="socket-binding" value="jgroups-tcp-fd"/>
         <param name="interface" value="private"/>
-        <param name="port" value="57600"/>
+        <param name="port" value="7601"/>
     </feature>
     <feature spec="domain.socket-binding-group.socket-binding">
         <param name="socket-binding" value="jgroups-udp"/>
@@ -31,6 +31,6 @@
     <feature spec="domain.socket-binding-group.socket-binding">
         <param name="socket-binding" value="jgroups-udp-fd"/>
         <param name="interface" value="private"/>
-        <param name="port" value="54200"/>
+        <param name="port" value="7602"/>
     </feature>
 </feature-group-spec>

@@ -5,6 +5,9 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.xpc.bean;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.ejb.Remove;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -16,9 +19,6 @@ import jakarta.persistence.PersistenceContextType;
 import org.hibernate.Session;
 import org.hibernate.stat.CacheRegionStatistics;
 import org.jboss.logging.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Paul Ferraro

@@ -10,6 +10,8 @@ endif::[]
 
 include::jgroups/JGroups_Subsystem.adoc[leveloffset=+1]
 
+include::jgroups/SSL-TLS-Secured-Transport.adoc[leveloffset=+1]
+
 == Member Discovery
 
 include::jgroups/Kubernetes.adoc[]
@@ -17,3 +19,7 @@ include::jgroups/Kubernetes.adoc[]
 include::jgroups/AWS-Discovery.adoc[]
 
 // TODO Discovery in Azure
+
+== External Protocols
+
+include::jgroups/External_Protocols.adoc[]

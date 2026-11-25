@@ -10,8 +10,7 @@ import javax.naming.Reference;
 import jakarta.resource.Referenceable;
 import jakarta.resource.spi.ResourceAdapter;
 import jakarta.resource.spi.ResourceAdapterAssociation;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * Admin object implementation

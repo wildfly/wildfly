@@ -24,8 +24,8 @@ import org.jboss.modcluster.container.Host;
  */
 public class UndertowHost implements Host {
 
-    private org.wildfly.extension.undertow.Host host;
-    private Engine engine;
+    private final org.wildfly.extension.undertow.Host host;
+    private final Engine engine;
 
     public UndertowHost(org.wildfly.extension.undertow.Host host, Engine engine) {
         this.engine = engine;

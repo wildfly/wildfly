@@ -7,7 +7,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -17,14 +17,16 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-common-ee-dependency-management</artifactId>
     <description>
         Common dependency management that can be imported by other boms used for traditional
-        capabilities like Jakarta EE. Not meant for direct use as a bom.
+        capabilities like Jakarta EE. Not meant for direct use as a bom. Contains items
+        common to *all* feature-packs that directly provide 'base' functionality,
+        e.g. the wildfly-ee feature-pack.
     </description>
     <packaging>pom</packaging>
 
@@ -38,22 +40,13 @@
             'legacy', 'standard', and 'preview' builds.
             -->
 
+            <!-- BOM imports go at the end, after individual artifact declarations. -->
+
             <!-- Keep these sorted -->
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>jipijapa-eclipselink</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate6</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -113,78 +106,12 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-client-all</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-client-properties</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-context</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-ee-cache</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-ee-hotrod</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-ee-infinispan</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-ee-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -305,28 +232,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-infinispan-client-spi</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -338,29 +243,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-extension</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -427,17 +310,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-                <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-marshalling-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -450,12 +322,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-server-api</artifactId>
                 <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -470,29 +336,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-server-infinispan</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-server-service</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-server-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -525,6 +369,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-singleton-compat</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-singleton-extension</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -547,29 +402,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-singleton-service</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-api</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-cache</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -602,40 +435,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-hotrod</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-infinispan</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-service</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-web-spi</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -690,6 +490,17 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-concurrency-spi</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-connector</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -702,6 +513,17 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-datasources-agroal</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-jakarta-data</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -746,7 +568,7 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
-                <version>${full.maven.version}</version>
+                <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1104,89 +926,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml</groupId>
-                <artifactId>classmate</artifactId>
-                <version>${version.com.fasterxml.classmate}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${version.com.fasterxml.jackson.databind}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jdk8</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                <artifactId>jackson-jakarta-rs-base</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
                 <version>${version.org.codehaus.woodstox.woodstox-core}</version>
@@ -1259,42 +998,10 @@
                 <version>${version.com.google.guava}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.google.code.findbugs</groupId>
-                        <artifactId>jsr305</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.errorprone</groupId>
-                        <artifactId>error_prone_annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>failureaccess</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>listenablefuture</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.j2objc</groupId>
-                        <artifactId>j2objc-annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-qual</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${version.com.h2database}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.ibm.async</groupId>
-                <artifactId>asyncutil</artifactId>
-                <version>${version.com.ibm.async.asyncutil}</version>
             </dependency>
 
             <dependency>
@@ -1319,12 +1026,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.squareup</groupId>
-                <artifactId>protoparser</artifactId>
-                <version>${version.com.squareup.protoparser}</version>
             </dependency>
 
             <dependency>
@@ -1432,6 +1133,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-secure-xml</artifactId>
+                <version>${version.org.apache.commons.secure-xml}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>de.dentrassi.crypto</groupId>
                 <artifactId>pem-keystore</artifactId>
                 <version>${version.de.dentrassi.crypto}</version>
@@ -1486,9 +1193,9 @@
             </dependency>
 
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${version.io.netty}</version>
+                <groupId>io.github.jopenlibs</groupId>
+                <artifactId>vault-java-driver</artifactId>
+                <version>${version.io.github.jopenlibs.vault-java-driver}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1496,244 +1203,24 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-core</artifactId>
+                <version>${version.io.github.resilience4j}</version>
             </dependency>
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-dns</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-retry</artifactId>
+                <version>${version.io.github.resilience4j}</version>
             </dependency>
+
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http</artifactId>
+                <artifactId>netty-bom</artifactId>
                 <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-socks</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler-proxy</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-resolver</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-resolver-dns</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-classes-epoll</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-classes-kqueue</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-epoll</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>linux-aarch_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-epoll</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>linux-x86_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-kqueue</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-aarch_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-kqueue</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-x86_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>linux-aarch_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>linux-x86_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-aarch_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-x86_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -1748,32 +1235,15 @@
             </dependency>
 
             <dependency>
-                <groupId>io.undertow.jastow</groupId>
-                <artifactId>jastow</artifactId>
-                <version>${version.io.undertow.jastow}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.activation</groupId>
                 <artifactId>jakarta.activation-api</artifactId>
                 <version>${version.jakarta.activation.jakarta.activation-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.annotation</groupId>
-                <artifactId>jakarta.annotation-api</artifactId>
-                <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1793,56 +1263,20 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>jakarta.data</groupId>
+                <artifactId>jakarta.data-api</artifactId>
+                <version>${version.jakarta.data.jakarta-data-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${version.jakarta.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.lang-model</artifactId>
-                <version>${version.jakarta.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise.concurrent</groupId>
-                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!-- This dependency is not used by the app server itself, but is defined here to allow
-                 user applications to pull in the dependency version as part of the BOM -->
-            <dependency>
-                <groupId>jakarta.faces</groupId>
-                <artifactId>jakarta.faces-api</artifactId>
-                <version>${version.jakarta.faces.jakarta-faces-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1874,11 +1308,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>jakarta.json.bind</groupId>
-                <artifactId>jakarta.json.bind-api</artifactId>
-                <version>${version.jakarta.json.bind.api}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
                 <version>${version.jakarta.mail-api}</version>
@@ -1890,53 +1319,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>jakarta.persistence</groupId>
-                <artifactId>jakarta.persistence-api</artifactId>
-                <version>${version.jakarta.persistence}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.resource</groupId>
                 <artifactId>jakarta.resource-api</artifactId>
                 <version>${version.jakarta.resource.jakarta-resource-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.security.enterprise</groupId>
-                <artifactId>jakarta.security.enterprise-api</artifactId>
-                <version>${version.jakarta.security.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${version.jakarta.servlet.jakarta-servlet-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet.jsp</groupId>
-                <artifactId>jakarta.servlet.jsp-api</artifactId>
-                <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1965,44 +1350,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${version.jakarta.validation.jakarta-validation-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.websocket</groupId>
-                <artifactId>jakarta.websocket-api</artifactId>
-                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.websocket</groupId>
-                <artifactId>jakarta.websocket-client-api</artifactId>
-                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
@@ -2035,48 +1382,19 @@
             </dependency>
 
             <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${version.org.bytebuddy}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>net.jcip</groupId>
                 <artifactId>jcip-annotations</artifactId>
                 <version>${version.net.jcip}</version>
             </dependency>
 
             <dependency>
-                <groupId>net.shibboleth.utilities</groupId>
-                <artifactId>java-support</artifactId>
-                <version>${version.net.shibboleth.utilities.java-support}</version>
+                <groupId>net.shibboleth</groupId>
+                <artifactId>shib-support</artifactId>
+                <version>${version.net.shibboleth.shib-support}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.google.code.findbugs</groupId>
                         <artifactId>jsr305</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4</artifactId>
-                <version>${version.antlr}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-                <version>${version.antlr}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2087,168 +1405,84 @@
                 <version>${version.org.apache.activemq.artemis.native}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-amqp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-cli</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-configuration2</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hdrhistogram</groupId>
-                        <artifactId>HdrHistogram</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.airlift</groupId>
-                        <artifactId>airline</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.qpid</groupId>
-                        <artifactId>qpid-jms-client</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-commons</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-core-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.johnzon</groupId>
-                        <artifactId>johnzon-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-dto</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-jxc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-osgi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-hornetq-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-hqclient-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.johnzon</groupId>
-                        <artifactId>johnzon-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -2260,7 +1494,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-ra</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -2271,7 +1505,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-server</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -2282,7 +1516,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jakarta-service-extensions</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
@@ -2293,116 +1527,56 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-jdbc-store</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-dbcp2</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-journal</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-buffer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logmanager</groupId>
-                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-selector</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-server</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.micrometer</groupId>
-                        <artifactId>micrometer-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-buffer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-codec-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-handler</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport-native-epoll</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-transport-native-kqueue</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty-codec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-configuration2</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jctools</groupId>
-                        <artifactId>jctools-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>org.apache.artemis</groupId>
                 <artifactId>artemis-stomp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>io.netty</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
@@ -2868,73 +2042,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-analysis-common</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-core</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-facet</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-join</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-queries</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-queryparser</artifactId>
-                <version>${version.org.apache.lucene}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
                 <version>${version.org.apache.neethi}</version>
@@ -3126,23 +2233,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse</groupId>
-                <artifactId>yasson</artifactId>
-                <version>${version.org.eclipse.yasson}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <!-- This seems to require an explicit exclusion for yasson 1.0.4 -->
-                    <exclusion>
-                        <groupId>org.glassfish</groupId>
-                        <artifactId>jakarta.json</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
                 <version>${version.org.eclipse.angus.angus-activation}</version>
@@ -3175,66 +2265,6 @@
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>eclipselink</artifactId>
                 <version>${version.org.eclipse.persistence.eclipselink}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>elasticsearch-rest-client</artifactId>
-                <version>${version.org.elasticsearch.client.rest-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>elasticsearch-rest-client-sniffer</artifactId>
-                <version>${version.org.elasticsearch.client.rest-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.faces</artifactId>
-                <version>${version.jakarta.faces}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.expressly</groupId>
-                <artifactId>expressly</artifactId>
-                <version>${version.org.glassfish.expressly}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3322,29 +2352,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.glassfish.web</groupId>
                 <artifactId>jakarta.servlet.jsp.jstl</artifactId>
                 <version>${version.org.glassfish.web.jakarta.servlet.jsp.jstl}</version>
@@ -3360,143 +2367,6 @@
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
                 <version>${version.org.hibernate.commons.annotations}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-envers</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-backend-elasticsearch</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-backend-lucene</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-orm</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-pojo-base</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-util-common</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-v5migrationhelper-orm</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${version.org.hibernate.validator}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3547,303 +2417,10 @@
 
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-jdbc</artifactId>
+                <artifactId>infinispan-bom</artifactId>
                 <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-jdbc-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-jdbc-common</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-jdbc-common-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cachestore-remote</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-common-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-cdi-remote-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-client-hotrod</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-client-hotrod-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-clustered-counter</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-clustered-lock</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-commons-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-component-annotations</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-component-processor</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core-jakarta</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-commons</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-spi</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-v62</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-objectfilter</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-query</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-query-core</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-query-dsl</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-remote-query-client</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.infinispan.protostream</groupId>
-                <artifactId>protostream</artifactId>
-                <version>${version.org.infinispan.protostream}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan.protostream</groupId>
-                <artifactId>protostream-processor</artifactId>
-                <version>${version.org.infinispan.protostream}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan.protostream</groupId>
-                <artifactId>protostream-types</artifactId>
-                <version>${version.org.infinispan.protostream}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -4250,145 +2827,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-atom-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-cdi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-client-api</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-core</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-core-spi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxb-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jsapi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-json-binding-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-json-p-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-multipart-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-rxjava2</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy.spring</groupId>
-                <artifactId>resteasy-spring</artifactId>
-                <version>${version.org.jboss.resteasy.spring}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-validator-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-tracing-api</artifactId>
-                <version>${version.org.jboss.resteasy.extensions}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.jakarta.el</groupId>
-                <artifactId>jboss-el-api_5.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
                 <artifactId>jboss-saaj-api_3.0_spec</artifactId>
                 <version>${version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec}</version>
@@ -4403,95 +2841,6 @@
                 <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
                 <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
                 <version>${version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.weld</groupId>
-                <artifactId>weld-api</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld</groupId>
-                <artifactId>weld-core-impl</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld</groupId>
-                <artifactId>weld-lite-extension-translator</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld</groupId>
-                <artifactId>weld-spi</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld.module</groupId>
-                <artifactId>weld-ejb</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld.module</groupId>
-                <artifactId>weld-jsf</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld.module</groupId>
-                <artifactId>weld-jta</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.weld.module</groupId>
-                <artifactId>weld-web</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4717,7 +3066,7 @@
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.infinispan</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
@@ -4732,7 +3081,18 @@
 
             <dependency>
                 <groupId>org.opensaml</groupId>
-                <artifactId>opensaml-core</artifactId>
+                <artifactId>opensaml-core-api</artifactId>
+                <version>${version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-core-impl</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
                 <exclusions>
                     <exclusion>
@@ -4745,6 +3105,12 @@
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-profile-api</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opensaml</groupId>
@@ -4756,6 +3122,10 @@
                 <artifactId>opensaml-saml-impl</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.velocity</groupId>
                         <artifactId>velocity</artifactId>
@@ -4835,6 +3205,50 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-naming-client</artifactId>
                 <version>${version.org.wildfly.naming-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.clustering</groupId>
+                <artifactId>wildfly-clustering-bom</artifactId>
+                <version>${version.org.wildfly.clustering}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.launcher</groupId>
+                <artifactId>wildfly-launcher</artifactId>
+                <version>${version.org.wildfly.launcher}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.hashicorp.vault</groupId>
+                <artifactId>wildfly-elytron-hashicorp-vault</artifactId>
+                <version>${version.org.wildfly.security.hashicorp.vault}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-subsystem</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -4986,6 +3400,30 @@
 
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
+                <artifactId>checksums</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>checksums-spi</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
                 <artifactId>crt-core</artifactId>
                 <version>${version.software.amazon.awssdk}</version>
                 <exclusions>
@@ -5010,7 +3448,55 @@
 
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
+                <artifactId>http-auth</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>http-auth-aws</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>http-auth-spi</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
                 <artifactId>http-client-spi</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>identity-spi</artifactId>
                 <version>${version.software.amazon.awssdk}</version>
                 <exclusions>
                     <exclusion>
@@ -5071,6 +3557,30 @@
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>regions</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>retries</artifactId>
+                <version>${version.software.amazon.awssdk}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>retries-spi</artifactId>
                 <version>${version.software.amazon.awssdk}</version>
                 <exclusions>
                     <exclusion>
@@ -5150,6 +3660,26 @@
                 <groupId>xml-resolver</groupId>
                 <artifactId>xml-resolver</artifactId>
                 <version>${version.xml-resolver}</version>
+            </dependency>
+
+            <!-- BOM imports. These go last so individual artifacts can be overridden above, with earlier
+                 declarations taking precedence. -->
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Import the core parent to get all the managed dependencies from core -->
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-parent</artifactId>
+                <version>${version.org.wildfly.core}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
         </dependencies>

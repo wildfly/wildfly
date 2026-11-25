@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -25,14 +25,12 @@
     <name>WildFly: Documentation</name>
 
     <properties>
-        <server.name>wildfly-${project.version}</server.name>
-        <messages.filename>${server.name}.messages</messages.filename>
-        <management-model.filename>${server.name}.dmr</management-model.filename>
-
         <wildfly.github.io.dir>
             ..${file.separator}..${file.separator}wildfly.github.io${file.separator}${product.docs.server.version}
         </wildfly.github.io.dir>
         <jboss.home>${project.build.directory}/wildfly</jboss.home>
+        <!-- Don't try to deploy the module -->
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <build>
@@ -42,13 +40,29 @@
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <configuration>
                     <attributes>
+                        <!-- TODO Validate the need for these that were pulled out of wildfly-parent -->
+                        <source-highlighter>coderay</source-highlighter>
+                        <icons>font</icons>
+                        <pagenums></pagenums>
+                        <version>${project.version}</version>
+                        <idprefix></idprefix>
+                        <idseparator>-</idseparator>
+                        <allow-uri-read>true</allow-uri-read>
+                        <revnumber>${project.version}</revnumber>
+                        <revdate>${maven.build.timestamp}</revdate>
+                        <organization>${project.organization.name}</organization>
+                        <!-- end TODO -->
+                        <nofooter>true</nofooter>
+                        <docinfo>shared</docinfo>
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
                         <appservername>${full.dist.product.release.name}</appservername>
-                        <javaee_version>8</javaee_version>
-                        <oracle-javadoc>https://docs.oracle.com/en/java/javase/11/docs/api</oracle-javadoc>
+                        <oracle-javadoc>https://docs.oracle.com/en/java/javase/17/docs/api</oracle-javadoc>
                         <resteasyversion>${version.org.jboss.resteasy}</resteasyversion>
+                        <min-java-version>${maven.compiler.release}</min-java-version>
+                        <recommended-java-version>${recommended.java.version}</recommended-java-version>
+                        <recommended-java-version-legacy>${recommended.java.version.legacy}</recommended-java-version-legacy>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
-
+                        <copyright-blurb>${wildfly.copyright.html}</copyright-blurb>
                         <!-- Default asciidoc setting attributes -->
                         <linkcss>false</linkcss>
                         <sectanchors/>
@@ -74,75 +88,65 @@
                             <goal>process-asciidoc</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
-                <executions>
                     <execution>
-                        <id>server-provisioning</id>
+                        <id>output-html-external</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>provision</goal>
+                            <goal>process-asciidoc</goal>
                         </goals>
-                        <phase>prepare-package</phase>
                         <configuration>
-                            <install-dir>${jboss.home}</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                        </config>
-                                    </included-configs>
-                                </feature-pack>
-                            </feature-packs>
-                            <plugin-options>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                            <sourceDirectory>${project.build.directory}/external-sources</sourceDirectory>
+                            <attributes>
+                                <!-- app dev guide needed attrs -->
+                                <server-version>${project.version}</server-version>
+                                <plugin-version>${version.org.wildfly.plugin}</plugin-version>
+                            </attributes>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
-                <groupId>org.jboss.wildscribe</groupId>
-                <artifactId>wildscribe-maven-plugin</artifactId>
-                <version>${version.org.jboss.wildscribe}</version>
-                <configuration>
-                    <jboss-home>${jboss.home}</jboss-home>
-                    <display-name>${full.dist.product.release.name}</display-name>
-                    <display-version>${product.docs.server.version}</display-version>
-                    <site-dir>${project.build.directory}/generated-docs/wildscribe</site-dir>
-                    <stability>experimental</stability>
-                    <required-extensions>
-                        <required-extension>org.wildfly.extension.rts</required-extension>
-                        <required-extension>org.jboss.as.xts</required-extension>
-                        <required-extension>org.wildfly.extension.datasources-agroal</required-extension>
-                        <required-extension>org.wildfly.extension.micrometer</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.openapi-smallrye</required-extension>
-                        <required-extension>org.wildfly.extension.microprofile.telemetry</required-extension>
-                        <required-extension>org.wildfly.extension.opentelemetry</required-extension>
-                    </required-extensions>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>generate-site</id>
+                        <id>unpack-feature-pack-doc</id>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>generate-site</goal>
+                            <goal>unpack</goal>
                         </goals>
-                        <phase>package</phase>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>doc</classifier>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/generated-docs/feature-pack</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-wildfly-application-development-guide</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-application-development-guide</artifactId>
+                                    <classifier>sources</classifier>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/external-sources</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

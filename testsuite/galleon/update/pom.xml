@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-galleon-update</artifactId>
@@ -30,6 +30,8 @@
         <wildfly-ee.update.phase>compile</wildfly-ee.update.phase>
         <wildfly.update.phase>compile</wildfly.update.phase>
         <wildfly-preview.update.phase>none</wildfly-preview.update.phase>
+        <!-- The pathto the settings has to be provided as a property, otherwise no settings file used -->
+        <wildfly.galleon.test.settings.path></wildfly.galleon.test.settings.path>
     </properties>
 
     <profiles>
@@ -77,7 +79,7 @@
                                 </goals>
                                 <phase>${wildfly-ee.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -86,8 +88,9 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly-ee"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="jaxrs-server"/>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -97,7 +100,7 @@
                                 </goals>
                                 <phase>${wildfly.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -106,8 +109,9 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server"/>
-                                        </exec>\
-                                    </tasks>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
+                                        </exec>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -117,7 +121,7 @@
                                 </goals>
                                 <phase>${wildfly-preview.update.phase}</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -126,8 +130,9 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly-preview"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server,microprofile-platform,-microprofile-fault-tolerance"/>
+                                            <env key="GALLEON_MAVEN_SETTINGS_PATH" value="${wildfly.galleon.test.settings.path}"/>
                                         </exec>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -148,15 +153,23 @@
         </profile>
 
         <profile>
-            <id>ee-galleon-pack.profile</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
-                </property>
+                <property><name>latest-ee-only-server-tests</name></property>
             </activation>
             <properties>
-                <!-- Skip the WF feature pack test -->
+                <!-- Skip the WF feature-pack test -->
+                <wildfly.update.phase>none</wildfly.update.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Skip the WF feature-pack test -->
                 <wildfly.update.phase>none</wildfly.update.phase>
             </properties>
         </profile>

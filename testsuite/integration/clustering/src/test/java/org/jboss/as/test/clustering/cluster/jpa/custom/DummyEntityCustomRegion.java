@@ -5,13 +5,14 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
+import java.io.Serializable;
 
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.io.Serializable;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 @Entity
 @Cacheable

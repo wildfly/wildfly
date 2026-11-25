@@ -5,24 +5,24 @@
 
 package org.wildfly.clustering.weld.annotated.slim;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
-public enum SlimAnnotatedMarshallerProvider implements ProtoStreamMarshallerProvider {
+@MetaInfServices(SerializationContextInitializer.class)
+public class SlimAnnotatedMarshallerProvider extends AbstractSerializationContextInitializer {
 
-    IDENTIFIER(new AnnotatedTypeIdentifierMarshaller()),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
-
-    SlimAnnotatedMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
+    public SlimAnnotatedMarshallerProvider() {
+        super(AnnotatedTypeIdentifier.class.getPackage());
     }
 
     @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new AnnotatedTypeIdentifierMarshaller());
     }
 }

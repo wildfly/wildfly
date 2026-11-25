@@ -8,10 +8,12 @@ package org.jboss.as.ejb3.component.session;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jakarta.ejb.ConcurrencyManagementType;
@@ -21,10 +23,12 @@ import jakarta.ejb.TransactionManagementType;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ConcurrencyAttachments;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.concurrent.EJBContextHandleFactory;
@@ -362,7 +366,14 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                     configuration.addPrePassivateInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPassivation.EJB_SESSION_CONTEXT_INTERCEPTOR);
                     configuration.addPostActivateInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPassivation.EJB_SESSION_CONTEXT_INTERCEPTOR);
                 }
-                configuration.getConcurrentContext().addFactory(EJBContextHandleFactory.INSTANCE);
+                // add "component config scoped" concurrency context handle factory
+                Map<ComponentConfiguration, List<ContextHandleFactory>> additionalComponentFactories = context.getDeploymentUnit().getAttachment(ConcurrencyAttachments.ADDITIONAL_COMPONENT_FACTORIES);
+                List<ContextHandleFactory> list = additionalComponentFactories.get(configuration);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    additionalComponentFactories.put(configuration, list);
+                }
+                list.add(EJBContextHandleFactory.INSTANCE);
             }
         });
     }

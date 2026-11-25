@@ -5,7 +5,11 @@
 
 package org.jboss.as.txn.service;
 
-import org.jboss.msc.service.Service;
+import java.util.function.Consumer;
+
+import org.jboss.as.controller.CapabilityServiceTarget;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -21,24 +25,25 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Jaikiran Pai
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class UserTransactionAccessControlService implements Service<UserTransactionAccessControlService> {
-
+public class UserTransactionAccessControlService implements Service {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN.append("UserTransactionAccessControlService");
-
+    private final Consumer<UserTransactionAccessControlService> txnAccessControlServiceConsumer;
     private UserTransactionAccessControl accessControl;
 
-    @Override
-    public void start(StartContext context) throws StartException {
+    private UserTransactionAccessControlService(final Consumer<UserTransactionAccessControlService> txnAccessControlServiceConsumer) {
+        this.txnAccessControlServiceConsumer = txnAccessControlServiceConsumer;
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void start(final StartContext context) throws StartException {
+        txnAccessControlServiceConsumer.accept(this);
     }
 
     @Override
-    public UserTransactionAccessControlService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public void stop(final StopContext context) {
+        txnAccessControlServiceConsumer.accept(null);
     }
 
     /**
@@ -65,5 +70,12 @@ public class UserTransactionAccessControlService implements Service<UserTransact
         if(accessControl != null) {
             accessControl.authorizeAccess();
         }
+    }
+
+    public static void addService(final CapabilityServiceTarget target) {
+        final ServiceBuilder<?> sb = target.addService();
+        final Consumer<UserTransactionAccessControlService> txnAccessControlServiceConsumer = sb.provides(UserTransactionAccessControlService.SERVICE_NAME);
+        sb.setInstance(new UserTransactionAccessControlService(txnAccessControlServiceConsumer));
+        sb.install();
     }
 }

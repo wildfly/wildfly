@@ -5,33 +5,32 @@
 
 package org.jboss.as.test.clustering.single.infinispan;
 
+import org.infinispan.server.test.core.TestServer;
+import org.infinispan.server.test.jupiter.InfinispanServerExtension;
 import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingCacheManagerTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.embedded.GreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.cdi.remote.RemoteGreetingServiceTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerManagedHotRodClientTestCase;
-import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.ContainerRemoteQueryTestCase;
+import org.jboss.as.test.clustering.single.infinispan.query.HotRodClientTestCase;
 import org.jboss.as.test.clustering.single.infinispan.query.RemoteQueryTestCase;
-import org.junit.ClassRule;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.platform.suite.api.AfterSuite;
+import org.junit.platform.suite.api.BeforeSuite;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
 /**
- * JUnit suite class to support testable deployments - tests running in-container - typically to verify integration with Infinispan Modules.
- * This avoids the problem of having the Infinispan Server test driver JUnit TestRule be run e.g. in-container.
- * Using suite in conjunction with the @ClassRule starts the Infinispan server prior to running the tests in-container,
- * as a side effect makes the execution pretty fast.
- * NOTE: This doesn't work with -Dtest=... ask the @RunWith(Suite.class) is not in effect thus the @ClassRule does not invoke!
- * For a workaround, to run a single test, comment out the undesired classes in this file.
+ * JUnit suite class to support testable deployments - tests running in-container - typically to verify integration with
+ * Infinispan Modules. This avoids the problem of having the Infinispan Server test driver JUnit extension be run e.g.
+ * in-container. Using suite starts the Infinispan server prior to running the tests in-container, as a side effect makes
+ * the execution pretty fast.
  *
  * @author Radoslav Husar
  * @since 27
  */
-@RunWith(Suite.class)
-@SuiteClasses({
+@Suite
+@SelectClasses({
         HotRodClientTestCase.class,
         RemoteQueryTestCase.class,
         ContainerRemoteQueryTestCase.class,
@@ -42,7 +41,25 @@ import org.junit.runners.Suite.SuiteClasses;
 })
 public class InfinispanModulesTestSuite {
 
-    @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = InfinispanServerUtil.INFINISPAN_SERVER_RULE;
+    private static final String TEST_NAME = InfinispanModulesTestSuite.class.getName();
+    private static final InfinispanServerExtension SERVER = InfinispanServerUtil.infinispanServerExtension();
 
+    @BeforeSuite
+    static void startInfinispanServer() {
+        TestServer testServer = SERVER.getTestServer();
+        testServer.initServerDriver();
+        testServer.getDriver().prepare(TEST_NAME);
+        testServer.beforeListeners();
+        testServer.enhanceConfiguration();
+        testServer.getDriver().start(TEST_NAME);
+    }
+
+    @AfterSuite
+    static void stopInfinispanServer() {
+        TestServer testServer = SERVER.getTestServer();
+        if (testServer.isDriverInitialized()) {
+            testServer.stopServerDriver(TEST_NAME);
+            testServer.afterListeners();
+        }
+    }
 }

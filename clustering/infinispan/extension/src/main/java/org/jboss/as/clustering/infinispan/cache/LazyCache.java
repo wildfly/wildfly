@@ -6,6 +6,7 @@
 package org.jboss.as.clustering.infinispan.cache;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.CacheCollection;
 import org.infinispan.CacheSet;
+import org.infinispan.commons.IllegalLifecycleStateException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -36,8 +38,8 @@ public class LazyCache<K, V> extends LazyBasicCache<K, V, Cache<K, V>> implement
     }
 
     @Override
-    public Cache<K, V> run() {
-        return this.container.getCache(this.name);
+    public Cache<K, V> get() {
+        return Optional.ofNullable(this.container.<K, V>getCache(this.name, false)).orElseThrow(IllegalLifecycleStateException::new);
     }
 
     @Override
@@ -53,12 +55,6 @@ public class LazyCache<K, V> extends LazyBasicCache<K, V, Cache<K, V>> implement
     @Override
     public Configuration getCacheConfiguration() {
         return this.get().getCacheConfiguration();
-    }
-
-    @Deprecated
-    @Override
-    public Set<Object> getListeners() {
-        return this.get().getListeners();
     }
 
     @Override

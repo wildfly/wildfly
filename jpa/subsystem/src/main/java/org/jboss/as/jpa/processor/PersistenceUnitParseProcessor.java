@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -35,6 +36,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -63,9 +65,11 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private static final String META_INF_PERSISTENCE_XML = "META-INF/persistence.xml";
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
+    private static final PersistenceUnitMetadataHolder emptyholder = new PersistenceUnitMetadataHolder(Collections.emptyList());
+    private final boolean inAppClientContainer;
 
-    public PersistenceUnitParseProcessor() {
-
+    public PersistenceUnitParseProcessor(boolean inAppClientContainer) {
+        this.inAppClientContainer = inAppClientContainer;
     }
 
     @Override
@@ -85,15 +89,26 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) ) {
 
             // handle META-INF/persistence.xml
-            // ordered list of PUs
-            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
-            // handle META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (!inAppClientContainer && DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
+                // attach empty persistence unit holder
+                deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, emptyholder);
+                addApplicationDependenciesOnProvider (deploymentUnit, emptyholder);
+                // if not in appclient container, do not deploy persistence units contained in appclient container archive
+                VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
+                if (persistence_xml.exists() && persistence_xml.isFile() ) {
+                    // log that the (app client container) persistence.xml will be ignored since we are in server mode
+                    ROOT_LOGGER.ignoreAppclientPersistenceUnitsInServer(deploymentUnit.getName());
+                }
+                return;
+            }
+            // ordered list of PUs
+            List<PersistenceUnitMetadataHolder> listPUHolders = new ArrayList<>(1);
+
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
             parse(persistence_xml, listPUHolders, deploymentUnit);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
             // save the persistent unit definitions
-            // deploymentUnit.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
             ROOT_LOGGER.tracef("parsed persistence unit definitions for jar %s", deploymentRoot.getRootName());
@@ -194,7 +209,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             InputStream is = null;
             try {
                 is = persistence_xml.openStream();
-                final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+                final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
                 inputFactory.setXMLResolver(NoopXMLResolver.create());
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 PersistenceUnitMetadataHolder puHolder = PersistenceUnitXmlParser.parse(xmlReader, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));

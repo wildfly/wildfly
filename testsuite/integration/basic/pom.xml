@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -31,6 +31,10 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+        <version.org.hibernate>${standard.version.org.hibernate}</version.org.hibernate>
+        <version.org.hibernate.maven.plugin>${standard.version.org.hibernate}</version.org.hibernate.maven.plugin>
+        <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm</version.org.hibernate.maven.plugin.groupId>
+        <version.org.hibernate.maven.plugin.artifactId>hibernate-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
         <!-- properties to enable bootable phases -->
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
@@ -56,11 +60,38 @@
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
-        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.el.api.artifactId>jakarta.enterprise.cdi-el-api</cdi.el.api.artifactId>
 
+        <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>commons-logging-jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-test-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-jmx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
@@ -82,13 +113,13 @@
             <artifactId>undertow-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.ee</groupId>
+            <artifactId>undertow-websockets</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -122,8 +153,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -233,12 +264,12 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-core-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-client</artifactId>
             <scope>test</scope>
         </dependency>
@@ -300,6 +331,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
             <scope>test</scope>
@@ -310,21 +346,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- A required implementation for the org.jboss.resteasy:resteasy-json-binding-provider -->
         <dependency>
-            <groupId>org.eclipse</groupId>
+            <groupId>org.eclipse.yasson</groupId>
             <artifactId>yasson</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.12.0.SP05</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -483,6 +518,11 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-binding-provider</artifactId>
             <scope>test</scope>
         </dependency>
@@ -528,6 +568,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <scope>test</scope>
@@ -551,6 +596,11 @@
         <!-- This is not desired, however the HungTasksTerminationTestCase test seems to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
             <scope>test</scope>
         </dependency>
@@ -569,6 +619,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -607,6 +662,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
             <scope>test</scope>
@@ -633,22 +693,22 @@
         </dependency>
         <!-- To be able to start a 'remote' broker -->
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-server</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-server</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-commons</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-journal</artifactId>
             <scope>test</scope>
         </dependency>
@@ -658,17 +718,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-ra</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-selector</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-jakarta-service-extensions</artifactId>
             <scope>test</scope>
         </dependency>
@@ -744,7 +804,7 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>elasticsearch</artifactId>
+            <artifactId>testcontainers-elasticsearch</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -774,12 +834,22 @@
             <artifactId>ironjacamar-deployers-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
             <artifactId>jboss-saaj-api_3.0_spec</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-management-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -807,19 +877,74 @@
             <artifactId>wsdl4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_5.0_spec</artifactId>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet.jsp</groupId>
-            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>${version.org.hibernate.maven.plugin.groupId}</groupId>
+                <artifactId>${version.org.hibernate.maven.plugin.artifactId}</artifactId>
+                <version>${version.org.hibernate.maven.plugin}</version>
+                <configuration>
+                    <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                    <dir>${project.build.testOutputDirectory}</dir>
+                    <base>${project.build.testOutputDirectory}</base>
+                    <classNames>org.jboss.as.test.integration.jpa.hibernate.buildtimeenhancementtest.entityClasses.Employee</classNames>
+                    <fileSets>
+                        <fileset>
+                            <directory>${project.build.testOutputDirectory}</directory>
+                            <includes>
+                                <include>
+                                    org/jboss/as/test/integration/jpa/hibernate/buildtimeenhancementtest/entityClasses/Employee.class
+                                </include>
+                            </includes>
+                        </fileset>
+                    </fileSets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>enhance</id>
+                        <goals>
+                            <goal>enhance</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                        <version>${version.org.hibernate}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -878,6 +1003,15 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>h2</includeArtifactIds>
+                            <outputFile>${project.build.directory}/h2.version</outputFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -919,6 +1053,32 @@
                                 <include>**/META-INF/services/jakarta.enterprise.inject.spi.Extension</include>
                             </includes>
                             <finalName>weldTest</finalName>
+                            <classifier>bootableJar</classifier>
+                        </configuration>
+                    </execution><execution>
+                        <id>create-module-cdidBcExtensionModule</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>${bootable-jar-maven-jar-plugin.create.modules.phase}</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/extraContent/modules/test/build-compatible-extension/main</outputDirectory>
+                            <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                            <includes>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCEDeploymentUnitProcessor.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemModel.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar$1.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar$1$1.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemSchema.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/RegisteredExtension.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/RegisteredBean.class</include>
+                                <include>**/META-INF/services/jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension</include>
+                                <include>**/META-INF/services/org.jboss.as.controller.Extension</include>
+                                <include>**/META-INF/beans.xml</include>
+                            </includes>
+                            <finalName>bce-extension</finalName>
                             <classifier>bootableJar</classifier>
                         </configuration>
                     </execution>
@@ -1138,12 +1298,7 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.ee.galleon.pack.version}</version>
-                        </feature-pack>
+                    <feature-packs combine.children="append">
                         <feature-pack>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
@@ -1165,10 +1320,11 @@
                                 <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
                                 <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                             </expected-errors>
-                            <expected-discovery>[bean-validation, cdi, datasources, ee-concurrency, ee-integration, ejb-lite, h2-datasource, h2-driver, jaxrs, jpa, jsonb, jsonp, mail, messaging-activemq, naming, resource-adapters, servlet, transactions]==>ee-core-profile-server,ejb-lite,h2-datasource,jaxrs,jpa,mail,messaging-activemq</expected-discovery>
+                            <expected-discovery>[bean-validation, cdi, datasources, ee-concurrency, ee-integration, ejb-lite, h2-datasource, h2-driver, jaxrs, jpa, jsonb, jsonp, mail, management, messaging-activemq, naming, resource-adapters, servlet, transactions, web-console]==>ee-core-profile-server,ejb-lite,h2-datasource,jaxrs,jpa,mail,messaging-activemq,web-console</expected-discovery>
                             <surefire-execution-for-included-classes>microprofile.surefire</surefire-execution-for-included-classes>
                             <add-ons>
                                 <add-on>h2-database</add-on>
+                                <add-on>hal-web-console</add-on>
                             </add-ons>
                         </configuration>
                     </execution>
@@ -1261,7 +1417,7 @@
                             <expected-errors>
                                 <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                             </expected-errors>
-                            <expected-discovery>[ee-concurrency, ee-integration, ejb-lite, naming, transactions]==>ee-core-profile-server,ejb-lite</expected-discovery>
+                            <expected-discovery>[cdi, ee-concurrency, ee-integration, ejb-lite, naming, transactions]==>ee-core-profile-server,ejb-lite</expected-discovery>
                             <surefire-execution-for-included-classes>ee-concurrency-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
@@ -1276,7 +1432,7 @@
                                 <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
                                 <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
                             </expected-errors>
-                            <expected-discovery>[bean-validation, cdi, datasources, ee-concurrency, ee-integration, ejb-lite, h2-datasource, h2-default-datasource, jpa, naming, servlet, transactions]==>ee-core-profile-server,ejb-lite,h2-default-datasource,jpa</expected-discovery>
+                            <expected-discovery>[bean-validation, cdi, datasources, ee-concurrency, ee-integration, ejb-lite, h2-datasource, h2-default-datasource, h2-driver, jpa, naming, servlet, transactions]==>ee-core-profile-server,ejb-lite,h2-default-datasource,jpa</expected-discovery>
                             <surefire-execution-for-included-classes>ejb-lite-layers.surefire</surefire-execution-for-included-classes>
                             <add-ons>
                                 <add-on>h2-database:default</add-on>
@@ -1374,7 +1530,7 @@
                             <add-layers-for-jndi>
                                 <layer>mail</layer>
                             </add-layers-for-jndi>
-                            <expected-discovery>[ee-integration, mail, naming, sar, transactions]==>ee-core-profile-server,mail,sar,transactions</expected-discovery>
+                            <expected-discovery>[ee-integration, mail, naming, resource-adapters, sar, transactions]==>ee-core-profile-server,mail,resource-adapters,sar</expected-discovery>
                             <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
@@ -1432,13 +1588,30 @@
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
+                    <bootableJar>true</bootableJar>
+                    <skipDeployment>true</skipDeployment>
+                </configuration>
                 <executions>
                     <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                            <bootableJarName>test-wildfly-cloud-profile.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
@@ -1454,7 +1627,7 @@
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-jpa.jar</output-file-name>
+                            <bootableJarName>test-wildfly-jpa.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
@@ -1642,6 +1815,7 @@
                 </executions>
             </plugin>
 
+            <!-- Configure IIOP authentication for standalone-full.xml -->
         </plugins>
     </build>
 
@@ -1725,6 +1899,7 @@
                                         <include>org/jboss/as/test/integration/ejb/log/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/noremote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
@@ -1757,6 +1932,8 @@
                                         <com.sun.CORBA.ORBUseDynamicStub>true</com.sun.CORBA.ORBUseDynamicStub>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <!-- IIOP NameService authentication requires SecurityDomain - override server.jvm.args to include it -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.iiop.naming.security-domain=ApplicationDomain ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -2157,7 +2334,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                         </configuration>
@@ -2798,7 +2974,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with ejb-lite -->
+                            <!-- Tests against the install with ee-concurrency -->
                             <execution>
                                 <id>ee-concurrency-layers.surefire</id>
                                 <phase>test</phase>
@@ -3133,6 +3309,7 @@
                                         <!-- exclude tests sending messages -->
                                         <exclude>org/jboss/as/test/integration/messaging/jms/localtransaction/LocalTransactionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/naming/JndiLookupMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/deployment/SingleConnectionActivationPropertyTestCase.java</exclude>
                                     </excludes>
                                     <!-- Starting and stopping the remote broker -->
                                     <properties>
@@ -3299,20 +3476,19 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -3425,10 +3601,6 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-                <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
@@ -3460,20 +3632,19 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -3567,6 +3738,7 @@
         </profile>
 
         <!-- Test against WildFly Preview -->
+
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -3578,12 +3750,6 @@
                 <!-- The following is needed by PooledEJBLifecycleTestCase due to AssumeTestGroupUtil inside the test -->
                 <extra.server.jvm.args>-Dts.preview</extra.server.jvm.args>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -3676,24 +3842,67 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
-             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
-             based variant of wildfly-test-galleon-pack.
-        -->
+        <!-- Dependencies only to be used when not testing installations using the legacy EE FP -->
         <profile>
-            <id>test.feature.pack.preview.profile</id>
+            <id>ee-12-deps</id>
             <activation>
                 <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <properties>
+                <cdi.el.api.artifactId>jakarta.cdi-el-api</cdi.el.api.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>latest.ee.specific.dependencies</id>
+            <activation>
+                <!-- Note: an analogous profile with the same id in some production code modules
+                     uses activeByDefault because its use is not meant to be externally controlled.
+                     But for testsuite use cases the intent is to allow this profile to be disabled
+                     when what it does is inappropriate for the test job. -->
+                <property>
+                    <name>!legacy-ee-tests</name>
                 </property>
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                    <groupId>${cdi.api.groupId}</groupId>
+                    <artifactId>${cdi.el.api.artifactId}</artifactId>
+                    <scope>test</scope>
                 </dependency>
             </dependencies>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <version.org.hibernate>${legacy.version.org.hibernate}</version.org.hibernate>
+                <!-- Use the version of the hibernate.maven.plugin
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.maven.plugin>${legacy.version.org.hibernate}</version.org.hibernate.maven.plugin>
+                <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm.tooling</version.org.hibernate.maven.plugin.groupId>
+                <version.org.hibernate.maven.plugin.artifactId>hibernate-enhance-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <version.org.hibernate>${legacy.version.org.hibernate}</version.org.hibernate>
+                <!-- Use the version of the hibernate.maven.plugin
+                     that aligns with the ORM version in the legacy EE FP. -->
+                <version.org.hibernate.maven.plugin>${legacy.version.org.hibernate}</version.org.hibernate.maven.plugin>
+                <version.org.hibernate.maven.plugin.groupId>org.hibernate.orm.tooling</version.org.hibernate.maven.plugin.groupId>
+                <version.org.hibernate.maven.plugin.artifactId>hibernate-enhance-maven-plugin</version.org.hibernate.maven.plugin.artifactId>
+            </properties>
         </profile>
 
     </profiles>

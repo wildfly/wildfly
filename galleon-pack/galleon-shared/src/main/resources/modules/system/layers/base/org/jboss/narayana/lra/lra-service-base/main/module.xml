@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.lra.lra-service-base">
+
+  <properties>
+    <property name="jboss.api" value="private"/>
+  </properties>
+  <resources>
+    <artifact name="${org.jboss.narayana.lra:lra-service-base}" />
+  </resources>
+
+  <dependencies>
+    <module name="org.eclipse.microprofile.lra.api" />
+    <module name="jakarta.ws.rs.api" />
+    <module name="org.jboss.logging" />
+  </dependencies>
+</module>

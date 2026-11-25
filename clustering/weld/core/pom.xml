@@ -6,7 +6,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-weld-core</artifactId>
@@ -31,7 +31,7 @@
         <!-- Specification dependencies -->
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_5.0_spec</artifactId>
+            <artifactId>${jakarta.el.api.artifactId}</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -60,10 +60,6 @@
         <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
 
@@ -85,8 +81,8 @@
             <artifactId>weld-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.common</groupId>
-            <artifactId>wildfly-common</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -95,33 +91,52 @@
 
         <!-- Internal test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
-        </dependency>
-
-        <!-- External test dependencies -->
-        <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>protoparser</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>latest.ee.specific.dependencies</id>
+            <activation>
+                <property>
+                    <!-- This profile exists to make it is easy to stop doing what WildFly does downstream.
+                         It's not meant to be turned off/on by external callers. -->
+                    <name>!WRONGLY.disable.latest.ee.specific.dependencies</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

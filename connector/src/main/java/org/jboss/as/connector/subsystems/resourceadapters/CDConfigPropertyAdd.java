@@ -45,7 +45,7 @@ public class CDConfigPropertyAdd extends AbstractAddStepHandler {
         ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, cfName, configPropertyName);
         ServiceName cfServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, cfName);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final CDConfigPropertiesService service = new CDConfigPropertiesService(configPropertyName, configPropertyValue);
         serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)

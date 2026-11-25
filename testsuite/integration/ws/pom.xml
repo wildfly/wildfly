@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -33,6 +33,41 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>commons-logging-jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. The clients
              jakarta.xml.ws.spi.Provider needs to be the one used.
         -->
@@ -161,6 +196,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
             <scope>test</scope>
@@ -213,6 +253,11 @@
         <dependency>
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-secure-xml</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -331,7 +376,7 @@
         <!-- OpenSAML -->
         <dependency>
             <groupId>org.opensaml</groupId>
-            <artifactId>opensaml-core</artifactId>
+            <artifactId>opensaml-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -552,15 +597,6 @@
                     <plugin>
                         <groupId>org.wildfly.glow</groupId>
                         <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                        <configuration>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>scan-ws</id>
@@ -581,7 +617,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                         </configuration>

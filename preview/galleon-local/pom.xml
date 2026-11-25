@@ -16,27 +16,35 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
 
-    <name>WildFly Preview: Feature Pack Local Galleon Content</name>
+    <name>WildFly Preview: Feature-Pack Local Galleon Content</name>
     <description>
-        Content for the wildfly-preview feature pack that can only be used in that feature pack
-        and not in the wildfly feature pack
+        Content for the wildfly-preview feature-pack that can only be used in that feature-pack
+        and not in the wildfly feature-pack
     </description>
     <packaging>pom</packaging>
 
     <dependencies>
 
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
+            <groupId>jakarta.cdi</groupId>
+            <artifactId>jakarta.cdi-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+            <groupId>jakarta.cdi</groupId>
+            <artifactId>jakarta.cdi-el-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.cdi</groupId>
+            <artifactId>jakarta.cdi-lang-model-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
         </dependency>
 
         <dependency>
@@ -45,8 +53,46 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.yasson</groupId>
+            <artifactId>yasson</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-lite-extension-translator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-ejb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-jsf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-jta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-web</artifactId>
         </dependency>
 
         <dependency>
@@ -59,9 +105,22 @@
             <artifactId>transformer</artifactId>
         </dependency>
 
+        <!-- Vert.x subsystem -->
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-vertx-subsystem</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+            <classifier>version</classifier>
+            <type>txt</type>
         </dependency>
 
     </dependencies>

@@ -12,7 +12,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.wildfly.extension.clustering.singleton.SingletonServiceNameFactory;
+import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 
 /**
  * DUP that adds a dependency on a configured deployment policy service to the next phase.
@@ -29,7 +29,7 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
             SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
             if (config != null) {
                 CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-                context.addDependency(SingletonServiceNameFactory.SINGLETON_POLICY.getServiceName(support, config.getPolicy()), SingletonDeploymentProcessor.POLICY_KEY);
+                context.addDependency(support.getCapabilityServiceName(ServiceTargetFactory.SERVICE_DESCRIPTOR, config.getPolicy()), SingletonDeploymentProcessor.SERVICE_TARGET_FACTORY_KEY);
             }
         }
     }

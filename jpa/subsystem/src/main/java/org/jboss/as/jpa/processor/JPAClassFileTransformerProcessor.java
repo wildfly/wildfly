@@ -5,7 +5,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,14 +39,13 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // during the call to CreateContainerEntityManagerFactory.
 
         DelegatingClassTransformer transformer = deploymentUnit.getAttachment(DelegatingClassTransformer.ATTACHMENT_KEY);
-        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
         if ( transformer != null) {
 
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
-                        if (Configuration.needClassFileTransformer(pu)) {
+                        if (pu.needsJPADelegatingClassFileTransformer()) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
                     }

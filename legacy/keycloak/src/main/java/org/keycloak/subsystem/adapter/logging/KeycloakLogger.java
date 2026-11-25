@@ -4,6 +4,8 @@
  */
 package org.keycloak.subsystem.adapter.logging;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -21,7 +23,7 @@ public interface KeycloakLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    KeycloakLogger ROOT_LOGGER = Logger.getMessageLogger(KeycloakLogger.class, "org.jboss.keycloak");
+    KeycloakLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), KeycloakLogger.class, "org.jboss.keycloak");
 
     //@LogMessage(level = INFO)
     //@Message(value = "Keycloak subsystem override for deployment %s")

@@ -28,11 +28,11 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.activemq:artemis-server}"/>
-        <artifact name="${org.apache.activemq:artemis-cli}"/>
-        <artifact name="${org.apache.activemq:artemis-dto}"/>
-        <artifact name="${org.apache.activemq:artemis-jdbc-store}"/>
-        <artifact name="${org.apache.activemq:artemis-jakarta-server}"/>
+        <artifact name="${org.apache.artemis:artemis-server}"/>
+        <artifact name="${org.apache.artemis:artemis-cli}"/>
+        <artifact name="${org.apache.artemis:artemis-dto}"/>
+        <artifact name="${org.apache.artemis:artemis-jdbc-store}"/>
+        <artifact name="${org.apache.artemis:artemis-jakarta-server}"/>
     </resources>
 
     <dependencies>

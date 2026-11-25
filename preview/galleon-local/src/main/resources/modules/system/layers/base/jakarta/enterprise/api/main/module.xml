@@ -8,9 +8,9 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.enterprise.api">
 
     <resources>
-        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
-        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-el-api}"/>
-        <artifact name="${jakarta.enterprise:jakarta.enterprise.lang-model}"/>
+        <artifact name="${jakarta.cdi:jakarta.cdi-api}"/>
+        <artifact name="${jakarta.cdi:jakarta.cdi-el-api}"/>
+        <artifact name="${jakarta.cdi:jakarta.cdi-lang-model-api}"/>
     </resources>
 
     <dependencies>

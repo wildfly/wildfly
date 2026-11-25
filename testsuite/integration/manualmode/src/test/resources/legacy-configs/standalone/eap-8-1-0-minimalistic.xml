@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server xmlns="urn:jboss:domain:20.0">
+    <extensions>
+        <extension module="org.wildfly.extension.elytron"/>
+    </extensions>
+    <management>
+        <audit-log>
+            <formatters>
+                <json-formatter name="json-formatter"/>
+            </formatters>
+            <handlers>
+                <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="false" enabled="false">
+                <handlers>
+                    <handler name="file"/>
+                </handlers>
+            </logger>
+        </audit-log>
+        <management-interfaces>
+            <http-interface http-authentication-factory="management-http-authentication" console-enabled="false">
+                <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+                <socket-binding http="management-http"/>
+            </http-interface>
+        </management-interfaces>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
+    </management>
+    <profile>
+        <subsystem xmlns="urn:wildfly:elytron:18.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <providers>
+                <aggregate-providers name="combined-providers">
+                    <providers name="elytron"/>
+                    <providers name="openssl"/>
+                </aggregate-providers>
+                <provider-loader name="elytron" module="org.wildfly.security.elytron"/>
+                <provider-loader name="openssl" module="org.wildfly.openssl"/>
+            </providers>
+            <audit-logging>
+                <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.server.log.dir" format="JSON"/>
+            </audit-logging>
+            <security-domains>
+                <security-domain name="ApplicationDomain" default-realm="ApplicationRealm" permission-mapper="default-permission-mapper">
+                    <realm name="ApplicationRealm" role-decoder="groups-to-roles"/>
+                    <realm name="local"/>
+                </security-domain>
+                <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
+                    <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
+                    <realm name="local" role-mapper="super-user-mapper"/>
+                </security-domain>
+            </security-domains>
+            <security-realms>
+                <identity-realm name="local" identity="$local"/>
+                <properties-realm name="ApplicationRealm">
+                    <users-properties path="application-users.properties" relative-to="jboss.server.config.dir" digest-realm-name="ApplicationRealm"/>
+                    <groups-properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
+                </properties-realm>
+                <properties-realm name="ManagementRealm">
+                    <users-properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" digest-realm-name="ManagementRealm"/>
+                    <groups-properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                </properties-realm>
+            </security-realms>
+            <mappers>
+                <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
+                    <permission-mapping>
+                        <principal name="anonymous"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                    <permission-mapping match-all="true">
+                        <permission-set name="login-permission"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                </simple-permission-mapper>
+                <constant-realm-mapper name="local" realm-name="local"/>
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+                <constant-role-mapper name="super-user-mapper">
+                    <role name="SuperUser"/>
+                </constant-role-mapper>
+            </mappers>
+            <permission-sets>
+                <permission-set name="login-permission">
+                    <permission class-name="org.wildfly.security.auth.permission.LoginPermission"/>
+                </permission-set>
+                <permission-set name="default-permissions"/>
+            </permission-sets>
+            <http>
+                <http-authentication-factory name="management-http-authentication" security-domain="ManagementDomain" http-server-mechanism-factory="global">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="DIGEST">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </http-authentication-factory>
+                <provider-http-server-mechanism-factory name="global"/>
+            </http>
+            <sasl>
+                <sasl-authentication-factory name="application-sasl-authentication" sasl-server-factory="configured" security-domain="ApplicationDomain">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
+                        <mechanism mechanism-name="DIGEST-MD5">
+                            <mechanism-realm realm-name="ApplicationRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </sasl-authentication-factory>
+                <sasl-authentication-factory name="management-sasl-authentication" sasl-server-factory="configured" security-domain="ManagementDomain">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
+                        <mechanism mechanism-name="DIGEST-MD5">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </sasl-authentication-factory>
+                <configurable-sasl-server-factory name="configured" sasl-server-factory="elytron">
+                    <properties>
+                        <property name="wildfly.sasl.local-user.default-user" value="$local"/>
+                        <property name="wildfly.sasl.local-user.challenge-path" value="${jboss.server.temp.dir}/auth"/>
+                    </properties>
+                </configurable-sasl-server-factory>
+                <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">
+                    <filters>
+                        <filter provider-name="WildFlyElytron"/>
+                    </filters>
+                </mechanism-provider-filtering-sasl-server-factory>
+                <provider-sasl-server-factory name="global"/>
+            </sasl>
+            <tls>
+                <key-stores>
+                    <key-store name="applicationKS">
+                        <credential-reference clear-text="password"/>
+                        <implementation type="JKS"/>
+                        <file path="application.keystore" relative-to="jboss.server.config.dir"/>
+                    </key-store>
+                </key-stores>
+                <key-managers>
+                    <key-manager name="applicationKM" key-store="applicationKS" generate-self-signed-certificate-host="localhost">
+                        <credential-reference clear-text="password"/>
+                    </key-manager>
+                </key-managers>
+                <server-ssl-contexts>
+                    <server-ssl-context name="applicationSSC" key-manager="applicationKM"/>
+                </server-ssl-contexts>
+            </tls>
+        </subsystem>
+    </profile>
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+    </socket-binding-group>
+</server>

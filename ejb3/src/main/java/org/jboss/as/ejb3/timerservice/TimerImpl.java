@@ -20,7 +20,7 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class TimerImpl implements ManagedTimer {
+public class TimerImpl extends AbstractManagedTimer {
     /**
      * The output format with the cached final values, after the first toString() invocation
      */
@@ -101,6 +101,7 @@ public class TimerImpl implements ManagedTimer {
      * @param service          The timer service through which this timer was created
      */
     protected TimerImpl(Builder builder, TimerServiceImpl service) {
+        super(builder.timedObjectId, builder.id);
         assert builder.id != null : "id is null";
 
         this.id = builder.id;
@@ -499,22 +500,6 @@ public class TimerImpl implements ManagedTimer {
 
     public void unlock() {
         inUseLock.release();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-
-        final TimerImpl otherTimer = (TimerImpl) o;
-
-        if (!id.equals(otherTimer.id)) return false;
-        return timedObjectId.equals(otherTimer.timedObjectId);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
     }
 
     /**

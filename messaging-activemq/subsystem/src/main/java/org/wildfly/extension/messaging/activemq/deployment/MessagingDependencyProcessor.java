@@ -55,8 +55,7 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               String moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader, String moduleIdentifier) {
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, moduleIdentifier).setImportServices(true).build());
     }
 }

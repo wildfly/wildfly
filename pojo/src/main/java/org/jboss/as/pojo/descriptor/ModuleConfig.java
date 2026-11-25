@@ -7,7 +7,6 @@ package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
@@ -27,16 +26,15 @@ public class ModuleConfig extends AbstractConfigVisitorNode implements Serializa
     @Override
     public void visit(ConfigVisitor visitor) {
         if (moduleName != null) {
-            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleName);
             if (moduleName.startsWith(ServiceModuleLoader.MODULE_PREFIX)) {
-                ServiceName serviceName = ServiceModuleLoader.moduleServiceName(identifier);
+                ServiceName serviceName = ServiceModuleLoader.moduleServiceName(moduleName);
                 visitor.addDependency(serviceName, getInjectedModule());
             } else {
-                Module dm = visitor.loadModule(identifier);
+                Module dm = visitor.loadModule(moduleName);
                 getInjectedModule().setValue(() -> dm);
             }
         } else {
-            getInjectedModule().setValue(() -> visitor.getModule());
+            getInjectedModule().setValue(visitor::getModule);
         }
         // no children, no need to visit
     }

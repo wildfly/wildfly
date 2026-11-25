@@ -119,9 +119,8 @@ public class OidcWithMultiTenancyTest {
     private static final int ACCESS_TOKEN_LIFESPAN = 120;
     private static final int SESSION_MAX_LIFESPAN = 120;
 
-    private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
+    private static final Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES = new HashMap<>();
     static {
-        APP_NAMES = new HashMap<>();
         APP_NAMES.put(MULTI_TENANCY_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(MULTI_TENANCY_AUTH_SERVER_URL_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
@@ -447,13 +446,13 @@ public class OidcWithMultiTenancyTest {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             RestAssured
                     .given()
-                    .auth().oauth2(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
                     .when()
                     .delete(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms/" + TENANT1_REALM).then().statusCode(204);
 
             RestAssured
                     .given()
-                    .auth().oauth2(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
                     .when()
                     .delete(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms/" + TENANT2_REALM).then().statusCode(204);
 

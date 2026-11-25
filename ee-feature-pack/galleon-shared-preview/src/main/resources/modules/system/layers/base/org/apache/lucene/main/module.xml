@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.lucene">
+
+    <properties>
+        <!-- Native Lucene access is allowed in WildFly,
+             though it may not be supported by product vendors
+             (because its APIs could change without prior notice). -->
+        <property name="jboss.api" value="public"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.lucene:lucene-analysis-common}"/>
+        <artifact name="${org.apache.lucene:lucene-core}"/>
+        <artifact name="${org.apache.lucene:lucene-facet}"/>
+        <artifact name="${org.apache.lucene:lucene-queries}"/>
+        <artifact name="${org.apache.lucene:lucene-queryparser}"/>
+        <artifact name="${org.apache.lucene:lucene-join}"/>
+        <artifact name="${org.apache.lucene:lucene-highlighter}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+        <module name="jdk.management"/>
+        <module name="jdk.unsupported"/>
+    </dependencies>
+</module>

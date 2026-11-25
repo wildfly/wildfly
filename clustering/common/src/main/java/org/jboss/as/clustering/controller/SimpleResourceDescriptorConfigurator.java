@@ -11,6 +11,7 @@ import java.util.function.UnaryOperator;
  * {@link ResourceDescriptor} configurator for the common case of adding an enumeration of attributes.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class SimpleResourceDescriptorConfigurator<E extends Enum<E> & Attribute> implements UnaryOperator<ResourceDescriptor> {
     private final Class<E> attributeClass;
 

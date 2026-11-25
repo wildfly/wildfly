@@ -8,7 +8,7 @@ package org.wildfly.clustering.ejb.cache.bean;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 
 /**
@@ -21,9 +21,9 @@ public class DefaultBeanGroup<K, V extends BeanInstance<K>> extends DefaultImmut
 
     private final Map<K, V> instances;
     private final Consumer<Map<K, V>> prePassivateTask;
-    private final Mutator mutator;
+    private final CacheEntryMutator mutator;
 
-    public DefaultBeanGroup(K id, Map<K, V> instances, Consumer<Map<K, V>> prePassivateTask, Mutator mutator, Runnable closeTask) {
+    public DefaultBeanGroup(K id, Map<K, V> instances, Consumer<Map<K, V>> prePassivateTask, CacheEntryMutator mutator, Runnable closeTask) {
         super(id, instances, closeTask);
         this.instances = instances;
         this.prePassivateTask = prePassivateTask;
@@ -41,8 +41,8 @@ public class DefaultBeanGroup<K, V extends BeanInstance<K>> extends DefaultImmut
     }
 
     @Override
-    public void mutate() {
+    public void run() {
         this.prePassivateTask.accept(this.instances);
-        this.mutator.mutate();
+        this.mutator.run();
     }
 }

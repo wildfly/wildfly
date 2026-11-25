@@ -153,10 +153,15 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                         } finally {
                             invocationSyncState.set(SYNC_STATE_NO_INVOCATION);
                         }
-                    } else {
-                        EjbLogger.ROOT_LOGGER.unexpectedInvocationState(state);
+                        break;
+                    } else if (state != SYNC_STATE_INVOCATION_IN_PROGRESS) {
+                        // The state wasn't in progress, so it wasn't a CAS failure.
+                        // It's an unexpected state (like NO_INVOCATION). We must break to prevent the forever loop.
+                        EjbLogger.ROOT_LOGGER.unexpectedInvocationState(state, component.getApplicationName(),
+                                component.getModuleName(), component.getComponentName());
                         break;
                     }
+                    // else: state WAS IN_PROGRESS, meaning CAS failed due to race. Retry cleanly.
                 }
             }
         }

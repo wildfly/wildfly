@@ -5,31 +5,30 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.extension.clustering.web.HotRodSessionManagementResourceDefinition;
-import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorProvider;
 
 /**
+ * Mutable HotRod session management configuration.
  * @author Paul Ferraro
  */
-public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration implements HotRodSessionManagementConfiguration<DeploymentUnit> {
+public class MutableHotRodSessionManagementConfiguration extends MutableSessionManagementConfiguration {
 
     private volatile String containerName;
     private volatile String configurationName;
-    private volatile int expirationThreadPoolSize = HotRodSessionManagementResourceDefinition.Attribute.EXPIRATION_THREAD_POOL_SIZE.getDefinition().getDefaultValue().asInt();
 
     /**
      * Constructs a new HotRod session management configuration.
      * @param replacer a property replacer
      */
-    public MutableHotRodSessionManagementConfiguration(UnaryOperator<String> replacer) {
-        super(replacer);
+    public MutableHotRodSessionManagementConfiguration(UnaryOperator<String> replacer, Consumer<String> accumulator) {
+        super(replacer, accumulator, new LocalRouteLocatorProvider());
     }
 
     @Override
-    public String getContainerName() {
+    public String getParentName() {
         return this.containerName;
     }
 
@@ -38,20 +37,11 @@ public class MutableHotRodSessionManagementConfiguration extends MutableSessionM
     }
 
     @Override
-    public String getConfigurationName() {
+    public String getChildName() {
         return this.configurationName;
     }
 
     public void setConfigurationName(String configurationName) {
         this.configurationName = configurationName;
-    }
-
-    @Override
-    public int getExpirationThreadPoolSize() {
-        return this.expirationThreadPoolSize;
-    }
-
-    public void setExpirationThreadPoolSize(int expirationThreadPoolSize) {
-        this.expirationThreadPoolSize = expirationThreadPoolSize;
     }
 }

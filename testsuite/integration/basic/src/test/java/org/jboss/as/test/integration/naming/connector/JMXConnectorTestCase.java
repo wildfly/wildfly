@@ -4,6 +4,27 @@
  */
 package org.jboss.as.test.integration.naming.connector;
 
+import static javax.management.remote.rmi.RMIConnectorServer.RMI_CLIENT_SOCKET_FACTORY_ATTRIBUTE;
+import static javax.management.remote.rmi.RMIConnectorServer.RMI_SERVER_SOCKET_FACTORY_ATTRIBUTE;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketPermission;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.RMISocketFactory;
+import java.util.Map;
+import java.util.Properties;
+import javax.management.MBeanServer;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.naming.Context;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -18,18 +39,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.management.MBeanServer;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.naming.Context;
-import java.lang.management.ManagementFactory;
-import java.net.SocketPermission;
-import java.rmi.registry.LocateRegistry;
-import java.util.Properties;
-
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that JMX Connector work properly from container.
@@ -46,8 +55,9 @@ public class JMXConnectorTestCase {
 
     private static final String CB_DEPLOYMENT_NAME = "naming-connector-bean"; // module
 
+    private static final int port = 11090;
+
     private JMXConnectorServer connectorServer;
-    private final int port = 11090;
     private JMXServiceURL jmxServiceURL;
     private String rmiServerJndiName;
 
@@ -60,8 +70,16 @@ public class JMXConnectorTestCase {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         final String address = managementClient.getMgmtAddress();
         rmiServerJndiName = "rmi://" + address + ":" + port + "/jmxrmi";
-        jmxServiceURL = new JMXServiceURL("service:jmx:rmi:///jndi/"+rmiServerJndiName);
-        connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(jmxServiceURL, null, mbs);
+        jmxServiceURL = new JMXServiceURL("service:jmx:rmi:///jndi/" +rmiServerJndiName);
+
+        // Use a custom RMISocketFactory to control the interface used by the JMXConnectorServer
+        final RMISocketFactory socketFactory = new SocketFactory(address);
+
+        connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(
+                jmxServiceURL,
+                Map.of(RMI_SERVER_SOCKET_FACTORY_ATTRIBUTE, socketFactory, RMI_CLIENT_SOCKET_FACTORY_ATTRIBUTE, socketFactory),
+                mbs
+        );
         connectorServer.start();
     }
 
@@ -103,6 +121,29 @@ public class JMXConnectorTestCase {
         } finally {
             initialContext.close();
         }
+    }
+
+    public static final class SocketFactory extends RMISocketFactory implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private final String address;
+
+        public SocketFactory(String address) {
+            this.address = address;
+        }
+
+        @Override
+        public Socket createSocket(String host, int port) throws IOException {
+            return RMISocketFactory.getDefaultSocketFactory()
+                    .createSocket(address, port);
+        }
+
+        @Override
+        public ServerSocket createServerSocket(int port) throws IOException {
+            return new ServerSocket(port, 5, InetAddress.getByName(address));
+        }
+
     }
 
 }

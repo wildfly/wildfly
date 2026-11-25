@@ -63,10 +63,9 @@ public class SFSBHibernateSessionFactory {
     }
 
     // create student
-    public Student createStudent(String firstName, String lastName, String address, int id) {
+    public Student createStudent(String firstName, String lastName, String address) {
 
         Student student = new Student();
-        student.setStudentId(id);
         student.setAddress(address);
         student.setFirstName(firstName);
         student.setLastName(lastName);
@@ -75,7 +74,7 @@ public class SFSBHibernateSessionFactory {
             // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the Jakarta Transactions TransactionManager
             // implicitly
             Session session = sessionFactory.openSession();
-            session.save(student);
+            session.persist(student);
             session.flush();
             session.close();
         } catch (Exception e) {
@@ -87,7 +86,7 @@ public class SFSBHibernateSessionFactory {
 
     // fetch student
     public Student getStudent(int id) {
-        Student emp = sessionFactory.openSession().load(Student.class, id);
+        Student emp = sessionFactory.openSession().get(Student.class, id);
         return emp;
     }
 

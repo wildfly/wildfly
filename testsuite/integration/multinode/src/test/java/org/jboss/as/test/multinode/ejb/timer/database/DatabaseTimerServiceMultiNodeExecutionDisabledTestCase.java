@@ -10,7 +10,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import java.net.SocketPermission;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +34,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,7 +81,12 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
             if (server == null) {
                 //we need a TCP server that can be shared between the two servers
                 //To allow remote connections, start the TCP server using the option -tcpAllowOthers
-                server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                try {
+                    System.setProperty("h2.bindAddress", TestSuiteEnvironment.getServerAddress());
+                    server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                } finally {
+                    System.clearProperty("h2.bindAddress");
+                }
             }
 
             final ModelNode compositeOp = new ModelNode();
@@ -165,6 +173,9 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         war.addAsWebInfResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         if (client) {
             war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+            war.addAsManifestResource(
+                    createPermissionsXmlAsset(
+                            new SocketPermission("*:9092", "connect,resolve")), "permissions.xml");
         }
         return war;
     }
@@ -175,8 +186,8 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         Context clientContext = getRemoteContext(clientClient);
         RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
 
-        clientBean.scheduleTimer(System.currentTimeMillis() + 100, "timer1");
-        Thread.sleep(200);
+        clientBean.scheduleTimer(System.currentTimeMillis() + 100, "timer-disabled");
+        Thread.sleep(1000);
         Assert.assertFalse(clientBean.hasTimerRun());
         clientContext.close();
 
@@ -184,7 +195,7 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
         List<TimerData> res = serverBean.collect(1);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("server", res.get(0).getNode());
-        Assert.assertEquals("timer1", res.get(0).getInfo());
+        Assert.assertEquals("timer-disabled", res.get(0).getInfo());
     }
 
 

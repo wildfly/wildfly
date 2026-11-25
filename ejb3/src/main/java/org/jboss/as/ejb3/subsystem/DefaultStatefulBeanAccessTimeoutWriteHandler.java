@@ -52,7 +52,8 @@ class DefaultStatefulBeanAccessTimeoutWriteHandler extends AbstractWriteAttribut
         } else {
             // create and install the service
             final DefaultAccessTimeoutService defaultAccessTimeoutService = new DefaultAccessTimeoutService(defaultAccessTimeout);
-            final ServiceController<?> newService = context.getServiceTarget().addService(serviceName, defaultAccessTimeoutService)
+            context.getCapabilityServiceTarget().addService(serviceName, defaultAccessTimeoutService)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
         }
     }

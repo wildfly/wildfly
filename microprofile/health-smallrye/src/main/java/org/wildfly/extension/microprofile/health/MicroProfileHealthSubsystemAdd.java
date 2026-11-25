@@ -10,13 +10,20 @@ import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_HEALTH;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_HEALTH;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_SERVER_PROBE_CAPABILITY;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.health.ServerProbesService;
 import org.wildfly.extension.microprofile.health._private.MicroProfileHealthLogger;
 import org.wildfly.extension.microprofile.health.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.health.deployment.DeploymentProcessor;
@@ -26,10 +33,10 @@ import org.wildfly.extension.microprofile.health.deployment.DeploymentProcessor;
  */
 class MicroProfileHealthSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static MicroProfileHealthSubsystemAdd INSTANCE = new MicroProfileHealthSubsystemAdd();
+    private final Consumer<MicroProfileHealthReporter> reporter;
 
-    private MicroProfileHealthSubsystemAdd() {
-        super(MicroProfileHealthSubsystemDefinition.ATTRIBUTES);
+    MicroProfileHealthSubsystemAdd(Consumer<MicroProfileHealthReporter> reporter) {
+        this.reporter = reporter;
     }
 
     @Override
@@ -49,7 +56,13 @@ class MicroProfileHealthSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String emptyStartupChecksStatus = MicroProfileHealthSubsystemDefinition.EMPTY_STARTUP_CHECKS_STATUS.resolveModelAttribute(context, model).asString();
 
         HealthHTTPSecurityService.install(context, securityEnabled);
-        MicroProfileHealthReporterService.install(context, emptyLivenessChecksStatus, emptyReadinessChecksStatus, emptyStartupChecksStatus);
+
+        CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addService();
+        Consumer<MicroProfileHealthReporter> reporter = builder.provides(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_RUNTIME_CAPABILITY);
+        Supplier<ServerProbesService> serverProbesService = builder.requires(ServiceName.parse(HEALTH_SERVER_PROBE_CAPABILITY));
+
+        builder.setInstance(new MicroProfileHealthReporterService(reporter.andThen(this.reporter), serverProbesService, emptyLivenessChecksStatus, emptyReadinessChecksStatus, emptyStartupChecksStatus)).install();
+
         MicroProfileHealthContextService.install(context);
 
         MicroProfileHealthLogger.LOGGER.activatingSubsystem();

@@ -32,7 +32,7 @@ import org.jboss.as.test.manualmode.messaging.deployment.HelloWorldTopicMDB;
 
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -162,11 +162,11 @@ public class AutocreationManagementTestCase {
         deployer.deploy(DEPLOYMENT);
         deployer.undeploy(DEPLOYMENT);
         try (ManagementClient managementClient = createManagementClient()) {
-            assertFalse(LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            assertFalse(LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("AMQ229031: Unable to validate user from"))));
-            assertTrue(LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            assertTrue(LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("Creating topic jms.topic.HelloWorldMDBTopic on node UP"))));
-            assertTrue(LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            assertTrue(LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("Creating queue jms.queue.HelloWorldMDBQueue on node UP"))));
          }
     }
@@ -184,12 +184,13 @@ public class AutocreationManagementTestCase {
     public static WebArchive createArchive() {
         return create(WebArchive.class, DEPLOYMENT + ".war")
                 .addClasses(HelloWorldQueueMDB.class, HelloWorldTopicMDB.class, HelloWorldMDBServletClient.class)
-                .addAsWebInfResource(new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                        + "       xsi:schemaLocation=\"\n"
-                        + "         https://jakarta.ee/xml/ns/jakartaee\n"
-                        + "         https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd\"\n"
-                        + "       bean-discovery-mode=\"all\">\n"
-                        + "</beans>"), "beans.xml");
+                .addAsWebInfResource(new StringAsset("""
+                                                     <beans xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                                            xsi:schemaLocation="
+                                                              https://jakarta.ee/xml/ns/jakartaee
+                                                              https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                                                            bean-discovery-mode="all">
+                                                     </beans>"""), "beans.xml");
     }
 
     class LoggerSetup extends TestLogHandlerSetupTask {

@@ -47,7 +47,7 @@ command:
 
 In order to successfully execute the command above you must have a
 *application.truststore* file inside your
-*JBOSS_HOME/standalone/configuration* directory. Where the trust store
+*$JBOSS_HOME/standalone/configuration* directory. Where the trust store
 is protected by a password with a value *password*. The trust store must
 contain the certificates associated with the load balancer or a
 certificate chain in case the load balancer's certificate is signed by a

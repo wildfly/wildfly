@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.glassfish.expressly.lang.FunctionMapperImpl;
 import org.glassfish.expressly.lang.FunctionMapperImpl.Function;
@@ -66,7 +67,8 @@ public class FunctionMapperImplMarshaller implements ProtoStreamMarshaller<Funct
         Map<String, Function> functions = (Map<String, Function>) objects[0];
 
         if (functions != null) {
-            for (Function function : functions.values()) {
+            // Use reproducible ordering, since buffers were allocated based on size(...)
+            for (Function function : new TreeMap<>(functions).values()) {
                 writer.writeObject(FUNCTION_INDEX, function);
             }
         }

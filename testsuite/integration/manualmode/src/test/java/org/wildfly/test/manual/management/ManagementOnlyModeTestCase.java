@@ -23,14 +23,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
-import org.wildfly.core.testrunner.WildflyTestRunner;
+import org.wildfly.core.testrunner.WildFlyRunner;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
  * @author Tomaz Cerar
  */
+@RunWith(WildFlyRunner.class)
 @ServerControl(manual = true)
-@RunWith(WildflyTestRunner.class)
 public class ManagementOnlyModeTestCase {
 
     private static final int TEST_PORT = 20491;

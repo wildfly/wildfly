@@ -18,6 +18,7 @@ import org.jboss.dmr.ModelNode;
  * Interface to be implemented by attribute enumerations.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface Attribute extends Definable<AttributeDefinition> {
 
     /**

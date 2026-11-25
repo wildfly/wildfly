@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.lra.lra-coordinator">
+
+  <properties>
+    <property name="jboss.api" value="private"/>
+  </properties>
+  <resources>
+    <artifact name="${org.jboss.narayana.lra:lra-coordinator-jar}"/>
+  </resources>
+
+  <dependencies>
+    <module name="org.eclipse.microprofile.lra.api" />
+    <module name="jakarta.ws.rs.api" />
+    <module name="org.jboss.logging" />
+    <module name="org.jboss.narayana.lra.lra-service-base" />
+    <!-- lra-coordinator-jar -->
+    <module name="com.fasterxml.jackson.core.jackson-core"/>
+    <module name="org.jboss.jts"/>
+    <module name="org.eclipse.microprofile.config.api"/>
+    <module name="jakarta.enterprise.api"/>
+    <module name="jakarta.servlet.api"/>
+    <module name="org.eclipse.microprofile.openapi.api"/>
+    <module name="io.smallrye.fault-tolerance"/>
+    <module name="io.smallrye.config" optional="true"/>
+
+    <!-- Loading JAX-RS dependencies for LRA recovery coordinator to be able to do JAX-RS remote calls -->
+    <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
+    <module name="org.jboss.resteasy.resteasy-jaxb-provider" services="export"/>
+    <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="export"/>
+  </dependencies>
+</module>

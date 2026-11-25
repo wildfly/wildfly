@@ -4,12 +4,15 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -24,22 +27,21 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test that HTTP session failover on shutdown and undeploy works.
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
 
     private final String deploymentName;
@@ -51,7 +53,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
     }
 
     protected AbstractWebFailoverTestCase(String deploymentName, CacheMode cacheMode, TransactionMode transactionMode) {
-        super(THREE_NODES);
+        super(NODE_1_2_3);
 
         this.deploymentName = deploymentName;
         this.cacheMode = cacheMode;
@@ -68,15 +70,15 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
     }
 
     @Test
-    public void testGracefulSimpleFailover(
+    public void gracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
-        this.testFailover(new RestartLifecycle(), baseURL1, baseURL2, baseURL3);
+        this.testFailover(new GracefulRestartLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
     @Test
-    public void testGracefulUndeployFailover(
+    public void gracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
@@ -89,51 +91,51 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
         URI uri2 = SimpleServlet.createURI(baseURL2);
         URI uri3 = SimpleServlet.createURI(baseURL3);
 
-        this.establishTopology(baseURL1, THREE_NODES);
+        this.establishTopology(baseURL1, NODE_1_2_3);
         int value = 1;
         // In case updated route information is received, it must be different from the last route
         String lastOwner;
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNotNull(entry);
-                Assert.assertEquals(NODE_1, entry.getValue());
+                assertNotNull(entry);
+                assertEquals(NODE_1, entry.getValue());
                 lastOwner = entry.getValue();
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
             this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
 
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_2, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_2, entry.getValue());
                     lastOwner = entry.getValue();
                 } else {
-                    Assert.assertNull(entry);
+                    assertNull(entry);
                 }
             }
 
             this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
 
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_3, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_3, entry.getValue());
                     lastOwner = entry.getValue();
                 } else {
-                    Assert.assertNull(entry);
+                    assertNull(entry);
                 }
             }
 
@@ -141,28 +143,28 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             lifecycle.stop(NODE_1);
 
-            this.establishTopology(baseURL2, NODE_2, NODE_3);
+            this.establishTopology(baseURL2, Set.of(NODE_2, NODE_3));
 
             // node2
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 // After topology change, the session will have to be re-routed to either of the 2 remaining nodes
-                Assert.assertNotNull(entry);
-                Assert.assertNotEquals(lastOwner, entry.getValue());
+                assertNotNull(entry);
+                assertNotEquals(lastOwner, entry.getValue());
                 lastOwner = entry.getValue();
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
@@ -170,60 +172,60 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             // node3
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_3, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_3, entry.getValue());
                 } else {
-                    Assert.assertNull(entry);
+                    assertNull(entry);
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                assertNull(entry);
             }
 
             lifecycle.start(NODE_1);
 
-            this.establishTopology(baseURL2, THREE_NODES);
+            this.establishTopology(baseURL2, NODE_1_2_3);
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_2, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_2, entry.getValue());
                 } else if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri2))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                assertNull(entry);
             }
 
             this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_3, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_3, entry.getValue());
                 } else {
-                    Assert.assertNull(entry);
+                    assertNull(entry);
                 }
             }
 
@@ -231,97 +233,97 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             lifecycle.stop(NODE_2);
 
-            this.establishTopology(baseURL1, NODE_1, NODE_3);
+            this.establishTopology(baseURL1, Set.of(NODE_1, NODE_3));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_3, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_3, entry.getValue());
                 } else {
                     if (entry != null) {
-                        Assert.assertNotEquals(lastOwner, entry.getValue());
+                        assertNotEquals(lastOwner, entry.getValue());
                         lastOwner = entry.getValue();
-                        Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                        assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                     }
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri3))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             lifecycle.start(NODE_2);
 
-            this.establishTopology(baseURL1, THREE_NODES);
+            this.establishTopology(baseURL1, NODE_1_2_3);
 
             this.nonTxWait.run();
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (!this.cacheMode.needsStateTransfer()) {
-                    Assert.assertNotNull(entry);
-                    Assert.assertEquals(NODE_1, entry.getValue());
+                if (!this.cacheMode.isClustered()) {
+                    assertNotNull(entry);
+                    assertEquals(NODE_1, entry.getValue());
                 } else if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    assertNotEquals(lastOwner, entry.getValue());
                     lastOwner = entry.getValue();
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             }
 
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
         }
     }
 
     @Test
-    public void testNonPrimaryOwner(
+    public void nonPrimaryOwner(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
@@ -333,8 +335,8 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // Create session, establishing primary owner
             try (CloseableHttpResponse response = client.execute(new HttpHead(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(SimpleServlet.VALUE_HEADER));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(response.containsHeader(SimpleServlet.VALUE_HEADER));
             }
 
             // Test session attribute creation/mutation on non-owners
@@ -345,18 +347,18 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
                     int value = 1;
                     try (CloseableHttpResponse response = client.execute(request)) {
-                        Assert.assertEquals(request.getMethod(), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        Assert.assertEquals(request.getMethod(), value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), request.getMethod());
+                        assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()), request.getMethod());
                     }
 
                     try (CloseableHttpResponse response = client.execute(request)) {
-                        Assert.assertEquals(request.getMethod(), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        Assert.assertEquals(request.getMethod(), value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), request.getMethod());
+                        assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()), request.getMethod());
                     }
 
                     // Remove attribute so we can try again on another non-owner
                     try (CloseableHttpResponse response = client.execute(new HttpPut(uri))) {
-                        Assert.assertEquals(request.getMethod(), HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                        assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode(), request.getMethod());
                     }
                 }
             }
@@ -365,15 +367,15 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             // Destroy session
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(SimpleServlet.VALUE_HEADER));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertFalse(response.containsHeader(SimpleServlet.VALUE_HEADER));
             }
         }
     }
 
-    private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException, InterruptedException {
+    private void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException, InterruptedException {
         if (this.cacheMode.isClustered()) {
-            ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
+            TopologyChangeListenerUtil.establishTopology(baseURL, "web", this.deploymentName, topology);
 
             // TODO we should be able to speed this up by observing changes in the routing registry
             // prevents failing assertions when topology information is expected, e.g.:

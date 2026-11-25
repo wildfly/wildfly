@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-connector</artifactId>
     <name>WildFly: Connector Subsystem</name>
@@ -24,14 +24,14 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -85,10 +85,6 @@
             <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
@@ -137,11 +133,6 @@
             <artifactId>jboss-metadata-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_5.0_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
         </dependency>
@@ -158,22 +149,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-api</artifactId>
         </dependency>
         <dependency>
@@ -182,11 +157,15 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
+            <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-naming</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.common</groupId>
@@ -243,14 +222,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -282,4 +253,25 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.kohsuke.metainf-services</groupId>
+                            <artifactId>metainf-services</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

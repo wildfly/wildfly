@@ -10,12 +10,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -24,7 +21,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -47,12 +43,10 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -153,65 +147,10 @@ public abstract class SimpleMixedDomainTest  {
     //Do this one last since it changes the host model of the secondary hosts
     @Test
     public void test99999_ProfileClone() throws Exception {
-        if (version.getMajor() == 6) {
-            //EAP 6 does not have the clone operation
-            profileCloneEap6x();
-        } else {
-            //EAP 7 does not have the clone operation
-            profileCloneEap7x();
-        }
+        profileCloneEap();
     }
 
-    private void profileCloneEap6x() throws Exception {
-        //EAP 6 does not have the clone operation
-        //For an EAP 7 secondary we will need another test since EAP 7 allows the clone operation.
-        // However EAP 7 will need to take into account the ignore-unused-configuration
-        // setting which does not exist in 6.x
-        final DomainClient primaryClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
-        final DomainClient secondaryClient = support.getDomainSecondaryLifecycleUtil().createDomainClient();
-        try {
-            final PathAddress newProfileAddress = PathAddress.pathAddress(PROFILE, "new-profile");
-
-            //Create a new profile (so that we can ignore it on the host later)
-            DomainTestUtils.executeForResult(Util.createAddOperation(newProfileAddress), primaryClient);
-
-            //Attempt to clone it. It should fail since the transformers reject it.
-            final ModelNode clone = Util.createEmptyOperation(CLONE, newProfileAddress);
-            clone.get(TO_PROFILE).set("cloned");
-            DomainTestUtils.executeForFailure(clone, primaryClient);
-
-            //Ignore the new profile on the secondary and reload
-            final PathAddress ignoredResourceAddress = PathAddress.pathAddress(HOST, "secondary")
-                    .append(CORE_SERVICE, IGNORED_RESOURCES).append(IGNORED_RESOURCE_TYPE, PROFILE);
-            final ModelNode ignoreNewProfile = Util.createAddOperation(ignoredResourceAddress);
-            ignoreNewProfile.get(NAMES).add("new-profile");
-            DomainTestUtils.executeForResult(ignoreNewProfile, secondaryClient);
-
-            //Reload secondary so ignore takes effect
-            reloadHost(support.getDomainSecondaryLifecycleUtil(), "secondary");
-
-            //Clone should work now that the new profile is ignored
-            DomainTestUtils.executeForResult(clone, primaryClient);
-
-            //Adding a subsystem to the cloned profile should fail since the profile does not exist on the secondary
-            DomainTestUtils.executeForFailure(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), primaryClient);
-
-            //Reload secondary
-            reloadHost(support.getDomainSecondaryLifecycleUtil(), "secondary");
-
-            //Reloading should have brought over the cloned profile, so adding a subsystem should now work
-            DomainTestUtils.executeForResult(Util.createAddOperation(PathAddress.pathAddress(PROFILE, "cloned").append(SUBSYSTEM, "jmx")), primaryClient);
-        } finally {
-            IoUtils.safeClose(secondaryClient);
-            IoUtils.safeClose(primaryClient);
-        }
-    }
-
-
-    private void profileCloneEap7x() throws Exception {
-        // EAP 7 allows the clone operation.
-        // However EAP 7 will need to take into account the ignore-unused-configuration
-        // setting which does not exist in 6.x
+    private void profileCloneEap() throws Exception {
         final DomainClient primaryClient = support.getDomainPrimaryLifecycleUtil().createDomainClient();
         final DomainClient secondaryClient = support.getDomainSecondaryLifecycleUtil().createDomainClient();
         try {
@@ -255,15 +194,6 @@ public abstract class SimpleMixedDomainTest  {
      */
 
 
-    private DomainClient reloadHost(DomainLifecycleUtil lifecycleUtil, String host) throws Exception {
-        ModelNode reload = Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, host));
-        reload.get(RESTART_SERVERS).set(false);
-        lifecycleUtil.executeAwaitConnectionClosed(reload);
-        lifecycleUtil.connect();
-        lifecycleUtil.awaitHostController(System.currentTimeMillis());
-        return lifecycleUtil.createDomainClient();
-    }
-
     private static ModelNode createProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE))
                 .append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"))
@@ -276,14 +206,6 @@ public abstract class SimpleMixedDomainTest  {
         operation.get(ModelDescriptionConstants.VALUE).set(propertyValue);
 
         return operation;
-    }
-
-    private Set<ModelNode> getAllChildren(ModelNode modules) {
-        HashSet<ModelNode> set = new HashSet<ModelNode>();
-        for (Property prop : modules.asPropertyList()) {
-            set.add(prop.getValue());
-        }
-        return set;
     }
 
     private void cleanupKnownDifferencesInModelsForVersioningCheck(ModelNode primaryModel, ModelNode secondaryModel) {

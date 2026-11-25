@@ -37,7 +37,7 @@ import org.wildfly.security.http.oidc.OidcConfigurationServletListener;
  */
 class OidcActivationProcessor implements DeploymentUnitProcessor {
 
-    private static final String OIDC_AUTH_METHOD = "OIDC";
+    public static final String OIDC_AUTH_METHOD = "OIDC";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

@@ -12,6 +12,7 @@ import org.wildfly.clustering.singleton.Singleton;
  * Implemented by the instrumented singleton service.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface SingletonService extends Singleton, Service {
 
 }

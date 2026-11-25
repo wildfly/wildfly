@@ -7,7 +7,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -17,19 +17,26 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
 
-    <name>WildFly: Feature Pack Shared Galleon Content</name>
-    <description>Content for the wildfly feature pack that can also be used in the wildfly-preview feature pack</description>
+    <name>WildFly: Feature-Pack Shared Galleon Content</name>
+    <description>Content for the wildfly feature-pack that can also be used in the wildfly-preview feature-pack</description>
     <packaging>pom</packaging>
-
     <dependencies>
 
-        <dependency><groupId>com.fasterxml.jackson.jr</groupId><artifactId>jackson-jr-objects</artifactId></dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.jr</groupId>
+            <artifactId>jackson-jr-objects</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>com.github.luben</groupId>
@@ -48,33 +55,46 @@
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-commons</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-core</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-otlp</artifactId></dependency>
+        <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-exposition-textformats</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-config</artifactId></dependency>
+        <dependency><groupId>io.prometheus</groupId><artifactId>prometheus-metrics-model</artifactId></dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+
+
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-incubator</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-runtime-telemetry</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv-incubating</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-incubator</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-events</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-logging</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-logs</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-metrics</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-trace</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-semconv</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
-
-        <dependency><groupId>io.perfmark</groupId><artifactId>perfmark-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
 
         <dependency>
             <groupId>io.smallrye</groupId>
@@ -83,6 +103,10 @@
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-fault-tolerance-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance-apiimpl</artifactId>
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>
@@ -96,6 +120,21 @@
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-health</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.stork</groupId>
+            <artifactId>stork-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.stork</groupId>
+            <artifactId>stork-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.stork</groupId>
+            <artifactId>stork-service-discovery-static-list</artifactId>
         </dependency>
 
         <dependency>
@@ -159,6 +198,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-open-api-model</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>io.smallrye.common</groupId>
@@ -170,7 +219,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-classloader</artifactId>
@@ -181,40 +229,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <dependency>
-            <groupId>io.smallrye.common</groupId>
-            <artifactId>smallrye-common-constraint</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye.common</groupId>
-            <artifactId>smallrye-common-function</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye.common</groupId>
-            <artifactId>smallrye-common-expression</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-vertx-context</artifactId>
@@ -258,6 +272,16 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config-microprofile</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-source-file-system</artifactId>
             <exclusions>
                 <exclusion>
@@ -272,11 +296,7 @@
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-exporters</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-propagation</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-rest</artifactId></dependency>
-
-        <dependency>
-            <groupId>io.smallrye.reactive</groupId>
-            <artifactId>mutiny</artifactId>
-        </dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-senders</artifactId></dependency>
 
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
@@ -305,11 +325,6 @@
 
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
-            <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.smallrye.reactive</groupId>
             <artifactId>smallrye-mutiny-vertx-runtime</artifactId>
         </dependency>
 
@@ -326,6 +341,11 @@
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
             <artifactId>smallrye-reactive-messaging-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-reactive-messaging-otel</artifactId>
         </dependency>
 
         <dependency>
@@ -365,11 +385,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-grpc-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-kafka-client</artifactId>
         </dependency>
 
         <dependency>
@@ -431,33 +446,29 @@
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.reactivestreams</groupId>
-            <artifactId>reactive-streams</artifactId>
-        </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-service-base</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>narayana-lra</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-client</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-proxy-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-coordinator-jar</artifactId>
         </dependency>
 
@@ -477,7 +488,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.lz4</groupId>
+            <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
         </dependency>
 
@@ -552,7 +563,15 @@
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-host</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-spi</artifactId>
         </dependency>
 
         <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-opentelemetry</artifactId></dependency>
@@ -651,7 +670,7 @@
                 <groupId>org.wildfly.unstable.api.annotation</groupId>
                 <artifactId>unstable-api-annotation-classpath-indexer-plugin</artifactId>
                 <configuration>
-                    <outputFile>${project.build.directory}/index/wildfly-galleon-pack.zip</outputFile>
+                    <outputFile>${project.build.directory}/index/wildfly-galleon-pack-unstable-api-annotation-index.zip</outputFile>
                     <filters>
                         <filter>
                             <annotation>io.smallrye.common.annotation.Experimental</annotation>

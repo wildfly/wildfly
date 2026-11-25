@@ -14,12 +14,14 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 import io.undertow.Version;
 
@@ -29,6 +31,7 @@ import io.undertow.Version;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class UndertowService implements Service<UndertowService> {
+    public static final NullaryServiceDescriptor<UndertowService> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
 
     /**
      * @deprecated Replaced by capability reference {@link UndertowRootDefinition#UNDERTOW_CAPABILITY}.
@@ -46,14 +49,15 @@ public class UndertowService implements Service<UndertowService> {
     @Deprecated(forRemoval = true)
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
-     * service name under which default server is bound.
+     * @deprecated Replaced by {@link Server#DEFAULT_SERVICE_DESCRIPTOR}.
      */
-    public static final ServiceName DEFAULT_SERVER = UNDERTOW.append("default-server");
-
+    @Deprecated(forRemoval = true)
+    public static final ServiceName DEFAULT_SERVER = ServiceNameFactory.resolveServiceName(Server.DEFAULT_SERVICE_DESCRIPTOR);
     /**
-     * service name under which default host of default server is bound.
+     * @deprecated Superseded by {@link Host#DEFAULT_SERVER_SERVICE_DESCRIPTOR}, since *every* server has a default host.
      */
-    public static final ServiceName DEFAULT_HOST = DEFAULT_SERVER.append("default-host");
+    @Deprecated(forRemoval = true)
+    public static final ServiceName DEFAULT_HOST = ServiceNameFactory.resolveServiceName(Host.DEFAULT_SERVER_DEFAULT_SERVICE_DESCRIPTOR);
 
     public static final ServiceName UNDERTOW_DEPLOYMENT = ServiceName.of("undertow-deployment");
     /**
@@ -123,6 +127,7 @@ public class UndertowService implements Service<UndertowService> {
         return AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
+    @Deprecated(forRemoval = true)
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append("console", "redirect");
     }

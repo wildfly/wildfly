@@ -7,21 +7,21 @@ package org.jboss.as.test.smoke.rar;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RarTestCase {
 
     private static final String JNDI_NAME = "java:/eis/HelloWorld";
@@ -41,13 +41,13 @@ public class RarTestCase {
     @Test
     public void helloWorld() throws Exception {
         String s = getConnection().helloWorld();
-        Assert.assertEquals("Hello World, AS 7 !", s);
+        Assertions.assertEquals("Hello World, AS 7 !", s);
     }
 
     @Test
     public void helloWorld2() throws Exception {
         String s = getConnection().helloWorld("Test");
-        Assert.assertEquals("Hello World, Test !", s);
+        Assertions.assertEquals("Hello World, Test !", s);
     }
 
     private HelloWorldConnection getConnection() throws Exception {

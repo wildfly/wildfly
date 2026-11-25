@@ -227,6 +227,6 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
         if (started && delegate != null) {
             return delegate;
         }
-        throw BatchLogger.LOGGER.jobOperatorServiceStopped();
+        throw BatchLogger.LOGGER.jobRepositoryServiceStopped();
     }
 }

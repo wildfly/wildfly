@@ -13,6 +13,7 @@ import org.jboss.as.controller.PathAddress;
  * Defines an attribute translation.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 @FunctionalInterface
 public interface AttributeTranslation {
     // The translator used by an attribute alias

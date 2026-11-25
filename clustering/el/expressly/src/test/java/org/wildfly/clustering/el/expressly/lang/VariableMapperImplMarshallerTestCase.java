@@ -5,14 +5,14 @@
 
 package org.wildfly.clustering.el.expressly.lang;
 
-import java.io.IOException;
-
 import org.glassfish.expressly.ValueExpressionLiteral;
 import org.glassfish.expressly.lang.VariableMapperImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 import jakarta.el.ValueExpression;
 
@@ -22,14 +22,17 @@ import jakarta.el.ValueExpression;
  */
 public class VariableMapperImplMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<VariableMapperImpl> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<VariableMapperImpl> tester = factory.createTester(Assertions::assertNotSame);
         VariableMapperImpl mapper = new VariableMapperImpl();
-        tester.test(mapper, Assert::assertNotSame);
+        tester.accept(mapper);
+
+        tester = factory.createTester(VariableMapperImplMarshallerTestCase::assertEquals);
         mapper.setVariable("foo", new ValueExpressionLiteral(Boolean.TRUE, Boolean.class));
         mapper.setVariable("bar", new ValueExpressionLiteral(Integer.valueOf(1), Integer.class));
-        tester.test(mapper, VariableMapperImplMarshallerTestCase::assertEquals);
+        tester.accept(mapper);
     }
 
     static void assertEquals(VariableMapperImpl mapper1, VariableMapperImpl mapper2) {
@@ -40,8 +43,8 @@ public class VariableMapperImplMarshallerTestCase {
     static void assertEquals(VariableMapperImpl mapper1, VariableMapperImpl mapper2, String variable) {
         ValueExpression expression1 = mapper1.resolveVariable(variable);
         ValueExpression expression2 = mapper2.resolveVariable(variable);
-        Assert.assertNotNull(expression1);
-        Assert.assertNotNull(expression2);
-        Assert.assertEquals(expression1, expression2);
+        Assertions.assertNotNull(expression1);
+        Assertions.assertNotNull(expression2);
+        Assertions.assertEquals(expression1, expression2);
     }
 }

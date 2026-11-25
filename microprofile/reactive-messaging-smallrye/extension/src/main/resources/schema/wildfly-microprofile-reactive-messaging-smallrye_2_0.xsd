@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:microprofile-reactive-messaging-smallrye:2.0"
+           xmlns="urn:wildfly:microprofile-reactive-messaging-smallrye:2.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="2.0">
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem" type="microprofile-reactive-messaging-smallrye-subsystemType"/>
+
+    <xs:complexType name="microprofile-reactive-messaging-smallrye-subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+                MicroProfile Reactive Messaging with SmallRye subsystem configurations
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:all>
+            <xs:element name="opentelemetry-tracing" type="opentelemetry-tracingType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="opentelemetry-tracingType">
+        <xs:annotation>
+            <xs:documentation>
+                Configures the integration between the connectors and OpenTelemetry tracing.
+                If this element is not present, it is not possible to enable OpenTelemetry tracing for any connector.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="amqp-connector" type="connector-opentelemetry-tracingType" default="NEVER">
+            <xs:annotation>
+                <xs:documentation>
+                    The default access timeout, for stateful session beans, in milliseconds
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="kafka-connector" type="connector-opentelemetry-tracingType" default="NEVER">
+            <xs:annotation>
+                <xs:documentation>
+                    The default access timeout, for stateful session beans, in milliseconds
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+
+    <xs:simpleType name="connector-opentelemetry-tracingType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NEVER">
+                <xs:annotation>
+                    <xs:documentation>
+                        OpenTelemetry Tracing is disabled for the connector, and it is not possible to enable
+                        tracing for the connector via MicroProfile Config.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="OFF">
+                <xs:annotation>
+                    <xs:documentation>
+                        OpenTelemetry Tracing is disabled for the connector, it is possible to enable
+                        tracing for the connector via MicroProfile Config.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ON">
+                <xs:annotation>
+                    <xs:documentation>
+                        OpenTelemetry Tracing is enabled for the connector, and it is possible to disable
+                        tracing for the connector via MicroProfile Config.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ALWAYS">
+                <xs:annotation>
+                    <xs:documentation>
+                        OpenTelemetry Tracing is enabled for the connector, and it is not possible to disable
+                        tracing for the connector via MicroProfile Config.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+</xs:schema>

@@ -5,12 +5,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Properties;
 import java.util.PropertyPermission;
+import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -19,33 +22,32 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.IntermittentFailure;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.common.function.ExceptionSupplier;
-
-
-import javax.naming.Context;
 
 /**
  * A test of failover when both legacy remoting connector and HTTP Upgrade connector are enabled.
+ *
  * @author Richard Achmatowicz
  */
-
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
-@RunWith(Arquillian.class)
-@Ignore("WFLY-17605")
+@ExtendWith(ArquillianExtension.class)
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
+    @BeforeAll
+    static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17605");
+    }
+
     private static final int COUNT = 20;
-    private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final String MODULE_NAME = TwoConnectorsEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -90,7 +92,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             //props.put(Context.PROVIDER_URL, String.format("%s://%s:%s/wildfly-services", "https", "localhost", "8080"));
             props.put(Context.PROVIDER_URL, String.format("%s://%s:%s", "remote+http", "localhost", "8080"));
         }
-        return props ;
+        return props;
     }
 
 
@@ -98,8 +100,8 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * Run a failover test where the client communicates with the server via HTTP Upgrade over port 8080/8081
      */
     @Test
-    public void testEJBClientUsingHttpUpgradeProtocol() throws Exception {
-        log.infof(MODULE_NAME+ " : testing failover with client using HTTP Upgrade");
+    void ejbClientUsingHttpUpgradeProtocol() throws Exception {
+        log.infof(MODULE_NAME + " : testing failover with client using HTTP Upgrade");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
     }
 
@@ -107,7 +109,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * Run a failover test where the client communicates with the server via legacy Remoting protocol over port 4447/4448
      */
     @Test
-    public void testEJBClientUsingLegacyRemotingProtocol() throws Exception {
+    void ejbClientUsingLegacyRemotingProtocol() throws Exception {
         log.infof(MODULE_NAME + " : testing failover with client using legacy Remoting");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(true)));
     }
@@ -117,6 +119,10 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      * A SFSB failover test which accepts an EJBDirectory provider parameter to adjust client behaviour
      */
     public void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
+
+        // give the servers a moment to stabilize before invocation start
+        Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
+
         try (EJBDirectory directory = directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
@@ -124,103 +130,105 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             String target = result.getNode();
             int count = 1;
 
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
-            undeploy(this.findDeployment(target));
+            undeploy(findDeployment(target));
 
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             // Bean should failover to other node
             String failoverTarget = result.getNode();
 
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertNotEquals(target, failoverTarget);
+            assertEquals(count++, result.getValue().intValue());
+            assertNotEquals(target, failoverTarget);
 
-            deploy(this.findDeployment(target));
+            deploy(findDeployment(target));
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             String failbackTarget = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
             // Bean should retain weak affinity for this node
-            Assert.assertEquals(failoverTarget, failbackTarget);
+            assertEquals(failoverTarget, failbackTarget);
 
             result = bean.increment();
             // Bean may have acquired new weak affinity
             target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             stop(target);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             // Bean should failover to other node
             failoverTarget = result.getNode();
 
-            Assert.assertEquals(count++, result.getValue().intValue());
-            Assert.assertNotEquals(target, failoverTarget);
+            assertEquals(count++, result.getValue().intValue());
+            assertNotEquals(target, failoverTarget);
 
             start(target);
 
             // Allow sufficient time for client to receive new topology
-            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            Thread.sleep(EJB_CLIENT_TOPOLOGY_UPDATE_WAIT.toMillis());
 
             result = bean.increment();
             failbackTarget = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
             // Bean should retain weak affinity for this node
-            Assert.assertEquals(failoverTarget, failbackTarget);
+            assertEquals(failoverTarget, failbackTarget);
 
             result = bean.increment();
             // Bean may have acquired new weak affinity
             target = result.getNode();
-            Assert.assertEquals(count++, result.getValue().intValue());
+            assertEquals(count++, result.getValue().intValue());
 
             // Bean should retain weak affinity for this node
             for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+                assertEquals(count++, result.getValue().intValue());
+                assertEquals(target, result.getNode(), String.valueOf(i));
             }
 
             bean.remove();
         }
     }
 
-        /*
+    /**
      * Set up the server to use both legacy and HTTP Upgrade remoting connectors
      */
-    public static class ServerSetupTask extends CLIServerSetupTask {
-        public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
-                    .setup("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, sasl-authentication-factory=application-sasl-authentication)")
-                    .setup("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
-                    // this step results in a capabilities error if the list is not formatted correctly for CLI
-                    .setup("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
-                    .teardown("/subsystem=ejb3/service=remote:list-remove(name=connectors, value=remoting-connector)")
-                    .teardown("/subsystem=remoting/connector=remoting-connector:remove")
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=remoting:remove")
-            ;
+    static class ServerSetupTask extends ManagementServerSetupTask {
+        ServerSetupTask() {
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
+                            .add("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, sasl-authentication-factory=application-sasl-authentication)")
+                            .add("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
+                            // this step results in a capability error if the list is not formatted correctly for CLI
+                            .add("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }

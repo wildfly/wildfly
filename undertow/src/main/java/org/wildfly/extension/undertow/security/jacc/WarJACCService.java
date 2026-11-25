@@ -5,10 +5,14 @@
 
 package org.wildfly.extension.undertow.security.jacc;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+import static org.wildfly.security.jakarta.authz.WebPCFResolver.resolvePolicyConfigurationFactory;
+import static org.wildfly.security.jakarta.authz.WebPCFResolver.setGlobalPolicyConfigurationFactory;
+import static org.wildfly.security.jakarta.authz.WebPolicyContextRegistration.register;
 
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import jakarta.security.jacc.WebResourcePermission;
 import jakarta.security.jacc.WebRoleRefPermission;
@@ -37,7 +42,9 @@ import org.jboss.metadata.web.spec.ServletSecurityMetaData;
 import org.jboss.metadata.web.spec.UserDataConstraintMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
-
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.StopContext;
+import org.wildfly.security.jakarta.authz.PolicyRegistration;
 /**
  * A service that creates Jakarta Authorization permissions for a web deployment
  * @author Scott.Stark@jboss.org
@@ -60,8 +67,45 @@ public class WarJACCService extends JaccService<WarMetaData> {
 
     private static final String ANY_AUTHENTICATED_USER_ROLE = "**";
 
-    public WarJACCService(String contextId, WarMetaData metaData, Boolean standalone) {
+    /** The ClassLoader of the deployment.  */
+    private final ClassLoader deploymentClassLoader;
+    /** The metadata of the deployment. */
+    private final WarMetaData metaData;
+    /** The original PolicyConfigurationFactory cached so it can be restored */
+    private volatile PolicyConfigurationFactory originalPolicyConfigurationFactory;
+    /** Cleanup action to restore the original PolicyFactory when the deployment is undeployed */
+    private volatile Runnable policyFactoryCleanup;
+
+    public WarJACCService(String contextId, WarMetaData metaData, Boolean standalone, final ClassLoader deploymentClassLoader) {
         super(contextId, metaData, standalone);
+        this.deploymentClassLoader = checkNotNullParam("deploymentClassLoader", deploymentClassLoader);
+        this.metaData = metaData;
+    }
+
+    @Override
+    protected PolicyConfigurationFactory getPolicyConfigurationFactory()
+            throws ModuleLoadException, ClassNotFoundException, PolicyContextException, GeneralSecurityException {
+        PolicyConfigurationFactory pcf = super.getPolicyConfigurationFactory();
+        PolicyConfigurationFactory resolvedPcf = resolvePolicyConfigurationFactory(pcf, metaData.getMergedJBossWebMetaData(), deploymentClassLoader, contextId);
+
+        if (pcf != resolvedPcf) {
+            this.originalPolicyConfigurationFactory = pcf;
+            setGlobalPolicyConfigurationFactory(resolvedPcf);
+
+            return resolvedPcf;
+        }
+
+        return pcf;
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        super.stop(context);
+
+        if (originalPolicyConfigurationFactory != null) {
+            setGlobalPolicyConfigurationFactory(originalPolicyConfigurationFactory);
+            originalPolicyConfigurationFactory = null;
+        }
     }
 
     /** {@inheritDoc} */
@@ -264,6 +308,10 @@ public class WarJACCService extends JaccService<WarMetaData> {
                 continue;
             }
             // Create the excluded permissions
+            if (info.allMethodsExcluded) {
+                pc.addToExcludedPolicy(new WebResourcePermission(qurl, (String) null));
+                pc.addToExcludedPolicy(new WebUserDataPermission(qurl, (String) null));
+            }
             String[] httpMethods = info.getExcludedMethods();
             if (httpMethods != null) {
                 // There were excluded security-constraints
@@ -275,6 +323,12 @@ public class WarJACCService extends JaccService<WarMetaData> {
             }
 
             // Create the role permissions
+            boolean allMethodsCovered = info.allMethodsRoles != null && !info.allMethodsRoles.isEmpty();
+            if (allMethodsCovered) {
+                for (String role : info.allMethodsRoles) {
+                    pc.addToRole(role, new WebResourcePermission(qurl, (String) null));
+                }
+            }
             Iterator<Map.Entry<String, Set<String>>> roles = info.getRoleMethods();
             Set<String> seenMethods = new HashSet<>();
             while (roles.hasNext()) {
@@ -290,7 +344,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
             //there are totally 7 http methods from the jacc spec (See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES)
             final int NUMBER_OF_HTTP_METHODS = 7;
             // JACC 1.1: create !(httpmethods) in unchecked perms
-            if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null && seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
+            if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null && !allMethodsCovered && seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
                 WebResourcePermission wrpUnchecked = seenMethods.isEmpty() ? new WebResourcePermission(qurl, (String) null)
                         : new WebResourcePermission(qurl, "!" + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
                 pc.addToUncheckedPolicy(wrpUnchecked);
@@ -300,11 +354,11 @@ public class WarJACCService extends JaccService<WarMetaData> {
                 String[] missingHttpMethods = info.getMissingMethods();
                 int length = missingHttpMethods.length;
                 roles = info.getRoleMethods();
-                if (length > 0 && !roles.hasNext()) {
+                if (length > 0 && !roles.hasNext() && !allMethodsCovered) {
                     // Create the unchecked permissions WebResourcePermissions
                     WebResourcePermission wrp = new WebResourcePermission(qurl, missingHttpMethods);
                     pc.addToUncheckedPolicy(wrp);
-                } else if (!roles.hasNext()) {
+                } else if (!roles.hasNext() && !allMethodsCovered) {
                     pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
                 }
 
@@ -323,6 +377,14 @@ public class WarJACCService extends JaccService<WarMetaData> {
             }
 
             // Create the unchecked permissions WebUserDataPermissions
+            if (info.allMethodsTransports != null) {
+                for (String transport : info.allMethodsTransports) {
+                    pc.addToUncheckedPolicy(new WebUserDataPermission(qurl, (String[]) null, transport));
+                    if ("NONE".equals(transport)) {
+                        pc.addToUncheckedPolicy(new WebUserDataPermission(qurl, null));
+                    }
+                }
+            }
             Iterator<Map.Entry<String, Set<String>>> transportConstraints = info.getTransportMethods();
             while (transportConstraints.hasNext()) {
                 Map.Entry<String, Set<String>> transportMethods = transportConstraints.next();
@@ -389,6 +451,25 @@ public class WarJACCService extends JaccService<WarMetaData> {
         for (String role : declaredRoles) {
             WebRoleRefPermission wrrep = new WebRoleRefPermission("", role);
             pc.addToRole(role, wrrep);
+        }
+    }
+
+    @Override
+    public void beginContextPolicy() throws GeneralSecurityException {
+        // Register custom PolicyFactory from web.xml context-param (returns cleanup or null)
+        policyFactoryCleanup = register(metaData.getMergedJBossWebMetaData(), deploymentClassLoader, contextId);
+
+        PolicyRegistration.beginContextPolicy(contextId, deploymentClassLoader);
+    }
+
+    @Override
+    public void endContextPolicy() throws GeneralSecurityException {
+        PolicyRegistration.endContextPolicy(contextId);
+
+        // Restore original PolicyFactory if cleanup was registered
+        if (policyFactoryCleanup != null) {
+            policyFactoryCleanup.run();
+            policyFactoryCleanup = null;
         }
     }
 
@@ -625,6 +706,10 @@ public class WarJACCService extends JaccService<WarMetaData> {
 
         Set<String> missingAuthConstraintMethods = new HashSet<>();
 
+        boolean allMethodsExcluded = false;
+        Set<String> allMethodsRoles;
+        Set<String> allMethodsTransports;
+
         boolean descriptor = false;
 
         /**
@@ -642,13 +727,16 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * @param httpMethods the list of excluded methods
          */
         void addExcludedMethods(List<String> httpMethods) {
-            Collection<String> methods = httpMethods;
-            if (methods.isEmpty())
-                methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
-            if (excludedMethods == null)
-                excludedMethods = new HashSet<String>();
-            excludedMethods.addAll(methods);
-            allMethods.addAll(methods);
+            if (httpMethods.isEmpty()) {
+                allMethodsExcluded = true;
+                allMethods.addAll(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+            } else {
+                if (excludedMethods == null) {
+                    excludedMethods = new HashSet<String>();
+                }
+                excludedMethods.addAll(httpMethods);
+                allMethods.addAll(httpMethods);
+            }
         }
 
         /**
@@ -672,20 +760,25 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * @param httpMethods - the http-method values for the web-resource-collection
          */
         public void addRoles(HashSet<String> mappedRoles, List<String> httpMethods) {
-            Collection<String> methods = httpMethods;
-            if (methods.isEmpty())
-                methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
-            allMethods.addAll(methods);
-            if (roles == null)
-                roles = new HashMap<String, Set<String>>();
-
-            for (String role : mappedRoles) {
-                Set<String> roleMethods = roles.get(role);
-                if (roleMethods == null) {
-                    roleMethods = new HashSet<String>();
-                    roles.put(role, roleMethods);
+            if (httpMethods.isEmpty()) {
+                allMethods.addAll(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+                if (allMethodsRoles == null) {
+                    allMethodsRoles = new HashSet<String>();
                 }
-                roleMethods.addAll(methods);
+                allMethodsRoles.addAll(mappedRoles);
+            } else {
+                allMethods.addAll(httpMethods);
+                if (roles == null) {
+                    roles = new HashMap<String, Set<String>>();
+                }
+                for (String role : mappedRoles) {
+                    Set<String> roleMethods = roles.get(role);
+                    if (roleMethods == null) {
+                        roleMethods = new HashSet<String>();
+                        roles.put(role, roleMethods);
+                    }
+                    roleMethods.addAll(httpMethods);
+                }
             }
         }
 
@@ -708,18 +801,26 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * @param httpMethods - the http-method values for the web-resource-collection
          */
         void addTransport(String transport, List<String> httpMethods) {
-            Collection<String> methods = httpMethods;
-            if (methods.isEmpty())
-                methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
-            if (transports == null)
-                transports = new HashMap<String, Set<String>>();
-
-            Set<String> transportMethods = transports.get(transport);
-            if (transportMethods == null) {
-                transportMethods = new HashSet<String>();
-                transports.put(transport, transportMethods);
+            if (httpMethods.isEmpty()) {
+                if (allMethodsTransports == null) {
+                    allMethodsTransports = new HashSet<String>();
+                    // Prevent getTransportMethods() falling back to the default ALL_TRANSPORTS
+                    if (transports == null) {
+                        transports = new HashMap<String, Set<String>>();
+                    }
+                }
+                allMethodsTransports.add(transport);
+            } else {
+                if (transports == null) {
+                    transports = new HashMap<String, Set<String>>();
+                }
+                Set<String> transportMethods = transports.get(transport);
+                if (transportMethods == null) {
+                    transportMethods = new HashSet<String>();
+                    transports.put(transport, transportMethods);
+                }
+                transportMethods.addAll(httpMethods);
             }
-            transportMethods.addAll(methods);
         }
 
         /**

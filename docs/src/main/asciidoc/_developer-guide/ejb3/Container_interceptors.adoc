@@ -14,7 +14,7 @@ endif::[]
 JBoss AS versions prior to WildFly8 allowed a JBoss specific way to
 plug-in user application specific interceptors on the server side so
 that those interceptors get invoked during an EJB invocation. Such
-interceptors differed from the typical (portable) spec provided Jakarta EE
+interceptors differed from the typical (portable) spec provided EE
 interceptors. The Jakarta Interceptors are expected to run after the
 container has done necessary invocation processing which involves
 security context propagation, transaction management and other such
@@ -32,7 +32,7 @@ Client application
 [source,java,options="nowrap"]
 ----
 MyBeanInterface bean = lookupBean();
- 
+
 bean.doSomething();
 ----
 
@@ -43,7 +43,7 @@ relevant portion of the flow shown below):
 2.  WildFly specific interceptor (a.k.a container interceptor) 2
 3.  ....
 4.  WildFly specific interceptor (a.k.a container interceptor) N
-5.  User application specific Jakarta EE interceptor(s) (if any)
+5.  User application specific EE interceptor(s) (if any)
 6.  Invocation on the EJB instance's method
 
 The WildFly specific interceptors include the security context
@@ -64,7 +64,7 @@ As of WildFly 8, this feature was implemented.
 [[configuring-container-interceptors]]
 == Configuring container interceptors
 
-As you can see from the JIRA https://issues.redhat.com/browse/AS7-5897,
+As you can see from the JIRA https://redhat.atlassian.net/browse/AS7-5897,
 one of the goals of this feature implementation was to make sure that we
 don't introduce any new WildFly specific library dependencies for the
 container interceptors. So we decided to allow the Jakarta Interceptors

@@ -10,8 +10,8 @@
     </properties>
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-common-jakarta}"/>
-        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-common}"/>
+        <artifact name="${org.infinispan:infinispan-cachestore-jdbc}"/>
     </resources>
 
     <dependencies>

@@ -1,0 +1,50 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.test.integration.microprofile.health;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(ArquillianExtension.class)
+@RunAsClient
+@ServerSetup({MicroProfileHealthSecuredHTTPEndpointSetupTask.class, EmptyMgmtUsersSetupTask.class})
+public class MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase {
+
+    @ContainerResource
+    ManagementClient managementClient;
+
+    // Dummy deployment to trigger @ServerSetup
+    @Deployment(testable = false)
+    public static Archive<?> createDummyDeployment() {
+        return AssumeTestGroupUtil.emptyJar(MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase.class.getSimpleName());
+    }
+
+    @Test
+    public void securedHTTPEndpointWithoutUserDefined() throws Exception {
+        final String healthURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/health";
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
+            assertEquals(401, resp.getStatusLine().getStatusCode());
+            resp.close();
+        }
+    }
+
+}

@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS" enabled="true">
             <xa-datasource-property name="DatabaseName">mydb</xa-datasource-property>

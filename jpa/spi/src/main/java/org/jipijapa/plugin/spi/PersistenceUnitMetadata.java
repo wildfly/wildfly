@@ -8,7 +8,6 @@ package org.jipijapa.plugin.spi;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import jakarta.persistence.SharedCacheMode;
@@ -17,8 +16,6 @@ import jakarta.persistence.spi.ClassTransformer;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
-
-import org.jboss.jandex.Index;
 
 /**
  * Represents the persistence unit definition
@@ -50,10 +47,6 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
     String getNonJtaDataSourceName();
 
     void setPersistenceUnitRootUrl(URL persistenceUnitRootUrl);
-
-    void setAnnotationIndex(Map<URL, Index> indexes);
-
-    Map<URL, Index> getAnnotationIndex();
 
     void setManagedClassNames(List<String> classes);
 
@@ -90,4 +83,17 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     List<ClassTransformer> getTransformers();
 
+    boolean needsJPADelegatingClassFileTransformer();
+
+    void setScopeAnnotationName(String element);
+    public String getScopeAnnotationName();
+
+
+
+    void setQualifierAnnotationNames(List<String> qualifiers);
+    List<String> getQualifierAnnotationNames();
+
+    boolean isDuplicate();
+
+    void setDuplicate(boolean b);
 }

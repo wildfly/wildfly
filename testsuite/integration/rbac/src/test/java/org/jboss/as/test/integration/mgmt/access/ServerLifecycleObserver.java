@@ -15,19 +15,33 @@ import org.wildfly.test.installationmanager.TestInstallationManager;
 import org.wildfly.test.installationmanager.TestInstallationManagerFactory;
 
 /**
- * Observers container lifecycle events to prepare the server with an test implementation of an installation manager.
+ * Installs a test implementation of the Installation Manager into the server during server startup,
+ * see {@code org.wildfly.installationmanager.spi.InstallationManagerFactory} service.
+ * <p>
+ * If the service is found on the {@code org.wildfly.installation-manager.api} JBoss Module classpath,
+ * the server registers the {@code [/host=*]/core-service=installer} management resource, making the
+ * resource available for testing.
+ * <p>
+ * To disable this configuration, set the system property {@code installation.manager.services.install.skip}
+ * to {@code true}. This is necessary for servers that do not support the Installation Manager,
+ * such as RPM-based installations which are not managed by tools like Prospero.
  */
 public class ServerLifecycleObserver {
 
     private static final String MODULE_NAME = "org.jboss.prospero";
     private TestModule testModule;
+    private static final boolean INST_MGR_SRV_SKIP = Boolean.getBoolean("installation.manager.services.install.skip");
 
     public void containerBeforeStart(@Observes BeforeStart event) throws IOException {
-        createTestModule();
+        if (!INST_MGR_SRV_SKIP) {
+            createTestModule();
+        }
     }
 
-    public void containerAfterStop(@Observes AfterStop event) throws IOException {
-        testModule.remove();
+    public void containerAfterStop(@Observes AfterStop event) {
+        if (!INST_MGR_SRV_SKIP) {
+            testModule.remove();
+        }
     }
 
     private void createTestModule() throws IOException {

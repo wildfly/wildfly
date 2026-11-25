@@ -9,10 +9,10 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-A Galleon layer is a name that identifies a server capability (e.g.: jaxrs, 
+A Galleon layer is a name that identifies a server capability (e.g. jaxrs,
 ejb, microprofile-config, jpa) or an aggregation of such capabilities. A layer captures a server capability in the form of:
 
-* A piece of server XML configuration (e.g.: extension, configured subsystem, interfaces) that describes the capability.
+* A piece of server XML configuration (e.g. extension subsystem, interfaces, socket binding) that describes the capability.
 * A set of modules and other filesystem content that implements the capability.
 
 When you are using a layer, it delivers these pieces of information in order for 
@@ -90,7 +90,7 @@ link:#gal.request-controller[request-controller] (optional) +
 link:#gal.security-manager[security-manager] (optional) +
 
 |[[gal.ee-core-profile-server]]ee-core-profile-server
-| A Jakarta EE Core Profile server.
+| An EE Core Profile server.
 |
 link:#gal.core-server[core-server] +
 link:#gal.cdi[cdi] +
@@ -172,7 +172,7 @@ link:#gal.base-server[base-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.ee]]ee
-|Support for common functionality in the Jakarta EE platform and for Jakarta Concurrency.
+|Support for common functionality in the EE platform and for Jakarta Concurrency.
 |
 link:#gal.ee-concurrency[ee-concurrency] (optional) +
 link:#gal.ee-integration[ee-integration] +
@@ -183,7 +183,7 @@ link:#gal.ee-integration[ee-integration] +
 link:#gal.naming[naming] +
 
 |[[gal.ee-integration]]ee-integration
-|Support for common functionality in the Jakarta EE platform.
+|Support for common functionality in the EE platform.
 |
 link:#gal.jsonb[jsonb] (optional) +
 link:#gal.naming[naming] +
@@ -284,6 +284,12 @@ link:#gal.naming[naming] +
 |Support for XNIO workers and buffer pools.
 |
 link:#gal.base-server[base-server] +
+
+|[[gal.jakarta-data]]jakarta-data
+|Support for Jakarta Data. (xref:Admin_Guide.adoc#Feature_stability_levels[`community` stability]) The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
+|
+link:#gal.jpa[jpa] OR +
+link:#gal.jpa-distributed[jpa-distributed]
 
 |[[gal.jaxrs-core]]jaxrs-core
 |Support for Jakarta RESTful Web Services.
@@ -532,7 +538,7 @@ link:#gal.base-server[base-server] +
 link:#gal.jmx[jmx] +
 
 |[[gal.security-manager]]security-manager
-|Support for applying security manager permissions to applications.
+|Retained for compatibility with existing Galleon provisioning configurations. In WildFly 42 or later, this layer is a no-op and enabling the Security Manager is not allowed.
 |
 link:#gal.base-server[base-server] +
 

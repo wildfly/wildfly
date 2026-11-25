@@ -4,9 +4,18 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.ejb3.component.stateful.cache.simple.SimpleStatefulSessionBeanCacheProviderServiceConfigurator;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
+import org.jboss.as.ejb3.component.stateful.cache.simple.SimpleStatefulSessionBeanCacheFactoryServiceInstallerFactory;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -18,6 +27,26 @@ import org.jboss.as.ejb3.component.stateful.cache.simple.SimpleStatefulSessionBe
 public class SimpleStatefulSessionBeanCacheProviderResourceDefinition extends StatefulSessionBeanCacheProviderResourceDefinition {
 
     public SimpleStatefulSessionBeanCacheProviderResourceDefinition() {
-        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity(), SimpleStatefulSessionBeanCacheProviderServiceConfigurator::new);
+        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity());
+    }
+
+    @Override
+    public ServiceDependency<StatefulSessionBeanCacheProvider> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        return ServiceDependency.of(new StatefulSessionBeanCacheProvider() {
+            @Override
+            public Iterable<ServiceInstaller> getDeploymentServiceInstallers(DeploymentUnit unit) {
+                return List.of();
+            }
+
+            @Override
+            public Iterable<ServiceInstaller> getStatefulBeanCacheFactoryServiceInstallers(DeploymentUnit unit, StatefulComponentDescription description) {
+                return List.of(new SimpleStatefulSessionBeanCacheFactoryServiceInstallerFactory<>().apply(description));
+            }
+
+            @Override
+            public boolean supportsPassivation() {
+                return false;
+            }
+        });
     }
 }

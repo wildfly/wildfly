@@ -4,13 +4,13 @@
  */
 package org.wildfly.clustering.weld.bean;
 
-import java.io.IOException;
-
 import org.jboss.weld.annotated.slim.AnnotatedTypeIdentifier;
 import org.jboss.weld.bean.ManagedBeanIdentifier;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.weld.BeanManagerProvider;
 
 /**
@@ -19,12 +19,13 @@ import org.wildfly.clustering.weld.BeanManagerProvider;
  */
 public class ManagedBeanIdentifierMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
         BeanManagerProvider.INSTANCE.apply("foo", "bar");
-        Tester<ManagedBeanIdentifier> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar")));
-        tester.test(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar", "blah")));
-        tester.test(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forModifiedAnnotatedType(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar"))));
+        Tester<ManagedBeanIdentifier> tester = factory.createTester();
+        tester.accept(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar")));
+        tester.accept(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar", "blah")));
+        tester.accept(new ManagedBeanIdentifier(AnnotatedTypeIdentifier.forModifiedAnnotatedType(AnnotatedTypeIdentifier.forBackedAnnotatedType("foo", String.class, String.class, "bar"))));
     }
 }

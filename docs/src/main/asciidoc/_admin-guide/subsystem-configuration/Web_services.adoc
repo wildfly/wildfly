@@ -88,7 +88,7 @@ Endpoint configurations can include Jakarta XML Web Services handlers and key/va
 properties declarations. This feature provides a convenient way to add
 handlers to WS endpoints and to set key/value properties that control
 JBossWS and Apache CXF internals (
-https://docs.jboss.org/author/display/JBWS/Apache+CXF+integration#ApacheCXFintegration-Deploymentdescriptorproperties[see
+xref:Developer_Guide.adoc#deployment-descriptor-properties[see
 Apache CXF configuration]).
 
 The webservices subsystem provides

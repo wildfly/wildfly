@@ -1,0 +1,112 @@
+[[brute-force-authentication-detection]]
+= Brute Force Authentication Detection
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+Starting from WildFly 39.0.1 all security realms used for username / password
+authentication are wrapped by default by a utility realm to add protection
+towards brute force authentication type attacks. This has been added as a
+mitigation regarding http://cve.org/CVERecord?id=CVE-2025-23368[CVE-2025-23368].
+
+NOTE: It should be noted that the tracking of failed authentication attempts is
+in-memory only and does not survive restarts, additionally the state is not
+replicated to other nodes when operating in a cluster.
+
+Brute force authentication detection is applied on a per realm basis and the
+following parameters can be adjusted to tune the operation of the utility.
+
+* enabled - Should the protection be enabled for the realm. [Default: true]
+* max-failed-attempts - The maximum number of failed authentication attempts
+before an identity should be temporarily unavailable. [Default: 10]
+* lockout-interval - The time in minutes the identity should be unavailable for
+once the maximum number of attempts is exceeded. [Default: 15]
+* session-timeout - How long in minutes to keep tracking failed authentication
+attempts for the identity. If tracking for an identity has ended and a new failed
+authentication attempt occurs it will again be tracked, but the tracking will
+treat the attempt as if that was the first failed attempt. [Default: 30]
+* max-cached-sessions - The maximum number of sessions to cache for tracking failed
+authentication attempts. [Default: 25,000]
+
+These properties can be set on a realm by realm basis using system properties
+in the form:
+----
+wildfly.elytron.realm.{REALM_NAME}.brute-force.{PROPERTY_NAME}
+----
+
+The security realms which are automatically wrapped are:
+
+ * caching-realm
+ * custom-realm
+ * custom-modifiable-realm
+ * distributed-realm
+ * failover-realm
+ * filesystem-realm
+ * jaas-realm
+ * jdbc-realm
+ * ldap-realm
+ * properties-realm
+
+
+By wrapping the security realms this utility will automatically be applied to the following
+authentication mechanisms:
+
+  * SASL Digest
+  * SASL Scram
+  * SASL Plain
+  * HTTP Basic
+  * HTTP Digest
+  * HTTP Form
+  * HTTP Programmatic
+
+This protection will also apply where code accesses the `SecurityDomain`
+APIs directly for authentication.
+
+== Runtime Operation
+
+Internally within WildFly Elytron, as authentication attempts occur the mechanisms
+emit events to indicate if an authentication has been successful or not for a
+specific identity. The wrapper realm defined here processes the events as follows.
+
+Under normal operation, provided there has not previously been a failed
+authentication for an identity, events indicating a successful authentication are
+ignored.
+
+Where an event is received indicating a failed authentication attempt, this utility
+will first check if a session has been established for the specific identity to
+track failed authentications and if that session does not exist it will be created.
+Within this session a counter tracking the number of failed authentications will
+be incremented.
+
+Once created, a session will remain in the cache for the duration of the `session-timeout`
+except where a successful authentication event is received for the identity. In that
+case the session will be discarded. The cache is implemented as a simple LRU cache so
+once the `max-cached-sessions` limit is reached the least recently used session will be
+discarded to make room for a new session. If eviction does occur due to the cache limit
+being reached a WARN message will be logged indicating this has occurred. To avoid spamming
+the logs this message will be logged no more than once every 15 minutes for each realm.
+
+After it has been identified that the number of failed authentications for an
+identity has exceeded the configured `max-failed-attempts`, the session will track
+that the identity is disabled for the period defined in `lockout-interval`.
+Repeated attempts after this point will restart the period the identity is locked
+for.
+
+NOTE: For the realms that delegate to other realms such as the `caching-realm`, the
+`distributed-realm`, and the `failover-realm`, brute force protection will only occur
+at the first realm in the chain. This is to avoid unpredictable interactions with
+multiple realms applying the protection at once.
+
+During authentication attempts as this utility realm wraps the underlying realm
+it will check if a session already exists that is
+tracking failed authentication attempts for that identity and if so are we
+presently in a lockout period. Where the identity is not presently locked out, the
+call will be passed to the wrapped realm for authentication to proceed as normal.
+However, if the identity is locked a dummy `RealmIdentity` will be returned for
+authentication that is guaranteed to fail all authentication attempts -- even if at
+this point the caller supplies valid credentials.

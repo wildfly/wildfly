@@ -16,7 +16,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 import jakarta.ejb.TransactionAttribute;
@@ -30,7 +29,7 @@ import java.util.List;
  */
 public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier XTS_MODULE = ModuleIdentifier.create("org.jboss.xts");
+    private static final String XTS_MODULE = "org.jboss.xts";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -69,7 +68,7 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
     private void addXTSModuleDependency(final DeploymentUnit unit) {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XTS_MODULE, false, false, false, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, XTS_MODULE).build());
     }
 
 }

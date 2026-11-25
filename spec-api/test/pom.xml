@@ -15,12 +15,17 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>33.0.0.Final-SNAPSHOT</version>
+    <version>43.0.0.Beta1-SNAPSHOT</version>
   </parent>
 
   <artifactId>wildfly-spec-api-test</artifactId>
   <name>WildFly: Validation Tests for Exported Jakarta EE Specification APIs</name>
   <description>Validation Tests for Jakarta EE Specification APIs exported by the Application Server</description>
+
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <skipPublishing>true</skipPublishing>
+    </properties>
 
   <build>
     <plugins>

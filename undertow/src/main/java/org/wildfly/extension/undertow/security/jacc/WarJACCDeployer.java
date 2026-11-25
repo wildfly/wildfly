@@ -29,8 +29,8 @@ public class WarJACCDeployer extends AbstractSecurityDeployer<WarMetaData> {
      * {@inheritDoc}
      */
     @Override
-    protected JaccService<WarMetaData> createService(String contextId, WarMetaData metaData, Boolean standalone) {
-        return new WarJACCService(contextId, metaData, standalone);
+    protected JaccService<WarMetaData> createService(String contextId, WarMetaData metaData, Boolean standalone, ClassLoader deploymentClassLoader) {
+        return new WarJACCService(contextId, metaData, standalone, deploymentClassLoader);
     }
 
 }

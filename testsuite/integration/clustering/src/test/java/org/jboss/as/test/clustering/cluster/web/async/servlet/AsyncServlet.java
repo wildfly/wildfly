@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpSession;
  */
 @WebServlet(urlPatterns = { AsyncServlet.SERVLET_PATH }, asyncSupported = true)
 public class AsyncServlet extends HttpServlet {
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
     private static final long serialVersionUID = -5308818413653125145L;
 
     private static final String SERVLET_NAME = "async";
@@ -45,25 +46,27 @@ public class AsyncServlet extends HttpServlet {
             value = new AtomicInteger(0);
             session.setAttribute(ATTRIBUTE, value);
         }
+        int id = COUNTER.incrementAndGet();
+        this.getServletContext().log("Starting AsyncContext #" + id);
         AsyncContext context = request.startAsync(request, response);
-        context.start(new AsyncTask(context));
+        context.start(new AsyncTask(context, value));
     }
 
     private static class AsyncTask implements Runnable {
         private final AsyncContext context;
+        private final AtomicInteger value;
 
-        AsyncTask(AsyncContext context) {
+        AsyncTask(AsyncContext context, AtomicInteger value) {
             this.context = context;
+            this.value = value;
         }
 
         @Override
         public void run() {
+            HttpServletResponse response = (HttpServletResponse) this.context.getResponse();
             try {
                 TimeUnit.SECONDS.sleep(1);
-                HttpServletRequest request = (HttpServletRequest) this.context.getRequest();
-                HttpServletResponse response = (HttpServletResponse) this.context.getResponse();
-                AtomicInteger value = (AtomicInteger) request.getSession().getAttribute(ATTRIBUTE);
-                response.setIntHeader(VALUE_HEADER, value.incrementAndGet());
+                response.setIntHeader(VALUE_HEADER, this.value.incrementAndGet());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {

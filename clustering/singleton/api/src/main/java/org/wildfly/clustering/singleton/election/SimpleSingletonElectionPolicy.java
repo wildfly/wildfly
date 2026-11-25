@@ -26,7 +26,9 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
  * @author <a href="mailto:Alex.Fu@novell.com">Alex Fu</a>
  * @author <a href="mailto:galder.zamarreno@jboss.com">Galder Zamarreno</a>
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.singleton.election.SingletonElectionPolicy#position(int)}.
  */
+@Deprecated(forRemoval = true)
 public class SimpleSingletonElectionPolicy implements SingletonElectionPolicy {
 
     private final int position;

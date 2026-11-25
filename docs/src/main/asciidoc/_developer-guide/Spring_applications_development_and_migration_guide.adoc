@@ -11,28 +11,27 @@ endif::[]
 
 This document details the main points that need to be considered by
 Spring developers that wish to develop new applications or to migrate
-existing applications to be run into WildFly {wildflyVersion}.
+existing applications to be run into WildFly.
 
 [[dependencies-and-modularity]]
 == Dependencies and Modularity
 
-WildFly {wildflyVersion} has a modular class loading strategy, different from previous
+WildFly has a modular class loading strategy, different from previous
 versions of JBoss AS, which enforces a better class loading isolation
 between deployments and the application server itself. A detailed
 description can be found in the documentation dedicated to
-https://docs.jboss.org/author/display/AS7/Class+Loading+in+AS7[class
-loading in WildFly {wildflyVersion}].
+<<Class_Loading_in_WildFly, class loading in WildFly>>.
 
 This reduces significantly the risk of running into a class loading
 conflict and allows applications to package their own dependencies if
 they choose to do so. This makes it easier for Spring applications that
 package their own dependencies - such as logging frameworks or
-persistence providers to run on WildFly {wildflyVersion}.
+persistence providers to run on WildFly.
 
 At the same time, this does not mean that duplications and conflicts
 cannot exist on the classpath. Some module dependencies are implicit,
 depending on the type of deployment as shown
-https://docs.jboss.org/author/display/AS7/Implicit+module+dependencies+for+deployments[here].
+<<Implicit_module_dependencies_for_deployments, here>>
 
 [[persistence-usage-guide]]
 == Persistence usage guide
@@ -62,7 +61,7 @@ Spring applications using Jakarta Persistence may choose between:
 === Using server-deployed persistence units
 
 Applications that use a server-deployed persistence unit must observe
-the typical Jakarta EE rules in what concerns dependency management, i.e.
+the typical EE rules in what concerns dependency management, i.e.
 the jakarta.persistence classes and persistence provider (Hibernate) are
 contained in modules which are added automatically by the application
 when the persistence unit is deployed.
@@ -84,8 +83,8 @@ or, respectively:
 [source,xml,options="nowrap"]
 ----
 <persistence-unit-ref>
-    <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
-    <persistence-unit-name>petclinic</persistence-unit-name>
+    <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
+    <persistence-unit-name>petclinic</persistence-unit-name>
 </persistence-unit-ref>
 ----
 
@@ -94,7 +93,7 @@ to be looked up in JNDI, as follows:
 
 [source,xml,options="nowrap"]
 ----
-<jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em" 
+<jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em"
             expected-type="jakarta.persistence.EntityManager"/>
 ----
 
@@ -102,7 +101,7 @@ or
 
 [source,xml,options="nowrap"]
 ----
-<jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf" 
+<jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf"
             expected-type="jakarta.persistence.EntityManagerFactory"/>
 ----
 
@@ -116,7 +115,7 @@ JNDI binding via persistence.xml properties is not supported in WildFly
 [[using-spring-managed-persistence-units]]
 === Using Spring-managed persistence units
 
-Spring applications running in WildFly {wildflyVersion} may also create persistence
+Spring applications running in WildFly may also create persistence
 units on their own, using the LocalContainerEntityManagerFactoryBean.
 This is what these applications need to consider:
 
@@ -127,7 +126,7 @@ When the application server encounters a deployment that has a file
 named META-INF/persistence.xml (or, for that matter,
 WEB-INF/classes/META-INF/persistence.xml), it will attempt to create a
 persistence unit based on what is provided in the file. In most cases,
-such definition files are not compliant with the Jakarta EE requirements,
+such definition files are not compliant with EE requirements,
 mostly because required elements such as the datasource of the
 persistence unit are supposed to be provided by the Spring context
 definitions, which will fail the deployment of the persistence unit, and
@@ -145,9 +144,9 @@ META-INF/jpa-persistence.xml, the corresponding definition can be:
 
 [source,xml,options="nowrap"]
 ----
-<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
-       <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/> 
-       <!-- other definitions -->
+<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+       <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/>
+       <!-- other definitions -->
 </bean>
 ----
 

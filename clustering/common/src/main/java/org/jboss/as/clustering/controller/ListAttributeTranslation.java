@@ -13,6 +13,7 @@ import org.jboss.dmr.ModelNode;
  * An attribute translator that converts a single value to/from a list of values.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ListAttributeTranslation implements AttributeTranslation {
     private static final AttributeValueTranslator READ_TRANSLATOR = new AttributeValueTranslator() {
         @Override

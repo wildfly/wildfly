@@ -21,7 +21,6 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
@@ -33,7 +32,7 @@ import org.jboss.modules.filter.PathFilters;
 public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     public static final String IS_CDI_PARAM = "org.jboss.jbossfaces.IS_CDI";
 
-    private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
+    private static final String JSF_SUBSYSTEM = "org.jboss.as.jsf";
     // We use . instead of / on this stream as a workaround to get it transformed correctly by Batavia into a Jakarta namespace
     private static final String JAVAX_FACES_EVENT_NAMEDEVENT_class = "/jakarta.faces.event.NamedEvent".replaceAll("\\.", "/") + ".class";
 
@@ -80,7 +79,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JSF_SUBSYSTEM).setImportServices(true).build());
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
 
@@ -93,18 +92,16 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
-        ModuleIdentifier jsfModule = moduleIdFactory.getApiModId(jsfVersion);
-        ModuleDependency jsfAPI = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
+        String jsfModule = moduleIdFactory.getApiModId(jsfVersion);
+        ModuleDependency jsfAPI = ModuleDependency.Builder.of(moduleLoader, jsfModule).build();
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    private void addJSFImpl(String jsfVersion,
-            ModuleSpecification moduleSpecification,
-            ModuleLoader moduleLoader) {
+    private void addJSFImpl(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
-        ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
-        ModuleDependency jsfImpl = new ModuleDependency(moduleLoader, jsfModule, false, false, true, false);
+        String jsfModule = moduleIdFactory.getImplModId(jsfVersion);
+        ModuleDependency jsfImpl = ModuleDependency.Builder.of(moduleLoader, jsfModule).setImportServices(true).build();
         jsfImpl.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsfImpl);
     }
@@ -113,8 +110,8 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             throws DeploymentUnitProcessingException {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
-        ModuleIdentifier jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
-        ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
+        String jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
+        ModuleDependency jsfInjectionDependency = ModuleDependency.Builder.of(moduleLoader, jsfInjectionModule).setExport(true).setImportServices(true).build();
 
         try {
             if (isJSF12(jsfInjectionDependency, jsfInjectionModule.toString())) {

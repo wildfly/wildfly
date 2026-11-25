@@ -12,7 +12,7 @@ import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
@@ -22,17 +22,17 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests sending Jakarta Messaging messages to a queue within a transaction
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(CreateQueueSetupTask.class)
 public class SendToQueueFromWithinTransactionTest {
 
@@ -46,7 +46,7 @@ public class SendToQueueFromWithinTransactionTest {
 
     private static volatile boolean messageReceived;
 
-    @Before
+    @BeforeEach
     public void setMessageReceived() {
         messageReceived = false;
     }
@@ -69,7 +69,7 @@ public class SendToQueueFromWithinTransactionTest {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        Assert.assertTrue(messageReceived);
+        Assertions.assertTrue(messageReceived);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class SendToQueueFromWithinTransactionTest {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        Assert.assertFalse(messageReceived);
+        Assertions.assertFalse(messageReceived);
     }
 
     public void receivedMessage(@Observes Message message) {
@@ -89,7 +89,7 @@ public class SendToQueueFromWithinTransactionTest {
             logger.trace("caught event... message=" + ((TextMessage) message).getText());
         } catch (JMSException ex) {
             ex.printStackTrace();
-            Assert.fail(ex.getMessage());
+            Assertions.fail(ex.getMessage());
         }
     }
 

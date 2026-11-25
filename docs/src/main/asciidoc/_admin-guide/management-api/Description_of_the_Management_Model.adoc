@@ -156,7 +156,7 @@ updating this attribute's value.
 access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
-change to take effect in the runtime . See the discussion of
+change to take effect in the runtime. See the discussion of
 <<applying-updates-to-runtime-services,Applying
 Updates to Runtime Services>> below. Default value is "no-services".
 * `default` – the default value for the attribute that will be used in
@@ -294,7 +294,7 @@ parameters listed as `alternatives` are defined.
 access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
-change to take effect in the runtime . See the discussion of
+change to take effect in the runtime. See the discussion of
 <<applying-updates-to-runtime-services,Applying
 Updates to Runtime Services>> below. Default value is "no-services".
 * `alternatives` – List of string – Indicates an exclusive relationship
@@ -468,7 +468,7 @@ descriptor; this section is an explanation of the
 meaning of that descriptor.
 
 An operation that changes a management resource's persistent
-configuration usually can also also affect a runtime service associated
+configuration usually can also affect a runtime service associated
 with the resource. For example, there is a runtime service associated
 with any host.xml or standalone.xml `<interface>` element; other
 services in the runtime depend on that service to provide the
@@ -561,4 +561,3 @@ final step is to check if the expression provided a default. Our `${my.example-e
 example provided no default, so the expression could not be resolved. If
 we had specified a default in the expression the default is returned (e.g. for
 `${my.example-expr:hello}`, the value `hello` is returned).
-

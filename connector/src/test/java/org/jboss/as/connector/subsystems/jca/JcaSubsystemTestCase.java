@@ -4,20 +4,15 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -30,7 +25,7 @@ import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -55,7 +50,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
+                ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName(),
                 ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
                 ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
                 ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
@@ -145,10 +140,10 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         //Get the model and the persisted xml from the first controller
         final ModelNode model = services.readWholeModel();
 
-        PathAddress subystem = PathAddress.pathAddress("subsystem", "jca");
-        PathAddress dwm1 = subystem.append("distributed-workmanager", "dwm1");
+        PathAddress subsystem = PathAddress.pathAddress("subsystem", "jca");
+        PathAddress dwm1 = subsystem.append("distributed-workmanager", "dwm1");
         PathAddress threads1 = dwm1.append("short-running-threads","dwm1");
-        PathAddress dwm2 = subystem.append("distributed-workmanager", "dwm2");
+        PathAddress dwm2 = subsystem.append("distributed-workmanager", "dwm2");
         PathAddress threads2 = dwm2.append("short-running-threads","dwm2");
 
         ModelNode composite = Util.createEmptyOperation("composite", PathAddress.EMPTY_ADDRESS);
@@ -191,24 +186,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         mainServices.shutdown();
     }
 
-    /** WFLY-16478 Test legacy parser sets old default value for elytron-enabled */
-    @Test
-    public void testLegacyDefaultElytronEnabled() throws Exception {
-        Set<ModelNode> required = new HashSet<>();
-        PathAddress subsystem = PathAddress.pathAddress("subsystem", "jca");
-        required.add(subsystem.append("workmanager", "default").toModelNode());
-        required.add(subsystem.append("workmanager", "anotherWm").toModelNode());
-        required.add(subsystem.append("distributed-workmanager", "MyDWM").toModelNode());
-
-        for (ModelNode op : parse(getSubsystemXml("jca_5_0.xml"))) {
-            if (ADD.equals(op.get(OP).asString()) && required.remove(op.get(ModelDescriptionConstants.OP_ADDR))) {
-                assertFalse(op.toString() + "\n did not correctly define elytron-enabled", op.get("elytron-enabled").asBoolean(true));
-            }
-        }
-
-        assertTrue("Not all expected ops were found\n" + required.toString(), required.isEmpty());
-    }
-
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
@@ -216,12 +193,13 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion);
-        String mavenGroupId = controllerVersion.getMavenGroupId();
-        String artifactId = "wildfly-connector";
-        initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-api:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-spi:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
+        initializer
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-connector"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-api"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-common"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-service"))
+                .addMavenResourceURL(controllerVersion.createGAV("wildfly-clustering-spi"))
+                .addMavenResourceURL(controllerVersion.createCoreGAV("wildfly-threads"))
                 .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
         KernelServices mainServices = builder.build();

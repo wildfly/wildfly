@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jakarta-data">
+    <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for Jakarta Data."/>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.data"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.data"/>
+    </props>
+    <dependencies>
+        <!-- TODO one or the other of jpa or jpa-distributed is required,
+             but I don't think that can be declared -->
+        <layer name="jpa" optional="true"/>
+    </dependencies>
+    <feature spec="subsystem.jakarta-data"/>
+</layer-spec>

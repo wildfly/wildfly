@@ -68,7 +68,7 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
 
     private static final AttributeDefinition[] ATTRIBUTES = { IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, RELATIVE_TO, GROUPS_PATH, SESSIONS_PATH, SUBDIRECTORY_COUNT };
 
-    private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd(ATTRIBUTES);
+    private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd();
     private static final PassivationStoreRemove REMOVE = new PassivationStoreRemove(ADD);
 
     FilePassivationStoreResourceDefinition() {

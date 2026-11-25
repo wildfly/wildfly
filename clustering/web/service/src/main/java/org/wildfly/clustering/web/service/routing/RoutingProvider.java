@@ -5,20 +5,23 @@
 
 package org.wildfly.clustering.web.service.routing;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Defines a routing provider.
  * @author Paul Ferraro
  */
 public interface RoutingProvider {
+    NullaryServiceDescriptor<RoutingProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.web.routing-provider", RoutingProvider.class);
+    NullaryServiceDescriptor<RoutingProvider> INFINISPAN_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.web.infinispan-routing-provider", RoutingProvider.class);
 
     /**
-     * Builds the server dependencies to be made available to every deployment.
+     * Returns a number of installers of services, one of which will provide a {@link RoutingProvider} for the server identified by the specified name.
      * @param serverName the name of the server
-     * @param route the distinct route of the server
-     * @return a service builder
+     * @param route a dependency on a service providing the server route.
+     * @return a number of service installers
      */
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route);
+    Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route);
 }

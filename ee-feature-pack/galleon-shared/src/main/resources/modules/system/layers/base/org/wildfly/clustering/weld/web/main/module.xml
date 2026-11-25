@@ -21,6 +21,5 @@
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

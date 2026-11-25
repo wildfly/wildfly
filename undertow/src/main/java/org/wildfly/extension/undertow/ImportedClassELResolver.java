@@ -23,10 +23,10 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * An {@link ELResolver} which supports resolution of EL expressions which use imported classes (for static field/method references)
+ * An {@link ELResolver} which supports resolution of EL expressions which use imported classes
+ * (for static field/method references). See section 1.5.3 of the EL 3.0 spec.
  *
  * @author Jaikiran Pai
- * @see Section 1.5.3 of EL 3.0 spec
  */
 public class ImportedClassELResolver extends ELResolver {
 
@@ -98,7 +98,6 @@ public class ImportedClassELResolver extends ELResolver {
         return true;
     }
 
-    @Override
     public Iterator<FeatureDescriptor> getFeatureDescriptors(final ELContext context, final Object base) {
         return null;
     }

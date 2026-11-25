@@ -23,10 +23,12 @@
         <module name="org.jboss.ejb-client"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.cache.spi"/>
         <!-- Enable dynamic loading of legacy distributable bean manager provider -->
         <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
     </dependencies>
 </module>

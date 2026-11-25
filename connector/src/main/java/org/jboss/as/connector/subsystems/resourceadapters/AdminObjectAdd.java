@@ -80,7 +80,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName, poolName);
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final AdminObjectService service = new AdminObjectService(adminObjectValue);
         serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)

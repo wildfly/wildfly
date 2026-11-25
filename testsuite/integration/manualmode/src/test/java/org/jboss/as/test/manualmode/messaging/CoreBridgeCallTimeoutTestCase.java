@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.Server;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
-import org.wildfly.core.testrunner.WildflyTestRunner;
+import org.wildfly.core.testrunner.WildFlyRunner;
 
 import jakarta.inject.Inject;
 import jakarta.jms.Connection;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tomas Hofman
  */
-@RunWith(WildflyTestRunner.class)
+@RunWith(WildFlyRunner.class)
 @RunAsClient
 @ServerControl(manual = true)
 public class CoreBridgeCallTimeoutTestCase {
@@ -72,6 +72,7 @@ public class CoreBridgeCallTimeoutTestCase {
 
     private static final String BYTEMAN_ADDRESS = System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS);
     private static final Integer BYTEMAN_PORT = Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT);
+    private static final Boolean BYTEMAN_POLICY = Boolean.getBoolean("byteman.policy");
     private static final Submit BYTEMAN = new Submit(BYTEMAN_ADDRESS, BYTEMAN_PORT);
 
     private static final String ORIGINAL_JVM_ARGS = System.getProperty("jvm.args", "");
@@ -88,11 +89,11 @@ public class CoreBridgeCallTimeoutTestCase {
         System.out.println("jvm.args:" + System.getProperty("jvm.args"));
         System.out.println("basedir:" + System.getProperty("basedir"));
         System.setProperty("jvm.args", ORIGINAL_JVM_ARGS +
-                " -Xmx512m -XX:MaxMetaspaceSize=256m " +
+                " -Xmx512m " +
                 "-Dorg.jboss.byteman.verbose " +
                 "-Djboss.modules.system.pkgs=org.jboss.byteman " +
                 "-Dorg.jboss.byteman.transform.all " +
-                "-javaagent:" + BASE_DIR + "/target/lib/byteman.jar=listener:true,port:" + BYTEMAN_PORT + ",address:" + BYTEMAN_ADDRESS + ",policy:true");
+                "-javaagent:" + BASE_DIR + "/target/lib/byteman.jar=listener:true,port:" + BYTEMAN_PORT + ",address:" + BYTEMAN_ADDRESS + ",policy:" + BYTEMAN_POLICY);
         container.start(SERVER_CONFIG_NAME, Server.StartMode.NORMAL);
     }
 

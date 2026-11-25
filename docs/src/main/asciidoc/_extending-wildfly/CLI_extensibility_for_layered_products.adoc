@@ -24,21 +24,21 @@ Here is an example of a simple command handler and its integration.
 
 [source,java,options="nowrap"]
 ----
-package org.jboss.as.test.cli.extensions;public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {     
- 
+package org.jboss.as.test.cli.extensions;public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {
+
 package org.jboss.as.test.cli.extensions;
 public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {
- 
- 
+
+
     public static final String NAME = "ext-command";
     public static final String OUTPUT = "hello world!";
- 
- 
+
+
     public CliExtCommandHandler() {
         super(NAME, false);
     }
- 
- 
+
+
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
         ctx.printLine(OUTPUT);
@@ -53,14 +53,14 @@ is to implement the CLI CommandHandlerProvider interface.
 ----
 package org.jboss.as.test.cli.extensions;
 public class ExtCommandHandlerProvider implements org.jboss.as.cli.CommandHandlerProvider {
- 
- 
+
+
     @Override
     public CommandHandler createCommandHandler(CommandContext ctx) {
         return new ExtCommandHandler();
     }
- 
- 
+
+
     /**
      * Whether the command should be available in tab-completion.
      */
@@ -68,8 +68,8 @@ public class ExtCommandHandlerProvider implements org.jboss.as.cli.CommandHandle
     public boolean isTabComplete() {
         return true;
     }
- 
- 
+
+
     /**
      * Command name(s).
      */

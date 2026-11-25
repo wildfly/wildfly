@@ -7,6 +7,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-fault-tolerance">
     <props>
+        <prop name="org.wildfly.category" value="MicroProfile"/>
+        <prop name="org.wildfly.description" value="Support for MicroProfile Fault Tolerance."/>
         <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.faulttolerance"/>
         <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.faulttolerance.*"/> 
     </props>

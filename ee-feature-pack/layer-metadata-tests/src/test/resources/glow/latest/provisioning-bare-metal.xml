@@ -6,5 +6,5 @@
   -->
 
 <installation xmlns="urn:jboss:galleon:provisioning:3.0">
-    <feature-pack location="${ee.maven.groupId}:wildfly-ee-galleon-pack:${project.version}"/>
+    <feature-pack location="${ee.maven.groupId}:${latest.ee.feature.pack.artifactId}:${project.version}"/>
 </installation>

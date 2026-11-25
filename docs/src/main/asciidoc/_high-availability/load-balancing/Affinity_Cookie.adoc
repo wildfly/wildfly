@@ -47,8 +47,8 @@ backend myservers
 mode http
 cookie SRV indirect preserve
 option redispatch
-server server1 127.0.0.1:8080 cookie ribera1
-server server2 127.0.0.1:8180 cookie ribera2
+server server1 127.0.0.1:8080 check cookie ribera1
+server server2 127.0.0.1:8180 check cookie ribera2
 ----
 
 Notice that the proxy server defined cookie names need to correspond with the application server's `instance-id`.

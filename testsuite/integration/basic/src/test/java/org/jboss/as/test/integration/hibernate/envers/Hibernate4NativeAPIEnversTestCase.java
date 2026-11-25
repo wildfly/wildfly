@@ -114,7 +114,7 @@ public class Hibernate4NativeAPIEnversTestCase {
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
         try {
-            StudentAudited s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
+            StudentAudited s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ");
             StudentAudited s2 = sfsb.updateStudent("REDHAT Brisbane,Australia", 1);
             StudentAudited st = sfsb.retrieveOldStudentVersion(s2.getStudentId());
             assertTrue("address read from audit tables after envers implementation is 99 Purkynova REDHAT BRNO CZ",

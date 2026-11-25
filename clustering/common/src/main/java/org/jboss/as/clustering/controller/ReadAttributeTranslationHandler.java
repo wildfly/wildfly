@@ -20,6 +20,7 @@ import org.jboss.dmr.ModelNode;
  * A read-attribute operation handler that translates a value from another attribute
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ReadAttributeTranslationHandler implements OperationStepHandler {
 
     private final AttributeTranslation translation;

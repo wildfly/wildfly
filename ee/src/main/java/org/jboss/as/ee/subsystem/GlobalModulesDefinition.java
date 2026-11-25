@@ -5,6 +5,8 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.canonicalModuleIdentifier;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -27,7 +29,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * {@link AttributeDefinition} implementation for the "global-modules" attribute.
@@ -138,38 +139,67 @@ public class GlobalModulesDefinition {
                 boolean annotations = ANNOTATIONS_AD.resolveModelAttribute(context, module).asBoolean();
                 boolean services = SERVICES_AD.resolveModelAttribute(context, module).asBoolean();
                 boolean metaInf = META_INF_AD.resolveModelAttribute(context, module).asBoolean();
-                ret.add(new GlobalModule(ModuleIdentifier.create(name, slot), annotations, services, metaInf));
+                ret.add(new GlobalModule(canonicalModuleIdentifier(name, slot), annotations, services, metaInf));
             }
         }
         return ret;
     }
 
+    /**
+     * Descriptive information for a module that should be added as a dependency to all deployment modules.
+     */
     public static final class GlobalModule {
-        private final ModuleIdentifier moduleIdentifier;
+        private final String moduleName;
         private final boolean annotations;
         private final boolean services;
         private final boolean metaInf;
 
 
-        GlobalModule(final ModuleIdentifier moduleIdentifier, final boolean annotations, final boolean services, final boolean metaInf) {
-            this.moduleIdentifier = moduleIdentifier;
+        /**
+         * Creates a new global module.
+         *
+         * @param moduleName {@link org.jboss.as.controller.ModuleIdentifierUtil#canonicalModuleIdentifier(String) canonicalized} name of the module
+         * @param annotations {@code true} if the module should be indexed for annotations
+         * @param services {@code true} if dependent modules should be able to import services from this module
+         * @param metaInf {@code true} if dependent modules should be able to import META-INF resources from this module
+         */
+        GlobalModule(final String moduleName, final boolean annotations, final boolean services, final boolean metaInf) {
+            this.moduleName = moduleName;
             this.annotations = annotations;
             this.services = services;
             this.metaInf = metaInf;
         }
 
-        public ModuleIdentifier getModuleIdentifier() {
-            return moduleIdentifier;
+        /**
+         * Gets the name of the module.
+         *
+         * @return the {@link org.jboss.as.controller.ModuleIdentifierUtil#canonicalModuleIdentifier(String) canonicalized} name of the module
+         *         Will not return {@code null}
+         */
+        public String getModuleName() {
+            return moduleName;
         }
 
+        /**
+         * Gets whether the module should be indexed for annotations.
+         * @return {@code true} if the module should be indexed for annotations
+         */
         public boolean isAnnotations() {
             return annotations;
         }
 
+        /**
+         * Gets whether dependent modules should be able to import services from this module
+         * @return {@code true} if dependent modules should be able to import services from this module
+         */
         public boolean isServices() {
             return services;
         }
 
+        /**
+         * Gets whether dependent modules should be able to import META-INF resources from this module
+         * @return {@code true} if dependent modules should be able to import META-INF resources from this module
+         */
         public boolean isMetaInf() {
             return metaInf;
         }

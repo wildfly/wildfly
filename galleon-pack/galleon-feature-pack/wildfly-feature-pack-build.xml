@@ -3,10 +3,13 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.4" producer="wildfly@maven(org.jboss.universe:community-universe):current">
-
+<build xmlns="urn:wildfly:feature-pack-build:3.5" producer="wildfly@maven(org.jboss.universe:community-universe):current">
+    <family name="wildfly">
+      <criteria name="microprofile-7.1+"/>
+      <criteria name="microprofile-7.2"/>
+    </family>
     <dependencies>
-        <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
+        <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack" allowedFamily="wildfly:jakarta-ee-deployment,jakarta-ee-10+">
             <name>org.wildfly:wildfly-ee-galleon-pack</name>
             <packages inherit="false">
                 <exclude name="docs.licenses.merge"/>
@@ -16,6 +19,7 @@
                 <include name="bin"/>
                 <include name="product.conf"/>
                 <exclude name="org.jboss.as.product"/>
+                <include name="version.txt"/>
             </packages>
             <default-configs inherit="false">
                 <include name="host.xml" model="host"/>
@@ -41,13 +45,13 @@
         <package-stability-level>experimental</package-stability-level>
     </stability-levels>
     <!--
-      When building this feature pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
+      When building this feature-pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
       which is used to provision the contents of the 'docs/schema' directory in a WildFly installation.
-      To do this the plugin inspects maven artifacts that would be provisioned by the feature pack,
+      To do this the plugin inspects maven artifacts that would be provisioned by the feature-pack,
       looking for those whose Maven groupId matches one of the groupIds listed below.
       For all matching artifacts, the plugin checks for the existence of a 'schema' directory at the artifact root.
       If such a directory is found, the plugin copies out the directory contents and includes them
-      in the feature pack as part of the 'docs.schema' package it generates.
+      in the feature-pack as part of the 'docs.schema' package it generates.
      -->
     <package-schemas>
         <group name="org.wildfly"/>
@@ -91,6 +95,7 @@
                 <extension>org.wildfly.extension.opentelemetry</extension>
             </standalone>
             <domain>
+                <extension>org.wildfly.extension.micrometer</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>

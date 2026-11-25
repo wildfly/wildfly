@@ -5,8 +5,11 @@
 
 package org.jboss.as.jpa.container;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
@@ -23,6 +26,7 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * UnsynchronizedEntityManagerWrapper helps track transaction scoped persistence contexts that are SynchronizationType.UNSYNCHRONIZED,
@@ -34,11 +38,29 @@ import jakarta.persistence.metamodel.Metamodel;
  *
  * @author Scott Marlow
  */
-public class UnsynchronizedEntityManagerWrapper implements EntityManager, SynchronizationTypeAccess {
+public abstract class UnsynchronizedEntityManagerWrapper implements EntityManager, SynchronizationTypeAccess {
+
+
+    private static final UnsynchronizedEntityManagerWrapper.Factory FACTORY; static {
+        UnsynchronizedEntityManagerWrapper.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<UnsynchronizedEntityManagerWrapper.Factory>) () -> ServiceLoader.load(UnsynchronizedEntityManagerWrapper.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(UnsynchronizedEntityManagerWrapper.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static UnsynchronizedEntityManagerWrapper create(final EntityManager underlyingEntityManager) {
+        return FACTORY.createUnsynchronizedEntityManagerWrapper(underlyingEntityManager);
+    }
 
     private final EntityManager entityManager;
 
-    public UnsynchronizedEntityManagerWrapper(EntityManager entityManager) {
+    protected UnsynchronizedEntityManagerWrapper(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -303,5 +325,9 @@ public class UnsynchronizedEntityManagerWrapper implements EntityManager, Synchr
     @Override
     public <T> T unwrap(Class<T> cls) {
         return entityManager.unwrap(cls);
+    }
+
+    public interface Factory {
+        UnsynchronizedEntityManagerWrapper createUnsynchronizedEntityManagerWrapper(final EntityManager underlyingEntityManager);
     }
 }

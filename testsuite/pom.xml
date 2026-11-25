@@ -6,26 +6,46 @@
 
 
 <!--
-    1. The testsuite module has a small number of submodules:
+    1. The testsuite module has a number of child modules that provide test classes:
 
-    integration - holds all integration tests for Wildfly.
-    domain      - holds all domain management tests for Wildfly.
+    integration      - holds all integration tests for standalone Wildfly servers.
+    domain           - holds all domain management tests for Wildfly.
+    galleon          - tests of manipulation of WildFly installations via the Galleon command line tool
+    layers           - validation of Galleon layers that can be provisioned using the wildfly-ee feature-pack
+    layers-expansion - validation of Galleon layers that can be provisioned using the wildfly or wildfly-preview feature-packs
+    mixed-domain     - test domain mode management of previous-release secondary host controllers by a current version DC
+    preview          - tests that are only applicable to WildFly Preview
+    scripts          - tests execution of scripts shipped with the server
 
-    All tests should fit into one of these four categories.
+    All tests should fit into one of these child modules.
 
-    2. This pom is inherited by all submodules and should be used to do the following:
+    2. This pom is inherited by all child modules that provide tests and should be used to do the following:
        - Set defaults for common testsuite system properties (which can then be overridden on the command line).
        - Define dependencies common to all tests (Arquillian, junit or testng, and container type).
        - Provide a workaround for @Resource(lookup=...) which requires libraries in jbossas/endorsed.
-       - Define a default server configuration installed into target/jboasas in each submodule, which
+       - Define a default server configuration installed into target/wildfly in each submodule, which
          represents an unmodified copy of the AS server. Custom server configurations are defined in the submodules.
-       - Define profiles to allow selection of which test modules will be executed.
 
     3. This pom should not be used to do the following:
        - Define module-specific server configuration build steps.
        - Define module-specific surefire executions.
        These elements should be defined in logical profiles associated with each logical grouping of tests,
        in the pom for the module which contains the tests. See the submodule poms for more details.
+
+   4. The testsuite directory includes a number of other modules whose parent is not this module and that do not
+      provide tests. These modules provide support infrastructure of various types that is used to execute
+      the testsuite.
+
+      aggregator-xxx     Coordinates which test modules execute based on what profiles are enabled.
+                         A separate aggregator handles base server, expansion server and preview server testing.
+      build-demander-xxx Unless building the production code is disabled, these ensure the production code that builds
+                         the various thin and fat server installations has executed before the testsuite modules start
+                         trying to test them.
+                         A separate build-demander handles base server, expansion server and preview server testing.
+      shared             Shared utility code used by tests
+      test-feature-pack  Feature-pack base server tests can use to provision a server adapted to various test requirements
+      t-f-p-preview      Feature-pack preview server tests can use to provision a server adapted to various test requirements
+      test-product-conf  Provides an artifact used in some manual mode tests.
 
 -->
 
@@ -41,7 +61,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -49,18 +69,12 @@
 
     <name>WildFly Test Suite: Aggregator</name>
 
-    <modules>
-        <module>integration</module>
-        <module>test-product-conf</module>
-    </modules>
-
-
     <!-- Global testsuite system properties defaults. -->
 
     <properties>
-        <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
+        <!-- Current module's directory. Will automatically pick up submodule's basedir. -->
         <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
-        <!-- Integration module's directory. To be overriden in sub-modules. -->
+        <!-- Integration module's directory. To be overridden in submodules. -->
         <jbossas.ts.integ.dir>${basedir}/integration</jbossas.ts.integ.dir>
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
         <jbossas.ts.dir>${basedir}</jbossas.ts.dir>
@@ -70,20 +84,61 @@
         <!-- Skips profile generation; to be used with running single test with -Dtest=... -->
         <skip.antrun>false</skip.antrun>
 
+        <!-- BEGINNING OF PROPERTIES RELATED TO CONFIGURING THE SERVER INSTALLATION TO TEST.
+             Note that many of these properties are overridden in profiles below. -->
+
+        <!-- Properties related to the directory from which testsuite modules that don't create their own dists
+                     should obtain the dist to test -->
+        <!-- First, the path, relative to the source root, where the parent of the maven child project
+             whose output should be used is found. An empty value means the source root. -->
+        <testsuite.default.build.project.root></testsuite.default.build.project.root>
+        <!-- Second, prefix to add to the standard maven child project whose output should be used.
+             An empty value means no prefix.
+             Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
+        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+        <!-- 'Qualifier' segment to include in the name of the directory containing the pre-built server -->
+        <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+        <!-- Exception thrown by @TestcontainersRequired tests when no container engine is available (see ts.disable-container-tests-on-windows.profile).
+             Modules running on JUnit Jupiter override this with org.opentest4j.TestAbortedException. -->
+        <ts.docker.required.exception>org.junit.AssumptionViolatedException</ts.docker.required.exception>
+
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that provides content
+             that *could* be obtained solely from the wildfly-ee-galleon-pack.
+             Note: It's valid to use an FP here that provides the EE content via its dependencies.
+        -->
+        <testsuite.ee.feature.pack.groupId>${full.maven.groupId}</testsuite.ee.feature.pack.groupId>
+        <testsuite.ee.feature.pack.artifactId>wildfly-galleon-pack</testsuite.ee.feature.pack.artifactId>
+        <testsuite.ee.feature.pack.version>${full.maven.version}</testsuite.ee.feature.pack.version>
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that provide content
+             that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
+             Test jobs can override this using -D to test using a different feature-pack.
+        -->
+        <testsuite.full.feature.pack.groupId>${full.maven.groupId}</testsuite.full.feature.pack.groupId>
+        <testsuite.full.feature.pack.artifactId>wildfly-galleon-pack</testsuite.full.feature.pack.artifactId>
+        <testsuite.full.feature.pack.version>${full.maven.version}</testsuite.full.feature.pack.version>
+        <!-- Galleon feature-pack to use in testsuite provisioning executions that install test-specific content.
+             Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
+        -->
+        <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
+
+        <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+        <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+        <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+
+        <!-- END OF PROPERTIES RELATED TO CONFIGURING THE SERVER INSTALLATION TO TEST. -->
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
-        <!-- The artifactId of the pom to use as an import scope dependency (a bom) for testsuite modules.
-             Child modules or profiles can override this to use a different dependency set,
-             for example to test WildFly Preview or to test microprofile.
-             Default is the EE dependency set. -->
-        <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
+        <!-- Name of the profile that defines what feature-packs were used to provision the test server.
+             Profiles set this; the value here is the profile with settings that match the global default values. -->
+        <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
@@ -108,7 +163,7 @@
             -Djboss.bind.address.private=${node0}
             -Djboss.bind.address.management=${node0}
             -Djboss.default.multicast.address=${mcast}
-            </jvm.args.ip.server>
+        </jvm.args.ip.server>
         <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
 
         <!-- Server arguments. Cannot have a null server argument in ARQ, set a dummy system property -->
@@ -117,30 +172,18 @@
         <jboss.domain.server.args></jboss.domain.server.args>
 
         <!-- Additional JVM args, like those for EC2. -->
-        <jvm.args.other>-server</jvm.args.other>
+        <jvm.args.other>-server -Djdk.tracePinnedThreads=full</jvm.args.other>
 
         <!-- Logging config -->
         <testLogToFile>true</testLogToFile>
 
         <!-- Timeout ratios. 100 will leave the timeout as it was coded. -->
         <timeout.factor>100</timeout.factor>
-        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor}</jvm.args.timeouts>
-
-        <!-- Database properties. -->
-        <ds.db></ds.db>
-        <ds.jdbc.driver></ds.jdbc.driver>
-        <ds.jdbc.driver-xa></ds.jdbc.driver-xa>
-        <ds.jdbc.driver.version></ds.jdbc.driver.version>
-        <ds.jdbc.url></ds.jdbc.url>
-        <ds.jdbc.user>test</ds.jdbc.user>
-        <ds.jdbc.pass>test</ds.jdbc.pass>
-        <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
-        <ds.module.path></ds.module.path>
-        <ds.isModule>false</ds.isModule>
-        <ds.jdbc.driver.target.path>${basedir}/target/wildfly/standalone/deployments</ds.jdbc.driver.target.path>
+        <!-- WFLY-22076 Bump bootable jar cleanup marker timeout from default 10s to avoid spurious failures on slow CI agents. -->
+        <jvm.args.timeouts>-Dts.timeout.factor=${timeout.factor} -Dorg.wildfly.core.bootable.jar.timeout=60</jvm.args.timeouts>
 
         <!-- Common surefire properties. -->
-        <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
+        <surefire.memory.args>-Xmx512m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
         <!-- The JPMS settings needed by the client side of a portion of the testsuite.
@@ -151,8 +194,9 @@
              a location as is practical; no more coarse-grained than the global config of
              the pom for the maven module that includes the test. -->
         <modular.jdk.testsuite.args>${modular.jdk.args}</modular.jdk.testsuite.args>
+        <!-- n.b. any updates to line below need to be mirrored in testsuite/integration/clustering/pom.xml with omitted ${surefire.jpda.args} which must be unique per node! -->
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
-        <extra.server.jvm.args />
+        <extra.server.jvm.args/>
         <!-- needed for arquillian-byteman-extension -->
         <surefire.byteman.argline>-Djdk.attach.allowAttachSelf=true</surefire.byteman.argline>
         <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
@@ -161,18 +205,22 @@
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
-        
+
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>true</skipPublishing>
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
 
         <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
-        <additional.ee.test.source>ee10</additional.ee.test.source>
+        <additional.ee.test.source>ee11</additional.ee.test.source>
 
         <!-- properties to enable plugin executions -->
         <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
+
+        <!-- Sigh. CDI 5 changed their maven GAs, so we have more fun with profiles. Grumble, grumble. -->
+        <cdi.api.groupId>jakarta.enterprise</cdi.api.groupId>
+        <cdi.api.artifactId>jakarta.enterprise.cdi-api</cdi.api.artifactId>
 
     </properties>
 
@@ -187,7 +235,7 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -196,23 +244,9 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Ensure the relevant test feature pack is built -->
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
-            <type>zip</type>
-            <scope>test</scope>
-        </dependency>
+        <!-- DO NOT add dependencies here unless they are truly required by ALL child modules. -->
+        <!-- Declare dependencies in the specific module that requires them. See WFLY-22034. -->
+        <!-- The <dependencies> section is left empty intentionally so that anyone adding a dependency here will notice this message. -->
     </dependencies>
 
     <build>
@@ -230,106 +264,112 @@
                     <exclude>**/*.java</exclude>
                 </excludes>
             </testResource>
+            <testResource>
+                <directory>src/test/${additional.ee.test.source}/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
         </testResources>
 
         <pluginManagement>
             <plugins>
                 <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-compiler-plugin</artifactId>
-                   <!-- Don't compile src/main/java - nothing to do. -->
-                   <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
-               </plugin>
-
-               <!--
-                   A build of target/wildfly which is shared by all modules.
-                   Modules and bundles are not copied as they are read-only (see surefire props).
-               -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-resources-plugin</artifactId>
-                   <executions combine.children="append">
-                       <!-- Copy the AS into current_submodule/target/wildfly . This is executed recursively in submodules. -->
-                       <execution>
-                           <id>ts.copy-wildfly</id>
-                           <inherited>true</inherited>
-                           <phase>generate-test-resources</phase>
-                           <goals><goal>copy-resources</goal></goals>
-                           <configuration>
-                               <outputDirectory>${basedir}/target/wildfly</outputDirectory>
-                               <overwrite>true</overwrite>
-                               <resources>
-                                   <resource>
-                                       <directory>${jboss.home}</directory>
-                                       <excludes>
-                                           <exclude>bin/client/</exclude>
-                                           <exclude>bin/*.jar</exclude>
-                                           <exclude>bin/*.sh</exclude>
-                                           <exclude>bin/*.bat</exclude>
-                                           <exclude>bin/*.ps1</exclude>
-                                           <exclude>docs/licenses/</exclude>
-                                           <exclude>docs/schema/</exclude>
-                                           <exclude>docs/examples/configs/</exclude>
-                                           <exclude>modules/</exclude>
-                                           <exclude>welcome-content/*.png</exclude>
-                                           <exclude>standalone/data</exclude>
-                                           <exclude>standalone/log</exclude>
-                                           <exclude>standalone/tmp</exclude>
-                                       </excludes>
-                                   </resource>
-                               </resources>
-                           </configuration>
-                       </execution>
-                   </executions>
-               </plugin>
-
-                <!-- Basic configuration for bootable jar packaging, if enabled -->
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-jar-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.jar.plugin}</version>
-                    <configuration>
-                        <hollowJar>true</hollowJar>
-                        <record-state>false</record-state>
-                        <log-time>${galleon.log.time}</log-time>
-                        <offline>true</offline>
-                        <plugin-options>
-                            <jboss-maven-dist/>
-                            <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                        </plugin-options>
-                    </configuration>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <!-- Don't compile src/main/java - nothing to do. -->
                     <executions>
                         <execution>
-                            <id>bootable-jar-packaging</id>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                            <!-- This execution's phase is controlled by a property that defaults to 'none'.
-                                 Profiles that want it to run set the property to a different phase-->
-                            <phase>${ts.bootable-jar-packaging.phase}</phase>
+                            <id>default-compile</id>
+                            <phase>none</phase>
                         </execution>
                     </executions>
                 </plugin>
 
+                <!--
+                    A build of target/wildfly which is shared by all modules.
+                    Modules and bundles are not copied as they are read-only (see surefire props).
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <executions combine.children="append">
+                        <!-- Copy the AS into current_submodule/target/wildfly . This is executed recursively in submodules. -->
+                        <execution>
+                            <id>ts.copy-wildfly</id>
+                            <inherited>true</inherited>
+                            <phase>generate-test-resources</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${basedir}/target/wildfly</outputDirectory>
+                                <overwrite>true</overwrite>
+                                <resources>
+                                    <resource>
+                                        <directory>${jboss.home}</directory>
+                                        <excludes>
+                                            <exclude>bin/client/</exclude>
+                                            <exclude>bin/*.jar</exclude>
+                                            <exclude>bin/*.sh</exclude>
+                                            <exclude>bin/*.bat</exclude>
+                                            <exclude>bin/*.ps1</exclude>
+                                            <exclude>docs/licenses/</exclude>
+                                            <exclude>docs/schema/</exclude>
+                                            <exclude>docs/examples/configs/</exclude>
+                                            <exclude>modules/</exclude>
+                                            <exclude>welcome-content/*.png</exclude>
+                                            <exclude>standalone/data</exclude>
+                                            <exclude>standalone/log</exclude>
+                                            <exclude>standalone/tmp</exclude>
+                                        </excludes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
 
-               <!-- WFLY-3361 - use external xalan for XML transformations to
-               ensure consistent behaviour on all platrforms.-->
-               <plugin>
+                <!-- WFLY-3361 - use external xalan for XML transformations to ensure consistent behavior on all platforms.-->
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                   <dependencies>
-                       <dependency>
-                           <groupId>xalan</groupId>
-                           <artifactId>xalan</artifactId>
-                           <version>2.7.3</version>
-                       </dependency>
-                       <dependency>
-                           <groupId>xalan</groupId>
-                           <artifactId>serializer</artifactId>
-                           <version>2.7.3</version>
-                       </dependency>
-                   </dependencies>
-               </plugin>
+                    <dependencies>
+                        <dependency>
+                            <groupId>xalan</groupId>
+                            <artifactId>xalan</artifactId>
+                            <version>2.7.3</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>xalan</groupId>
+                            <artifactId>serializer</artifactId>
+                            <version>2.7.3</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.wildfly.glow</groupId>
+                    <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                    <configuration>
+                        <!-- We define the standard set of feature-packs to use here.
+                             Profiles that need another feature-pack beyond what's
+                             indicated by the maven properties here (e.g. 'wildfly')
+                             should override this part of the plugin config. -->
+                        <feature-packs>
+                            <feature-pack>
+                                <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                <version>${testsuite.ee.feature.pack.version}</version>
+                            </feature-pack>
+                        </feature-packs>
+                        <!-- The single FP defined above may be overridden to use multiple
+                             FPs in some contexts. If so, we want Glow to always include
+                             all of those FPs in its generated provisioning.xml, even if
+                             its scanning doesn't detect the need for them all. -->
+                        <enforce-input-feature-packs>true</enforce-input-feature-packs>
+                    </configuration>
+                </plugin>
 
                 <!--
                    Sets general surefire system properties.
@@ -337,23 +377,24 @@
                 -->
 
                 <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-surefire-plugin</artifactId>
-                   <configuration>
-                       <failIfNoTests>false</failIfNoTests>
-                       <systemPropertyVariables>
-                           <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                           <jboss.dist>${jboss.dist}</jboss.dist>
-                           <jboss.home>${basedir}/target/wildfly</jboss.home>
-                           <jboss.args>${jboss.args}</jboss.args>
-                           <jboss.domain.server.args>${jboss.domain.server.args}</jboss.domain.server.args>
-                           <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
-                           <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
-                       </systemPropertyVariables>
-                       <argLine>${surefire.system.args}</argLine>
-                       <trimStackTrace>false</trimStackTrace>
-                   </configuration>
-               </plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <failIfNoTests>false</failIfNoTests>
+                        <systemPropertyVariables>
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <jboss.dist>${jboss.dist}</jboss.dist>
+                            <jboss.home>${basedir}/target/wildfly</jboss.home>
+                            <jboss.args>${jboss.args}</jboss.args>
+                            <jboss.domain.server.args>${jboss.domain.server.args}</jboss.domain.server.args>
+                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
+                            <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
+                            <server.provisioning.profile>${server.provisioning.profile}</server.provisioning.profile>
+                        </systemPropertyVariables>
+                        <argLine>${surefire.system.args}</argLine>
+                        <trimStackTrace>false</trimStackTrace>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
@@ -375,33 +416,74 @@
                     </executions>
                 </plugin>
 
-               <!-- Disable default site run. -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-site-plugin</artifactId>
-                   <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
-               </plugin>
+                <!-- Disable default site run. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-site</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
 
-               <!-- Don't create jars - nothing to do. -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-jar-plugin</artifactId>
-                   <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
-               </plugin>
+                <!-- Don't create jars - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-jar</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
 
-               <!-- Don't create source jars - nothing to do. -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-source-plugin</artifactId>
-                   <executions><execution><id>attach-sources</id><phase>none</phase></execution></executions>
-               </plugin>
+                <!-- Don't create source jars - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
 
-               <!-- Don't install - nothing to do. -->
-               <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-install-plugin</artifactId>
-                   <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
-               </plugin>
+                <!-- Don't install - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-install</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Don't sign - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+
+                <!-- Don't deploy -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>injected-central-publishing</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -410,195 +492,343 @@
     <profiles>
 
         <!--
-           Module profiles
-           - used to activate modules alone or in combination
-           - naming convention: X.module.profile activated by -DX.module
-           - this requires that a default profile be set for each module
+           Module execution profiles. DO NOT CONFIGURE PLUGIN EXECUTION VIA THESE PROFILES
         -->
         <profile>
-            <id>all-modules.module.profile</id>
-            <activation><property><name>allTests</name></property></activation>
+            <id>base-server-tests</id>
+            <!-- Base server tests run unless -P !preview-server-tests is used -->
+            <activation>
+                <property>
+                    <name>!preview-server-tests</name>
+                </property>
+            </activation>
             <modules>
-                <module>integration</module>
-                <module>domain</module>
-                <module>scripts</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>mixed-domain.module.profile</id>
-            <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>
-            <modules>
-                <module>mixed-domain</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>integ.module.profile</id>
-            <activation><property><name>integ.module</name></property></activation>
-            <modules>
+                <module>build-demander-base</module> <!-- Ensure base server build/dist modules used by tests are built -->
+                <module>aggregator-base</module>
                 <module>integration</module>
             </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-base</artifactId>
+                    <version>${ee.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
-            <id>integ-basic.module.profile</id>
-            <activation><property><name>ts.basic</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-clustering.module.profile</id>
-            <activation><property><name>ts.clustering</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-iiop.module.profile</id>
-            <activation><property><name>ts.iiop</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-xts.module.profile</id>
-            <activation><property><name>ts.xts</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-        <profile>
-            <id>integ-rts.module.profile</id>
-            <activation><property><name>ts.rts</name></property></activation>
-            <modules><module>integration</module></modules>
-        </profile>
-
-        <profile>
-            <id>domain.module.profile</id>
-            <activation><property><name>domain.module</name></property></activation>
-            <modules><module>domain</module></modules>
-        </profile>
-        <profile>
-            <id>domain_.module.profile</id>
-            <activation><property><name>ts.domain</name></property></activation>
-            <modules><module>domain</module></modules>
-        </profile>
-
-        <profile>
-            <id>layers.module.profile</id>
-            <activation><property><name>layers.module</name></property></activation>
-            <modules><module>layers</module></modules>
-        </profile>
-        <profile>
-            <id>layers-expansion.module.profile</id>
-            <activation><property><name>layers-expansion.module</name></property></activation>
-            <modules><module>layers-expansion</module></modules>
-        </profile>
-        <profile>
-            <id>layers_.module.profile</id>
-            <activation><property><name>ts.layers</name></property></activation>
+            <id>expansion-server-tests</id>
+            <!-- Expansion server tests run unless -P !preview-server-tests is used -->
+            <activation>
+                <property>
+                    <name>!preview-server-tests</name>
+                </property>
+            </activation>
             <modules>
+                <module>build-demander-expansion</module> <!-- Ensure expansion server build/dist modules used by tests are built -->
+                <module>aggregator-expansion</module>
                 <module>integration</module>
-                <module>preview</module>
-                <module>layers</module>
-                <module>layers-expansion</module>
             </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-expansion</artifactId>
+                    <version>${full.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
+        <profile>
+            <id>preview-server-tests</id>
+            <activation>
+                <property>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>build-demander-preview</module> <!-- Ensure preview server build/dist modules used by tests are built -->
+                <module>aggregator-preview</module>
+                <module>integration</module>
+            </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-preview</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- These execute in all feature-pack contexts, so declare them here instead
+             of repeating this in the aggregator modules -->
         <profile>
             <id>galleon.module.profile</id>
-            <activation><property><name>galleon.module</name></property></activation>
-            <modules><module>galleon</module></modules>
+            <activation>
+                <property>
+                    <name>galleon.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>galleon</module>
+            </modules>
         </profile>
         <profile>
             <id>galleon_.module.profile</id>
-            <activation><property><name>ts.galleon</name></property></activation>
-            <modules><module>galleon</module></modules>
-        </profile>
-        <profile>
-            <id>scripts.module.profile</id>
-            <activation><property><name>scripts.module</name></property></activation>
-            <modules><module>scripts</module></modules>
-        </profile>
-        <profile>
-            <id>scripts_.module.profile</id>
-            <activation><property><name>ts.scripts</name></property></activation>
-            <modules><module>scripts</module></modules>
+            <activation>
+                <property>
+                    <name>ts.galleon</name>
+                </property>
+            </activation>
+            <modules>
+                <module>galleon</module>
+            </modules>
         </profile>
 
+
+        <!--
+            Plugin execution configuration profiles.
+        -->
+
+        <!--
+             There are five profiles that set things up for testing different combinations of feature-packs.
+
+             1) Test the latest ee feature-pack + the wildfly feature-pack
+             2) Test the latest ee feature-pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature-pack.
+             3) Test the legacy ee feature-pack + the wildfly feature-pack
+             4) Test the legacy ee feature-pack alone. Using this also requires setting -P-expansion-server-tests
+                in order to disable the testsuite modules that require the wildfly feature-pack.
+             5) Test the wildfly-preview feature-pack.
+
+             None of these are active by default. The 'test the wildfly-preview feature-pack' one is activated
+             via -Dpreview-server-tests. The others must be enabled via -P.
+
+             One of the first four will result in installations being tested that are equivalent to what
+             would happen by default. What would happen by default can vary in WildFly vs EAP branches, so
+             we provide profiles for all combinations to make it possible to run test jobs that don't assume a default.
+
+             These profiles may declare maven properties with the same values as are seen in the global defaults.
+             This is done both to be explicit about how the given profile works, and to insulate the profiles
+             from changes in defaults.
+        -->
+
+        <!-- Configures testsuite to use the latest non-default feature-pack to provision EE content
+             and to also use wildfly feature-pack content. -->
         <profile>
-            <!-- Use the latest version of the standard channels when provisioning a bootable jar. -->
-            <id>latest.standard.channels.profile</id>
-            <activation><property><name>latest.standard.channels</name></property></activation>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <property><name>latest-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
+                <!-- Use the latest version of the wildfly-ee FP -->
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use full builds pulled from the root of the source tree -->
+                <testsuite.default.build.project.root></testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
+            </properties>
             <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <configuration>
-                            <channels>
-                                <channel>
-                                    <manifest>
-                                        <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee</artifactId>
-                                    </manifest>
-                                </channel>
-                                <channel>
-                                    <manifest>
-                                        <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly</artifactId>
-                                    </manifest>
-                                </channel>
-                            </channels>
-                        </configuration>
-                    </plugin>
-                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <!-- Explicitly configure use of both feature-packs; don't rely
+                                     on the wildfly FP's static dependency -->
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <!-- Parameters to test cases. -->
+                                <systemPropertyVariables combine.children="append">
+                                </systemPropertyVariables>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
 
+        <!-- Configures testsuite to use the latest non-default feature-pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature-pack,
+             so -P-expansion-server-tests must be used. -->
         <profile>
-            <id>preview.profile</id>
-            <activation><property><name>ts.preview</name></property></activation>
+            <id>latest-ee-only-server-tests</id>
+            <activation>
+                <property><name>latest-ee-only-server-tests</name></property>
+            </activation>
             <properties>
-                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-only-server-tests</server.provisioning.profile>
+                <!-- Use the latest version of the wildfly-ee FP -->
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use 'ee-'' builds pulled from the root of the source tree -->
+                <testsuite.default.build.project.root></testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${latest.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
             </properties>
-            <modules>
-                <module>domain</module>
-                <module>galleon</module>
-                <module>integration</module>
-                <module>layers</module>
-                <module>layers-expansion</module>
-                <module>preview</module>
-                <module>scripts</module>
-            </modules>
         </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature-pack to provision EE content.
+             and to also use wildfly feature-pack content. -->
         <profile>
-            <id>bootablejar.preview.profile</id>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-full-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-full-server-tests</server.provisioning.profile>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use full builds pulled from the legacy/ee-feature-pack source tree -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack/</testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
+                <!-- Use the EE 10 EL API artifact -->
+                <jakarta.el.api.artifactId>jboss-el-api_5.0_spec</jakarta.el.api.artifactId>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <!-- Explicitly configure use of both feature-packs; don't rely
+                                     on the wildfly FP's static dependency -->
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default feature-pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature-pack,
+             so -P-expansion-server-tests must be used. -->
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <property><name>legacy-ee-only-server-tests</name></property>
+            </activation>
+            <properties>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-only-server-tests</server.provisioning.profile>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
+                <!-- For pre-built servers, use 'ee-' builds pulled from the legacy/ee-feature-pack source tree -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack/</testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- For cases where we know for sure we don't want the 'wildfly' FP or channel, we can use these -->
+                <testsuite.ee.only.channel.artifactId>${legacy.ee.channel.artifactId}</testsuite.ee.only.channel.artifactId>
+                <testsuite.ee.only.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.only.feature.pack.artifactId>
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+                <!-- If there are EE-version-specific test sources, uses the ee10 ones -->
+                <additional.ee.test.source>ee10</additional.ee.test.source>
+                <!-- Use the EE 10 EL API artifact -->
+                <jakarta.el.api.artifactId>jboss-el-api_5.0_spec</jakarta.el.api.artifactId>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the wildfly-preview feature-pack to provision EE content -->
+        <profile>
+            <id>preview-server-tests-config</id>
             <activation>
                 <property>
-                    <name>ts.bootable.preview</name>
+                    <name>preview-server-tests</name>
                 </property>
             </activation>
             <properties>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
-                <additional.ee.test.source>ee11</additional.ee.test.source>
-            </properties>
-            <modules>
-                <module>integration</module>
-                <module>preview</module>
-            </modules>
-        </profile>
-        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
-             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
-             based variant of wildfly-test-galleon-pack.
-        -->
-        <profile>
-            <id>test.feature.pack.preview.profile</id>
-            <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
-                </property>
-            </activation>
-            <properties>
-                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>preview-server-tests</server.provisioning.profile>
+                <!-- The pre-built legacy installations are not found under the top-level source root -->
+                <testsuite.default.build.project.root>preview/</testsuite.default.build.project.root>
+                <!-- The pre-built server directory includes 'preview-' in its name -->
+                <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
+                <!-- Use the WFP feature-pack -->
+                <testsuite.ee.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.feature.pack.artifactId>
+                <testsuite.full.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.feature.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
-                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <!-- Use the WFP dependencies -->
+                <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-bom</dependency.management.import.test.artifact>
+                <!-- Use the WFP test-feature-pack -->
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+                <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
+                <!-- Use the EE 11+ EL API artifact -->
+                <jakarta.el.api.artifactId>jakarta.el-api</jakarta.el.api.artifactId>
+                <!-- Use the EE 12 CDI artifacts -->
+                <cdi.api.groupId>jakarta.cdi</cdi.api.groupId>
+                <cdi.api.artifactId>jakarta.cdi-api</cdi.api.artifactId>
             </properties>
         </profile>
 
@@ -607,24 +837,36 @@
         -->
         <profile>
             <id>jpda.profile</id>
-            <activation><property><name>jpda</name></property></activation>
+            <activation>
+                <property>
+                    <name>jpda</name>
+                </property>
+            </activation>
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
-            <activation><property><name>debug</name></property></activation>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 
 
-        <!-- IPv6. Wildfly-2228. -->
+        <!-- IPv6 -->
         <profile>
             <id>ts.ipv6</id>
-            <activation><property><name>ipv6</name></property></activation>
+            <activation>
+                <property>
+                    <name>ipv6</name>
+                </property>
+            </activation>
             <properties>
                 <jvm.args.ip>-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true</jvm.args.ip>
 
@@ -647,360 +889,90 @@
         <!-- Ugly workaround for MANTRUN-172 :/   See AS7-3993. -->
         <profile>
             <id>ts.ipv6.dummy.node0</id>
-            <activation><property><name>node0</name></property></activation>
-            <properties> <node0>${node0}</node0> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.node1</id>
-            <activation><property><name>node1</name></property></activation>
-            <properties> <node1>${node1}</node1> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast</id>
-            <activation><property><name>mcast</name></property></activation>
-            <properties><mcast>${mcast}</mcast></properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.node2</id>
-            <activation><property><name>node2</name></property></activation>
-            <properties> <node2>${node2}</node2> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.node3</id>
-            <activation><property><name>node3</name></property></activation>
-            <properties> <node3>${node3}</node3> </properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast1</id>
-            <activation><property><name>mcast1</name></property></activation>
-            <properties><mcast1>${mcast1}</mcast1></properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast2</id>
-            <activation><property><name>mcast2</name></property></activation>
-            <properties><mcast2>${mcast2}</mcast2></properties>
-        </profile>
-        <profile>
-            <id>ts.ipv6.dummy.mcast3</id>
-            <activation><property><name>mcast3</name></property></activation>
-            <properties><mcast3>${mcast3}</mcast3></properties>
-        </profile>
-
-        <!-- Security manager. -->
-        <profile>
-            <id>ts.security.manager</id>
             <activation>
                 <property>
-                    <name>security.manager</name>
+                    <name>node0</name>
                 </property>
             </activation>
             <properties>
-                <jboss.args>-secmgr</jboss.args>
-                <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
+                <node0>${node0}</node0>
             </properties>
         </profile>
-
-        <!--
-          Database config profiles.
-          Changing the default database involves:
-            * Adding a dependency for the database driver.
-            * Changing the server configuration file.
-            * Deploying the driver via the server's deployments directory.
-
-          DEFAULT DATASOURCE implementation note:
-            There are two ways:
-            *  Leaving the default DS as distributed in AS, or
-            *  Having a default set of properties and executing DS config even without -Dds=... specified.
-            Currently it's the 2nd.
-            Changing to 1st would need moving DS transformation from ts.config-as.ip-and-ds to this profile.
-
-          Usage:
-             mvn clean install -rf testsuite -Dds=mysql51
-
-          See: https://community.jboss.org/wiki/DataSourceConfigurationInWildfly
-        -->
-
         <profile>
-            <id>ds.createModule.profile</id>
-            <activation><property><name>ds.createModule</name></property></activation>
+            <id>ts.ipv6.dummy.node1</id>
+            <activation>
+                <property>
+                    <name>node1</name>
+                </property>
+            </activation>
             <properties>
-                <ds.jdbc.driver.target.path>${basedir}/target/modules/${ds.module.path}/main</ds.jdbc.driver.target.path>
-                <ds.isModule>true</ds.isModule>
-            </properties>
-            <build>
-                <plugins>
-                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>xml-maven-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Edit template module.xml -->
-                            <execution>
-                                <id>ts.config-as.db.change-datasource-module</id>
-                                <phase>process-test-sources</phase>
-                                <goals><goal>transform</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <transformationSets>
-                                        <transformationSet>
-                                            <dir      >${basedir}/target/jdbcDrivers</dir>
-                                            <outputDir>${basedir}/target/jdbcDrivers</outputDir>
-                                            <stylesheet>${xslt.scripts.dir}/changeModule.xsl</stylesheet>
-                                            <includes>
-                                                <include>module.xml</include>
-                                            </includes>
-                                            <parameters>
-                                                <parameter><name>ds.jdbc.driver.resource</name><value>${ds.jdbc.driver.jar}</value></parameter>
-                                                <parameter><name>ds.jdbc.driver.module.path</name><value>${ds.module.path}</value></parameter>
-                                            </parameters>
-                                        </transformationSet>
-                                    </transformationSets>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                         <executions combine.children="append">
-                            <!-- Copy template module.xml to working directory -->
-                            <execution>
-                               <id>ts.config-as.db.copy-jdbc-module-template</id>
-                               <phase>generate-test-sources</phase>
-                               <goals><goal>copy-resources</goal></goals>
-                               <inherited>true</inherited>
-                               <configuration>
-                                  <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
-                                     <resources>
-                                        <resource>
-                                           <directory>${xslt.scripts.dir}</directory>
-                                           <filtering>true</filtering>
-                                           <includes>
-                                              <include>module.xml</include>
-                                           </includes>
-                                        </resource>
-                                     </resources>
-                               </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
-
-
-        <profile>
-            <!--
-                Profile used to perform database related changes.
-            -->
-            <id>ds.profile</id>
-            <activation><property><name>ds</name></property></activation>
-            <dependencies>
-                <dependency>
-                    <groupId>jdbcdrivers</groupId>
-                    <artifactId>${ds.db}</artifactId>
-                    <version>${ds.jdbc.driver.version}</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions combine.children="append">
-                          <!-- Copy the JDBC driver to target/jdbcDrivers. -->
-                            <execution>
-                                <id>ts.config-as.db.copy-jdbc-jars</id>
-                                <goals><goal>copy</goal></goals>
-                                <phase>generate-test-resources</phase>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>jdbcdrivers</groupId>
-                                            <artifactId>${ds.db}</artifactId>
-                                            <version>${ds.jdbc.driver.version}</version>
-                                            <destFileName>${ds.jdbc.driver.jar}</destFileName>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
-                                    <stripVersion>true</stripVersion>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>xml-maven-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Replace ExampleDS datasource in server configurations (target/jbossas). -->
-                            <execution>
-                                <id>ts.config-as.db.change-datasource</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>transform</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <transformationSets>
-                                        <transformationSet>
-                                            <dir      >${basedir}/target/jbossas/standalone/configuration</dir>
-                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                            <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
-                                            <includes>
-                                                <include>standalone*.xml</include>
-                                            </includes>
-                                            <parameters>
-                                                <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
-                                                <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
-                                                <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
-                                                <parameter><name>ds.jdbc.driver</name><value>${ds.jdbc.driver-xa}</value></parameter>
-                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
-                                                <parameter><name>ds.jdbc.driver.module</name><value>${ds.module.path}</value></parameter>
-                                                <parameter><name>ds.jdbc.isModule</name><value>${ds.isModule}</value></parameter>
-                                            </parameters>
-                                        </transformationSet>
-                                    </transformationSets>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                         <executions combine.children="append">
-                            <!-- Copy JDBC driver and module.xml (if ds.createModule) to deploy folder in targed/jbossas/ (or to module folder target/modules/) -->
-                            <execution>
-                                <id>deploy-database-driver.server</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>copy-resources</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <outputDirectory>${ds.jdbc.driver.target.path}</outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>${basedir}/target/jdbcDrivers</directory>
-                                            <includes>
-                                                <include>${ds.db}-jdbc-driver.jar</include>
-                                                <include>module.xml</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- Database properties profiles. -->
-
-        <!-- H2 - http://www.h2database.com/html/features.html#database_url -->
-        <profile>
-            <id>h2.profile</id>
-            <activation><property><name>ds</name><value>h2</value></property></activation>
-            <properties>
-                <ds.db>h2</ds.db>
-                <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
-                <ds.jdbc.driver.version>${version.com.h2database}</ds.jdbc.driver.version>
+                <node1>${node1}</node1>
             </properties>
         </profile>
-        <profile>  <!-- We need "OR" but Maven's activation system doesn't support any evaluation :/ -->
-            <id>h2_.profile</id>
-            <activation><property><name>!ds</name></property></activation>
+        <profile>
+            <id>ts.ipv6.dummy.mcast</id>
+            <activation>
+                <property>
+                    <name>mcast</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>h2</ds.db>
-                <ds.jdbc.driver>org.h2.Driver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>org.h2.jdbcx.JdbcDataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</ds.jdbc.url>
-                <ds.jdbc.driver.version>${version.com.h2database}</ds.jdbc.driver.version>
+                <mcast>${mcast}</mcast>
             </properties>
         </profile>
-
-        <!-- MySQL 5.1 -->
         <profile>
-            <id>mysql51.profile</id>
-            <activation><property><name>ds</name><value>mysql51</value></property></activation>
+            <id>ts.ipv6.dummy.node2</id>
+            <activation>
+                <property>
+                    <name>node2</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>mysql</ds.db>
-                <ds.jdbc.driver>com.mysql.jdbc.Driver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
-                <ds.module.path>com/mysql</ds.module.path>
+                <node2>${node2}</node2>
             </properties>
         </profile>
-
-        <!-- DB2 -->
         <profile>
-            <id>db2.profile</id>
-            <activation><property><name>ds</name><value>db2</value></property></activation>
+            <id>ts.ipv6.dummy.node3</id>
+            <activation>
+                <property>
+                    <name>node3</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>db2</ds.db>
-                <ds.jdbc.driver>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:db2://localhost:60000/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>4.11.77</ds.jdbc.driver.version>
+                <node3>${node3}</node3>
             </properties>
         </profile>
-
-        <!-- MS SQL 2005 -->
         <profile>
-            <id>mssql2005.profile</id>
-            <activation><property><name>ds</name><value>mssql2005</value></property></activation>
+            <id>ts.ipv6.dummy.mcast1</id>
+            <activation>
+                <property>
+                    <name>mcast1</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>mssql</ds.db>
-                <ds.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:sqlserver://localhost:1433;DatabaseName=test</ds.jdbc.url>
-                <ds.jdbc.driver.version>3.0.1301.101</ds.jdbc.driver.version>
+                <mcast1>${mcast1}</mcast1>
             </properties>
         </profile>
-
-        <!-- Oracle -->
         <profile>
-            <id>oracle11.profile</id>
-            <activation><property><name>ds</name><value>oracle11</value></property></activation>
+            <id>ts.ipv6.dummy.mcast2</id>
+            <activation>
+                <property>
+                    <name>mcast2</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>oracle</ds.db>
-                <ds.jdbc.driver>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:oracle:thin:@localhost:1521:test</ds.jdbc.url>
-                <ds.jdbc.driver.version>11.2.0.2.0</ds.jdbc.driver.version>
+                <mcast2>${mcast2}</mcast2>
             </properties>
         </profile>
-
-        <!-- PostgreSQL -->
         <profile>
-            <id>postgresql.profile</id>
-            <activation><property><name>ds</name><value>postgresql</value></property></activation>
+            <id>ts.ipv6.dummy.mcast3</id>
+            <activation>
+                <property>
+                    <name>mcast3</name>
+                </property>
+            </activation>
             <properties>
-                <ds.db>oracle</ds.db>
-                <ds.jdbc.driver>org.postgresql.Driver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>org.postgresql.Driver</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:postgresql://localhost:5432/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>8.4.702</ds.jdbc.driver.version>
-            </properties>
-        </profile>
-
-        <!-- Sybase -->
-        <profile>
-            <id>sybase.profile</id>
-            <activation><property><name>ds</name><value>sybase</value></property></activation>
-            <properties>
-                <ds.db>sybase</ds.db>
-                <ds.jdbc.driver>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver>
-                <ds.jdbc.driver-xa>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:sybase:Tds:localhost:5000/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>26502</ds.jdbc.driver.version>
+                <mcast3>${mcast3}</mcast3>
             </properties>
         </profile>
 
@@ -1034,23 +1006,6 @@
                                     </target>
                                 </configuration>
                             </execution>
-
-                            <!-- Help banner. -->
-                            <execution>
-                                <id>banner</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <target>
-                                        <loadfile property="help.banner" srcFile="${basedir}/tools/help-banner.txt"/>
-                                        <echo>${help.banner}</echo>
-                                    </target>
-                                </configuration>
-                            </execution>
-
                         </executions>
                         <dependencies>
                             <dependency>
@@ -1068,7 +1023,11 @@
 
         <profile>
             <id>help</id>
-            <activation><property><name>ts.help</name></property></activation>
+            <activation>
+                <property>
+                    <name>ts.help</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <!-- Testsuite debugging info. -->
@@ -1196,7 +1155,7 @@
                                         <!-- Skip target/old-versions which is in testsuite/mixed-domain
                                              1) That's the last test module so cleaning it after its done
                                                 doesn't gain anything; nothing else will take advantage of the space
-                                             2) On windows jobs on CI we keep seeing stuff like this for hundreds of files
+                                             2) On Windows jobs on CI we keep seeing stuff like this for hundreds of files
                                                 taking many minutes and often causing test runs to time out
                                                 [20:10:55][Step 4/5] [WARNING] Failed to delete C:\BuildAgent\work\5768cf3a0bee5b47\full\testsuite\mixed-domain\target\old-versions\jboss-eap-7.0.0\jboss-eap-7.0\modules\system\layers\base\org\wildfly\security\elytron\main\wildfly-elytron-1.0.2.Final-redhat-1.jar
                                         <fileset>
@@ -1276,6 +1235,35 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>ts.disable-container-tests-on-windows.profile</id>
+            <!--
+                There is currently no way to identify hosts on which Docker-based tests should not run apart from an
+                OS check. There are CI updates in the pipeline (see https://issues.redhat.com/browse/WFCI-63 and
+                https://issues.redhat.com/browse/WFCI-64, for example) that will require this to be modified. Ideally,
+                a system property or environment variable can be set to indicate that such tests should not be run. For
+                now, we'll have to live with an OS check, which addresses the immediate need.
+            -->
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <org.arquillian.testcontainers.docker.required.exception>${ts.docker.required.exception}</org.arquillian.testcontainers.docker.required.exception>
+                            </systemPropertyVariables>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

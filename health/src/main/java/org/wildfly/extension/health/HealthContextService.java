@@ -43,7 +43,7 @@ public class HealthContextService implements Service {
 
 
     static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HEALTH_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
+        ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService(HEALTH_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
         Consumer<HealthContextService> consumer = serviceBuilder.provides(HEALTH_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());

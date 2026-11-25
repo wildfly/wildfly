@@ -7,6 +7,8 @@ package org.wildfly.extension.microprofile.reactive.streams.operators._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -22,7 +24,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYRXSTOPS", length = 4)
 public interface MicroProfileReactiveStreamsOperatorsLogger extends BasicLogger {
 
-    MicroProfileReactiveStreamsOperatorsLogger LOGGER = Logger.getMessageLogger(MicroProfileReactiveStreamsOperatorsLogger.class, "org.wildfly.extension.microprofile.reactive.streams.operators");
+    MicroProfileReactiveStreamsOperatorsLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileReactiveStreamsOperatorsLogger.class, "org.wildfly.extension.microprofile.reactive.streams.operators");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

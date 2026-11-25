@@ -72,7 +72,7 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final InboundBridgeService inboundBridgeService = new InboundBridgeService();
         final ServiceBuilder<InboundBridgeService> inboundBridgeServiceBuilder = context
-                .getServiceTarget()
+                .getCapabilityServiceTarget()
                 .addService(RTSSubsystemExtension.INBOUND_BRIDGE, inboundBridgeService);
         inboundBridgeServiceBuilder.requires(context.getCapabilityServiceName(XA_RESOURCE_RECOVERY_CAPABILITY, null));
         inboundBridgeServiceBuilder.requires(RTSSubsystemExtension.PARTICIPANT);

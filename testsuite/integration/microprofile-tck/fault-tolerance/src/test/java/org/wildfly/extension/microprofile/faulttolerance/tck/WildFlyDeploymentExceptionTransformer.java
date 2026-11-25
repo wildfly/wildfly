@@ -4,11 +4,13 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance.tck;
 
+import java.util.Objects;
+
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
 
 /**
- * Temporary workaround for https://issues.jboss.org/browse/WFARQ-59 where the exception is an instance of DeploymentException
+ * Temporary workaround for WFARQ-59 where the exception is an instance of DeploymentException
  * but its cause is null.
  *
  * @author Radoslav Husar
@@ -17,10 +19,7 @@ public class WildFlyDeploymentExceptionTransformer implements DeploymentExceptio
 
     @Override
     public Throwable transform(Throwable throwable) {
-        if (throwable == null) {
-            return new FaultToleranceDefinitionException();
-        } else {
-            return throwable;
-        }
+        return Objects.requireNonNullElseGet(throwable, FaultToleranceDefinitionException::new);
     }
+
 }

@@ -17,13 +17,13 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-preview-ee-bom</artifactId>
     <description>
-        Build of materials that can be used to build WildFly Preview maven modules 
+        Build of materials that can be used to build WildFly Preview maven modules
         that provide traditional capabilities like Jakarta EE.
     </description>
     <packaging>pom</packaging>
@@ -31,75 +31,35 @@
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
     <properties>
-        <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
-        <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
-        <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
-        -->
-        <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
-        <version.jakarta.el>6.0.0</version.jakarta.el>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
-        <version.jakarta.enterprise>4.1.0</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>4.1.0</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0</version.jakarta.interceptor.jakarta-interceptors-api>
-        <version.jakarta.persistence>3.2.0</version.jakarta.persistence>
-        <version.jakarta.security.enterprise>4.0.0</version.jakarta.security.enterprise>
-        <version.jakarta.servlet.jakarta-servlet-api>6.1.0</version.jakarta.servlet.jakarta-servlet-api>
-        <!-- TODO requires a Jastow upgrade to remove PageContextImpl.getVariableResolver()
-        <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>4.0.0-M2</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        -->
-        <version.jakarta.validation.jakarta-validation-api>3.1.0</version.jakarta.validation.jakarta-validation-api>
-        <version.jakarta.websocket.jakarta-websocket-api>2.2.0</version.jakarta.websocket.jakarta-websocket-api>
-        <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.org.glassfish.jakarta.faces>4.1.0</version.org.glassfish.jakarta.faces>
-        <version.org.jboss.resteasy>7.0.0.Alpha2</version.org.jboss.resteasy>
-        <version.org.jboss.weld.weld>6.0.0.Beta4</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>6.0.Beta5</version.org.jboss.weld.weld-api>
+        <version.jakarta.cdi>5.0.0</version.jakarta.cdi>
+        <version.jakarta.json.bind.api>3.1.0-M2</version.jakarta.json.bind.api>
+        <version.org.eclipse.yasson>3.1.0-M3</version.org.eclipse.yasson>
+        <version.org.jboss.weld.weld>7.0.0.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>7.0.Final</version.org.jboss.weld.weld-api>
     </properties>
 
     <dependencyManagement>
         <dependencies>
 
-            <!--
-                Re-expose the standard-ee deps.
-             -->
+            <!-- Bom-specific dependencies. Keep sorted by maven GA -->
+
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+                <classifier>version</classifier>
+                <type>txt</type>
+                <version>${ee.maven.version}</version>
             </dependency>
 
-            <!-- Bom-specific dependencies. Keep sorted -->
-
             <dependency>
-                <groupId>jakarta.annotation</groupId>
-                <artifactId>jakarta.annotation-api</artifactId>
-                <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
-            <dependency>
-                <groupId>jakarta.authentication</groupId>
-                <artifactId>jakarta.authentication-api</artifactId>
-                <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            -->
-            <dependency>
-                <groupId>jakarta.authorization</groupId>
-                <artifactId>jakarta.authorization-api</artifactId>
-                <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
+                <groupId>jakarta.cdi</groupId>
+                <artifactId>jakarta.cdi-api</artifactId>
+                <version>${version.jakarta.cdi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -108,9 +68,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${version.jakarta.el}</version>
+                <groupId>jakarta.cdi</groupId>
+                <artifactId>jakarta.cdi-el-api</artifactId>
+                <version>${version.jakarta.cdi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -119,145 +79,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${version.jakarta.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
-                <version>${version.jakarta.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise.concurrent</groupId>
-                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.lang-model</artifactId>
-                <version>${version.jakarta.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!-- This dependency is not used by the app server itself, but is defined here to allow
-                 user applications to pull in the dependency version as part of the BOM -->
-            <dependency>
-                <groupId>jakarta.faces</groupId>
-                <artifactId>jakarta.faces-api</artifactId>
-                <version>${version.jakarta.faces.jakarta-faces-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.interceptor</groupId>
-                <artifactId>jakarta.interceptor-api</artifactId>
-                <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.persistence</groupId>
-                <artifactId>jakarta.persistence-api</artifactId>
-                <version>${version.jakarta.persistence}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.security.enterprise</groupId>
-                <artifactId>jakarta.security.enterprise-api</artifactId>
-                <version>${version.jakarta.security.enterprise}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${version.jakarta.servlet.jakarta-servlet-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!-- TODO requires a Jastow upgrade to remove PageContextImpl.getVariableResolver()
-            <dependency>
-                <groupId>jakarta.servlet.jsp</groupId>
-                <artifactId>jakarta.servlet.jsp-api</artifactId>
-                <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            -->
-            <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${version.jakarta.validation.jakarta-validation-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.websocket</groupId>
-                <artifactId>jakarta.websocket-api</artifactId>
-                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.websocket</groupId>
-                <artifactId>jakarta.websocket-client-api</artifactId>
-                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
+                <groupId>jakarta.cdi</groupId>
+                <artifactId>jakarta.cdi-lang-model-api</artifactId>
+                <version>${version.jakarta.cdi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -267,9 +91,9 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+                <groupId>jakarta.json.bind</groupId>
+                <artifactId>jakarta.json.bind-api</artifactId>
+                <version>${version.jakarta.json.bind.api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -279,165 +103,18 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro</artifactId>
-                <version>${version.org.apache.avro}</version>
+                <groupId>org.eclipse.yasson</groupId>
+                <artifactId>yasson</artifactId>
+                <version>${version.org.eclipse.yasson}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.faces</artifactId>
-                <version>${version.org.glassfish.jakarta.faces}</version>
-                <exclusions>
+                    <!-- This seems to require an explicit exclusion for yasson 1.0.4 -->
                     <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
-                <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-atom-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-cdi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-client-api</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-core</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-core-spi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxb-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jsapi</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-json-binding-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-json-p-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-multipart-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-rxjava2</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy.spring</groupId>
-                <artifactId>resteasy-spring</artifactId>
-                <version>${version.org.jboss.resteasy.spring}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-validator-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-tracing-api</artifactId>
-                <version>${version.org.jboss.resteasy.extensions}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
+                        <groupId>org.glassfish</groupId>
+                        <artifactId>jakarta.json</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -554,11 +231,24 @@
                 </exclusions>
             </dependency>
 
+            <!--
+                Inherit the shared deps. Place these last so any overrides above take precedence.
+             -->
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-preview-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-common-ee-dependency-management</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

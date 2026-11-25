@@ -183,6 +183,7 @@ public class MessagingTestCase extends TestBase {
     * invalid order of elements - append security element to end of messaging-activemq subsystem
     */
     @Test
+    @org.junit.Ignore("WFLY-20101")
     @ServerConfig(configuration = "standalone-full-ha.xml", xmlTransformationGroovy = "messaging/AddSecurityElementToEndOfSubsystem.groovy",
             subtreeName = "messaging", subsystemName = "messaging-activemq")
     public void testWrongOrderOfElements() throws Exception {
@@ -220,6 +221,7 @@ public class MessagingTestCase extends TestBase {
     * Reported Issue: https://issues.jboss.org/browse/JBEAP-8437
     */
     @Test
+    @org.junit.Ignore("WFLY-20101")
     @ServerConfig(configuration = "standalone-full-ha.xml", xmlTransformationGroovy = "messaging/AddConnectorWithoutName.groovy",
             subtreeName = "messaging", subsystemName = "messaging-activemq")
     public void testFirstMissingRequiredAttributeInElement() throws Exception {

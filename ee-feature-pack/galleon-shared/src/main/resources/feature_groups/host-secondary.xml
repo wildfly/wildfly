@@ -13,7 +13,7 @@
         <param name="host" value="secondary"/>
         <feature spec="host.jvm">
             <param name="jvm" value="default"/>
-            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+            <param name="jvm-options" value="[&quot;-server&quot;]"/>
         </feature>
     </feature>
 </feature-group-spec>

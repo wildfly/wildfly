@@ -24,6 +24,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  * Generic {@link SubsystemRegistration} decorator.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class DecoratingSubsystemRegistration<R extends ManagementResourceRegistration> implements SubsystemRegistration {
 
     private final SubsystemRegistration registration;

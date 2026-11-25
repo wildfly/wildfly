@@ -48,7 +48,7 @@ class DirConfigSourceRegistrationService implements Service {
     }
 
     static void install(OperationContext context, String name, String path, String relativeTo, int ordinal, Registry registry) {
-        ServiceBuilder<?> builder = context.getServiceTarget()
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE.append(name));
         Supplier<PathManager> pathManager = builder.requires(context.getCapabilityServiceName("org.wildfly.management.path-manager", PathManager.class));
 

@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:modcluster:6.0">
+    <proxy name="default"
+           advertise="${modcluster.advertise:true}"
+           advertise-security-key="${modcluster.advertise-security-key:mysecurekey!}"
+           advertise-socket="modcluster"
+           auto-enable-contexts="${modcluster.auto-enable-contexts:true}"
+           balancer="${modcluster.balancer:mybalancer}"
+           excluded-contexts="${modcluster.excluded-contexts:contextA,contextB,contextC}"
+           flush-packets="${modcluster.flush-packets:true}"
+           flush-wait="${modcluster.flush-wait:10}"
+           listener="ajp"
+           load-balancing-group="${modcluster.load-balancing-group:mylbgroup}"
+           max-attempts="${modcluster.max-attempts:10}"
+           node-timeout="${modcluster.node-timeout:123}"
+           ping="${modcluster.ping:10}"
+           proxies="proxy1 proxy2"
+           proxy-url="${modcluster.proxy-url:/}"
+           session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
+           smax="${modcluster.smax:2}"
+           socket-timeout="${modcluster.socket-timeout:20}"
+           status-interval="${modcluster.status-interval:99}"
+           sticky-session="${modcluster.sticky-session:true}"
+           sticky-session-force="${modcluster.sticky-session-force:false}"
+           sticky-session-remove="${modcluster.sticky-session-remove:false}"
+           stop-context-timeout="${modcluster.stop-context-timeout:10}"
+           ttl="${modcluster.ttl:1}"
+           worker-timeout="${modcluster.worker-timeout:2}">
+        <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}"
+                               history="${modcluster.dynamic-load-provider.history:10}"
+                               initial-load="${modcluster.dynamic-load-provider.initial-load:50}">
+            <load-metric type="sessions"
+                         capacity="${modcluster.load-metric.capacity:1000.1}"
+                         weight="${modcluster.load-metric.weight:2}"/>
+            <load-metric type="send-traffic"
+                         capacity="512.2"
+                         weight="3"/>
+            <load-metric type="receive-traffic"
+                         capacity="1024.1"/>
+            <load-metric type="requests"
+                         weight="4"/>
+            <load-metric type="cpu"/>
+            <load-metric type="heap"/>
+            <load-metric type="busyness">
+                <property name="name1"
+                          value="${property1:value1}"/>
+                <property name="name2"
+                          value="${property2:value2}"/>
+            </load-metric>
+            <custom-load-metric class="${modcluster.custom-load-metric.class:SomeFakeLoadMetricClass1}"
+                                module="${modcluster.custom-load-metric.module:org.wildfly.extension.mod_cluster}"
+                                capacity="${modcluster.custom-load-metric.capacity:1.1}"
+                                weight="${modcluster.custom-load-metric.weight:5}"
+            />
+            <custom-load-metric class="SomeFakeLoadMetricClass2"
+                                capacity="${modcluster.custom-load-metric.capacity:1.1}"
+                                module="my.custom.package"
+            />
+            <custom-load-metric class="SomeFakeLoadMetricClass3"
+                                weight="${modcluster.custom-load-metric.weight:5}"/>
+        </dynamic-load-provider>
+    </proxy>
+    <proxy name="with-floating-decay-load-provider"
+           listener="default">
+        <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay.floating:0.5}">
+            <load-metric type="sessions"/>
+        </dynamic-load-provider>
+    </proxy>
+</subsystem>

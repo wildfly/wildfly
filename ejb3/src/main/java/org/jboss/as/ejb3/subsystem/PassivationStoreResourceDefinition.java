@@ -9,9 +9,7 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -25,11 +23,11 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReference;
 
 /**
- * Definies a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
+ * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
  * The CacheFactory produces bean caches which are distributable and have passivation enabled. Used to support CacheFactoryResourceDefinition.
  *
  * @author Paul Ferraro
@@ -38,10 +36,6 @@ import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequireme
 public class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PASSIVATION_STORE_CAPABILITY_NAME = "org.wildfly.ejb.passivation-store";
-
-    // use these to avoid pulling in ISPN SPI module
-    protected static final String INFINISPAN_DEFAULT_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.default-cache-configuration";
-    protected static final String INFINISPAN_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.cache-configuration";
 
     static final RuntimeCapability<Void> PASSIVATION_STORE_CAPABILITY = RuntimeCapability.Builder.of(PASSIVATION_STORE_CAPABILITY_NAME, true)
             .setServiceType(Void.class)
@@ -62,7 +56,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             // a CapabilityReference to a UnaryRequirement
-            .setCapabilityReference(new CapabilityReference(()->PASSIVATION_STORE_CAPABILITY, InfinispanDefaultCacheRequirement.CONFIGURATION))
+            .setCapabilityReference(CapabilityReference.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
             .build();
 
     static final SimpleAttributeDefinition BEAN_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
@@ -71,12 +65,12 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             // a CapabilityReference to a BinaryRequirement (including a parent attribute)
-            .setCapabilityReference(new CapabilityReference(()->PASSIVATION_STORE_CAPABILITY, InfinispanCacheRequirement.CONFIGURATION, ()->CACHE_CONTAINER))
+            .setCapabilityReference(CapabilityReference.builder(PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE };
 
-    static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
+    static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd();
 
     PassivationStoreResourceDefinition() {
         super(new Parameters(PathElement.pathElement(EJB3SubsystemModel.PASSIVATION_STORE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.PASSIVATION_STORE))
@@ -89,9 +83,8 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition definition: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(definition, null, writeHandler);
+            resourceRegistration.registerReadWriteAttribute(definition, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 }

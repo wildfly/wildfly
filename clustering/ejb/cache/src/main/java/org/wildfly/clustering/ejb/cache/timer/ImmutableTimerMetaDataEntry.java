@@ -16,6 +16,7 @@ import org.wildfly.clustering.ejb.timer.TimerType;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public interface ImmutableTimerMetaDataEntry<C> extends TimerConfiguration, UnaryOperator<Instant> {
     /**

@@ -19,35 +19,35 @@
 -->
   <files>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${latest.server.output.dir}/bin/product.conf</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/bin/product.conf</location>
+      <location>target/${latest.server.output.dir}/bin/product.conf</location>
       <contains>slot=${full.dist.product.slot}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
+      <location>target/${latest.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
+      <location>target/${latest.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
       <contains>org.wildfly:wildfly-feature-pack-product-conf</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>
+      <location>target/${latest.server.output.dir}/jboss-modules.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
+      <location>target/${latest.server.output.dir}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <location>target/${latest.server.output.dir}/.galleon</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
+      <location>target/${latest.server.output.dir}/.galleon/history</location>
       <exists>false</exists>
     </file>
   </files>

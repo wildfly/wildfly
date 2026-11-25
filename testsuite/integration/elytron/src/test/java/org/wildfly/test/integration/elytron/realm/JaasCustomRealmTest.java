@@ -30,6 +30,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.wildfly.test.integration.elytron.util.ServerReloadUtil;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -77,24 +78,26 @@ public class JaasCustomRealmTest {
                 .addClass(TestCallbackHandler.class);
         File jarFile = new File(tmpDir.getRoot(), "testJaas.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
-        CLIWrapper cli = new CLIWrapper(true);
-        // ignore error on windows where the testJaas.jar might exist from previous run
-        cli.sendLine("module add --name=jaasLoginModule "
-                + " --resources=" + jarFile.getAbsolutePath()
-                + " --dependencies=org.wildfly.security.elytron", true);
-        cli.sendLine("/subsystem=elytron/custom-realm=customJaasRealm:add(module=org.wildfly.extension.elytron.jaas-realm ," +
-                "class-name=org.wildfly.extension.elytron.JaasCustomSecurityRealmWrapper," +
-                "configuration={entry=Entry1," +
-                "module=jaasLoginModule," +
-                "callback-handler=org.wildfly.test.integration.elytron.realm.TestCallbackHandler," +
-                "path=" + JaasCustomRealmTest.class.getResource("jaas-login.config").getFile() + "})");
-        cli.sendLine("/subsystem=elytron/security-domain=JAASSecurityDomain:add(" +
-                "realms=[{realm=customJaasRealm}]," +
-                "default-realm=customJaasRealm,permission-mapper=default-permission-mapper)");
-        cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global," +
-                "security-domain=JAASSecurityDomain,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=customJaasRealm}]}])");
-        cli.sendLine("/subsystem=undertow/application-security-domain=JAASSecurityDomain:add(http-authentication-factory=example-fs-http-auth)");
-        cli.sendLine("reload");
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            // ignore error on windows where the testJaas.jar might exist from previous run
+            cli.sendLine("module add --name=jaasLoginModule "
+                    + " --resources=" + jarFile.getAbsolutePath()
+                    + " --dependencies=org.wildfly.security.elytron", true);
+            cli.sendLine("/subsystem=elytron/custom-realm=customJaasRealm:add(module=org.wildfly.extension.elytron.jaas-realm ," +
+                    "class-name=org.wildfly.extension.elytron.JaasCustomSecurityRealmWrapper," +
+                    "configuration={entry=Entry1," +
+                    "module=jaasLoginModule," +
+                    "callback-handler=org.wildfly.test.integration.elytron.realm.TestCallbackHandler," +
+                    "path=" + JaasCustomRealmTest.class.getResource("jaas-login.config").getFile() + "})");
+            cli.sendLine("/subsystem=elytron/security-domain=JAASSecurityDomain:add(" +
+                    "realms=[{realm=customJaasRealm}]," +
+                    "default-realm=customJaasRealm,permission-mapper=default-permission-mapper)");
+            cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global," +
+                    "security-domain=JAASSecurityDomain,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=customJaasRealm}]}])");
+            cli.sendLine("/subsystem=undertow/application-security-domain=JAASSecurityDomain:add(http-authentication-factory=example-fs-http-auth)");
+        } finally {
+            ServerReloadUtil.executeReloadAndWaitForCompletion();
+        }
     }
 
     @Test
@@ -142,19 +145,21 @@ public class JaasCustomRealmTest {
     @AfterClass
     public static void cleanUp() throws Exception {
         if (System.getProperty("ts.layers") == null) {
-            CLIWrapper cli = new CLIWrapper(true);
-            cli.sendLine("/subsystem=undertow/application-security-domain=JAASSecurityDomain:remove");
-            cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
-            cli.sendLine("/subsystem=elytron/security-domain=JAASSecurityDomain:remove");
-            cli.sendLine("/subsystem=elytron/custom-realm=customJaasRealm:remove");
-            try {
-                cli.sendLine("module remove --name=" + "jaasLoginModule");
-            } catch (AssertionError e) {
-                // ignore failure on Windows, cannot remove module on running server due to file locks
-                if (!Util.isWindows())
-                    throw e;
+            try (CLIWrapper cli = new CLIWrapper(true)) {
+                cli.sendLine("/subsystem=undertow/application-security-domain=JAASSecurityDomain:remove");
+                cli.sendLine("/subsystem=elytron/http-authentication-factory=example-fs-http-auth:remove");
+                cli.sendLine("/subsystem=elytron/security-domain=JAASSecurityDomain:remove");
+                cli.sendLine("/subsystem=elytron/custom-realm=customJaasRealm:remove");
+                try {
+                    cli.sendLine("module remove --name=" + "jaasLoginModule");
+                } catch (AssertionError e) {
+                    // ignore failure on Windows, cannot remove module on running server due to file locks
+                    if (!Util.isWindows())
+                        throw e;
+                }
+            } finally {
+                ServerReloadUtil.executeReloadAndWaitForCompletion();
             }
-            cli.sendLine("reload");
         }
     }
 }

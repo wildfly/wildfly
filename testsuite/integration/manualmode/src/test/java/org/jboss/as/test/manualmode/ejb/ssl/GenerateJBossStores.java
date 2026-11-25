@@ -36,7 +36,8 @@ public class GenerateJBossStores {
     private static final File CLIENT_KEY_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, CLIENT_KEYSTORE_FILENAME);
     private static final File TRUST_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, CLIENT_TRUSTSTORE_FILENAME);
 
-    private static final String SHA_1_RSA = "SHA1withRSA";
+    private static final String SHA_256_RSA = "SHA256withRSA";
+    private static final int KEY_SIZE = 2048;
 
     private static KeyStore loadKeyStore() throws Exception {
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -48,8 +49,8 @@ public class GenerateJBossStores {
         return SelfSignedX509CertificateAndSigningKey.builder()
                 .setDn(new X500Principal(DN))
                 .setKeyAlgorithmName("RSA")
-                .setSignatureAlgorithmName(SHA_1_RSA)
-                .setKeySize(1024)
+                .setSignatureAlgorithmName(SHA_256_RSA)
+                .setKeySize(KEY_SIZE)
                 .build();
     }
 

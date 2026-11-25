@@ -6,6 +6,7 @@ package org.jboss.as.ee.subsystem;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 
@@ -26,11 +27,11 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-ee_6_0.xsd";
+        return "schema/jboss-as-ee_7_0.xsd";
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(EeCapabilities.PATH_MANAGER_CAPABILITY);
+        return AdditionalInitialization.withCapabilities(PathManager.SERVICE_DESCRIPTOR.getName());
     }
 }

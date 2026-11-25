@@ -1,0 +1,93 @@
+== WildFly Observability Options
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+WildFly offers a number of observability options, from the longstanding WildFly Metrics to
+the newer Micrometer and OpenTelemetry solutions. Choosing the right option for a given
+solution is dependent, of course, on the particular needs of that environment. This section
+aims to provide a top-level overview of those options to assist in the selection of a
+solution that best fits your needs.
+
+Observability is often said to have three pillars: metrics, traces, and logs. The following
+table describes how each of WildFly's offerings covers each of those.
+
+[cols="2,1,1,1,3"]
+|===
+|Subsystem
+|Metrics
+|Traces
+|Logs
+|Notes
+
+|<<MicroProfile_Metrics_SmallRye,WildFly Metrics>>
+| icon:check[]
+| icon:times[]
+| icon:times[]
+|
+
+|<<Micrometer_Metrics,Micrometer>>
+| icon:check[]
+| icon:times[]
+| icon:times[]
+| Trace support exists but is not provided by WildFly
+
+|<<OpenTelemetry,OpenTelemetry>>
+| icon:check[]
+| icon:check[]
+| icon:check[]
+|
+|===
+
+Metrics support is the most robust of the three pillars, but capabilities vary across the
+three offerings. The following table breaks down the features of each metrics subsystem.
+
+[cols="2,1,1,1"]
+|===
+|
+|WildFly Metrics
+|Micrometer
+|OpenTelemetry
+
+|JVM Metrics
+|icon:check[]
+|icon:check[]
+|icon:times[]
+
+|Server Metrics
+|icon:check[]
+|icon:check[]
+|icon:times[]
+
+|Deployment Metrics
+|icon:times[]
+|icon:check[]
+|icon:check[]
+
+|OTLP Export
+|icon:times[]
+|icon:check[]
+|icon:check[]
+
+|Prometheus Export
+|icon:check[]
+|icon:check[]
+|icon:times[]
+
+|MicroProfile Support
+|icon:times[]
+|icon:times[]
+|icon:check[]
+|===
+
+[NOTE]
+====
+If a particular subsystem lacks some capabilities you find important, please see the
+link:Hacking_On_WildFly{outfilesuffix}[Hacking on WildFly] guide for information on how to
+get involved.
+====

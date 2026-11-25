@@ -14,10 +14,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -48,6 +48,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -58,6 +59,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientConnection;
@@ -81,6 +83,7 @@ import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.api.Authentication;
+import org.xnio.IoUtils;
 
 /**
  * Test case pertaining to remote outbound connection authentication between two server instances using remote-outbound-connection
@@ -163,10 +166,14 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String ROLES_PATH = new File(ElytronRemoteOutboundConnectionTestCase.class.getResource("roles.properties").
             getFile()).getAbsolutePath();
 
-    private static final int BARE_REMOTING_PORT = 54447;
+    private static final int BARE_REMOTING_PORT = 19447;
     private static final String BARE_REMOTING_PROTOCOL = "remote";
-    private static final int SSL_REMOTING_PORT = 54448;
+    private static final int SSL_REMOTING_PORT = 19448;
     private static final String SSL_REMOTING_PROTOCOL = "remote";
+
+    private static final int SSL_REMOTING_TLS_PORT = 19449;
+    private static final String SSL_REMOTING_TLS_PROTOCOL = "remote+tls";
+
     private static final int HTTP_REMOTING_PORT = 8080;
     private static final String HTTP_REMOTING_PROTOCOL = "http-remoting";
     private static final int HTTPS_REMOTING_PORT = 8443;
@@ -175,11 +182,22 @@ public class ElytronRemoteOutboundConnectionTestCase {
     @ArquillianResource
     private static ContainerController containerController;
 
-    private static ModelControllerClient serverSideMCC;
-    private static ModelControllerClient clientSideMCC;
-
     @ArquillianResource
     private Deployer deployer;
+
+    @ArquillianResource
+    @TargetsContainer(INBOUND_CONNECTION_SERVER)
+    private ManagementClient serverSide;
+
+    @ArquillianResource
+    @TargetsContainer(OUTBOUND_CONNECTION_SERVER)
+    private ManagementClient clientSide;
+
+    private AutoCloseable restoreNode1Task;
+    private AutoCloseable restoreNode2Task;
+
+    private ModelControllerClient serverSideMCC;
+    private ModelControllerClient clientSideMCC;
 
     @Deployment(name = EJB_SERVER_DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(INBOUND_CONNECTION_SERVER)
@@ -219,6 +237,9 @@ public class ElytronRemoteOutboundConnectionTestCase {
             containerController.start(OUTBOUND_CONNECTION_SERVER);
         }
 
+        restoreNode1Task = ServerSnapshot.takeSnapshot(serverSide);
+        restoreNode2Task = ServerSnapshot.takeSnapshot(clientSide);
+
         serverSideMCC = getInboundConnectionServerMCC();
         clientSideMCC = getOutboundConnectionServerMCC();
     }
@@ -228,100 +249,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
         deployer.undeploy(EJB_CLIENT_DEPLOYMENT);
         deployer.undeploy(EJB_SERVER_DEPLOYMENT);
 
-        //==================================
-        // Client-side server tear down
-        //==================================
-        boolean clientReloadRequired = false;
-        ModelNode result;
-        try {
-            result = clientSideMCC.execute(Util.getReadAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (result != null && result.hasDefined(RESULT)) {
-            applyUpdate(clientSideMCC, Util.getUndefineAttributeOperation(PathAddress.pathAddress(SUBSYSTEM, "elytron"),
-                    "default-authentication-context"));
-            clientReloadRequired = true;
-        }
+        restoreNode1Task.close();
+        restoreNode2Task.close();
 
-        applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        executeBlockingReloadClientServer(clientSideMCC);
-
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, addDynamicClientSSLContext(DYNAMIC_CLIENT_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerAuthenticationContext(DYNAMIC_CLIENT_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(DEFAULT_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(DEFAULT_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(DEFAULT_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationContextAddress(OVERRIDING_AUTH_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getServerSSLContextAddress(OVERRIDING_SERVER_SSL_CONTEXT), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getTrustManagerAddress(OVERRIDING_TRUST_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_TRUST_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyManagerAddress(OVERRIDING_KEY_MANAGER), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getKeyStoreAddress(OVERRIDING_KEY_STORE), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getAuthenticationConfigurationAddress(OVERRIDING_AUTH_CONFIG), !clientReloadRequired);
-        removeIfExists(clientSideMCC, getOutboundSocketBindingAddress(OUTBOUND_SOCKET_BINDING), !clientReloadRequired);
-        if (clientReloadRequired) {
-            executeBlockingReloadClientServer(clientSideMCC);
-        }
-
-        //==================================
-        // Server-side server tear down
-        //==================================
-        if (!executeReadAttributeOpReturnResult(serverSideMCC, getHttpConnectorAddress("http-remoting-connector"), SASL_AUTHENTICATION_FACTORY)
-                .equals("application-sasl-authentication")) {
-            applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getHttpConnectorAddress("http-remoting-connector"),
-                    SASL_AUTHENTICATION_FACTORY, "application-sasl-authentication"));
-        }
-        Operations.CompositeOperationBuilder compositeBuilder = Operations.CompositeOperationBuilder.create();
-
-        String defaultHttpsListenerSSLContext = executeReadAttributeOpReturnResult(serverSideMCC, getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-        if (!(defaultHttpsListenerSSLContext == null) && !defaultHttpsListenerSSLContext.isEmpty()) {
-            ModelNode update = Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT);
-            update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            compositeBuilder.addStep(update);
-        }
-
-        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), "ssl-context", "applicationSSC");
-        update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        compositeBuilder.addStep(update);
-
-        applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
-
-        applyUpdate(serverSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), false);
-        removeIfExists(serverSideMCC, getTrustManagerAddress(SERVER_TRUST_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_TRUST_STORE));
-        removeIfExists(serverSideMCC, getKeyManagerAddress(SERVER_KEY_MANAGER));
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_KEY_STORE));
-        removeIfExists(serverSideMCC, getSocketBindingAddress(INBOUND_SOCKET_BINDING));
-        removeIfExists(serverSideMCC, getEjbApplicationSecurityDomainAddress(APPLICATION_SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY));
-        removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
-        removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
-        removeIfExists(serverSideMCC, getElytronAggregateRoleDecoderAddress(AGGREGATE_ROLE_DECODER));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_1));
-        removeIfExists(serverSideMCC, getElytronSourceAddressRoleDecoderAddress(DECODER_2));
-        removeIfExists(serverSideMCC, getElytronPermissionMapperAddress(IP_PERMISSION_MAPPER));
-
-        //noinspection deprecation
-        ServerReload.reloadIfRequired(serverSideMCC); // this use is ok; the server is on the standard address/port
-
-        try {
-            clientSideMCC.close();
-            serverSideMCC.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        IoUtils.safeClose(serverSideMCC);
+        IoUtils.safeClose(clientSideMCC);
     }
 
     @AfterClass
@@ -367,7 +299,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -396,7 +328,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -428,7 +360,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -456,7 +388,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 OVERRIDING_USERNAME, OVERRIDING_PASSWORD));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -490,7 +422,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -524,7 +456,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -566,7 +498,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -599,11 +531,41 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddServerSSLContextOp(OVERRIDING_SERVER_SSL_CONTEXT, OVERRIDING_KEY_MANAGER, OVERRIDING_TRUST_MANAGER));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
         Assert.assertEquals(OVERRIDING_USERNAME, callIntermediateWhoAmI());
+    }
+
+    /**
+     * The test verifies whether remote+tls protocol works correctly for outbound SSL invocation
+     */
+    @Test
+    public void testConnectionContextWithSSLRemoteTls() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundTLSRemoting(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                SSL_REMOTING_TLS_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(OVERRIDING_AUTH_CONFIG, SSL_REMOTING_TLS_PROTOCOL, PROPERTIES_REALM,
+                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(),SSL_REMOTING_TLS_PORT));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyManagerOp(OVERRIDING_KEY_MANAGER, OVERRIDING_KEY_STORE, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddTrustManagerOp(OVERRIDING_TRUST_MANAGER, OVERRIDING_TRUST_STORE));
+        applyUpdate(clientSideMCC, getAddServerSSLContextOp(OVERRIDING_SERVER_SSL_CONTEXT, OVERRIDING_KEY_MANAGER, OVERRIDING_TRUST_MANAGER));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        Assert.assertEquals(OVERRIDING_USERNAME, callIntermediateWhoAmI(false));
     }
 
     /**
@@ -628,7 +590,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -657,7 +619,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -689,7 +651,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -717,7 +679,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 OVERRIDING_USERNAME, OVERRIDING_PASSWORD));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -751,7 +713,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -781,7 +743,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DYNAMIC_CLIENT_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -815,7 +777,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -857,7 +819,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -890,7 +852,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddServerSSLContextOp(OVERRIDING_SERVER_SSL_CONTEXT, OVERRIDING_KEY_MANAGER, OVERRIDING_TRUST_MANAGER));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -918,7 +880,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -946,7 +908,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -978,7 +940,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -1013,7 +975,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -1042,7 +1004,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
-        executeBlockingReloadClientServer(clientSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(clientSide);
 
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
@@ -1198,10 +1160,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName,
-                                               String serverSSLContextName) {
+                                               String serverSSLContextName, String protocol) {
         ModelNode addConnectorOp = Util.createAddOperation(getConnectorAddress(connectorName));
         addConnectorOp.get(SOCKET_BINDING).set(socketBindingName);
         addConnectorOp.get(SASL_AUTHENTICATION_FACTORY).set(factoryName);
+        addConnectorOp.get(PROTOCOL).set(protocol);
         if (serverSSLContextName != null && !serverSSLContextName.isEmpty()) {
             addConnectorOp.get(SSL_CONTEXT).set(serverSSLContextName);
         }
@@ -1212,8 +1175,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
             .build().getOperation();
     }
 
-    private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName) {
-        return getAddConnectorOp(connectorName, socketBindingName, factoryName, "");
+    private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName, String protocol) {
+        return getAddConnectorOp(connectorName, socketBindingName, factoryName, "", protocol);
     }
 
     private static ModelNode getEjbConnectorOp(String operationName, String connectorName) {
@@ -1430,17 +1393,17 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 .append("https-listener", "https");
     }
 
-    private static void configureServerSideForInboundBareRemoting(ModelControllerClient serverSideMCC) {
+    private void configureServerSideForInboundBareRemoting(ModelControllerClient serverSideMCC) {
         applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
         applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
-        executeBlockingReloadServerSide(serverSideMCC);
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, BARE_REMOTING_PROTOCOL));
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
     }
 
-    private static void configureServerSideForInboundSSLRemoting(ModelControllerClient serverSideMCC) {
+    private void configureServerSideForInboundSSLRemoting(ModelControllerClient serverSideMCC) {
         applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
         applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
@@ -1451,21 +1414,36 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
         applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT));
-        executeBlockingReloadServerSide(serverSideMCC);
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT, BARE_REMOTING_PROTOCOL));
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
     }
 
-    private static void configureServerSideForInboundHttpRemoting(ModelControllerClient serverSideMCC) {
+    private void configureServerSideForInboundTLSRemoting(ModelControllerClient serverSideMCC) {
+        applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
+        applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
+        applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
+        applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
+        applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, SSL_REMOTING_TLS_PORT));
+        applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_KEY_STORE, SERVER_KEY_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddKeyManagerOp(SERVER_KEY_MANAGER, SERVER_KEY_STORE, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
+        applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT, SSL_REMOTING_TLS_PROTOCOL));
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
+    }
+
+    private void configureServerSideForInboundHttpRemoting(ModelControllerClient serverSideMCC) {
         applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
         applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getHttpConnectorAddress("http-remoting-connector"),
                 SASL_AUTHENTICATION_FACTORY, AUTHENTICATION_FACTORY));
-        executeBlockingReloadServerSide(serverSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
     }
 
-    private static void configureServerSideForInboundHttpsRemoting(ModelControllerClient serverSideMCC) {
+    private void configureServerSideForInboundHttpsRemoting(ModelControllerClient serverSideMCC) {
         applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
         applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
@@ -1482,14 +1460,14 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 .build().getOperation()
         );
         applyUpdate(serverSideMCC, getAddHttpConnectorOp(CONNECTOR, "https", AUTHENTICATION_FACTORY));
-        executeBlockingReloadServerSide(serverSideMCC);
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
     }
 
-    private static void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC) {
+    private void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC) {
         configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(serverSideMCC, getIPAddress());
     }
 
-    private static void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC, String ipAddress) {
+    private void configureServerSideForInboundBareRemotingWithSourceAddressRoleDecoder(ModelControllerClient serverSideMCC, String ipAddress) {
         applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
         applyUpdate(serverSideMCC, getAddElytronSourceAddressRoleDecoder(DECODER_1, ipAddress, "admin"));
         applyUpdate(serverSideMCC, getAddElytronSourceAddressRoleDecoder(DECODER_2, "99.99.99.99", "employee"));
@@ -1499,8 +1477,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
-        executeBlockingReloadServerSide(serverSideMCC);
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, BARE_REMOTING_PROTOCOL));
+        ServerReload.executeReloadAndWaitForCompletion(serverSide);
     }
 
     private static ModelControllerClient getInboundConnectionServerMCC() {
@@ -1538,63 +1516,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
         }
     }
 
-    private static String executeReadAttributeOpReturnResult(final ModelControllerClient client, PathAddress address,
-                                                           String attributeName) {
-        ModelNode op = Util.getReadAttributeOperation(address, attributeName);
-        ModelNode result;
-        try {
-            result = client.execute(new OperationBuilder(op).build());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            log.trace("Operation result:\n" + result.toString());
-            return result.get("result").asString();
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.toString());
-        } else {
-            throw new RuntimeException("Operation not successful, outcome:\n" + result.get("outcome"));
-        }
-    }
-
     private static void applyUpdate(final ModelControllerClient client, ModelNode update) {
         applyUpdate(client, update, false);
-    }
-
-    private static void executeBlockingReloadServerSide(final ModelControllerClient serverSideMCC) {
-        String state;
-        try {
-            state = ServerReload.getContainerRunningState(serverSideMCC);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.trace("Executing reload on client side server with container state: [ " + state + " ]");
-        ServerReload.executeReloadAndWaitForCompletion(serverSideMCC, ServerReload.TIMEOUT, false,
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
-        try {
-            state = ServerReload.getContainerRunningState(serverSideMCC);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.trace("Container state after reload on client side server: [ " + state + " ]");
-    }
-
-    private static void executeBlockingReloadClientServer(final ModelControllerClient clientSideMCC) {
-        String state;
-        try {
-            state = ServerReload.getContainerRunningState(clientSideMCC);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.trace("Executing reload on client side server with container state: [ " + state + " ]");
-        ServerReload.executeReloadAndWaitForCompletion(clientSideMCC, ServerReload.TIMEOUT, false,
-                TestSuiteEnvironment.getServerAddressNode1(), 10090);
-        try {
-            state = ServerReload.getContainerRunningState(clientSideMCC);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        log.trace("Container state after reload on client side server: [ " + state + " ]");
     }
 
     private String callIntermediateWhoAmI() {

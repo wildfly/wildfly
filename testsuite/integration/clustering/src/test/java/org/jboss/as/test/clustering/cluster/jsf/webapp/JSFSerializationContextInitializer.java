@@ -6,12 +6,12 @@
 package org.jboss.as.test.clustering.cluster.jsf.webapp;
 
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
+import org.infinispan.protostream.annotations.ProtoSchema;
 
 /**
  * @author Paul Ferraro
  */
-@AutoProtoSchemaBuilder(includeClasses = { Game.class }, service = false)
+@ProtoSchema(includeClasses = { Game.class }, service = false)
 public interface JSFSerializationContextInitializer extends SerializationContextInitializer {
 
 }

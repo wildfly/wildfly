@@ -43,11 +43,12 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = { ALIASES, PASSIVATION_STORE };
-    private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd(ATTRIBUTES);
+    private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd();
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
     LegacyCacheFactoryResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EJB3SubsystemModel.CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE))
+                .setCapabilities(StatefulSessionBeanCacheProviderResourceDefinition.CAPABILITY)
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(REMOVE_HANDLER)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
@@ -56,9 +57,8 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
+            resourceRegistration.registerReadWriteAttribute(attribute,  null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 }

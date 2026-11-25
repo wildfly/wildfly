@@ -14,7 +14,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,8 +34,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -51,6 +61,21 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.slf4j</groupId>
+            <artifactId>slf4j-jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -69,7 +94,6 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
                 <configuration>
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
                 </configuration>
@@ -91,9 +115,9 @@
                             </galleon-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                    <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.feature.pack.version}</version>
                                     <excluded-packages>
                                         <name>product.conf</name>
                                         <name>docs</name>
@@ -109,6 +133,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>${surefire.system.args} -Djava.util.logging.manager=org.jboss.logmanager.LogManager</argLine>
                     <failIfNoTests>false</failIfNoTests>
                     <reuseForks>true</reuseForks>
 
@@ -126,7 +151,6 @@
     </build>
 
     <profiles>
-
         <!-- Test against WildFly Preview dist -->
         <profile>
             <id>preview.profile</id>
@@ -140,7 +164,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>

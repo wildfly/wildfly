@@ -45,7 +45,7 @@ web applications in web.xml:
     <role-name>friend</role-name>
   </auth-constraint>
 </security-constraint>
- 
+
 <security-role>
   <role-name>friend</role-name>
 </security-role>
@@ -93,7 +93,7 @@ URL wsdlURL = new File("resources/jaxws/samples/context/WEB-INF/wsdl/TestEndpoin
 QName qname = new QName("http://org.jboss.ws/jaxws/context", "TestEndpointService");
 Service service = Service.create(wsdlURL, qname);
 port = (TestEndpoint)service.getPort(TestEndpoint.class);
- 
+
 BindingProvider bp = (BindingProvider)port;
 bp.getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "kermit");
 bp.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "thefrog");

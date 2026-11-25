@@ -15,6 +15,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -22,7 +23,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
@@ -52,13 +52,16 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(null)
-            .setStability(Stability.PREVIEW)
             .build();
 
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE, ALLOWED_REQUEST_ATTRIBUTES_PATTERN);
 
     AjpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)), new AjpListenerAdd(), Map.of());
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
+                        .setDeprecationData(new DeprecationData(UndertowSubsystemModel.VERSION_15_0_0.getVersion(), true)),
+                new AjpListenerAdd(),
+                Map.of()
+        );
     }
 
     @Override

@@ -50,7 +50,7 @@ about this migration, see <<Migrate_Order_Application_from_EAP5,Order Applicatio
 === Migrate example application
 
 A step by step work through of issues, and their solutions, that might
-crop up when migrating applications to WildFly {wildflyVersion}. See the following
+crop up when migrating applications to WildFly. See the following
 https://github.com/danbev/migrate[github project] for details.
 
 [[example-applications-based-on-ee6]]
@@ -60,9 +60,8 @@ Applications in this section were designed and written specifically to
 use the features and functions of EE6.
 
 * Quickstarts: A number of quickstart applications were written to
-demonstrate Jakarta EE and a few additional technologies. They provide
+demonstrate Jakarta specifications and a few additional technologies. They provide
 small, specific, working examples that can be used as a reference for
-your own project. For more information about the quickstarts, see
-http://www.jboss.org/jdf/quickstarts/jboss-as-quickstart/guide/Introduction/[Get Started Developing Applications]
+your own project. For more information about the quickstarts, see https://docs.wildfly.org/quickstart[The WildFly Quickstarts]
 
 include::Migrate_Order_Application_from_EAP5.adoc[]

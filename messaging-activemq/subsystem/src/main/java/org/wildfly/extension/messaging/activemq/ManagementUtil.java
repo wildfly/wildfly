@@ -4,6 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.apache.activemq.artemis.utils.XmlProvider.ARTEMIS_DISABLE_XXE_PROPERTY;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.BROWSE;
 import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.CONSUME;
@@ -18,8 +19,10 @@ import static org.wildfly.extension.messaging.activemq.SecurityRoleDefinition.SE
 
 import java.util.Locale;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Helper class to report management attributes or operation results
@@ -30,6 +33,7 @@ public class ManagementUtil {
 
     private static final String SNAKE_REPLACEMENT = "$1-$2";
     private static final String CAMEL_REGEXP = "([a-z])([A-Z]+)";
+    private static final String ARTEMIS_DISCOVERY_ENABLED_PROPERTY_NAME = "artemis.discovery.enabled";
 
     public static void reportRolesAsJSON(OperationContext context, String rolesAsJSON) {
         ModelNode camelCase = ModelNode.fromJSONString(rolesAsJSON);
@@ -131,4 +135,35 @@ public class ManagementUtil {
         }
         return result.toJSONString(false);
     }
+
+    public static void configureDiscoverySystemProperty() throws OperationFailedException {
+        String existingDiscoveryEnabled = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                .getProperty(ARTEMIS_DISCOVERY_ENABLED_PROPERTY_NAME);
+        if (existingDiscoveryEnabled != null) {
+            if (!"true".equalsIgnoreCase(existingDiscoveryEnabled) && !"false".equalsIgnoreCase(existingDiscoveryEnabled)) {
+                throw MessagingLogger.ROOT_LOGGER.invalidDiscoveryEnabledPropertyValue(existingDiscoveryEnabled);
+            }
+            MessagingLogger.ROOT_LOGGER.discoveryEnabledPropertyAlreadySet(existingDiscoveryEnabled);
+        } else {
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                    .setProperty(ARTEMIS_DISCOVERY_ENABLED_PROPERTY_NAME, "true");
+            MessagingLogger.ROOT_LOGGER.settingDiscoveryEnabledProperty();
+        }
+    }
+
+    public static void configureXxeSystemProperty() throws OperationFailedException {
+        String existingXxeDisabled = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                .getProperty(ARTEMIS_DISABLE_XXE_PROPERTY);
+        if (existingXxeDisabled != null) {
+            if (!"true".equalsIgnoreCase(existingXxeDisabled) && !"false".equalsIgnoreCase(existingXxeDisabled)) {
+                throw MessagingLogger.ROOT_LOGGER.invalidXxeDisabledPropertyValue(existingXxeDisabled);
+            }
+            MessagingLogger.ROOT_LOGGER.xxeDisabledPropertyAlreadySet(existingXxeDisabled);
+        } else {
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged()
+                    .setProperty(ARTEMIS_DISABLE_XXE_PROPERTY, "true");
+            MessagingLogger.ROOT_LOGGER.settingXxeDisabledProperty();
+        }
+    }
+
 }

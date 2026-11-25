@@ -16,7 +16,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -43,18 +43,18 @@ public class ApplicationClientDeploymentService implements Service {
     private final File path;
     private final Consumer<ApplicationClientDeploymentService> consumer;
     private final Supplier<ModelControllerClientFactory> clientFactorySupplier;
-    private final Supplier<ExecutorService> executorServiceSupplier;
+    private final Supplier<Executor> executorSupplier;
     private final CountDownLatch deploymentCompleteLatch = new CountDownLatch(1);
 
 
     public ApplicationClientDeploymentService(final Consumer<ApplicationClientDeploymentService> consumer,
                                               final File path,
                                               final Supplier<ModelControllerClientFactory> clientFactorySupplier,
-                                              final Supplier<ExecutorService> executorServiceSupplier) {
+                                              final Supplier<Executor> executorSupplier) {
         this.consumer = consumer;
         this.path = path;
         this.clientFactorySupplier = clientFactorySupplier;
-        this.executorServiceSupplier = executorServiceSupplier;
+        this.executorSupplier = executorSupplier;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ApplicationClientDeploymentService implements Service {
 
         @Override
         public void run() {
-            try (LocalModelControllerClient controllerClient = clientFactorySupplier.get().createSuperUserClient(executorServiceSupplier.get())) {
+            try (LocalModelControllerClient controllerClient = clientFactorySupplier.get().createSuperUserClient(executorSupplier.get())) {
                 ModelNode result = controllerClient.execute(deploymentOp);
                 if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
                     System.exit(1);

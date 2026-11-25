@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.elytron.web.undertow.server.servlet;
 
 import "org.wildfly.security.cache.proto";
@@ -8,6 +10,6 @@ import "org.wildfly.security.cache.proto";
  * @TypeId(255)
  */
 message IdentityContainer {
-	optional	org.wildfly.security.cache.CachedIdentity	identity	 = 1;
-	optional	string	type	 = 2;
+	org.wildfly.security.cache.CachedIdentity	identity	 = 1;
+	string	type	 = 2;
 }

@@ -8,6 +8,7 @@ package org.wildfly.extension.microprofile.config.smallrye._private;
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -26,7 +27,7 @@ public interface MicroProfileConfigLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    MicroProfileConfigLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileConfigLogger.class,"org.wildfly.extension.microprofile.config.smallrye");
+    MicroProfileConfigLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileConfigLogger.class,"org.wildfly.extension.microprofile.config.smallrye");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

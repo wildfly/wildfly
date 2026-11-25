@@ -23,22 +23,7 @@ enum Attribute {
     SERVICES(GlobalModulesDefinition.SERVICES),
     META_INF(GlobalModulesDefinition.META_INF),
 
-    // from ee concurrent
-    JNDI_NAME(ContextServiceResourceDefinition.JNDI_NAME),
-    USE_TRANSACTION_SETUP_PROVIDER(ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER),
-    CONTEXT_SERVICE(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE),
-    PRIORITY(ManagedThreadFactoryResourceDefinition.PRIORITY),
-    THREAD_FACTORY(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY),
-    THREAD_PRIORITY(ManagedExecutorServiceResourceDefinition.THREAD_PRIORITY),
-    HUNG_TASK_TERMINATION_PERIOD(ManagedExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD),
-    HUNG_TASK_THRESHOLD(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD),
-    LONG_RUNNING_TASKS(ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS),
-    CORE_THREADS(ManagedExecutorServiceResourceDefinition.CORE_THREADS),
-    MAX_THREADS(ManagedExecutorServiceResourceDefinition.MAX_THREADS),
-    KEEPALIVE_TIME(ManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME),
-    QUEUE_LENGTH(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH),
-    REJECT_POLICY(ManagedExecutorServiceResourceDefinition.REJECT_POLICY),
-
+    CONTEXT_SERVICE(DefaultBindingsResourceDefinition.CONTEXT_SERVICE),
     DATASOURCE(DefaultBindingsResourceDefinition.DATASOURCE),
     JMS_CONNECTION_FACTORY(DefaultBindingsResourceDefinition.JMS_CONNECTION_FACTORY),
     MANAGED_EXECUTOR_SERVICE(DefaultBindingsResourceDefinition.MANAGED_EXECUTOR_SERVICE),

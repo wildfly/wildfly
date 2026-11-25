@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<connector xmlns="http://java.sun.com/xml/ns/j2ee" version="1.5">
+  <display-name>No-Op Resource Adapter</display-name>
+  <vendor-name>WildFly</vendor-name>
+  <eis-type>Test RA</eis-type>
+  <resourceadapter-version>1.0</resourceadapter-version>
+  <resourceadapter>
+    <resourceadapter-class>org.jboss.as.test.integration.sar.servicexml.NoOpResourceAdapter</resourceadapter-class>
+  </resourceadapter>
+</connector>

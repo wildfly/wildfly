@@ -4,10 +4,11 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
+import javax.naming.NamingException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateful;
-import javax.naming.NamingException;
 
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 

@@ -24,7 +24,7 @@ public class ConfigSourceProviderRegistrationService implements Service {
     }
 
     static void install(OperationContext context, String name, ConfigSourceProvider configSourceProvider, Registry<ConfigSourceProvider> registry) {
-        context.getServiceTarget()
+        context.getCapabilityServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE_PROVIDER.append(name))
                 .setInstance(new ConfigSourceProviderRegistrationService(name, configSourceProvider, registry))
                 .install();

@@ -212,7 +212,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
 
         // TODO eventually we should add a config service which manages the XTS configuration
         // this will allow us to include a switch enabling or disabling deployment of

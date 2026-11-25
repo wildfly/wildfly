@@ -37,7 +37,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     protected final UndertowSubsystemSchema schema;
 
     AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT.get(schema.getStability()));
+        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 

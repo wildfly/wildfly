@@ -32,10 +32,10 @@ managed WildFly instance. This is done using the command _connect_, e.g.
 You are disconnected at the moment. Type 'connect' to connect to the server
 or 'help' for the list of supported commands.
 [disconnected /]
- 
+
 [disconnected /] connect
 [domain@localhost:9990 /]
- 
+
 [domain@localhost:9990 /] quit
 Closed connection to localhost:9990
 ----
@@ -78,11 +78,11 @@ in your running CLI instance):
 ----
 [domain@localhost:9990 /] help --commands
 Commands available in the current context:
-batch               connection-factory  deployment-overlay  if                  patch               reload              try
-cd                  connection-info     echo                jdbc-driver-info    pwd                 rollout-plan        undeploy
-clear               data-source         echo-dmr            jms-queue           quit                run-batch           unset
-command             deploy              help                jms-topic           read-attribute      set                 version
-connect             deployment-info     history             ls                  read-operation      shutdown            xa-data-source
+batch               connection-factory  deployment-overlay  if                  patch               reload              try
+cd                  connection-info     echo                jdbc-driver-info    pwd                 rollout-plan        undeploy
+clear               data-source         echo-dmr            jms-queue           quit                run-batch           unset
+command             deploy              help                jms-topic           read-attribute      set                 version
+connect             deployment-info     history             ls                  read-operation      shutdown            xa-data-source
 To read a description of a specific command execute 'help <command name>'.
 ----
 

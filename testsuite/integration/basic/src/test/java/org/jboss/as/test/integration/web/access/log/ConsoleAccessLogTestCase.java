@@ -95,6 +95,7 @@ public class ConsoleAccessLogTestCase {
             "response-reason-phrase",
             "response-time",
             "secure-exchange",
+            "secure-protocol",
             "ssl-cipher",
             "ssl-client-cert",
             "ssl-session-id",

@@ -22,6 +22,7 @@ import org.jboss.dmr.ModelNode;
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime operations.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final Collection<? extends Operation<C>> operations;

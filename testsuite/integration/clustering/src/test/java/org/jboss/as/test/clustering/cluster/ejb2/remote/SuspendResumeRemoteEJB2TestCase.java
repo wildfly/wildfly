@@ -5,11 +5,23 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Map;
+import java.util.PropertyPermission;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -28,25 +40,13 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.PropertyPermission;
-import java.util.Set;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RUNNING_STATE_SUSPENDED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for WFLY-13871.
@@ -57,7 +57,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  * @author Richard Achmatowicz
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase {
 
     static final Logger LOGGER = Logger.getLogger(SuspendResumeRemoteEJB2TestCase.class);
@@ -91,21 +92,36 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
     @TargetsContainer(NODE_2)
     private ManagementClient client2;
 
-    final int INVOCATION_LOOP_TIMES = 5 ;
-    final int SUSPEND_RESUME_LOOP_TIMES = 5 ;
+    private final Map<String, ManagementClient> clients = new TreeMap<>();
+
+    static final int INVOCATION_LOOP_TIMES = 10;
+    static final int SUSPEND_RESUME_LOOP_TIMES = 10;
 
     // time between invocations
-    final long INV_WAIT_DURATION_MSECS = 10 ;
+    static final long INV_WAIT_DURATION_MSECS = 10;
     // time that the server remains suspended (or resumed) during continuous invocations
-    final long SUSPEND_RESUME_DURATION_MSECS = 1 * 1000 ;
+    static final long SUSPEND_RESUME_DURATION_MSECS = 1000;
 
     // the set of nodes available, according to suspend/resume
-    Set<String> nodesAvailable = new HashSet<String>();
+    private final Set<String> nodesAvailable = new TreeSet<>(NODE_1_2);
 
+    @BeforeEach
+    void initialiseNodesAvailable() {
+        this.clients.put(NODE_1, this.client1);
+        this.clients.put(NODE_2, this.client2);
+    }
 
-    @Before
-    public void initialiseNodesAvailable() {
-        nodesAvailable.addAll(Arrays.asList(NODE_1,NODE_2));
+    @AfterEach
+    void resumeAll() {
+        for (String node : NODE_1_2) {
+            if (!this.nodesAvailable.contains(node)) {
+                try {
+                    this.resumeServer(node);
+                } catch (IOException e) {
+                    LOGGER.warn(e.getLocalizedMessage(), e);
+                }
+            }
+        }
     }
 
     /**
@@ -114,11 +130,10 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
      *
      * The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
      *
-     * @throws Exception
      */
     @Test
-    @InSequence(1)
-    public void testSuspendResumeAfterProxyInit() throws Exception {
+    @Order(1)
+    void suspendResumeAfterProxyInit() {
         LOGGER.info("testSuspendResumeAfterProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -142,7 +157,7 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
             }
         } catch(Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
         } finally {
             LOGGER.info("testSuspendResumeAfterProxyInit() - end");
         }
@@ -154,11 +169,10 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
      *
      *  The test assertion is checked after each invocation result, and verifies that no invocation is sent to a suspended node.
      *
-     * @throws Exception
      */
     @Test
-    @InSequence(2)
-    public void testSuspendResumeBeforeProxyInit() throws Exception {
+    @Order(2)
+    void suspendResumeBeforeProxyInit() {
         LOGGER.info("testSuspendResumeBeforeProxyInit() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -178,7 +192,7 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
             }
         } catch(Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
         } finally {
             LOGGER.info("testSuspendResumeBeforeProxyInit() - end");
         }
@@ -193,8 +207,8 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
      * @throws Exception
      */
     @Test
-    @InSequence(3)
-    public void testSuspendResumeContinuous() throws Exception {
+    @Order(3)
+    void suspendResumeContinuous() {
         LOGGER.info("testSuspendResumeContinuous() - start");
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
 
@@ -205,192 +219,140 @@ public class SuspendResumeRemoteEJB2TestCase extends AbstractClusteringTestCase 
             Thread thread = new Thread(continuousInvoker);
             LOGGER.info("Starting the invoker ...");
             thread.start();
+            try {
+                for (int i = 1; i < SUSPEND_RESUME_LOOP_TIMES; i++) {
+                    // suspend and then resume each server in turn while invocations happen
+                    Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
 
-            for (int i = 0; i < SUSPEND_RESUME_LOOP_TIMES; i++) {
-                // suspend and then resume each server in turn while invocations happen
-                sleep(SUSPEND_RESUME_DURATION_MSECS);
+                    suspendTheServer(NODE_1);
 
-                suspendTheServer(NODE_1);
+                    Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
 
-                sleep(SUSPEND_RESUME_DURATION_MSECS);
+                    resumeTheServer(NODE_1);
 
-                resumeTheServer(NODE_1);
+                    // suspend and then resume each server in turn while invocations happen
+                    Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
 
-                // suspend and then resume each server in turn while invocations happen
-                sleep(SUSPEND_RESUME_DURATION_MSECS);
+                    suspendTheServer(NODE_2);
 
-                suspendTheServer(NODE_2);
+                    Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
 
-                sleep(SUSPEND_RESUME_DURATION_MSECS);
+                    resumeTheServer(NODE_2);
 
-                resumeTheServer(NODE_2);
+                    Thread.sleep(SUSPEND_RESUME_DURATION_MSECS);
+                }
+            } finally {
+                continuousInvoker.terminate();
+                thread.join();
             }
-
-            continuousInvoker.stopInvoking();
-        }
-        catch(Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
             LOGGER.info("Caught exception! e = " + e.getMessage());
-            Assert.fail("Test failed with exception: e = " + e.getMessage());
+            fail("Test failed with exception: e = " + e.getMessage());
+        } finally {
+            LOGGER.info("testSuspendResumeContinuous() - end");
         }
-        LOGGER.info("testSuspendResumeContinuous() - end");
     }
 
 
-    /**
-     * Helper class that performs invocations on a bean once per second until stopInvoking() is called.
-     */
     private class ContinuousInvoker implements Runnable {
-        private boolean invoking = true ;
-        HeartbeatRemote bean = null;
+        private final HeartbeatRemote bean;
+        private volatile Thread runner;
+        private volatile boolean terminated;
 
         public ContinuousInvoker(HeartbeatRemote bean) {
             this.bean = bean;
         }
 
-        public synchronized void stopInvoking() {
-            LOGGER.info("Stopping the invoker ...");
-            this.invoking = false;
-        }
-
-        private synchronized boolean keepInvoking() {
-            return this.invoking == true;
-        }
-
         @Override
         public void run() {
+            runner = Thread.currentThread();
             try {
-                while (keepInvoking()) {
-                    performInvocation(bean);
+                while (!terminated && !Thread.currentThread().isInterrupted()) {
+                    performInvocation(this.bean);
                 }
-            } catch (Exception e) {
-                LOGGER.info("ContinousInvoker: caught exception while performing invocation: e = " + e.getMessage());
-                throw e;
+            } catch (Throwable e) {
+                LOGGER.info("ContinuousInvoker: caught exception while performing invocation: e = " + e.getMessage());
+            }
+        }
+
+        private void terminate() {
+            terminated = true;
+            if (runner != null) {
+                runner.interrupt();
             }
         }
     }
 
     private void performInvocation(HeartbeatRemote bean) {
-        Result<Date> result = null;
-        try {
-            result = bean.pulse();
+        Result<Date> result = bean.pulse();
 
-            LOGGER.info("invoked pulse(), result: node = " + result.getNode() + ", value = " + result.getValue()) ;
-            Assert.assertTrue(nodesAvailable.contains(result.getNode()));
-            sleep(INV_WAIT_DURATION_MSECS);
-        } catch (Exception e) {
-            LOGGER.info("Exception caught while invoking pulse(): " + e.getMessage());
-            throw e;
+        LOGGER.info("invoked pulse(), result: node = " + result.getNode() + ", value = " + result.getValue());
+        assertTrue(this.nodesAvailable.contains(result.getNode()));
+
+        try {
+            Thread.sleep(INV_WAIT_DURATION_MSECS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
 
     // helper methods to determine server state
 
-    private void suspendTheServer(String node) {
+    private void suspendTheServer(String node) throws IOException {
         LOGGER.info("=================== SUSPEND  " + node + " ===========================");
         if (suspendServer(node)) {
-            nodesAvailable.remove(node);
+            this.nodesAvailable.remove(node);
+        } else {
+            throw new IllegalStateException("Failed to suspend server");
         }
-        LOGGER.info(isServerSuspended(node) ? node + " is suspended" : node + " is NOT suspended") ;
     }
 
-    private void resumeTheServer(String node) {
+    private void resumeTheServer(String node) throws IOException {
         LOGGER.info("=================== RESUME  " + node + " ===========================");
         if (resumeServer(node)) {
-            nodesAvailable.add(node);
+            this.nodesAvailable.add(node);
+        } else {
+            throw new IllegalStateException("Failed to resume server");
         }
-        LOGGER.info(isServerSuspended(node) ? node + " is suspended" : node + " is NOT suspended") ;
     }
 
-    private boolean isServerRunning(String node) {
+    private boolean suspendServer(String node) throws IOException {
+        return this.suspendResume(node, Util.createOperation("suspend", PathAddress.EMPTY_ADDRESS), "SUSPENDED");
+    }
+
+    private boolean resumeServer(String node) throws IOException {
+        return this.suspendResume(node, Util.createOperation("resume", PathAddress.EMPTY_ADDRESS), "RUNNING");
+    }
+
+    private boolean suspendResume(String node, ModelNode operation, String targetState) throws IOException {
+        ModelNode result = this.clients.get(node).getControllerClient().execute(operation);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        Instant start = Instant.now();
+        Duration maxDuration = Duration.ofSeconds(15);
+        String state = this.getSuspendState(node);
+        Instant now = Instant.now();
         try {
-            ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
-            op.get(NAME).set("server-state");
-            ModelNode result = null;
-            if (NODE_1.equals(node)) {
-                result = client1.getControllerClient().execute(op);
-            } else {
-                result = client2.getControllerClient().execute(op);
+            while (!targetState.equals(state) && Duration.between(start, now).compareTo(maxDuration) < 0) {
+                Thread.sleep(10);
+                state = this.getSuspendState(node);
+                now = Instant.now();
             }
-            return SUCCESS.equals(result.get(OUTCOME).asString())
-                    && !CONTROLLER_PROCESS_STATE_STARTING.equals(result.get(RESULT).asString())
-                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(result.get(RESULT).asString());
-        } catch(IOException e) {
-            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+        LOGGER.infof("Target state = %s, actual state = %s, duration = %s", targetState, state, Duration.between(start, now));
+        return targetState.equals(state);
     }
 
-    /**
-     *  Suspend a server by calling the management operation ":suspend"
-     *
-     * @param node the node to be suspended
-     * @return true if the operation succeeded
-     */
-    private boolean suspendServer(String node) {
-        try {
-            ModelNode op = Util.createOperation("suspend", PathAddress.EMPTY_ADDRESS);
-            ModelNode result = null;
-            if (NODE_1.equals(node)) {
-                result = client1.getControllerClient().execute(op);
-            } else {
-                result = client2.getControllerClient().execute(op);
-            }
-            return SUCCESS.equals(result.get(OUTCOME).asString());
-        } catch(IOException e) {
-            return false;
-        }
-    }
-
-    /**
-     *  Resume a server by calling the management operation ":suspend"
-     *
-     * @param node the node to be suspended
-     * @return true if the operation succeeded
-     */
-    private boolean resumeServer(String node) {
-        try {
-            ModelNode op = Util.createOperation("resume", PathAddress.EMPTY_ADDRESS);
-            ModelNode result = null;
-            if (NODE_1.equals(node)) {
-                result = client1.getControllerClient().execute(op);
-            } else {
-                result = client2.getControllerClient().execute(op);
-            }
-            return SUCCESS.equals(result.get(OUTCOME).asString());
-        } catch(IOException e) {
-            return false;
-        }
-    }
-
-    /**
-     *  Check if a server is suspended by reading the server attribute "suspend-state"
-     *
-     * @param node the node to be checked
-     * @return true if the server is suspended
-     */
-    private boolean isServerSuspended(String node) {
-        try {
-            ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
-            op.get(NAME).set("suspend-state");
-            ModelNode result = null;
-            if (NODE_1.equals(node)) {
-                result = client1.getControllerClient().execute(op);
-            } else {
-                result = client2.getControllerClient().execute(op);
-            }
-            return SUCCESS.equals(result.get(OUTCOME).asString())
-                    && RUNNING_STATE_SUSPENDED.equalsIgnoreCase(result.get(RESULT).asString());
-        } catch(IOException e) {
-            return false;
-        }
-    }
-
-    private void sleep(long ms) {
-        try {
-            LOGGER.info("Sleeping for " + ms + " ms ...");
-            Thread.sleep( ms);
-        } catch(InterruptedException ie) {
-            // noop
-        }
+    private String getSuspendState(String node) throws IOException {
+        ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("suspend-state");
+        ModelNode result = this.clients.get(node).getControllerClient().execute(op);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        return result.get(RESULT).asString();
     }
 }

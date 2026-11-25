@@ -39,7 +39,7 @@ import org.jboss.metadata.ejb.spec.MethodsMetaData;
 /**
  * Handles the {@link jakarta.annotation.security.RolesAllowed} {@link DenyAll} {@link jakarta.annotation.security.PermitAll} annotations
  * <p/>
- * Also processes the &lt;method-permission&gt; elements of an Jakarta Enterprise Beans and sets up appropriate security permissions on the Jakarta Enterprise Beans.
+ * Also processes the &lt;method-permission&gt; elements of a Jakarta Enterprise Beans bean and sets up appropriate security permissions on the Jakarta Enterprise Beans bean.
  * <p/>
  * This processor should be run *after* all the views of the Jakarta Enterprise Beans have been identified and set in the {@link EJBComponentDescription}
  *

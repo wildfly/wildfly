@@ -529,9 +529,6 @@ public class JcaExtension implements Extension {
 
 
             }
-
-            // For older versions set 'elytron-enabled' to 'false' if not explicitly set, as that was the default in those xsds
-            handleLegacyWorkManagerSecurity(workManagerOperation, JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute(), elementNs);
         }
 
         // WFLY-14587
@@ -653,8 +650,6 @@ public class JcaExtension implements Extension {
 
             }
 
-            // For older versions set 'elytron-enabled' to 'false' if not explicitly set, as that was the default in those xsds
-            handleLegacyWorkManagerSecurity(distributedWorkManagerOperation, JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute(), elementNS);
         }
 
 
@@ -923,26 +918,6 @@ public class JcaExtension implements Extension {
             writer.writeAttribute("name", name);
             writer.writeCharacters(value);
             writer.writeEndElement();
-
-        }
-
-        private static void handleLegacyWorkManagerSecurity(ModelNode addOp, AttributeDefinition ad, Namespace ns) {
-
-            if (!addOp.hasDefined(ad.getName())) {
-                switch (ns) {
-                    case JCA_1_1:
-                    case JCA_2_0:
-                    case JCA_3_0:
-                    case JCA_4_0:
-                    case JCA_5_0:
-                        // set the old default value from these xsd versions
-                        addOp.get(ad.getName()).set(false);
-                        break;
-                    default:
-                        // unconfigured value in later namespaces matches current AttributeDefinition default
-                        break;
-                }
-            }
 
         }
     }

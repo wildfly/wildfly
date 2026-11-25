@@ -5,6 +5,7 @@
 package org.jboss.as.weld.deployment.processor;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.jboss.as.weld.deployment.AttachmentKeys.START_COMPLETION_DEPENDENCIES;
 
 import java.util.function.Supplier;
 
@@ -61,5 +62,8 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
         sb.requires(weldStartService);
         sb.setInstance(new CdiValidatorFactoryService(deploymentUnit, beanManagerSupplier));
         sb.install();
+
+        // Make sure CdiValidatorFactoryService is started before WeldStartCompletionService sends out lifecycle events
+        deploymentUnit.addToAttachmentList(START_COMPLETION_DEPENDENCIES, serviceName);
     }
 }

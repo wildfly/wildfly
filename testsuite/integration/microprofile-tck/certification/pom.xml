@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../../../pom.xml</relativePath>
     </parent>
 
@@ -24,7 +24,7 @@
 
     <properties>
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipPublishing>true</skipPublishing>
     </properties>
 
     <build>
@@ -58,6 +58,31 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
                     <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions><execution><id>require-java17-build</id><goals><goal>enforce</goal></goals><phase>none</phase></execution></executions>
+                </plugin>
+
+                <!-- Don't sign - nothing to do. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <configuration><skip>true</skip></configuration>
+                </plugin>
+
+                <!-- Don't deploy -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>injected-central-publishing</id>
+                            <phase>none</phase>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -16,6 +16,7 @@ import org.jboss.msc.service.ServiceName;
  * Generic operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class RestartParentResourceStepHandler<T> extends RestartParentResourceHandlerBase {
 
     private final ResourceServiceConfiguratorFactory parentFactory;
@@ -36,7 +37,8 @@ public class RestartParentResourceStepHandler<T> extends RestartParentResourceHa
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel)
+                .build(context.getCapabilityServiceTarget()).install();
     }
 
     @Override

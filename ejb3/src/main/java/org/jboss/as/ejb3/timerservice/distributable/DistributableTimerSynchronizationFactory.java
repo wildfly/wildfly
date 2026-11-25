@@ -10,15 +10,10 @@ import java.util.function.Consumer;
 import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 
-import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
-import org.jboss.invocation.InterceptorContext;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.BatchContext;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Batch.State;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.Timer;
-import org.wildfly.clustering.ejb.timer.TimerRegistry;
 
 /**
  * Factory for creating {@link Synchronization} instances for a distributed timer service.
@@ -30,21 +25,9 @@ public class DistributableTimerSynchronizationFactory<I> implements TimerSynchro
     private final Consumer<Timer<I>> activateTask;
     private final Consumer<Timer<I>> cancelTask;
 
-    public DistributableTimerSynchronizationFactory(TimerRegistry<I> registry) {
-        this.activateTask = new Consumer<>() {
-            @Override
-            public void accept(Timer<I> timer) {
-                timer.activate();
-                registry.register(timer.getId());
-            }
-        };
-        this.cancelTask = new Consumer<>() {
-            @Override
-            public void accept(Timer<I> timer) {
-                registry.unregister(timer.getId());
-                timer.cancel();
-            }
-        };
+    public DistributableTimerSynchronizationFactory(Consumer<Timer<I>> activateTask, Consumer<Timer<I>> cancelTask) {
+        this.activateTask = activateTask;
+        this.cancelTask = cancelTask;
     }
 
     @Override
@@ -58,27 +41,25 @@ public class DistributableTimerSynchronizationFactory<I> implements TimerSynchro
     }
 
     @Override
-    public Synchronization createActivateSynchronization(Timer<I> timer, Batch batch, Batcher<Batch> batcher) {
-        return new DistributableTimerSynchronization<>(timer, batch, batcher, this.activateTask, this.cancelTask);
+    public Synchronization createActivateSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch) {
+        return new DistributableTimerSynchronization<>(timer, suspendedBatch, this.activateTask, this.cancelTask);
     }
 
     @Override
-    public Synchronization createCancelSynchronization(Timer<I> timer, Batch batch, Batcher<Batch> batcher) {
-        return new DistributableTimerSynchronization<>(timer, batch, batcher, this.cancelTask, this.activateTask);
+    public Synchronization createCancelSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch) {
+        return new DistributableTimerSynchronization<>(timer, suspendedBatch, this.cancelTask, this.activateTask);
     }
 
     private static class DistributableTimerSynchronization<I> implements Synchronization {
 
-        private final Batcher<Batch> batcher;
         private final Timer<I> timer;
-        private final Batch batch;
+        private final SuspendedBatch suspendedBatch;
         private final Consumer<Timer<I>> commitTask;
         private final Consumer<Timer<I>> rollbackTask;
 
-        DistributableTimerSynchronization(Timer<I> timer, Batch batch, Batcher<Batch> batcher, Consumer<Timer<I>> commitTask, Consumer<Timer<I>> rollbackTask) {
+        DistributableTimerSynchronization(Timer<I> timer, SuspendedBatch suspendedBatch, Consumer<Timer<I>> commitTask, Consumer<Timer<I>> rollbackTask) {
             this.timer = timer;
-            this.batch = batch;
-            this.batcher = batcher;
+            this.suspendedBatch = suspendedBatch;
             this.commitTask = commitTask;
             this.rollbackTask = rollbackTask;
         }
@@ -90,11 +71,8 @@ public class DistributableTimerSynchronizationFactory<I> implements TimerSynchro
 
         @Override
         public void afterCompletion(int status) {
-            InterceptorContext interceptorContext = CurrentInvocationContext.get();
-            ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
-
-            try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-                try (Batch currentBatch = ((currentTimer != null) && currentTimer.getId().equals(this.timer.getId().toString())) || this.batch.getState() != State.ACTIVE ? this.batcher.createBatch() : this.batch) {
+            try (Context<Batch> context = this.suspendedBatch.resumeWithContext()) {
+                try (Batch batch = context.get()) {
                     if (!this.timer.isCanceled()) {
                         if (status == Status.STATUS_COMMITTED) {
                             this.commitTask.accept(this.timer);

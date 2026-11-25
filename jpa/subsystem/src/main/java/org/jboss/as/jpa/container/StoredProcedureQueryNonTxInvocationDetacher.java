@@ -5,10 +5,13 @@
 
 package org.jboss.as.jpa.container;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import jakarta.persistence.EntityManager;
@@ -19,6 +22,7 @@ import jakarta.persistence.ParameterMode;
 import jakarta.persistence.Query;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TemporalType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * StoredProcedureQueryNonTxInvocationDetacher
@@ -28,12 +32,29 @@ import jakarta.persistence.TemporalType;
  *
  * @author Scott Marlow
  */
-public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProcedureQuery {
+public abstract class StoredProcedureQueryNonTxInvocationDetacher implements StoredProcedureQuery {
+
+    private static final StoredProcedureQueryNonTxInvocationDetacher.Factory FACTORY; static {
+        StoredProcedureQueryNonTxInvocationDetacher.Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<StoredProcedureQueryNonTxInvocationDetacher.Factory>) () -> ServiceLoader.load(StoredProcedureQueryNonTxInvocationDetacher.Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(StoredProcedureQueryNonTxInvocationDetacher.Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code UnsynchronizedEntityManagerWrapper}.
+     */
+    public static StoredProcedureQuery create(final EntityManager underlyingEntityManager, StoredProcedureQuery underlyingQuery) {
+        return FACTORY.createStoredProcedureQueryNonTxInvocationDetacher(underlyingEntityManager, underlyingQuery);
+    }
 
     private final EntityManager underlyingEntityManager;
     private final StoredProcedureQuery underlyingStoredProcedureQuery;
 
-    public StoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
+    protected StoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingStoredProcedureQuery) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.underlyingStoredProcedureQuery = underlyingStoredProcedureQuery;
     }
@@ -63,7 +84,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public Query setMaxResults(int maxResult) {
-        return underlyingStoredProcedureQuery.setMaxResults(maxResult);
+        underlyingStoredProcedureQuery.setMaxResults(maxResult);
+        return this;
     }
 
     @Override
@@ -73,7 +95,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public Query setFirstResult(int startPosition) {
-        return underlyingStoredProcedureQuery.setFirstResult(startPosition);
+        underlyingStoredProcedureQuery.setFirstResult(startPosition);
+        return this;
     }
 
     @Override
@@ -83,7 +106,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery setHint(String hintName, Object value) {
-        return underlyingStoredProcedureQuery.setHint(hintName, value);
+        underlyingStoredProcedureQuery.setHint(hintName, value);
+        return this;
     }
 
     @Override
@@ -93,47 +117,56 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public <T> StoredProcedureQuery setParameter(Parameter<T> param, T value) {
-        return underlyingStoredProcedureQuery.setParameter(param, value);
+        underlyingStoredProcedureQuery.setParameter(param, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(Parameter<Calendar> param, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(Parameter<Date> param, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(param, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Object value) {
-        return underlyingStoredProcedureQuery.setParameter(name, value);
+        underlyingStoredProcedureQuery.setParameter(name, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(String name, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(name, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Object value) {
-        return underlyingStoredProcedureQuery.setParameter(position, value);
+        underlyingStoredProcedureQuery.setParameter(position, value);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Calendar value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery setParameter(int position, Date value, TemporalType temporalType) {
-        return underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        underlyingStoredProcedureQuery.setParameter(position, value, temporalType);
+        return this;
     }
 
     @Override
@@ -183,7 +216,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery setFlushMode(FlushModeType flushMode) {
-        return underlyingStoredProcedureQuery.setFlushMode(flushMode);
+        underlyingStoredProcedureQuery.setFlushMode(flushMode);
+        return this;
     }
 
     @Override
@@ -193,7 +227,8 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public Query setLockMode(LockModeType lockMode) {
-        return underlyingStoredProcedureQuery.setLockMode(lockMode);
+        underlyingStoredProcedureQuery.setLockMode(lockMode);
+        return this;
     }
 
     @Override
@@ -208,12 +243,14 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
 
     @Override
     public StoredProcedureQuery registerStoredProcedureParameter(int position, Class type, ParameterMode mode) {
-        return underlyingStoredProcedureQuery.registerStoredProcedureParameter(position, type, mode);
+        underlyingStoredProcedureQuery.registerStoredProcedureParameter(position, type, mode);
+        return this;
     }
 
     @Override
     public StoredProcedureQuery registerStoredProcedureParameter(String parameterName, Class type, ParameterMode mode) {
-        return underlyingStoredProcedureQuery.registerStoredProcedureParameter(parameterName, type, mode);
+        underlyingStoredProcedureQuery.registerStoredProcedureParameter(parameterName, type, mode);
+        return this;
     }
 
     @Override
@@ -239,5 +276,9 @@ public class StoredProcedureQueryNonTxInvocationDetacher implements StoredProced
     @Override
     public int getUpdateCount() {
         return underlyingStoredProcedureQuery.getUpdateCount();
+    }
+
+    public interface Factory {
+        StoredProcedureQueryNonTxInvocationDetacher createStoredProcedureQueryNonTxInvocationDetacher(EntityManager underlyingEntityManager, StoredProcedureQuery underlyingQuery);
     }
 }

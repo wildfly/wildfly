@@ -8,6 +8,7 @@ package org.jboss.as.weld.logging;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -25,7 +26,6 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.resources.spi.ClassFileInfoException;
 
@@ -41,12 +41,12 @@ public interface WeldLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    WeldLogger ROOT_LOGGER = Logger.getMessageLogger(WeldLogger.class, "org.jboss.as.weld");
+    WeldLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), WeldLogger.class, "org.jboss.as.weld");
 
     /**
      * A logger with the category {@code org.jboss.weld}.
      */
-    WeldLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(WeldLogger.class, "org.jboss.weld.deployer");
+    WeldLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), WeldLogger.class, "org.jboss.weld.deployer");
 
 
     @LogMessage(level= Logger.Level.ERROR)
@@ -230,7 +230,7 @@ public interface WeldLogger extends BasicLogger {
 
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 52, value = "Using deployment classloader to load proxy classes for module %s. Package-private access will not work. To fix this the module should declare dependencies on %s")
-    void loadingProxiesUsingDeploymentClassLoader(ModuleIdentifier moduleIdentifier, String dependencies);
+    void loadingProxiesUsingDeploymentClassLoader(String moduleIdentifier, String dependencies);
 
     @Message(id = 53, value = "Component interceptor support not available for: %s")
     IllegalStateException componentInterceptorSupportNotAvailable(Object componentClass);
@@ -266,4 +266,7 @@ public interface WeldLogger extends BasicLogger {
 
     @Message(id = 63, value = "Original %s does not have a module")
     IllegalArgumentException originalClassDoesNotHaveAModule(Class<?> originalClass);
+
+    @Message(id = 64, value = "Incorrect setup for Weld's LiteExtensionTranslator initialization; a deployment unit has to be specified")
+    IllegalArgumentException incorrectBceTranslatorSetup();
 }

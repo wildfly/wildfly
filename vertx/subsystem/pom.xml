@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-vertx-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>43.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-vertx-subsystem</artifactId>
+    <name>WildFly: Vert.x Subsystem</name>
+    <properties>
+        <!-- Use the WFP dependencies -->
+        <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-buffer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.common</groupId>
+            <artifactId>smallrye-common-annotation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-mutiny-vertx-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.cdi</groupId>
+            <artifactId>jakarta.cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -7,8 +7,11 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.function.UnaryOperator;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.shrinkwrap.api.Archive;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
@@ -17,20 +20,34 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  * @author Paul Ferraro
  */
 public class GlobalAuthContextRemoteStatelessEJBFailoverTestCase extends AuthContextRemoteStatelessEJBFailoverTestCase {
+    private static final String MODULE_NAME = GlobalAuthContextRemoteStatelessEJBFailoverTestCase.class.getSimpleName();
+
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(NODE_1)
+    public static Archive<?> createDeploymentForContainer1() {
+        return createDeployment(MODULE_NAME);
+    }
+
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(NODE_2)
+    public static Archive<?> createDeploymentForContainer2() {
+        return createDeployment(MODULE_NAME);
+    }
+
     private static AuthenticationContext previousContext;
 
-    @BeforeClass
-    public static void before() {
+    @BeforeAll
+    static void before() {
         previousContext = AuthenticationContext.captureCurrent();
         AuthenticationContext.getContextManager().setGlobalDefault(AUTHENTICATION_CONTEXT);
     }
 
-    @AfterClass
-    public static void after() {
+    @AfterAll
+    static void after() {
         AuthenticationContext.getContextManager().setGlobalDefault(previousContext);
     }
 
     public GlobalAuthContextRemoteStatelessEJBFailoverTestCase() {
-        super(UnaryOperator.identity());
+        super(MODULE_NAME, UnaryOperator.identity());
     }
 }

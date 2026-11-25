@@ -32,8 +32,9 @@ import java.util.List;
  */
 public class TransactionDependenciesProcessor implements DeploymentUnitProcessor {
 
-    public static final String JTS_MODULE = "org.jboss.jts";
-    public static final String TRANSACTION_API = "jakarta.transaction.api";
+    private static final String JTS_MODULE = "org.jboss.jts";
+    private static final String TRANSACTION_API = "jakarta.transaction.api";
+    private static final String TRANSACTION_CLIENT = "org.wildfly.transaction.client";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -42,8 +43,8 @@ public class TransactionDependenciesProcessor implements DeploymentUnitProcessor
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, TRANSACTION_API, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, "org.wildfly.transaction.client", false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, TRANSACTION_API).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, TRANSACTION_CLIENT).setImportServices(true).build());
 
         final CompositeIndex compositeIndex = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
@@ -59,9 +60,8 @@ public class TransactionDependenciesProcessor implements DeploymentUnitProcessor
     }
 
     private void addJTSModuleDependencyToDeployment(DeploymentUnit unit) {
-
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JTS_MODULE, false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, JTS_MODULE).setImportServices(true).build());
     }
 }

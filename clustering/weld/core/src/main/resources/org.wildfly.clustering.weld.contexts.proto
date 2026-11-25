@@ -1,21 +1,25 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.weld.contexts;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(400)
  */
 message PassivationCapableSerializableBean {
-	optional	bytes	contextId	= 1;
-	optional	bytes	contextual	= 2;
-	optional	bytes	identifier	= 3;
-	optional	uint32	beanIndex	= 4;
+	org.wildfly.clustering.marshalling.protostream.Any	contextId	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	contextual	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	identifier	= 3;
+	uint32	beanIndex	= 4;
 }
 
 /**
  * @TypeId(401)
  */
 message PassivationCapableSerializableContextual {
-	optional	bytes	contextId	= 1;
-	optional	bytes	contextual	= 2;
-	optional	bytes	identifier	= 3;
-	optional	uint32	beanIndex	= 4;
+	org.wildfly.clustering.marshalling.protostream.Any	contextId	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	contextual	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	identifier	= 3;
+	uint32	beanIndex	= 4;
 }

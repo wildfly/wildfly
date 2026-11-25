@@ -31,12 +31,12 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, MAIL_API, false, false, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ACTIVATION_API, false, false, true, false));
 
-        ModuleDependency angusMailModDep = new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false);
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, MAIL_API).setImportServices(true).build());
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ACTIVATION_API).setImportServices(true).build());
+        ModuleDependency angusMailModDep = ModuleDependency.Builder.of(moduleLoader, ANGUS_MAIL_IMPL).setImportServices(true).build();
         angusMailModDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpec.addSystemDependency(angusMailModDep);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_ACTIVATION_IMPL, false, false, true, false));
+        moduleSpec.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, ANGUS_ACTIVATION_IMPL).setImportServices(true).build());
     }
 }

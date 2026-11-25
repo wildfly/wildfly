@@ -3,6 +3,6 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<jboss-web version="14.1" xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<jboss-web version="14.1" xmlns="http://www.jboss.com/xml/ns/javaee">
     <max-active-sessions>1</max-active-sessions>
 </jboss-web>

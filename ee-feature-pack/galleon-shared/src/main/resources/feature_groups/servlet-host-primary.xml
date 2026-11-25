@@ -26,7 +26,7 @@
             <param name="jvm" value="default"/>
             <param name="heap-size" value="64m"/>
             <param name="max-heap-size" value="256m"/>
-            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+            <param name="jvm-options" value="[&quot;-server&quot;]"/>
             <unset param="environment-variables"/>
         </feature>
     </feature>

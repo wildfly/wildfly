@@ -50,7 +50,7 @@ public enum Jackson2Annotations {
     private final String simpleName;
     private final DotName dotName;
 
-    private Jackson2Annotations(String simpleName) {
+    Jackson2Annotations(String simpleName) {
         this.simpleName = simpleName;
         this.dotName = DotName.createComponentized(Constants.ANNOTATION, simpleName);
     }

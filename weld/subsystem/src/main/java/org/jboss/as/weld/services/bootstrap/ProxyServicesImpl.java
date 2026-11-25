@@ -19,7 +19,6 @@ import org.jboss.as.weld.util.Reflections;
 import org.jboss.modules.ClassDefiner;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.interceptor.proxy.LifecycleMixin;
 import org.jboss.weld.logging.BeanLogger;
 import org.jboss.weld.proxy.WeldConstruct;
@@ -52,7 +51,7 @@ public class ProxyServicesImpl implements ProxyServices {
     };
 
     private final Module module;
-    private final ConcurrentMap<ModuleIdentifier, Boolean> processedStaticModules = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Boolean> processedStaticModules = new ConcurrentHashMap<>();
     private final ClassDefiner classDefiner;
 
     public ProxyServicesImpl(Module module) {
@@ -90,12 +89,12 @@ public class ProxyServicesImpl implements ProxyServices {
                 // this class comes from a static module
                 // first, check if we can use its classloader to load proxy classes
                 final Module definingModule = loader.getModule();
-                Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getIdentifier());
+                Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getName());
                 boolean logWarning = false; // only log for the first class in the module
 
                 if (hasWeldDependencies == null) {
                     hasWeldDependencies = canLoadWeldProxies(definingModule); // may be run multiple times but that does not matter
-                    logWarning = processedStaticModules.putIfAbsent(definingModule.getIdentifier(), hasWeldDependencies) == null;
+                    logWarning = processedStaticModules.putIfAbsent(definingModule.getName(), hasWeldDependencies) == null;
                 }
                 if (hasWeldDependencies) {
                     // this module declares weld dependencies - we can use module's classloader to load the proxy class
@@ -107,7 +106,7 @@ public class ProxyServicesImpl implements ProxyServices {
                     // pros: proxy classes unloaded with undeployment
                     // cons: package-private methods and constructors will yield IllegalAccessException
                     if (logWarning) {
-                        WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getIdentifier(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
+                        WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getName(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
                     }
                     return this.module.getClassLoader();
                 }
@@ -129,11 +128,11 @@ public class ProxyServicesImpl implements ProxyServices {
             return module;
         } else {
             Module definingModule = Module.forClass(originalClass);
-            Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getIdentifier());
+            Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getName());
             boolean logWarning = false; // only log for the first class in the module
             if (hasWeldDependencies == null) {
                 hasWeldDependencies = canLoadWeldProxies(definingModule); // may be run multiple times but that does not matter
-                logWarning = processedStaticModules.putIfAbsent(definingModule.getIdentifier(), hasWeldDependencies) == null;
+                logWarning = processedStaticModules.putIfAbsent(definingModule.getName(), hasWeldDependencies) == null;
             }
             if (hasWeldDependencies) {
                 // this module declares Weld dependencies - we can use module's classloader to load the proxy class
@@ -145,7 +144,7 @@ public class ProxyServicesImpl implements ProxyServices {
                 // pros: proxy classes unloaded with undeployment
                 // cons: package-private methods and constructors will yield IllegalAccessException
                 if (logWarning) {
-                    WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getIdentifier(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
+                    WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getName(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
                 }
                 return this.module;
             }

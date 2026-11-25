@@ -9,7 +9,6 @@
     <id>distro</id>
     <formats>
        <format>zip</format>
-       <format>tar.gz</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
@@ -17,7 +16,7 @@
             <directory>target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-${server.output.dir.version}/**</include>
+                <include>${server.output.dir.prefix}-${latest.ee.output.qualifier}${server.output.dir.version}/**</include>
             </includes>
         </fileSet>
     </fileSets>

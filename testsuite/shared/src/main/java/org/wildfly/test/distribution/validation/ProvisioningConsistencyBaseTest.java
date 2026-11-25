@@ -5,12 +5,16 @@
 
 package org.wildfly.test.distribution.validation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.jboss.as.test.shared.FileUtils.computeHash;
+import static org.jboss.as.test.shared.FileUtils.unzipFile;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -18,13 +22,19 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assumptions;
 import org.jboss.logging.Logger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,12 +52,15 @@ public abstract class ProvisioningConsistencyBaseTest {
 
     private static final String INSTALLATION = ".installation";
     private static final String PROVISIONING = ".wildfly-maven-plugin-provisioning.xml";
+    private static final String INSTALLATION_MANAGER_HELPERS = "_installation-manager_helper.";
+    private static final String SBOM = "sbom.cdx.json.gz";
     private static final Path JBOSS_HOME = resolveJBossHome();
-    private static final Path CHANNEL_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-from-channel");
-    private static final Path INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
-    private static final Path PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
+    private final Path CHANNEL_INSTALLATION;
+    private final Path INSTALLATION_METADATA;
+    private final Path PROVISIONING_XML;
+
     private static final Path SOURCE_HOME = JBOSS_HOME.getParent().getParent().getParent().getParent().getParent();
-    private final Path DIST_INSTALLATION;
+    private static final Path DIST_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-without-channel");
 
     private static Path resolveJBossHome() {
         try {
@@ -57,13 +70,27 @@ public abstract class ProvisioningConsistencyBaseTest {
         }
     }
 
-    private static String getDistDir() {
-        return "wildfly-" + System.getProperty("standard.dist.version");
+    protected ProvisioningConsistencyBaseTest(String targetDist) {
+        CHANNEL_INSTALLATION = SOURCE_HOME.resolve(targetDist);
+        INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
+        PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
     }
 
+    /**
+     * This test case is not relevant when the test suite/module is executed against a distribution
+     * externally given through the jboss.dist Maven property.
+     */
+    @BeforeClass
+    public static void assumeCompatibleEnvironment() throws IOException {
+        assumeJbossDistIsNotExternallySet();
+    }
 
-    protected ProvisioningConsistencyBaseTest(String targetDist) {
-        DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+    private static void assumeJbossDistIsNotExternallySet() throws IOException {
+        Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
+        Path defaultJbossDist = SOURCE_HOME.resolve(System.getProperty("build.output.dir"));
+        Assumptions.assumeThat(jbossDist.equals(defaultJbossDist))
+                .as("jboss.dist is externally set")
+                .isTrue();
     }
 
     /**
@@ -86,7 +113,7 @@ public abstract class ProvisioningConsistencyBaseTest {
                     Set<String> channelChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(dir.toFile().list())));
                     channelChildren.remove(PROVISIONING);
                     Set<String> distChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(distRoot.list())));
-                    assertEquals(dir.toString(), channelChildren, distChildren);
+                    assertThat(distChildren).as(dir.toString()).isEqualTo(channelChildren);
                     return FileVisitResult.CONTINUE;
                 } else if (dir.equals(INSTALLATION_METADATA)) {
                     installationMetadata.set(dir);
@@ -96,14 +123,19 @@ public abstract class ProvisioningConsistencyBaseTest {
                     }
                     File dist = getDistFile(dir, true, true, errors);
                     files = dist.listFiles();
-                    if (files != null && files.length > 0) {
-                        errors.add(String.format("%s has unexpected files: %s", dist, Arrays.asList(files)));
+                    if (files != null) {
+                        files = Arrays.stream(files)
+                                .filter(f -> !f.getName().startsWith(INSTALLATION_MANAGER_HELPERS))
+                                .toArray(File[]::new);
+                        if (files.length > 0) {
+                            errors.add(String.format("%s has unexpected files: %s", dist, Arrays.asList(files)));
+                        }
                     }
                     return FileVisitResult.SKIP_SUBTREE;
                 } else {
                     File distDir = getDistFile(dir, true, true, errors);
                     if (distDir != null) {
-                        assertTrue(dir.toString(), Objects.deepEquals(dir.toFile().list(), distDir.list()));
+                        assertThat(dir.toFile().list()).as(dir.toString()).isEqualTo(distDir.list());
                         return FileVisitResult.CONTINUE;
                     } else {
                         return FileVisitResult.SKIP_SUBTREE;
@@ -120,8 +152,16 @@ public abstract class ProvisioningConsistencyBaseTest {
                     File distFile = getDistFile(path, true, false, errors);
                     if (distFile != null) {
                         if (path.toFile().length() != distFile.length()) {
-                            errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
-                                    path, distFile.length(), path.toFile().length()));
+                            log.trace("File size is different");
+                            // This can happen on some platforms for fat jar generated at provisioning time.
+                            // Check that the actual jar content is identical.
+                            // It will also happen for the sbom.cdx.json file, which contains a uuid and timestamp
+                            Path distFilePath = distFile.toPath();
+                            if (!sameJarContent(path, distFilePath, errors)
+                                    && !sameSbomContent(path, distFilePath, errors)) {
+                                errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
+                                        path, distFile.length(), path.toFile().length()));
+                            }
                         }
                     }
                 }
@@ -148,13 +188,17 @@ public abstract class ProvisioningConsistencyBaseTest {
     }
 
     private File getDistFile(Path channelPath, boolean exists, boolean directory, List<String> errors) {
-        Path relative = CHANNEL_INSTALLATION.relativize(channelPath);
-        Path path = DIST_INSTALLATION.resolve(relative);
+        return getDistFile(CHANNEL_INSTALLATION, channelPath, DIST_INSTALLATION, exists, directory, errors);
+    }
+
+    private static File getDistFile(Path currentRoot, Path currentPath, Path distRoot, boolean exists, boolean directory, List<String> errors) {
+        Path relative = currentRoot.relativize(currentPath);
+        Path path = distRoot.resolve(relative);
         File test = path.toFile();
         File result = null;
-        if (DIST_INSTALLATION.equals(path)) {
-            assertTrue(path + " does not exist", test.exists());
-            assertTrue(path + " is not a directory", test.isDirectory());
+        if (distRoot.equals(path)) {
+            assertThat(test).as(path + " does not exist").exists();
+            assertThat(test).as(path + " is not a directory").isDirectory();
             result = test;
         } else {
             if (exists) {
@@ -174,5 +218,197 @@ public abstract class ProvisioningConsistencyBaseTest {
             }
         }
         return result;
+    }
+
+    private static boolean sameJarContent(Path current, Path dist, List<String> errors) {
+        if (!dist.getFileName().toString().endsWith(".jar")) {
+            return false;
+        }
+        log.trace("Checking jar " + current);
+        Path tempFolder = null;
+        try {
+            tempFolder = Files.createTempDirectory("checkconsistency");
+            Path distUnzipped = tempFolder.resolve("dist");
+            Path currentUnzipped = tempFolder.resolve("current");
+            unzipFile(dist, distUnzipped);
+            unzipFile(current, currentUnzipped);
+            checkContent(currentUnzipped, distUnzipped, errors);
+            if(errors.isEmpty()) return true;
+        } catch (IOException ex) {
+            errors.add("Exception occurred when checking " + dist + " file content. " + ex);
+        } finally {
+            try {
+                if (tempFolder != null) {
+                    FileUtils.deleteDirectory(tempFolder.toFile());
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return false;
+    }
+
+    private static boolean sameSbomContent(Path current, Path dist, List<String> errors) {
+        if (!dist.getFileName().toString().equals(SBOM)) {
+            return false;
+        }
+        log.trace("Checking sbom.cdx.json " + current);
+        List<String> regularizedDist = regularizeSbom(dist, errors);
+        if (regularizedDist == null) {
+            return false;
+        }
+        List<String> regularizedCurrent = regularizeSbom(current, errors);
+        if (regularizedCurrent == null) {
+            return false;
+        }
+        if(regularizedCurrent.equals(regularizedDist)) return true;
+
+        Iterator<String> currIter = regularizedCurrent.iterator();
+        Iterator<String> distIter = regularizedDist.iterator();
+        boolean continueLoop = true;
+        for (int i = 0; continueLoop; i++) {
+            continueLoop = compareLine(i, currIter, distIter, errors);
+        }
+
+        return false;
+    }
+
+    private static void checkContent(Path currentRoot, Path dist, List<String> errors) throws IOException {
+        Files.walkFileTree(currentRoot, new FileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                log.trace("Testing " + dir);
+                if (dir.equals(currentRoot)) {
+                    File distRoot = getDistFile(currentRoot, dir, dist, true, true, errors);
+                    Set<String> channelChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(dir.toFile().list())));
+                    Set<String> distChildren = new TreeSet<>(Arrays.asList(Objects.requireNonNull(distRoot.list())));
+                    assertThat(distChildren).as(dir.toString()).isEqualTo(channelChildren);
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    File distDir = getDistFile(currentRoot, dir, dist, true, true, errors);
+                    if (distDir != null) {
+                        assertThat(dir.toFile().list()).as(dir.toString()).isEqualTo(distDir.list());
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                System.out.println("Checking " + path);
+                File distFile = getDistFile(currentRoot, path, dist, true, false, errors);
+                if (distFile == null) {
+                    errors.add(String.format("current file %s has not been found in %s",
+                            path, dist));
+                } else {
+                    try {
+                        String hash1 = computeHash(path);
+                        String hash2 = computeHash(distFile.toPath());
+                        if (!hash1.equals(hash2)) {
+                            errors.add(String.format("dist file for %s has an unexpected content",
+                                    path));
+                        }
+                    } catch (Exception ex) {
+                        errors.add(String.format("dist file for %s has an unexpected length: %d not %d",
+                                    path, distFile.length(), path.toFile().length()));
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                throw exc;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private static List<String> regularizeSbom(Path sbom, List<String> errors) {
+        try (FileInputStream fis = new FileInputStream(sbom.toFile())) {
+            return new BufferedReader(new InputStreamReader(new GZIPInputStream(fis))).lines()
+                    .map(line -> line.replaceAll("\"urn:uuid:[0-9a-z\\-]+\"", "\"urn:uuid:regularized\""))
+                    .map(line -> line.replaceAll("\"timestamp\":\"2[0-9]{3}-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]Z\"", "\"timestamp\":\"regularized\""))
+                    .collect(Collectors.toList());
+        } catch (IOException ioe) {
+            errors.add("Exception occurred when checking " + sbom + " file content. " + ioe);
+            return null;
+        }
+    }
+
+    private static boolean compareLine(int lineNumber, Iterator<String> currIter, Iterator<String> distIter, List<String> errors) {
+        String currLine = currIter.hasNext() ? currIter.next() : null;
+        String distLine = distIter.hasNext() ? distIter.next() : null;
+        if (currLine != null) {
+            if (distLine == null) {
+                errors.add("Line " + lineNumber + " not found in dist sbom.cdx.json: " + currLine);
+            } else if (!currLine.equals(distLine)){
+                errors.add("current sbom.cdx.json differs from dist in line " + lineNumber + ". \n" + diffRange(currLine, distLine));
+            }
+        } else if (distLine != null) {
+            errors.add("Line " + lineNumber + " not found in current sbom.cdx.json: " + distLine);
+        }
+        // tell caller to keep going as long as at least one iterator had content
+        return currLine != null || distLine != null;
+    }
+
+    /**
+     * Calculate the substrings between the first and last char diff between the strings.
+     * This doesn't attempt to find consistent sequences within that range.
+     */
+    private static Diff diffRange(String curr, String dist) {
+
+        assert curr != null;
+        assert dist != null;
+        assert !curr.equals(dist);
+
+        int max = Math.min(curr.length(), dist.length());
+        int start = 0;
+        for (int i = 0; i < max; i++) {
+            if (curr.charAt(i) != dist.charAt(i)) {
+                start = i;
+                break;
+            }
+        }
+        if (start == max - 1) {
+            // The diff is one string has additional content after the other ends
+            if (curr.length() > dist.length()) {
+                return new Diff(start, curr.substring(dist.length()), null);
+            } else {
+                assert curr.length() < dist.length(); // else the strings are equal, and above we asserted they are not
+                return new Diff(start, null, dist.substring(curr.length()));
+            }
+        } else {
+            // Compare backwards until there is a difference
+            int end = max;
+            for (int i = max; i > start; i--) {
+                if (curr.charAt(i - 1) != dist.charAt(i - 1)) {
+                    end = i;
+                    break;
+                }
+            }
+            return new Diff(start, curr.substring(start, end), dist.substring(start, end));
+        }
+    }
+
+    private record Diff(
+            int start,
+            String currentSubstring,
+            String distSubstring
+        ) {
+
+        public String toString() {
+            return "current: " + formatSubstring(currentSubstring) + "\ndist: " + formatSubstring(distSubstring);
+        }
+
+        private String formatSubstring(String substring) {
+            return substring == null ? null : ("(" + start + ".." + (start + substring.length()) + ") " + substring);
+        }
     }
 }

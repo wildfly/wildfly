@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -28,14 +28,14 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-test-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -73,14 +73,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -96,5 +88,41 @@
             <artifactId>wildfly-subsystem-test-framework</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>allow-security-manager</id>
+            <activation>
+                <jdk>[17,24)</jdk>
+            </activation>
+
+            <properties>
+                <!-- Required to enable the security manager for testing -->
+                <surefire.system.args>-Djava.security.manager=allow</surefire.system.args>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

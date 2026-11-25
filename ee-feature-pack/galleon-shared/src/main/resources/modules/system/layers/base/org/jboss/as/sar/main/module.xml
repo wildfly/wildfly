@@ -37,6 +37,7 @@
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.wildfly.common"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
     </dependencies>

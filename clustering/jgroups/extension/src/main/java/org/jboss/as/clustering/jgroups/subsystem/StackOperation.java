@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -20,11 +19,12 @@ import org.jgroups.JChannel;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.subsystem.resource.executor.RuntimeOperation;
 
 /**
  * @author Paul Ferraro
  */
-public enum StackOperation implements Operation<ChannelFactory> {
+public enum StackOperation implements RuntimeOperation<ChannelFactory> {
 
     EXPORT_NATIVE_CONFIGURATION("export-native-configuration", ModelType.STRING) {
         @Override
@@ -46,11 +46,11 @@ public enum StackOperation implements Operation<ChannelFactory> {
     private final OperationDefinition definition;
 
     StackOperation(String name, ModelType replyType) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(StackResourceDefinition.WILDCARD_PATH)).setReplyType(replyType).setReadOnly().build();
+        this.definition = new SimpleOperationDefinitionBuilder(name, JGroupsSubsystemResourceDefinitionRegistrar.RESOLVER.createChildResolver(JGroupsResourceRegistration.STACK.getPathElement())).setReplyType(replyType).setReadOnly().build();
     }
 
     @Override
-    public OperationDefinition getDefinition() {
+    public OperationDefinition getOperationDefinition() {
         return this.definition;
     }
 }

@@ -11,6 +11,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * Registration interface for child resource definitions.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ChildResourceRegistrar<R extends ManagementResourceRegistration> {
     /**
      * Registers this child resource, returning the new registration

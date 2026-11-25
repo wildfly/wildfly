@@ -80,7 +80,7 @@ public abstract class AbstractDataSourceServerSetupTask extends SnapshotRestoreS
             updates.add(enableNode);
         }
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
-        ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     // Protected methods -----------------------------------------------------

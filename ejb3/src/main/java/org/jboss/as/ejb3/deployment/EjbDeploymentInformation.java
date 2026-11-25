@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Runtime information about an Jakarta Enterprise Beans in a module
+ * Runtime information about a Jakarta Enterprise Beans bean in a module
  *
  * @author Stuart Douglas
  */

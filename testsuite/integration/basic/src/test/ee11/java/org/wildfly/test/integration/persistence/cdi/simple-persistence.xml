@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+             version="3.2">
+    <persistence-unit name="default">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+        </properties>
+    </persistence-unit>
+</persistence>

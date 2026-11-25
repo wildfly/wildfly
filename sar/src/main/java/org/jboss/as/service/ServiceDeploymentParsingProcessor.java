@@ -21,9 +21,11 @@ import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.service.descriptor.ParseResult;
 import org.jboss.as.service.logging.SarLogger;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-service.xml descriptor and attaching the corresponding JBossServiceXmlDescriptor.
@@ -33,12 +35,13 @@ import org.jboss.vfs.VirtualFile;
 public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcessor {
     static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
     static final String SERVICE_DESCRIPTOR_SUFFIX = "-service.xml";
-    private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+    private final XMLInputFactory inputFactory = XMLInputFactoryUtil.create();
 
     /**
      * Construct a new instance.
      */
     public ServiceDeploymentParsingProcessor() {
+        inputFactory.setXMLResolver(NoopXMLResolver.create());
     }
 
     /**

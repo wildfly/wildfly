@@ -13,6 +13,7 @@ import org.jboss.as.controller.registry.Resource;
  * Provides child resources.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface ChildResourceProvider {
     /**
      * Returns a child resource with the specified name.

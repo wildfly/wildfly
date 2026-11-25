@@ -7,6 +7,7 @@ package org.jboss.as.test.clustering.single.infinispan.cdi.embedded.deployment;
 
 
 import java.util.Collection;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;

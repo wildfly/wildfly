@@ -11,7 +11,6 @@ import java.sql.SQLException;
 
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -35,8 +34,6 @@ public class ConnectionListenerTestCase extends AbstractTestsuite {
 
     private static final Logger log = Logger.getLogger(ConnectionListenerTestCase.class);
 
-    @ArquillianResource
-    private ContainerController controller;
     @ArquillianResource
     private Deployer deployer;
 

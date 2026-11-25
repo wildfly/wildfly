@@ -18,10 +18,8 @@
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core"/>
         <module name="org.infinispan.lock"/>
-        <module name="org.infinispan.objectfilter"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.infinispan.query.core"/>
-        <module name="org.infinispan.query.dsl"/>
+        <module name="org.infinispan.protostream.types" services="import"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 

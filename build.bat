@@ -45,8 +45,7 @@ set GOAL=%1
 if "%GOAL%"=="" set GOAL=install
 
 REM WFLY-8175 requires that we keep installing Maven under the tools directory
-REM the current project, at least when mvnw is invoked from build and integration-tests
-REM scripts
+REM the current project, at least when mvnw is invoked from the build script
 set GOAL=-Dmaven.user.home=%DIRNAME%\tools %GOAL%
 
 echo Calling "%MVN%" %GOAL% %2 %3 %4 %5 %6 %7

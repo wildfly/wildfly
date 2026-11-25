@@ -16,13 +16,18 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-webservices-tests-integration</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: Web Services Tests Integration Subsystem</name>
+
+    <properties>
+        <!-- Don't try to deploy the module -->
+        <skipPublishing>true</skipPublishing>
+    </properties>
 
     <dependencies>
         <dependency> <!-- Required by activemq... -->
@@ -83,7 +88,7 @@
             <artifactId>jboss-remoting</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>org.apache.artemis</groupId>
             <artifactId>artemis-commons</artifactId>
         </dependency>
         <!-- Required for activemq compatibility -->
@@ -162,4 +167,25 @@
             <artifactId>wildfly-client-properties</artifactId>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>empty-javadoc-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>javadoc</classifier>
+                            <classesDirectory>${project.basedir}/javadoc</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

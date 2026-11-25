@@ -1,0 +1,25 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+    <core-environment node-identifier="1">
+        <process-id>
+            <socket socket-binding="txn-socket-id" socket-process-id-max-ports="10"/>
+        </process-id>
+    </core-environment>
+    <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"
+                          recovery-listener="false"/>
+    <coordinator-environment enable-statistics="true" enable-tsm-status="true"
+                             default-timeout="300"/>
+    <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
+    <jts/>
+    <use-journal-store enable-async-io="true"/>
+    <commit-markable-resources>
+        <commit-markable-resource jndi-name="java:/foo">
+            <xid-location name="fooTable" batch-size="10" immediate-cleanup="false"/>
+        </commit-markable-resource>
+    </commit-markable-resources>
+    <client stale-transaction-time="600"/>
+</subsystem>

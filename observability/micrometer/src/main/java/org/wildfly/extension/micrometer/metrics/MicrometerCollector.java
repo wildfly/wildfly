@@ -33,29 +33,30 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
-public class MicrometerCollector {
+public class MicrometerCollector implements AutoCloseable {
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
     private final WildFlyRegistry micrometerRegistry;
+    private final Predicate<String> subsystemFilter;
 
     public MicrometerCollector(LocalModelControllerClient modelControllerClient,
                                ProcessStateNotifier processStateNotifier,
-                               WildFlyRegistry micrometerRegistry) {
+                               WildFlyRegistry micrometerRegistry,
+                               Predicate<String> subsystemFilter) {
         this.modelControllerClient = modelControllerClient;
         this.processStateNotifier = processStateNotifier;
         this.micrometerRegistry = micrometerRegistry;
+        this.subsystemFilter = subsystemFilter;
     }
 
     // collect metrics from the resources
     public synchronized MetricRegistration collectResourceMetrics(final Resource resource,
-                                                    ImmutableManagementResourceRegistration managementResourceRegistration,
-                                                    Function<PathAddress, PathAddress> resourceAddressResolver,
-                                                      Predicate<String> subsystemFilter) {
+                                                    ImmutableManagementResourceRegistration mrr,
+                                                    Function<PathAddress, PathAddress> addressResolver) {
         MetricRegistration registration = new MetricRegistration(micrometerRegistry);
+        queueMetricRegistration(resource, mrr, EMPTY_ADDRESS, addressResolver, registration);
 
-        queueMetricRegistration(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver,
-                registration, subsystemFilter);
-        // Defer the actual registration until the server is running and they can be collected w/o errors
+        // Defer the actual registration until the server is running, and they can be collected w/o errors
         this.processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -79,17 +80,30 @@ public class MicrometerCollector {
         return registration;
     }
 
+    public synchronized void collectResourceMetrics(Resource resource,
+                                                     ImmutableManagementResourceRegistration mrr,
+                                                     PathAddress address,
+                                                     Function<PathAddress, PathAddress> addressResolver,
+                                                     MetricRegistration registration) {
+        queueMetricRegistration(resource, mrr, address, addressResolver, registration);
+        registration.register();
+    }
+
+    @Override
+    public void close() throws Exception {
+        micrometerRegistry.close();
+    }
+
     private void queueMetricRegistration(final Resource current,
-                                         ImmutableManagementResourceRegistration managementResourceRegistration,
+                                         ImmutableManagementResourceRegistration mrr,
                                          PathAddress address,
-                                         Function<PathAddress, PathAddress> resourceAddressResolver,
-                                         MetricRegistration registration,
-                                         Predicate<String> subsystemFilter) {
-        if (!isExposingMetrics(address, subsystemFilter)) {
+                                         Function<PathAddress, PathAddress> addressResolver,
+                                         MetricRegistration registration) {
+        if (!isExposingMetrics(address)) {
             return;
         }
 
-        Map<String, AttributeAccess> attributes = managementResourceRegistration.getAttributes(address);
+        Map<String, AttributeAccess> attributes = mrr.getAttributes(address);
         if (attributes == null) {
             return;
         }
@@ -103,10 +117,10 @@ public class MicrometerCollector {
             }
 
             if (resourceDescription == null) {
-                DescriptionProvider modelDescription = managementResourceRegistration.getModelDescription(address);
+                DescriptionProvider modelDescription = mrr.getModelDescription(address);
                 resourceDescription = modelDescription.getModelDescription(Locale.getDefault());
             }
-            PathAddress resourceAddress = resourceAddressResolver.apply(address);
+            PathAddress resourceAddress = addressResolver.apply(address);
             String attributeName = entry.getKey();
             MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
             boolean isCounter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
@@ -123,13 +137,18 @@ public class MicrometerCollector {
             for (Resource.ResourceEntry entry : current.getChildren(type)) {
                 final PathElement pathElement = entry.getPathElement();
                 final PathAddress childAddress = address.append(pathElement);
-                queueMetricRegistration(entry, managementResourceRegistration, childAddress, resourceAddressResolver,
-                        registration, subsystemFilter);
+                queueMetricRegistration(entry, mrr, childAddress, addressResolver, registration);
             }
         }
     }
 
-    private boolean isExposingMetrics(PathAddress address, Predicate<String> subsystemFilter) {
+    /**
+     * Determines whether the configured subsystem filter includes metrics for an address.
+     *
+     * @param address the management resource address
+     * @return {@code true} when metrics at the address are exposed
+     */
+    public boolean isExposingMetrics(PathAddress address) {
         // root resource
         if (address.size() == 0) {
             return true;

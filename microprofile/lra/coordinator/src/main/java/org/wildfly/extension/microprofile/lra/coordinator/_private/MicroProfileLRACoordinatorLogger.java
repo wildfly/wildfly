@@ -17,6 +17,9 @@ import org.jboss.msc.service.StartException;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.lang.invoke.MethodHandles;
 
 /**
  * Log messages for WildFly microprofile-lra-coordinator Extension.
@@ -24,7 +27,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 @MessageLogger(projectCode = "WFLYTXLRACOORD", length = 4)
 public interface MicroProfileLRACoordinatorLogger extends BasicLogger {
 
-    MicroProfileLRACoordinatorLogger LOGGER = Logger.getMessageLogger(MicroProfileLRACoordinatorLogger.class, "org.wildfly.extension.microprofile.lra.coordinator");
+    MicroProfileLRACoordinatorLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(),MicroProfileLRACoordinatorLogger.class, "org.wildfly.extension.microprofile.lra.coordinator");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.
@@ -49,4 +52,8 @@ public interface MicroProfileLRACoordinatorLogger extends BasicLogger {
     @Message(id = 4, value = "Failed to stop Narayana MicroProfile LRA Coordinator at path %s/" + LRAConstants.COORDINATOR_PATH_NAME)
     void failedStoppingCoordinator(String path, @Cause ServletException cause);
 
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "Failed to start a recovery scan on the Narayana MicroProfile LRA Coordinator at path %s/"
+            + LRAConstants.COORDINATOR_PATH_NAME)
+    void failedToRunRecoveryScan(String path, @Cause Exception cause);
 }

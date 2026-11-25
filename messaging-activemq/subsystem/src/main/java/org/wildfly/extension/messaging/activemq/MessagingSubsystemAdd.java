@@ -2,24 +2,25 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY;
 import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.THREAD_POOL_MAX_SIZE_PROPERTY_KEY;
-import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureDiscoverySystemProperty;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureXxeSystemProperty;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -37,6 +38,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -57,7 +60,7 @@ import org.wildfly.extension.messaging.activemq.deployment.JMSDestinationDefinit
 import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
-import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
+import org.wildfly.extension.messaging.activemq.injection.deployment.CDIDeploymentProcessor;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
@@ -77,6 +80,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
+        configureXxeSystemProperty();
         // Cache support for capability service name lookups by our services
         MessagingServices.capabilityServiceSupport = context.getCapabilityServiceSupport();
 
@@ -129,22 +133,22 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (threadPoolMaxSizeValue != null || scheduledThreadPoolMaxSizeValue != null) {
             ActiveMQClient.initializeGlobalThreadPoolProperties();
-            if(threadPoolMaxSizeValue == null) {
+            if (threadPoolMaxSizeValue == null) {
                 threadPoolMaxSizeValue = ActiveMQClient.getGlobalThreadPoolSize();
             }
-            if(scheduledThreadPoolMaxSizeValue == null) {
+            if (scheduledThreadPoolMaxSizeValue == null) {
                 scheduledThreadPoolMaxSizeValue = ActiveMQClient.getGlobalScheduledThreadPoolSize();
             }
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
             ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue, ActiveMQClient.DEFAULT_FLOW_CONTROL_THREAD_POOL_MAX_SIZE);
         }
-        context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                .setInstance( new ThreadPoolService())
+        context.getCapabilityServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
+                .setInstance(new ThreadPoolService())
                 .install();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServiceTarget serviceTarget = context.getServiceTarget();
+                final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
                 final ServiceBuilder serviceBuilder = serviceTarget.addService(CONFIGURATION_CAPABILITY.getCapabilityServiceName());
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
@@ -159,16 +163,16 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 for (final String connectorSocketBinding : connectorsSocketBindings) {
                     // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                     if (outbounds.get(connectorSocketBinding)) {
-                        final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                        final ServiceName outboundSocketName = context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                         outboundSocketBindings.put(connectorSocketBinding, outboundSocketName);
                     } else {
                         // check if the socket binding has not already been added by the acceptors
                         if (!socketBindings.containsKey(connectorSocketBinding)) {
-                            socketBindings.put(connectorSocketBinding, SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding));
+                            socketBindings.put(connectorSocketBinding, context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding));
                         }
                     }
                 }
-                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations =new ArrayList<>();
+                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<>();
                 //this requires connectors
                 BroadcastGroupAdd.addBroadcastGroupConfigs(context, broadcastGroupConfigurations, connectors.keySet(), model);
                 final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = ConfigurationHelper.addDiscoveryGroupConfigurations(context, model);
@@ -176,6 +180,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final Map<String, ServiceName> commandDispatcherFactories = new HashMap<>();
                 final Map<String, ServiceName> groupBindings = new HashMap<>();
                 final Set<ServiceName> groupBindingServices = new HashSet<>();
+                final Set<String> socketBroadcastGroupNames = new LinkedHashSet<>();
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
@@ -188,6 +193,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketBroadcastGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
@@ -195,6 +201,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         groupBindings.put(key, groupBindingServiceName);
                     }
                 }
+                final Set<String> socketDiscoveryGroupNames = new LinkedHashSet<>();
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
                     final String key = "discovery" + name;
@@ -207,11 +214,19 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketDiscoveryGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }
                         groupBindings.put(key, groupBindingServiceName);
+                    }
+                }
+                configureDiscoverySystemProperty();
+
+                if (!socketDiscoveryGroupNames.isEmpty() || !socketBroadcastGroupNames.isEmpty()) {
+                    if (!Boolean.parseBoolean(org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged(MESSAGING_DISCOVERY_WARNING_DISABLED_PROPERTY_NAME, "false"))) {
+                        MessagingLogger.DISCOVERY_WARNING_LOGGER.udpMulticastWarning(socketDiscoveryGroupNames, socketBroadcastGroupNames);
                     }
                 }
                 serviceBuilder.setInstance(new ExternalBrokerConfigurationService(

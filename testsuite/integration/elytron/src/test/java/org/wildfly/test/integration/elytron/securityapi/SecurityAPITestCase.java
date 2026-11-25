@@ -139,7 +139,7 @@ public class SecurityAPITestCase {
                     assertEquals("Unexpected content of HTTP response.", USERNAME, EntityUtils.toString(response.getEntity()));
                 }
 
-                // Verify a good username and password establishes an identity with the SecurityDomain within an Jakarta Enterprise Beans
+                // Verify a good username and password establishes an identity with the SecurityDomain within a Jakarta Enterprise Beans bean
                 request = new HttpGet(new URI(url.toExternalForm() + "/test?ejb=true&source=SecurityDomain"));
                 request.addHeader(USERNAME_HEADER, USERNAME);
                 request.addHeader(PASSWORD_HEADER, PASSWORD);
@@ -149,7 +149,7 @@ public class SecurityAPITestCase {
                     assertEquals("Unexpected content of HTTP response.", USERNAME, EntityUtils.toString(response.getEntity()));
                 }
 
-                // Verify a good username and password establishes an identity with the SecurityContext within an Jakarta Enterprise Beans
+                // Verify a good username and password establishes an identity with the SecurityContext within a Jakarta Enterprise Beans bean
                 request = new HttpGet(new URI(url.toExternalForm() + "/test?ejb=true&source=SecurityContext"));
                 request.addHeader(USERNAME_HEADER, USERNAME);
                 request.addHeader(PASSWORD_HEADER, PASSWORD);

@@ -32,15 +32,14 @@ public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtens
 
     public static class StopCustomContainers {
         public void close(@Observes AfterSuite event, ContainerRegistry registry) {
-            for (Container c: registry.getContainers()) {
-                if (c.getState() == State.STARTED && "custom".equalsIgnoreCase(c.getContainerConfiguration().getMode())) {
+            for (Container<?> container: registry.getContainers()) {
+                if (container.getState() == State.STARTED && "custom".equalsIgnoreCase(container.getContainerConfiguration().getMode())) {
                     try {
-                        log.tracef("Stopping custom container %s", c.getName());
-                        // TODO workaround https://issues.jboss.org/browse/WFARQ-47
-                        c.stop();
-                        log.tracef("Stopped custom container %s", c.getName());
+                        log.tracef("Stopping custom container %s", container.getName());
+                        container.stop();
+                        log.tracef("Stopped custom container %s", container.getName());
                     } catch (LifecycleException e) {
-                        log.errorf("Failed to stop custom container %s: %s", c.getName(), e);
+                        log.errorf("Failed to stop custom container %s: %s", container.getName(), e);
                     }
                 }
             }

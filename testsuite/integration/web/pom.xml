@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -34,6 +34,9 @@
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
+        <keystore.base>${wildfly.dir}</keystore.base>
+        <genkey-keystore.phase>process-test-resources</genkey-keystore.phase>
+
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
         <bootable.copy-external-taglib-module-xml.phase>none</bootable.copy-external-taglib-module-xml.phase>
@@ -42,6 +45,41 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${cdi.api.groupId}</groupId>
+            <artifactId>${cdi.api.artifactId}</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>commons-logging-jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
@@ -65,16 +103,15 @@
             <artifactId>undertow-core</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.ee</groupId>
+            <artifactId>undertow-websockets</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -174,6 +211,12 @@
             <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -268,6 +311,46 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-api-1.7</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>generate-test-resources</phase>
+                        <id>clean-jcetest-keystore</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>${genkey-keystore.phase}</phase>
+                        <id>genkey-jcetest-keystore</id>
+                        <goals>
+                            <goal>generateKeyPair</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>${keystore.base}/standalone/configuration/sso.keystore</keystore>
+                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                    <storetype>PKCS12</storetype>
+                    <keypass>password</keypass>
+                    <storepass>password</storepass>
+                    <alias>localhost</alias>
+                    <keyalg>RSA</keyalg>
+                    <keysize>2048</keysize>
+                    <validity>365</validity>
+                    <verbose>true</verbose>
+                </configuration>
+            </plugin>
             <!-- Pack external tag library module before bootable JAR is packed -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -294,13 +377,6 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.ee.galleon.pack.version}</version>
-                        </feature-pack>
-                    </feature-packs>
                     <config-name>standalone.xml</config-name>
                     <add-ons>
                         <add-on>ssl</add-on>
@@ -322,21 +398,28 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
                 <executions>
                     <!-- Package a datasources-web-server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
                         <configuration>
-                            <output-file-name>test-wildfly-web-profile.jar</output-file-name>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-web-profile.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extra-content>${basedir}/target/wildfly-users</extra-content>
                                 <extra-content>${basedir}/target/external-taglib-module</extra-content>
                             </extra-server-content-dirs>
                             <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -433,6 +516,7 @@
             <properties>
                 <glow.phase>test-compile</glow.phase>
                 <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
+                <genkey-keystore.phase>process-test-classes</genkey-keystore.phase>
             </properties>
             <build>
                 <plugins>
@@ -440,7 +524,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                         </configuration>
@@ -451,7 +534,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>process-test-classes</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
                                     <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                                     <record-provisioning-state>false</record-provisioning-state>
@@ -536,6 +619,7 @@
                 <bootable.create-external-taglib-module.phase>process-test-classes</bootable.create-external-taglib-module.phase>
                 <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
+                <keystore.base>${basedir}/target/wildfly-users</keystore.base>
             </properties>
             <build>
                 <plugins>
@@ -557,7 +641,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-lb</id>
@@ -615,7 +698,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar WildFly Preview -->
         <profile>
             <id>bootablejar.preview.profile</id>
@@ -637,6 +720,7 @@
                 <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
                 <glow.phase>test-compile</glow.phase>
+                <keystore.base>${basedir}/target/wildfly-users</keystore.base>
             </properties>
             <build>
                 <plugins>
@@ -658,7 +742,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-lb</id>
@@ -738,6 +821,28 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Some deps need to differ based on whether we are testing EE 10 or EE 11+ -->
+        <profile>
+            <id>ee-11-deps</id>
+            <activation>
+                <property>
+                    <name>preview-server-tests</name>
+                </property>
+            </activation>
+            <dependencies>
+            </dependencies>
+            </profile>
+        <profile>
+            <id>ee-10-deps</id>
+            <activation>
+                <property>
+                    <name>!preview-server-tests</name>
+                </property>
+            </activation>
+            <dependencies>
+            </dependencies>
         </profile>
 
     </profiles>

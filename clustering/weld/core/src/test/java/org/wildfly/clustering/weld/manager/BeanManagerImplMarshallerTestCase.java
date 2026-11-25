@@ -4,12 +4,12 @@
  */
 package org.wildfly.clustering.weld.manager;
 
-import java.io.IOException;
-
 import org.jboss.weld.manager.BeanManagerImpl;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.weld.BeanManagerProvider;
 
 /**
@@ -18,9 +18,10 @@ import org.wildfly.clustering.weld.BeanManagerProvider;
  */
 public class BeanManagerImplMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<BeanManagerImpl> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(BeanManagerProvider.INSTANCE.apply("foo", "bar"));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<BeanManagerImpl> tester = factory.createTester();
+        tester.accept(BeanManagerProvider.INSTANCE.apply("foo", "bar"));
     }
 }

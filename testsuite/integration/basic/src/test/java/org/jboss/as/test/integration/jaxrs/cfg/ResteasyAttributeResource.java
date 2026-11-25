@@ -5,21 +5,24 @@
 package org.jboss.as.test.integration.jaxrs.cfg;
 
 import javax.naming.NamingException;
+
+import jakarta.inject.Inject;
 import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.UriInfo;
 
 @Path("attribute")
 public class ResteasyAttributeResource {
 
+    @Inject
+    private ServletContext context;
+
     @Path("{param}")
     @GET
     @Produces("text/plain")
-    public String getParameter(@PathParam("param") String param, @Context UriInfo info, @Context ServletContext context) throws NamingException {
+    public String getParameter(@PathParam("param") String param) throws NamingException {
         return context.getInitParameter(param);
     }
 }

@@ -22,8 +22,8 @@ $ ./bin/jboss-cli.sh --connect controller=IP_ADDRESS
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:read-resource
 {
-    "outcome" => "success",
-    "result" => {"value" => "bar"}
+    "outcome" => "success",
+    "result" => {"value" => "bar"}
 }
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:remove
 {"outcome" => "success"}
@@ -190,15 +190,30 @@ Assume you have a host that is called "primary"
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=primary:read-config-as-xml
+[domain@localhost:9990 /] attachment display --operation=/host=primary:read-config-as-xml-file
+----
+
+If you want to get the configuration of the server "main-one" hosted on "primary":
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] attachment display --operation=/host=primary/server=main-one:read-config-as-xml-file
 ----
 
 Just for the domain or standalone
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] :read-config-as-xml
+[domain@localhost:9990 /] attachment display --operation=:read-config-as-xml-file
 ----
+
+If you want to save the file you can use:
+----
+[standalone@localhost:9990 /] attachment save --operation=:read-config-as-xml-file --file=/home/wildfly/tmp/standalone-runtime.xml
+----
+
+Please note that the operation "read-config-as-xml" that used to return the XML as a String has been deprecated.
+
 
 [[take-a-snapshot-of-what-the-current-domain-is]]
 === Take a snapshot of what the current domain is
@@ -209,11 +224,12 @@ Just for the domain or standalone
 {
     "outcome" => "success",
     "result" => {
-        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/domain_xml_history/snapshot/20110908-165222603domain.xml"}},
+        "domain-results" => {"step-1" => {"name" => "$JBOSS_HOME/domain/configuration/domain_xml_history/snapshot/20110908-165222603domain.xml"}},
         "server-operations" => undefined
     }
 }
 ----
+
 
 [[take-the-latest-snapshot-of-the-host.xml-for-a-particular-host]]
 === Take the latest snapshot of the host.xml for a particular host
@@ -226,7 +242,7 @@ Assume you have a host that is called "primary"
 {
     "outcome" => "success",
     "result" => {
-        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/host_xml_history/snapshot/20110908-165640215host.xml"}},
+        "domain-results" => {"step-1" => {"name" => "$JBOSS_HOME/domain/configuration/host_xml_history/snapshot/20110908-165640215host.xml"}},
         "server-operations" => undefined
     }
 }
@@ -313,7 +329,7 @@ script (e.g. 'bin/jboss-admin.bat --connect command=:shutdown').
 
 To avoid "Press any key to continue ..." message you need to specify
 NOPAUSE variable. Call 'set NOPAUSE=true' in command line before running
-any WildFly {wildflyVersion} .bat script or include it in your custom script before
+any WildFly .bat script or include it in your custom script before
 invoking scripts from WildFly.
 
 [[statistics]]
@@ -656,7 +672,7 @@ for a complete description of the command.
 [[mp-cli-script]]
 == Evolving standard configurations with support for MicroProfile
 
-The CLI script _JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
+The CLI script _$JBOSS_HOME/docs/examples/enable-microprofile.cli_ can be applied to a default standalone configuration
 to add support for MicroProfile.
 
 Impact on updated configuration:

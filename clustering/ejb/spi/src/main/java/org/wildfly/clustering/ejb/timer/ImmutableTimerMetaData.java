@@ -14,7 +14,7 @@ import java.util.function.Predicate;
  * Describes the immutable metadata of a timer.
  * @author Paul Ferraro
  */
-public interface ImmutableTimerMetaData {
+public interface ImmutableTimerMetaData extends TimeoutMetaData {
 
     /**
      * Returns the type of this timer
@@ -53,10 +53,4 @@ public interface ImmutableTimerMetaData {
      * @return the optional time of the last timeout event
      */
     Optional<Instant> getLastTimeout();
-
-    /**
-     * Returns the time of the next timeout event, or null if there are no future timeout events.
-     * @return the optional time of the next timeout event
-     */
-    Optional<Instant> getNextTimeout();
 }

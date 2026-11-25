@@ -30,7 +30,9 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -38,6 +40,7 @@ import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -83,6 +86,9 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
     };
     private static final int ITERATION_COUNT = 1024;
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, NAME + ".war").addClasses(SimpleServlet.class);
@@ -118,8 +124,8 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:undefine-attribute(name=generate-self-signed-certificate-host)",
                     NAME));
-            cli.sendLine(String.format("reload"));
         }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
         try {
             assertTrue(SERVER_KEYSTORE_FILE.exists());
             assertTrue(CLIENT_TRUSTSTORE_FILE.exists());
@@ -146,8 +152,8 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:write-attribute(name=generate-self-signed-certificate-host,value=%s)",
                         NAME, GENERATE_SELF_SIGNED_CERTIFICATE_HOST));
-                cli.sendLine(String.format("reload"));
             }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 

@@ -45,23 +45,24 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
             if (main != null) {
                 String mainClass = main.getValue("Main-Class");
                 if (mainClass != null && !mainClass.isEmpty()) {
+                    final Class<?> clazz;
                     try {
-                        final Class<?> clazz = module.getClassLoader().loadClass(mainClass);
-                        deploymentUnit.putAttachment(AppClientAttachments.MAIN_CLASS, clazz);
-                        final ApplicationClientComponentDescription description = new ApplicationClientComponentDescription(clazz.getName(), moduleDescription, deploymentUnit.getServiceName());
-                        moduleDescription.addComponent(description);
-                        deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT, description);
-
-                        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
-                        if (environment != null) {
-                            DescriptorEnvironmentLifecycleMethodProcessor.handleMethods(environment, moduleDescription, mainClass);
-                        }
-                    } catch (ClassNotFoundException e) {
+                        clazz = module.getClassLoader().loadClass(mainClass);
+                    } catch (Throwable e) {
                         throw AppClientLogger.ROOT_LOGGER.cannotLoadAppClientMainClass(e);
                     }
+                    deploymentUnit.putAttachment(AppClientAttachments.MAIN_CLASS, clazz);
+                    final ApplicationClientComponentDescription description = new ApplicationClientComponentDescription(clazz.getName(), moduleDescription, deploymentUnit.getServiceName());
+                    moduleDescription.addComponent(description);
+                    deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT, description);
 
+                    final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
+                    if (environment != null) {
+                        DescriptorEnvironmentLifecycleMethodProcessor.handleMethods(environment, moduleDescription, mainClass);
+                    }
                 }
             }
         }
     }
 }
+

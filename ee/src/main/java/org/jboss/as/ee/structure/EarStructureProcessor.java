@@ -28,6 +28,7 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData.ModuleType;
@@ -67,6 +68,11 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static final String DEFAULT_LIB_DIR = "lib";
 
+    private final boolean appclient;
+
+    public EarStructureProcessor(boolean appclient) {
+        this.appclient = appclient;
+    }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -161,7 +167,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 // otherwise read from application.xml
                 for (final ModuleMetaData module : earMetaData.getModules()) {
 
-                    if(module.getFileName().endsWith(".xml")) {
+                    if (module.getFileName().endsWith(".xml")) {
                         throw EeLogger.ROOT_LOGGER.unsupportedModuleType(module.getFileName());
                     }
 
@@ -179,39 +185,45 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     }
 
                     // maintain this in a collection of subdeployment virtual files, to be used later
-                    subDeploymentFiles.add(moduleFile);
+                    subDeploymentFiles.add(moduleFile); // Note that we track this file as a subdeployment (i.e. not a lib) even if we don't deploy it
 
-                    final boolean webArchive = module.getType() == ModuleType.Web;
-                    final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, webArchive);
-                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
+                    if (isDeployableSubdeployment(earMetaData, module)) {
 
-                    if (!webArchive) {
-                        ModuleRootMarker.mark(childResource);
-                    }
+                        EeLogger.ROOT_LOGGER.debugf("Processing subdeployment %s of type %s", module.getFileName(), module.getType());
+                        final boolean webArchive = module.getType() == ModuleType.Web;
+                        final ResourceRoot childResource = this.createResourceRoot(deploymentUnit, moduleFile, true, webArchive);
+                        childResource.putAttachment(org.jboss.as.ee.structure.Attachments.MODULE_META_DATA, module);
 
-                    final String alternativeDD = module.getAlternativeDD();
-                    if (alternativeDD != null && alternativeDD.trim().length() > 0) {
-                        final VirtualFile alternateDeploymentDescriptor = deploymentRoot.getRoot().getChild(alternativeDD);
-                        if (!alternateDeploymentDescriptor.exists()) {
-                            throw EeLogger.ROOT_LOGGER.alternateDeploymentDescriptor(alternateDeploymentDescriptor, moduleFile);
+                        if (!webArchive) {
+                            ModuleRootMarker.mark(childResource);
                         }
-                        switch (module.getType()) {
-                            case Client:
-                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
-                                break;
-                            case Connector:
-                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
-                                break;
-                            case Ejb:
-                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_EJB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
-                                break;
-                            case Web:
-                                childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
-                                break;
-                            case Service:
-                                throw EeLogger.ROOT_LOGGER.unsupportedModuleType(module.getFileName());
 
+                        final String alternativeDD = module.getAlternativeDD();
+                        if (alternativeDD != null && alternativeDD.trim().length() > 0) {
+                            final VirtualFile alternateDeploymentDescriptor = deploymentRoot.getRoot().getChild(alternativeDD);
+                            if (!alternateDeploymentDescriptor.exists()) {
+                                throw EeLogger.ROOT_LOGGER.alternateDeploymentDescriptor(alternateDeploymentDescriptor, moduleFile);
+                            }
+                            switch (module.getType()) {
+                                case Client:
+                                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                    break;
+                                case Connector:
+                                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                    break;
+                                case Ejb:
+                                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_EJB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                    break;
+                                case Web:
+                                    childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
+                                    break;
+                                case Service:
+                                    throw EeLogger.ROOT_LOGGER.unsupportedModuleType(module.getFileName());
+
+                            }
                         }
+                    } else {
+                        EeLogger.ROOT_LOGGER.debugf("Skipping subdeployment %s of type %s", module.getFileName(), module.getType());
                     }
                 }
                 // now check the rest of the archive for any other jar/sar files
@@ -234,6 +246,13 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private static Closeable mount(VirtualFile moduleFile, boolean explode) throws IOException {
         return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
                 : VFS.mountZip(moduleFile.getPhysicalFile(), moduleFile, TempFileProviderService.provider());
+    }
+
+    private boolean isDeployableSubdeployment(EarMetaData earMetaData, ModuleMetaData module) {
+        if (appclient && module.getType() != ModuleType.Client && earMetaData instanceof JBossAppMetaData jBossAppMetaData) {
+            return !jBossAppMetaData.isLimitAppclientModules();
+        }
+        return true;
     }
 
     /**

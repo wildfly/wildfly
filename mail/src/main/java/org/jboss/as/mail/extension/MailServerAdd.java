@@ -8,10 +8,6 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
-import java.util.List;
-import java.util.Set;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -24,20 +20,18 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
- * @created 8.12.11 0:19
  */
 class MailServerAdd extends RestartParentResourceAddHandler {
 
-    MailServerAdd(AttributeDefinition[] attributes) {
-        super(MailSubsystemModel.MAIL_SESSION, Set.of(), List.of(attributes));
+    MailServerAdd() {
+        super(MailSubsystemModel.MAIL_SESSION);
     }
 
     @Override
     protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        populateModel(operation, resource.getModel());
+        super.updateModel(context, operation);
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         handleCredentialReferenceUpdate(context, resource.getModel());
-        recordCapabilitiesAndRequirements(context, operation, resource);
     }
 
     @Override

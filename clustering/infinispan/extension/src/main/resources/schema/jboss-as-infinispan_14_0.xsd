@@ -504,7 +504,7 @@
         </xs:attribute>
         <xs:attribute name="segmented" type="xs:boolean" default="true">
             <xs:annotation>
-                <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
+                <xs:documentation>Indicates whether or not the cache store is segmented. The number of segments is defined by the segments attribute of the associated cache resource.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

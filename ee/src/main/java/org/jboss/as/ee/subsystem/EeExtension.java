@@ -17,6 +17,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -29,7 +30,7 @@ public class EeExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "ee";
     private static final String RESOURCE_NAME = EeExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = EESubsystemModel.Version.v6_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = EESubsystemModel.Version.v7_0_0;
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -51,16 +52,11 @@ public class EeExtension implements Extension {
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // register submodels
-        final boolean runtimeOnlyRegistrationValid = context.isRuntimeOnlyRegistrationValid();
-        rootResource.registerSubModel(new ContextServiceResourceDefinition());
-        rootResource.registerSubModel(new ManagedThreadFactoryResourceDefinition());
-        rootResource.registerSubModel(new ManagedExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
-        rootResource.registerSubModel(new ManagedScheduledExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
+        ConcurrencyImplementation.INSTANCE.registerRootResourceSubModels(rootResource, context);
         rootResource.registerSubModel(new DefaultBindingsResourceDefinition(new DefaultBindingsConfigurationProcessor()));
         rootResource.registerSubModel(new GlobalDirectoryResourceDefinition());
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
-
     }
 
     /**
@@ -76,6 +72,7 @@ public class EeExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_4_0.getUriString(), EESubsystemParser40::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_5_0.getUriString(), EESubsystemParser50::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_6_0.getUriString(), EESubsystemParser60::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_7_0.getUriString(), EESubsystemParser70::new);
         context.setProfileParsingCompletionHandler(new BeanValidationProfileParsingCompletionHandler());
     }
 

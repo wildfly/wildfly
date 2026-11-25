@@ -4,13 +4,17 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.infinispan.commons.util.Version;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -19,8 +23,8 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base implementation for every clustering test which guarantees a framework contract as follows:
@@ -34,7 +38,7 @@ import org.junit.Before;
  * may be overridden.
  * <p>
  * Furthermore, this base class provides common constants for node/instance-id, deployment/deployment helpers, timeouts and provides
- * convenience methods for managing container and deployment lifecycle ({@link #start(String...)}, {@link #deploy(String...)}, etc).
+ * convenience methods for managing container and deployment lifecycle ({@link #start(Set)}, {@link #deploy(Set)}, etc.).
  *
  * @author Radoslav Husar
  */
@@ -47,12 +51,9 @@ public abstract class AbstractClusteringTestCase {
     public static final String NODE_2 = "node-2";
     public static final String NODE_3 = "node-3";
     public static final String NODE_4 = "node-4";
-    @Deprecated public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
-    @Deprecated public static final String[] THREE_NODES = new String[] { NODE_1, NODE_2, NODE_3 };
-    @Deprecated public static final String[] FOUR_NODES = new String[] { NODE_1, NODE_2, NODE_3, NODE_4 };
-    public static final Set<String> NODE_1_2 = Set.of(TWO_NODES);
-    public static final Set<String> NODE_1_2_3 = Set.of(THREE_NODES);
-    public static final Set<String> NODE_1_2_3_4 = Set.of(FOUR_NODES);
+    public static final Set<String> NODE_1_2 = Set.of(NODE_1, NODE_2);
+    public static final Set<String> NODE_1_2_3 = Set.of(NODE_1, NODE_2, NODE_3);
+    public static final Set<String> NODE_1_2_3_4 = Set.of(NODE_1, NODE_2, NODE_3, NODE_4);
     public static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
     // Test deployment names
@@ -60,34 +61,31 @@ public abstract class AbstractClusteringTestCase {
     public static final String DEPLOYMENT_2 = "deployment-2";
     public static final String DEPLOYMENT_3 = "deployment-3";
     public static final String DEPLOYMENT_4 = "deployment-4";
-    @Deprecated public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
-    @Deprecated public static final String[] THREE_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3 };
-    @Deprecated public static final String[] FOUR_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
-    public static final Set<String> DEPLOYMENT_1_2 = Set.of(TWO_DEPLOYMENTS);
-    public static final Set<String> DEPLOYMENT_1_2_3 = Set.of(THREE_DEPLOYMENTS);
-    public static final Set<String> DEPLOYMENT_1_2_3_4 = Set.of(FOUR_DEPLOYMENTS);
+    public static final Set<String> DEPLOYMENT_1_2 = Set.of(DEPLOYMENT_1, DEPLOYMENT_2);
+    public static final Set<String> DEPLOYMENT_1_2_3 = Set.of(DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3);
+    public static final Set<String> DEPLOYMENT_1_2_3_4 = Set.of(DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4);
 
     // Helper deployment names
     public static final String DEPLOYMENT_HELPER_1 = "deployment-helper-0";
     public static final String DEPLOYMENT_HELPER_2 = "deployment-helper-1";
     public static final String DEPLOYMENT_HELPER_3 = "deployment-helper-2";
     public static final String DEPLOYMENT_HELPER_4 = "deployment-helper-3";
-    @Deprecated public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
-    @Deprecated public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
-    public static final Set<String> DEPLOYMENT_HELPER_1_2 = Set.of(TWO_DEPLOYMENT_HELPERS);
-    public static final Set<String> DEPLOYMENT_HELPER_1_2_3_4 = Set.of(FOUR_DEPLOYMENT_HELPERS);
+    public static final Set<String> DEPLOYMENT_HELPER_1_2 = Set.of(DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2);
+    public static final Set<String> DEPLOYMENT_HELPER_1_2_3 = Set.of(DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3);
+    public static final Set<String> DEPLOYMENT_HELPER_1_2_3_4 = Set.of(DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4);
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
-    public static final String INFINISPAN_SERVER_PROFILE = System.getProperty("infinispan.server.profile");
-    public static final String INFINISPAN_SERVER_PROFILE_DEFAULT = "infinispan-14_0.xml";
+    public static final String INFINISPAN_SERVER_PROFILE = Optional.ofNullable(System.getProperty("infinispan.server.profile")).filter(Predicate.not(String::isBlank)).orElse(String.format("infinispan-%s.xml", Version.getMajorMinor()));
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
-    public static final int INFINISPAN_SERVER_PORT = 11222;
+    public static final int INFINISPAN_SERVER_PORT = 11322;
     public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
     public static final String INFINISPAN_APPLICATION_PASSWORD = "testsuite-application-password";
 
     // Undertow-based WildFly load-balancer
     public static final String LOAD_BALANCER_1 = "load-balancer-1";
+    public static final int LOAD_BALANCER_1_PORT_OFFSET = 500;
+    public static final int LOAD_BALANCER_1_MCMP_PORT = 8090 + LOAD_BALANCER_1_PORT_OFFSET;
 
     // H2 database
     public static final String DB_PORT = System.getProperty("dbport", "9092");
@@ -95,7 +93,12 @@ public abstract class AbstractClusteringTestCase {
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(4000);
     public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);
-    public static final int GRACEFUL_SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
+    /**
+     * Time to wait for the EJB client to receive a cluster topology update from the server.
+     * Accommodate for the fact that a client topology update does not necessarily mean that the beans on the server are available.
+     */
+    public static final Duration EJB_CLIENT_TOPOLOGY_UPDATE_WAIT = Duration.ofMillis(TimeoutUtil.adjust(5000));
+    public static final int SUSPEND_TIMEOUT_S = TimeoutUtil.adjust(60);
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
     public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
@@ -105,10 +108,6 @@ public abstract class AbstractClusteringTestCase {
     public static final String TESTSUITE_NODE1 = System.getProperty("node1", "127.0.0.1");
     public static final String TESTSUITE_NODE2 = System.getProperty("node2", "127.0.0.1");
     public static final String TESTSUITE_NODE3 = System.getProperty("node3", "127.0.0.1");
-    public static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
-    public static final String TESTSUITE_MCAST1 = System.getProperty("mcast1", "230.0.0.5");
-    public static final String TESTSUITE_MCAST2 = System.getProperty("mcast2", "230.0.0.6");
-    public static final String TESTSUITE_MCAST3 = System.getProperty("mcast3", "230.0.0.7");
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final Map<String, String> CONTAINER_TO_DEPLOYMENT = Map.of(NODE_1, DEPLOYMENT_1, NODE_2, DEPLOYMENT_2, NODE_3, DEPLOYMENT_3, NODE_4, DEPLOYMENT_4);
@@ -137,39 +136,53 @@ public abstract class AbstractClusteringTestCase {
         this(NODE_1_2);
     }
 
-    @Deprecated
-    public AbstractClusteringTestCase(String[] nodes) {
-        this(Set.of(nodes));
-    }
-
     public AbstractClusteringTestCase(Set<String> containers) {
         this(containers, toDeployments(containers));
     }
 
-    @Deprecated
-    public AbstractClusteringTestCase(String[] nodes, String[] deployments) {
-        this(Set.of(nodes), Set.of(deployments));
+    public AbstractClusteringTestCase(Set<String> containers, Set<String> deployments) {
+        this.containers = Set.copyOf(containers);
+        this.deployments = Set.copyOf(deployments);
     }
 
-    public AbstractClusteringTestCase(Set<String> containers, Set<String> deployments) {
-        this.containers = containers;
-        this.deployments = deployments;
+    /**
+     * Returns an unmodifiable set of container names available for this clustering test.
+     *
+     * @return an unmodifiable set of container names available for this clustering test.
+     */
+    public Set<String> getContainers() {
+        return this.containers;
+    }
+
+    /**
+     * Returns an unmodifiable set of deployment names available for this clustering test.
+     *
+     * @return an unmodifiable set of deployment names available for this clustering test.
+     */
+    public Set<String> getDeployments() {
+        return this.deployments;
     }
 
     /**
      * Guarantees that prior to test method execution
      * (1) all containers that are not used in the test are stopped and,
      * (2) all requested containers are running and,
-     * (3) all requested deployments are deployed thus allowing all necessary test resources injection.
+     * (3) all requested deployments are deployed thus allowing all necessary test resource injection.
      */
-    @Before
+    @BeforeEach
     public void beforeTestMethod() throws Exception {
         this.containerRegistry.getContainers().forEach(container -> {
             if (container.getState() == Container.State.STARTED && !this.containers.contains(container.getName())) {
-                // Even though we should be able to just stop the container object this currently fails with:
-                // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
-                this.stop(container.getName());
-                log.debugf("Stopped container '%s' which was started but not requested for this test.", container.getName());
+                try {
+                    // Also keep use graceful shutdown here instead of plain "container.stop()"; e.g. for EJB client topology handling
+                    this.stop(container.getName());
+                } catch (Exception ex) {
+                    // TODO Workaround for https://issues.redhat.com/browse/WFLY-21519
+                    // The actual exception is LifecycleException (checked), sneakily rethrown by Arquillian's UncheckedThrow util
+                    // after WildFlyContainerLifecycleController sets the container state to STOPPED_FAILED.
+                    log.errorf(ex, "Failed to stop container %s! This container might be tainted for future tests!", container.getName());
+                }
+                log.infof("Stopped container %s which was started but not requested for this test.", container.getName());
             }
         });
 
@@ -180,16 +193,18 @@ public abstract class AbstractClusteringTestCase {
     /**
      * Guarantees that all deployments are undeployed after the test method has been executed.
      */
-    @After
+    @AfterEach
     public void afterTestMethod() throws Exception {
         this.start();
         this.undeploy();
     }
 
     // Node and deployment lifecycle management convenience methods
-    @Deprecated
-    protected void start(String... containers) {
-        start(Set.of(containers));
+
+    // Container.start(..) methods
+
+    protected boolean isStarted(String container) {
+        return NodeUtil.isStarted(this.controller, container);
     }
 
     protected void start() {
@@ -204,44 +219,50 @@ public abstract class AbstractClusteringTestCase {
         NodeUtil.start(this.controller, containers);
     }
 
-    @Deprecated
-    protected void stop(String... containers) {
-        stop(Set.of(containers));
-    }
+    // Container.stop(..) methods
 
+    // n.b. all stop methods for the purposes of clustering tests by default use a suspend-timeout;
+    // use 0 explicitly to not wait for active sessions to finish
+
+    /**
+     * Gracefully stops all containers configured for this test case with default suspend timeout of 60 seconds (adjusted).
+     * To stop the containers without waiting for all requests to finish, use {@link #stop(java.lang.String, int)} with suspend timeout of 0.
+     */
     protected void stop() {
-        this.stop(this.containers);
+        this.stop(this.containers, SUSPEND_TIMEOUT_S);
     }
 
+    /**
+     * Gracefully stops given container with default suspend timeout of 60 seconds (adjusted).
+     * To stop the container without waiting for all requests to finish, use {@link #stop(java.lang.String, int)} with suspend timeout of 0.
+     */
     protected void stop(String container) {
-        NodeUtil.stop(this.controller, container);
+        NodeUtil.stop(this.controller, container, SUSPEND_TIMEOUT_S);
     }
 
+    /**
+     * Sequentially gracefully stops given set of containers with default suspend timeout of 60 seconds (adjusted).
+     * To stop the containers without waiting for all requests to finish, use {@link #stop(java.lang.String, int)} with suspend timeout of 0.
+     */
     protected void stop(Set<String> containers) {
-        NodeUtil.stop(this.controller, containers);
+        this.stop(containers, SUSPEND_TIMEOUT_S);
     }
 
-    protected boolean isStarted(String container) {
-        return NodeUtil.isStarted(this.controller, container);
+    /**
+     * Gracefully stops given container with a given suspend timeout.
+     */
+    protected void stop(String container, int suspendTimeout) {
+        NodeUtil.stop(this.controller, container, suspendTimeout);
     }
 
-    @Deprecated
-    protected void stop(int timeout, String... containers) {
-        stop(Set.of(containers), timeout);
+    /**
+     * Gracefully stops given set of containers with a given suspend timeout.
+     */
+    protected void stop(Set<String> containers, int suspendTimeout) {
+        NodeUtil.stop(this.controller, containers, suspendTimeout);
     }
 
-    protected void stop(String container, int timeout) {
-        NodeUtil.stop(this.controller, container, timeout);
-    }
-
-    protected void stop(Set<String> containers, int timeout) {
-        NodeUtil.stop(this.controller, containers, timeout);
-    }
-
-    @Deprecated
-    protected void deploy(String... deployments) {
-        deploy(Set.of(deployments));
-    }
+    // Container deployment methods
 
     protected void deploy() {
         this.deploy(this.deployments);
@@ -253,11 +274,6 @@ public abstract class AbstractClusteringTestCase {
 
     protected void deploy(Set<String> deployments) {
         NodeUtil.deploy(this.deployer, deployments);
-    }
-
-    @Deprecated
-    protected void undeploy(String... deployments) {
-        undeploy(Set.of(deployments));
     }
 
     protected void undeploy() {
@@ -281,18 +297,14 @@ public abstract class AbstractClusteringTestCase {
     }
 
     public static int getPortOffsetForNode(String node) {
-        switch (node) {
-            case NODE_1:
-                return 0;
-            case NODE_2:
-                return 100;
-            case NODE_3:
-                return 200;
-            case NODE_4:
-                return 300;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (node) {
+            case NODE_1 -> 0;
+            case NODE_2 -> 100;
+            case NODE_3 -> 200;
+            case NODE_4 -> 300;
+            case LOAD_BALANCER_1 -> LOAD_BALANCER_1_PORT_OFFSET;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     static Set<String> toDeployments(Set<String> containers) {
@@ -310,6 +322,12 @@ public abstract class AbstractClusteringTestCase {
         void stop(Set<String> containers);
     }
 
+    /**
+     * A simple restart lifecycle which does *not* perform a graceful shutdown.
+     * In most cases the {@link GracefulRestartLifecycle} should be used instead.
+     *
+     * @see GracefulRestartLifecycle
+     */
     public class RestartLifecycle implements Lifecycle {
         @Override
         public void start(Set<String> containers) {
@@ -318,14 +336,14 @@ public abstract class AbstractClusteringTestCase {
 
         @Override
         public void stop(Set<String> containers) {
-            AbstractClusteringTestCase.this.stop(containers);
+            AbstractClusteringTestCase.this.stop(containers, 0);
         }
     }
 
     public class GracefulRestartLifecycle extends RestartLifecycle {
         @Override
         public void stop(Set<String> containers) {
-            AbstractClusteringTestCase.this.stop(containers, GRACEFUL_SHUTDOWN_TIMEOUT);
+            AbstractClusteringTestCase.this.stop(containers);
         }
     }
 

@@ -16,8 +16,7 @@ import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
 
 /**
  * @author Paul Ferraro
@@ -39,7 +38,7 @@ public class ScheduleTimerMetaDataEntryMarshaller implements ProtoStreamMarshall
     @Override
     public ScheduleTimerMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
         FieldSetReader<ImmutableScheduleExpressionBuilder> expressionReader = reader.createFieldSetReader(ImmutableScheduleExpressionMarshaller.INSTANCE, SCHEDULE_EXPRESSION_INDEX);
-        MarshalledValue<Object, Object> context = null;
+        ByteBufferMarshalledValue<Object> context = null;
         Instant start = Instant.EPOCH;
         Duration lastTimeout = null;
         ImmutableScheduleExpressionBuilder expressionBuilder = ImmutableScheduleExpressionMarshaller.INSTANCE.createInitialValue();

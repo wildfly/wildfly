@@ -7,10 +7,9 @@ package org.wildfly.extension.messaging.activemq.broadcast;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
- * A {@link BroadcastEndpointFactory} based on a {@link CommandDispatcherFactory}.
+ * A {@link BroadcastEndpointFactory} based on a {@link org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory}.
  * @author Paul Ferraro
  */
 @SuppressWarnings("serial")

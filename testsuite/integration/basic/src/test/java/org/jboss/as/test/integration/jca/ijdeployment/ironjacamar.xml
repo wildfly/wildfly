@@ -4,14 +4,16 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<ironjacamar>
-    <bootstrap-context>default</bootstrap-context>
-    <transaction-support>XATransaction</transaction-support>
+<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.ironjacamar.org/doc/schema https://www.ironjacamar.org/doc/schema/ironjacamar_1_3.xsd">
     <bean-validation-groups>
         <bean-validation-group>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup</bean-validation-group>
         <bean-validation-group>org.jboss.as.test.integration.jca.beanvalidation.ra.ValidGroup1</bean-validation-group>
     </bean-validation-groups>
+    <bootstrap-context>default</bootstrap-context>
     <config-property name="raProperty">4</config-property>
+    <transaction-support>XATransaction</transaction-support>
     <connection-definitions>
         <connection-definition
                 class-name="org.jboss.as.test.integration.jca.beanvalidation.ra.ValidManagedConnectionFactory"

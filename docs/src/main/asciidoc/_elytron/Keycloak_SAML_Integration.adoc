@@ -1,11 +1,11 @@
 [[Keycloak_SAML_Integration]]
 = Using Keycloak SAML
 
-To secure applications deployed to WildFly using Keycloak SAML, a Galleon feature pack provided
-by the Keycloak project needs to be used. This feature pack automatically installs the Keycloak
+To secure applications deployed to WildFly using Keycloak SAML, a Galleon feature-pack provided
+by the Keycloak project needs to be used. This feature-pack automatically installs the Keycloak
 SAML adapter that results in the `keycloak-saml` subsystem being added to WildFly.
 
-There are a few ways to install the Keycloak Galleon Feature Pack that provides the SAML adapter.
+There are a few ways to install the Keycloak Galleon Feature-pack that provides the SAML adapter.
 
 [[galleon-cli]]
 == Galleon CLI
@@ -31,12 +31,12 @@ galleon.sh install org.keycloak:keycloak-saml-adapter-galleon-pack:22.0.1 --laye
 
 [NOTE]
 ====
-Unlike the WildFly feature pack, this Keycloak feature pack is not part of a universe and so a fully
-qualified `group:artifact:version` reference to the feature pack is required.
+Unlike the WildFly feature-pack, this Keycloak feature-pack is not part of a universe and so a fully
+qualified `group:artifact:version` reference to the feature-pack is required.
 ====
 
 From this point, applications can be configured as described in the
-https://www.keycloak.org/docs/latest/securing_apps/index.html#_saml_jboss_adapter[Keycloak documentation].
+https://www.keycloak.org/securing-apps/saml-galleon-layers[Keycloak documentation].
 
 [[bootable-jar]]
 == Bootable JAR
@@ -52,8 +52,8 @@ using both the `web-server` and `keycloak-client-saml` layers:
 ----
 <plugin>
     <groupId>org.wildfly.plugins</groupId>
-    <artifactId>wildfly-jar-maven-plugin</artifactId>
-    <version>${version.wildfly.jar.maven.plugin}</version>
+    <artifactId>wildfly-maven-plugin</artifactId>
+    <version>${version.wildfly.maven.plugin}</version>
     <configuration>
         <feature-packs>
             <feature-pack>
@@ -69,14 +69,15 @@ using both the `web-server` and `keycloak-client-saml` layers:
             <layer>web-server</layer>
             <layer>keycloak-client-saml</layer>
         </layers>
-        <context-root>simple-webapp</context-root>
-        <cli-sessions>
-            <cli-session>
-                <script-files>
-                    <script>configure-saml.cli</script>
-                </script-files>
-            </cli-session>
-        </cli-sessions>
+        <bootable-jar>true</bootable-jar>
+        <name>simple-webapp.war</name>
+        <packaging-scripts>
+          <packaging-script>
+            <scripts>
+              <script>configure-saml.cli</script>
+            </scripts>
+          </packaging-script>
+        </packaging-scripts>
     </configuration>
     <executions>
         <execution>
@@ -91,11 +92,11 @@ using both the `web-server` and `keycloak-client-saml` layers:
 [NOTE]
 ====
 As with using the CLI, the latest version of WildFly in the universe can be dynamically selected but the
-Keycloak feature pack requires the complete `groupId`, `artifactId`, and `version` to be specified.
+Keycloak feature-pack requires the complete `groupId`, `artifactId`, and `version` to be specified.
 ====
 
 The approaches to configure the web application are the same as described in the
-https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[Keycloak documentation].
+https://www.keycloak.org/securing-apps/saml-galleon-layers-detailed-config[Keycloak documentation].
 In this example, a CLI script, `configure-saml.cli`, is executed to update the Keycloak SAML subsystem
 with relevant configuration.
 
@@ -176,15 +177,15 @@ using both the `web-server` and `keycloak-client-saml` layers:
 [NOTE]
 ====
 As with the bootable JAR configuration, note that the latest version of WildFly in the universe can be dynamically
-selected but the Keycloak feature pack requires the complete `groupId`, `artifactId`, and `version` to be
+selected but the Keycloak feature-pack requires the complete `groupId`, `artifactId`, and `version` to be
 specified.
 ====
 
-[[identity-propagation]]
+[[saml-identity-propagation]]
 == Propagating the Security Context to EJBs
 
 The sample configuration in the above sections has referenced the `keycloak-client-saml` layer.
 If the security context for the application that is being secured with Keycloak SAML needs to
 be propagated to the EJB tier, the `keycloak-client-saml-ejb` layer should be used instead.
 This layer adds an `application-security-domain` mapping in the EJB3 subsystem to map the default
-security domain name `other` to the `KeycloakDomain` that is installed by the Keycloak feature pack.
+security domain name `other` to the `KeycloakDomain` that is installed by the Keycloak feature-pack.

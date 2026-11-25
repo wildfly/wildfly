@@ -5,6 +5,8 @@
 
 package org.jboss.as.test.shared;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,26 +18,91 @@ import java.util.stream.Stream;
 
 import org.jboss.as.test.layers.LayersTest;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * Base class for tests of Galleon layers provided by WildFly feature-packs as well as of the proper exposure and use
+ * of JBoss Modules modules by those feature-packs. Different subclasses will extend this class to support testing
+ * of different feature-packs.
+ * <p/>
+ * This class and its subclasses are somewhat misnamed as they test more than installations
+ * that have been slimmed to only provide certain Galleon layers. They also include tests that test
+ * un-slimmed installations, i.e. {@link #testUnreferencedModules()} and {@link #testDefaultConfigs()}.
+ * <p/>
+ * These tests cover a number of topics:
+ * <ol>
+ *     <li>Ensuring that each layer can be used by itself to provision a server that can boot without errors.
+ *     See {@link #testLayersBoot()}</li>
+ *     <li>Ensuring that layers don't provision 'banned' modules. See {@link #checkBannedModules()}</li>
+ *     <li>Ensuring that all modules are associated with at least one layer unless an explanation as to why not
+ *     is provided. Discourages the inclusion of functionality that is only available in an un-slimmed server.
+ *     See {@link #testLayersModuleUse()}</li>
+ *     <li>Testing that all modules in an un-slimmed server are needed to provide functionality defined
+ *     in the standard {@code standalone.xml}, unless an explanation as to why not is provided. Discourages
+ *     the accumulation of no-longer-necessary modules. See {@link #testUnreferencedModules()}</li>
+ * </ol>
+ * <p>
+ * These tests assume that before running the maven {@code test} phase the {@code pom.xml} for the maven module that
+ * includes a subclass of this class will have provisioned a number of WildFly installations in a directory
+ * whose location is available via the {@code layers.installation.root} system property.
+ * <ol>
+ *     <li>One installation for each layer provided by the feature-pack being tested, not including other layers
+ *     provided by other feature-packs the feature-pack under test depends upon. Each layer should have an
+ *     installation that only provides that layer. There may also be other installations that provide more than one layer.
+ *     Each of these installations is tested by the {@link #testLayersBoot()} test and the
+ *     {@link #checkBannedModules()} test.</li>
+ *     <li>One installation that has not been slimmed and that therefore should include all JBoss Module modules
+ *     available from the feature-pack. This installation is called the {@code test-standalone-reference} installation.
+ *     It is used in both the {@link #getExpectedUnreferenced()} and {@link #testLayersModuleUse()} tests.
+ *     </li>
+ *     <li>One installation that has been slimmed using layers, but where the list of layers includes all of those
+ *     that can be used with the feature-pack (including ones provided by a dependency feature-pack), excluding any
+ *     that are an alternative to one of the others. This installation is called the {@code test-all-layers} installation.
+ *     It is used in the {@link #testLayersModuleUse()} test.
+ *     </li>
+ * </ol>
+ * <p/>
+ * In addition, a set of installations will have been provisioned in a directory whose location is available via the
+ * {@code std.default.install.root} system property. There will be one installation for each of the main 'standard'
+ * configuration files -- {@code standalone.xml}, {@code standalone-ha.xml}, {@code standalone-full.xml} and
+ * {@code standalone-full-ha.xml}. These installations are tested by the {@link #testDefaultConfigs()} test.
+ * <p/>
+ * Subclasses must implement the {@link #getExpectedUnreferenced()} and {@link #getExpectedUnusedInAllLayers()} methods
+ * to provide lists of modules that meet the criteria described in the javadoc for each method. This class provides
+ * constants of type {@code String[]} that define names of modules that are applicable to different cases, i.e.
+ * relevant to one method or the other or both, and relevant to a particular feature-pack or another or a combination.
+ * The expectation is subclasses will implement {@link #getExpectedUnreferenced()} and
+ * {@link #getExpectedUnusedInAllLayers()} by concatenating together the arrays that are relevant to the feature-pack(s)
+ * tested by the subclass.
+ * <p/>
+ * When adding elements to the various String[] constants, maintainers should group the elements based on the
+ * reason why they are being added and preface each group with an explanatory comment.
+ */
 public abstract class LayersTestBase {
 
     /**
-     * Gets the expected set of packages that are not referenced from the module graph
-     * but need to be provisioned.
-     * This is the expected set of modules found when scanning the default configuration that are
-     * not referenced directly or transitively from a standalone server's root module or from
-     * one of the extensions used in standalone.xml.
+     * Gets the expected set of packages that are not referenced from an un-slimmed server's module graph
+     * but that need to be provisioned.
+     * <p/>
+     * This is the expected set of modules found when scanning the {@code test-standalone-reference} installation
+     * that are not referenced (i.e. depended upon) directly or transitively from a standalone server's root module
+     * or from one of the extensions used in standalone.xml.
+     * <p/>
+     * See the various constants with "NOT_REFERENCED" in their name for examples of such modules and the reason
+     * why they are not referenced.
      */
     protected abstract Set<String> getExpectedUnreferenced();
 
     /**
-     * Gets the expected set of packages that are provisioned by the test-standalone-reference installation
-     * but not used in the test-all-layers installation.
+     * Gets the expected set of packages that are provisioned by the {@code test-standalone-reference} installation
+     * but not used in the {@code test-all-layers} installation.
+     * <p/>
      * This is the expected set of not provisioned modules when all layers are provisioned; i.e.
-     * those that are not associated with any layer included in the test-all-layers installation.
+     * those that are not associated with any layer included in the {@code test-all-layers} installation.
+     * <p/>
+     * See the various constants with "NO_LAYER" in their name for examples of such modules and the reason why
+     * they are not associated with a layer used in the {@code test-all-layers} installation.
      */
     protected abstract Set<String> getExpectedUnusedInAllLayers();
 
@@ -52,48 +119,71 @@ public abstract class LayersTestBase {
             "org.hornetq.client",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
-            // TODO should an undertow layer specify this?
-            "org.wildfly.event.logger",
+            // Although we provide a galleon layer for security, it is not usable with EE 11+, so we do not provision
+            // it even if the galleon layer is in used. That's just to provide a smooth transition for users who are using
+            // the extension in EE 10 and earlier. This extension is not part of the default config and only provided by
+            // un-slimmed installations that are expected to be used for Domain Mode servers.
+            "org.wildfly.extension.security.manager",
     };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
-     * only when testing provisioning directly from the wildfly-ee feature pack.
+     * only when testing provisioning using the 'latest' variant
+     * of the wildfly-ee feature-pack.
+     */
+    public static final String[] NO_LAYER_STD_EE_LATEST = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            "org.wildfly.extension.jakarta.data",
+            "jakarta.data.api"
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning using the 'legacy' variant
+     * of the wildfly-ee feature-pack.
+     */
+    public static final String[] NO_LAYER_STD_EE_LEGACY = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            // also not included in the default configs. (But it is referenced via org.hibernate)
+            "jakarta.data.api"
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning directly from any variant of the wildfly-ee feature-pack.
      */
     public static final String[] NO_LAYER_WILDFLY_EE = {
             // In 'wildfly-ee' this is only a dep of org.apache.activemq.artemis.protocol.amqp,
             // which is not part of test-all-layers. It is used in a layer in 'wildfly' and 'wildfly-preview'
-            "org.apache.qpid.proton"
+            "org.apache.qpid.proton",
     };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
-     * when testing provisioning from the wildfly or wildfly-preview feature packs.
-     * Use this array for items common between the two feature packs.
+     * when testing provisioning from the wildfly or wildfly-preview feature-packs.
+     * Use this array for items common between the two feature-packs.
      */
     public static final String[] NO_LAYER_EXPANSION = {
             // Legacy subsystems for which we will not provide layers
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
-            // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
-            "org.wildfly.reactive.dep.jts",
     };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
-     * only when testing provisioning from the wildfly feature pack.
+     * only when testing provisioning from the wildfly feature-pack.
      */
     public static final String[] NO_LAYER_WILDFLY = {
             // Preview stability 'mvc-krazo' layer cannot be provisioned in OOTB standard wildfly
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy"
+            "org.eclipse.krazo.resteasy",
     };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
-     * only when testing provisioning from the wildfly-preview feature pack.
+     * only when testing provisioning from the wildfly-preview feature-pack.
      */
     public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
             // WFP standard config uses Micrometer instead of WF Metrics
@@ -108,7 +198,7 @@ public abstract class LayersTestBase {
             "org.wildfly.naming",
             // Injected by jaxrs
             "org.jboss.resteasy.resteasy-json-binding-provider",
-            // Injected by jaxrs and also depended upon by narayano-rts, which is part of the non-OOTB rts subsystem
+            // Injected by jaxrs and also depended upon by narayana-rts, which is part of the non-OOTB rts subsystem
             "org.jboss.resteasy.resteasy-json-p-provider",
             // The console ui content is not part of the kernel nor is it provided by an extension
             "org.jboss.as.console",
@@ -133,8 +223,6 @@ public abstract class LayersTestBase {
             "org.wildfly.security.elytron-tool",
             // bootable jar runtime
             "org.wildfly.bootable-jar",
-            // Extension not included in the default config
-            "org.wildfly.extension.clustering.singleton",
             // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
             "org.wildfly.security.jakarta.security",
             // injected by sar
@@ -147,10 +235,7 @@ public abstract class LayersTestBase {
             "org.infinispan.cdi.common",
             "org.infinispan.cdi.embedded",
             "org.infinispan.cdi.remote",
-            "org.infinispan.counter",
-            "org.infinispan.lock",
             "org.infinispan.query",
-            "org.infinispan.query.core",
             // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
@@ -162,25 +247,49 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
-            "wildflyee.api"
+            "wildflyee.api",
+            // read-only extension that is not part of the default config
+            "org.wildfly.extension.security.manager",
+            // HashiCorp Vault extension is available but not included in the default config
+            "io.github.jopenlibs.vault-java-driver",
+            "org.wildfly.extension.hashicorp-vault",
+            "org.wildfly.security.elytron-hashicorp-vault",
     };
 
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * only when testing provisioning directly from the wildfly-ee feature pack.
+     * only when testing provisioning using the 'latest' variant
+     * of the wildfly-ee feature-pack.
+     */
+    public static final String[] NOT_REFERENCED_STD_EE_LATEST = {
+            // Only referenced by the unreferenced org.infinispan.query
+            // In the legacy variant this is referenced by other Hibernate modules
+            "org.hibernate.commons-annotations"
+    };
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning using the 'legacy' variant
+     * of the wildfly-ee feature-pack.
+     */
+    public static final String[] NOT_REFERENCED_STD_EE_LEGACY = {
+    };
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning directly from any variant of the wildfly-ee feature-pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
-            "org.apache.logging.log4j.api",
-            "org.jboss.logmanager.log4j2",
     };
 
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * when testing provisioning from the wildfly or wildfly-preview feature packs.
-     * Use this array for items common between the two feature packs.
+     * when testing provisioning from the wildfly or wildfly-preview feature-packs.
+     * Use this array for items common between the two feature-packs.
      */
     public static final String[] NOT_REFERENCED_EXPANSION = {
             // Extension not included in the default config
@@ -195,15 +304,13 @@ public abstract class LayersTestBase {
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.lra-coordinator",
             "org.wildfly.extension.microprofile.lra-participant",
-            "org.jboss.narayana.rts.lra-service-base",
-            "org.jboss.narayana.rts.lra-coordinator",
-            "org.jboss.narayana.rts.lra-participant",
+            "org.jboss.narayana.lra.lra-service-base",
+            "org.jboss.narayana.lra.lra-coordinator",
+            "org.jboss.narayana.lra.lra-participant",
             "org.eclipse.microprofile.lra.api",
+            "io.smallrye.stork",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
-            "org.eclipse.microprofile.openapi.api",
-            "io.smallrye.openapi",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
             // Extension not included in the default config
@@ -228,14 +335,14 @@ public abstract class LayersTestBase {
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * only when testing provisioning from the wildfly feature pack.
+     * only when testing provisioning from the wildfly feature-pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY = {
             // Extension not included in the default config
             "org.wildfly.extension.micrometer",
             "org.wildfly.micrometer.deployment",
             "io.micrometer",
-            "com.google.protobuf",
+            "io.prometheus",
             "io.opentelemetry.proto",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
@@ -246,7 +353,7 @@ public abstract class LayersTestBase {
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * only when testing provisioning from the wildfly-preview feature pack.
+     * only when testing provisioning from the wildfly-preview feature-pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
             // Extension not included in the default config
@@ -255,7 +362,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy"
+            "org.eclipse.krazo.resteasy",
+            // Not needed for WildFly as this module is effectively replaced by org.hibernate.models.hibernate-models
+            "org.hibernate.commons-annotations",
+            "org.wildfly.extension.vertx",
     };
 
     /**
@@ -286,7 +396,7 @@ public abstract class LayersTestBase {
             // Legacy extension not in ootb standalone.xml extension list
             // and not in test-all-layers as it is admin-only
             "org.jboss.as.security",
-            // TODO move eclipse link support to an external feature pack
+            // TODO move eclipse link support to an external feature-pack
             "org.eclipse.persistence",
             // RA not associated with any layer
             "org.jboss.genericjms",
@@ -311,7 +421,26 @@ public abstract class LayersTestBase {
     /**
      * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
      * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
-     * directly from the wildfly-ee feature pack.
+     * directly from the 'latest' variant of the wildfly-ee feature-pack.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_COMMON_EE_LATEST = {
+    };
+
+    /**
+     * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
+     * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
+     * directly from the 'legacy' variant of the wildfly-ee feature-pack.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_COMMON_EE_LEGACY = {
+            // 'community' stability extension so not yet included in "all-layers" installation
+            // also not included in the default configs
+            "org.wildfly.extension.jakarta.data",
+    };
+
+    /**
+     * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
+     * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
+     * directly from any variant of the wildfly-ee feature-pack.
      */
     public static final String[] NO_LAYER_OR_REFERENCE_WILDFLY_EE = {
             // In wildfly-ee only referenced by the
@@ -319,7 +448,7 @@ public abstract class LayersTestBase {
             "io.reactivex.rxjava2.rxjava",
             // Downstream uses this in installations provisioned with wildfly-ee but upstream does not.
             // To make life easier downstream we include it in wildfly-ee.
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml"
+            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
     };
 
     /**
@@ -347,9 +476,9 @@ public abstract class LayersTestBase {
     /**
      * A HashMap to configure a banned module.
      * They key is the banned module name, the value is an optional List with the installation names that are allowed to
-     * provision the banned module. This installations will be ignored.
+     * provision the banned module. The presence of the module in these installations will be ignored.
      * <p>
-     * Notice the allowed installation names does not distinguish between different parent names, e.g test-all-layers here means
+     * Notice the allowed installation names does not distinguish between different parent names, e.g. test-all-layers here means
      * allowing root/test-all-layers and servletRoot/test-all-layers.
      */
     private static final HashMap<String, List<String>> BANNED_MODULES_CONF = new HashMap<>(){{
@@ -367,6 +496,10 @@ public abstract class LayersTestBase {
         scanContext = new LayersTest.ScanContext(root);
     }
 
+    /**
+     * If the {@code layers.delete.installations} system property is set to {@code true},
+     * deletes all the provisioned installations.
+     */
     @AfterClass
     public static void cleanUp() {
         boolean delete = Boolean.getBoolean("layers.delete.installations");
@@ -403,8 +536,11 @@ public abstract class LayersTestBase {
     /**
      * Checks that all modules that were provisioned in the @{code test-standalone-reference} installation are also
      * provisioned in @{test-all-layers}, except those included in the {@link #getExpectedUnusedInAllLayers()} set.
+     * <p/>
      * The goals of this test are to check for new modules that should be provided by layers but currently are not
      * and to encourage inclusion of existing modules not used in a layer to have an associated layer.
+     * <p/>
+     * See the class javadoc for a description of the @{code test-standalone-reference} and @{test-all-layers} installations.
      *
      * @throws Exception on failure
      */
@@ -414,10 +550,13 @@ public abstract class LayersTestBase {
     }
 
     /**
-     * Checks that all modules in the @{code test-standalone-reference} installation are referenced from
-     * the installation root module or extension modules configured in standalone.xml, except those
-     * included in the {@link #getExpectedUnreferenced()} set. The goal of this test is to prevent the
-     * accumulation of 'orphaned' modules that are not usable.
+     * Checks that all modules in the @{code test-standalone-reference} installation are referenced
+     * (i.e. directly or transitively depended upon) from the installation root module or the extension modules
+     * configured in standalone.xml, except those included in the {@link #getExpectedUnreferenced()} set.
+     * <p/>
+     * The goal of this test is to prevent the accumulation of 'orphaned' modules that are not usable.
+     * <p/>
+     * See the class javadoc for a description of the @{code test-standalone-reference} installation.
      *
      * @throws Exception on failure
      */
@@ -435,11 +574,11 @@ public abstract class LayersTestBase {
     @Test
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
-        Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
+        assertThat(results).as("The following banned modules were provisioned").isEmpty();
     }
 
     /**
-     * Checks that the installation found in the given {@code std.default.install.root} directory can be started
+     * Checks that the installations found in the given {@code std.default.install.root} directory can be started
      * without errors, i.e. with the {@code WFLYSRV0025} log message in the server's stdout stream.
      *
      * @throws Exception on failure

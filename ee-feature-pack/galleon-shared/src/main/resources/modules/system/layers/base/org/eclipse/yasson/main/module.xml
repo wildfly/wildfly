@@ -12,11 +12,15 @@
     </properties>
 
     <resources>
-        <artifact name="${org.eclipse:yasson}"/>
+        <artifact name="${org.eclipse.yasson:yasson}"/>
     </resources>
 
     <dependencies>
         <module name="java.logging"/>
+        <module name="java.desktop"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.json.api"/>
         <module name="jakarta.json.bind.api"/>

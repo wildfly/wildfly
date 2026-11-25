@@ -98,7 +98,8 @@ public class MixedDomainTestSuite {
     }
 
     /**
-     * Call this from a @BeforeClass method
+     * Creates a MixedDomainTestSupport where the Domain Controller, which is the current WildFly version, is launched with the
+     * domain configuration of the legacy Host Controller, for example EAP 8.0.0 or EAP 7.4.0.
      *
      * @param testClass the test/suite class
      * @param version the version of the legacy secondary.

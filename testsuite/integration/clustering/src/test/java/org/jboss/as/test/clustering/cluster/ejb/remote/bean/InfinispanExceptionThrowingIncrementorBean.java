@@ -9,7 +9,7 @@ import jakarta.ejb.Remote;
 import jakarta.ejb.Stateful;
 
 import org.infinispan.commons.CacheException;
-import org.infinispan.util.concurrent.TimeoutException;
+import org.infinispan.commons.TimeoutException;
 
 /**
  * Implementation of {@link Incrementor} which always throws a standard remotable (known to a client classloader) exception

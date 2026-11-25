@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<verifications xmlns="http://maven.apache.org/verifications/1.0.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://maven.apache.org/verifications/1.0.0 http://maven.apache.org/xsd/verifications-1.0.0.xsd">
+<!--
+    1) bin/product.conf exists
+    2) bin/product.conf has a slot property with a value equal to the value of the
+       'full.dist.product.slot' property
+    3) jboss-modules.jar must exist
+    4) standalone/configuration/standalone.xml must exist
+    5) modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml exists
+    6) the module.xml above contains to 'org.wildfly:wildfly-preview-feature-pack-product-conf'
+    7) the .galleon dir exists
+    8) no .galleon/history dir exists
+-->
+  <files>
+    <file>
+      <location>target/${legacy.server.output.dir}/bin/product.conf</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/bin/product.conf</location>
+      <contains>slot=${full.dist.product.slot}</contains>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/modules/system/layers/base/org/jboss/as/product/${full.dist.product.slot}/module.xml</location>
+      <contains>org.wildfly:wildfly-feature-pack-product-conf</contains>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/jboss-modules.jar</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/standalone/configuration/standalone.xml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${legacy.server.output.dir}/.galleon/history</location>
+      <exists>false</exists>
+    </file>
+  </files>
+</verifications>

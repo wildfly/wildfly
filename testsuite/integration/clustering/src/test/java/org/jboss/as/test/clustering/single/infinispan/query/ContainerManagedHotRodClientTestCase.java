@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.clustering.single.infinispan.query;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import jakarta.annotation.Resource;
 
@@ -13,7 +13,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.single.infinispan.query.data.Person;
 import org.jboss.as.test.clustering.single.infinispan.query.data.PersonSchema;
@@ -23,8 +23,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Variant of the {@link HotRodClientTestCase} using container-managed objects.
@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @since 27
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({ ServerSetupTask.class })
 public class ContainerManagedHotRodClientTestCase {
 
@@ -43,7 +43,7 @@ public class ContainerManagedHotRodClientTestCase {
                 .addClass(ContainerManagedHotRodClientTestCase.class)
                 .addPackage(PersonSchema.class.getPackage())
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), PersonSchema.class.getName() + "Impl")
-                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan, org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.query, org.infinispan.protostream").exportAsString()))
+                .setManifest(new StringAsset(Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan.commons, org.infinispan.client.hotrod, org.infinispan.protostream").exportAsString()))
                 ;
     }
 
@@ -51,12 +51,16 @@ public class ContainerManagedHotRodClientTestCase {
     private RemoteCacheContainer remoteCacheContainer;
 
     @Test
-    public void testPutGetCustomObject() {
-        RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache();
-        cache.clear();
-
-        Person p = new Person("Martin");
-        cache.put("k1", p);
-        assertEquals(p.getName(), cache.get("k1").getName());
+    void putGetCustomObject() {
+        RemoteCache<String, Person> cache = this.remoteCacheContainer.getCache("query");
+        cache.start();
+        try {
+            Person p = new Person("Martin");
+            cache.put("k1", p);
+            assertEquals(p.getName(), cache.get("k1").getName());
+        } finally {
+            cache.clear();
+            cache.stop();
+        }
     }
 }

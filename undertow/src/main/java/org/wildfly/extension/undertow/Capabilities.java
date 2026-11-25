@@ -13,16 +13,18 @@ public final class Capabilities {
     Capabilities in this subsystem
      */
     public static final String CAPABILITY_UNDERTOW = "org.wildfly.undertow";
-    public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
-    public static final String CAPABILITY_SERVER = "org.wildfly.undertow.server";
-    public static final String CAPABILITY_SERVER_LISTENER = "org.wildfly.undertow.server.listener";
-    @Deprecated public static final String CAPABILITY_HOST = Host.SERVICE_DESCRIPTOR.getName();
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_SERVER = Server.SERVICE_DESCRIPTOR.getName();
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_SERVER_LISTENER = UndertowListener.SERVICE_DESCRIPTOR.getName();
+    @Deprecated(forRemoval = true) public static final String CAPABILITY_HOST = Host.SERVICE_DESCRIPTOR.getName();
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
     public static final String CAPABILITY_ACCESS_LOG = "org.wildfly.undertow.host.access-log";
     public static final String CAPABILITY_CONSOLE_ACCESS_LOG = "org.wildfly.undertow.host.console-access-log";
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
-    public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
+    public static final String CAPABILITY_FILTER = "org.wildfly.extension.undertow.filter";
+    public static final String CAPABILITY_HOST_FILTER_REF = "org.wildfly.extension.undertow.host.filter-ref";
+    public static final String CAPABILITY_LOCATION_FILTER_REF = "org.wildfly.extension.undertow.location.filter-ref";
     public static final String CAPABILITY_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
     public static final String CAPABILITY_WEBSOCKET = "org.wildfly.undertow.servlet-container.websocket";
     public static final String CAPABILITY_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";

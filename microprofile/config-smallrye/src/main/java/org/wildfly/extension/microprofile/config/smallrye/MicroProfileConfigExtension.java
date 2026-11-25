@@ -42,7 +42,8 @@ public class MicroProfileConfigExtension implements Extension {
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
+    protected static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_1_0;
 
     private static final MicroProfileConfigSubsystemParser_1_0 PARSER_1_0 = new MicroProfileConfigSubsystemParser_1_0();
     private static final MicroProfileConfigSubsystemParser_2_0 PARSER_2_0 = new MicroProfileConfigSubsystemParser_2_0();

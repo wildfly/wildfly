@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.jboss.as.network;
 
 import "java.net.proto";
@@ -8,8 +10,8 @@ import "java.net.proto";
  * @TypeId(330)
  */
 message ClientMapping {
-	required	java.net.InetAddress	address = 1;
-	required	int32	sourceMask	= 2;
-	required	string	destAddress	= 3;
-	required	int32	destPort	= 4;
+	java.net.InetAddress	address = 1;
+	int32	sourceMask	= 2;
+	string	destAddress	= 3;
+	int32	destPort	= 4;
 }

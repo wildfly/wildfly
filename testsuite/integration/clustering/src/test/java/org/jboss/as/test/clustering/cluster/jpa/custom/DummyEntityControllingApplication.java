@@ -5,11 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
-import jakarta.ws.rs.ApplicationPath;
-import jakarta.ws.rs.core.Application;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
 /**
  * @author Tommaso Borgato

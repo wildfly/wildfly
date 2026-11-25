@@ -308,6 +308,15 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
                 // property specific to ActiveMQ that can not be mapped to HornetQ
                 continue;
             }
+            if (TransportConstants.HOST_PROP_NAME.equals(legacyKey) && value instanceof String) {
+                String host = (String) value;
+                // The legacy HornetQ NettyConnector sets the HTTP Host header to the bare host value.
+                // A bare IPv6 address (e.g. "::1") produces a malformed Host header; wrapping in
+                // brackets makes it valid per RFC 7230 and InetAddress.getByName() strips them.
+                if (host.contains(":") && !host.startsWith("[")) {
+                    value = "[" + host + "]";
+                }
+            }
             legacyParams.put(legacyKey, value);
         }
         return legacyParams;

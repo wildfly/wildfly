@@ -56,7 +56,7 @@ import org.junit.Test;
  * <p>
  * It also maintains the configuration of the current release, see ExtensionConf.CURRENT. When an extension is added or
  * removed on the current release, that extension must be tracked down on the ExtensionConf.CURRENT object. Once the
- * current release moves to the next mayor, if the ExtensionConf.CURRENT has extensions added or removed during the
+ * current release moves to the next major, if the ExtensionConf.CURRENT has extensions added or removed during the
  * current development cycle, the test will fail, forcing us to create new ExtensionConf objects for each previous
  * releases not defined in the test and point out ExtensionConf.CURRENT to the new current release without any
  * additional / removed extensions.
@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "33.";
+    private static final String MAJOR = "43.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -202,14 +202,24 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         WILDFLY_32_0("WildFly32.0", WILDFLY_31_0, List.of(
                 "org.wildfly.extension.mvc-krazo"
         ), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_32_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_33_0("WildFly33.0", WILDFLY_32_0, List.of(), List.of(), true),
+        WILDFLY_34_0("WildFly34.0", WILDFLY_33_0, List.of(), List.of(), true),
+        WILDFLY_35_0("WildFly35.0", WILDFLY_34_0, List.of("org.wildfly.extension.jakarta.data"), List.of(), true),
+        WILDFLY_36_0("WildFly36.0", WILDFLY_35_0, List.of(), List.of(), true),
+        WILDFLY_37_0("WildFly37.0", WILDFLY_36_0, List.of(), List.of(), true),
+        WILDFLY_38_0("WildFly38.0", WILDFLY_37_0, List.of(), List.of(), true),
+        WILDFLY_39_0("WildFly39.0", WILDFLY_38_0, List.of(), List.of(), true),
+        WILDFLY_40_0("WildFly40.0", WILDFLY_39_0, List.of(), List.of(), true),
+        WILDFLY_41_0("WildFly41.0", WILDFLY_40_0, List.of(), List.of(), true),
+        WILDFLY_42_0("WildFly42.0", WILDFLY_41_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_42_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of();
+            return List.of("org.wildfly.extension.hashicorp-vault");
         }
 
         private static List<String> getCurrentRemovedExtensions() {
@@ -228,6 +238,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         }
 
         private final String name;
+        private final ExtensionConf parent;
         private final Set<String> extensions = new HashSet<>();
         private final Set<String> removed = new HashSet<>();
         private static final Map<String, ExtensionConf> MAP;
@@ -235,7 +246,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         private final boolean supported;
 
         // List of extensions added by the wildfly-galleon-pack
-        private final Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+        private final Set<String> expansionExtensions = new HashSet<>(Arrays.asList(
                 "org.wildfly.extension.micrometer",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
@@ -243,20 +254,25 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",
+                "org.wildfly.extension.microprofile.opentracing-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
                 "org.wildfly.extension.microprofile.lra-coordinator",
                 "org.wildfly.extension.microprofile.lra-participant",
-                "org.wildfly.extension.microprofile.telemetry"
+                "org.wildfly.extension.microprofile.telemetry",
+                "org.wildfly.extension.mvc-krazo",
+                "org.wildfly.extension.opentelemetry"
         ));
 
-        // List of extensions added only by the WildFly Preview
+        // List of extensions added only by WildFly Preview.
         // We do not track changes between different versions of WildFly Preview.
         // From the point of view of this test, all extensions added in WildFly Preview are always extensions
         // added in the latest release of WildFly Preview. It is out of the scope of Host Exclusion test
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
         private final Set<String> previewExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.jakarta.data",
+                "org.wildfly.extension.vertx"
         ));
 
         ExtensionConf(String name, ExtensionConf parent, boolean supported) {
@@ -277,6 +293,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
          */
         ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, List<String> removedExtensions, boolean supported) {
             this.name = name;
+            this.parent = parent;
             this.modified = (addedExtensions != null && !addedExtensions.isEmpty()) || (removedExtensions != null && !removedExtensions.isEmpty());
             if (addedExtensions != null) {
                 this.extensions.addAll(addedExtensions);
@@ -314,7 +331,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 this.extensions.addAll(previewExtensions);
             }
             if (!isFullDistribution && !isPreview) {
-                return diff.apply(extensions, mpExtensions);
+                return diff.apply(extensions, expansionExtensions);
             }
             return extensions;
         }
@@ -441,9 +458,34 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         for(ExtensionConf extensionConf : ExtensionConf.values()) {
             if (extensionConf != ExtensionConf.CURRENT && extensionConf.isSupported() && !processedExclusionsIds.contains(extensionConf.getName())) {
                 Set<String> extensions = extensionConf.getExtensions(isFullDistribution, isPreviewGalleonPack);
-                extensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
+                ExtensionConf major = ExtensionConf.forName(MAJOR);
+                extensions.removeAll(major.getRemovedExtensions());
                 if (!extensions.equals(availableExtensions)) {
-                    fail(String.format("The %s exclusion id is not defined as host exclusion for the current release.", extensionConf.getName()));
+                    boolean fail = !isPreviewGalleonPack;
+                    if (!fail) {
+                        // If a preview-only extension remains preview-only beyond its initial release, there may be
+                        // no host-exclude for its initial release, if nothing else added later needed an exclude
+                        // for that release. But it also won't be in 'extensions'. We don't want to track in which
+                        // release it arrived, so for any version between current and the first one where we have
+                        // a host-exclude, treat it as if it were present.
+                        // This opens the possibility of this test missing that the developer added the extension
+                        // to existing host-exclude entries but forgot to add a new host-exclude,
+                        // but the alternative is complete tracking of when extensions come and go from WFP.
+                        fail = true;
+                        ExtensionConf conf = major;
+                        while (conf != null && !processedExclusionsIds.contains(conf.getName())) {
+                            if (conf == extensionConf) {
+                                extensions.addAll(major.previewExtensions);
+                                fail = !extensions.equals(availableExtensions);
+                                break;
+                            }
+                            conf = conf.parent;
+                        }
+                    }
+                    if (fail) {
+                        fail(String.format("The %s exclusion id is not defined as host exclusion for the current release. Extension diff: %s",
+                                extensionConf.getName(), diff.apply(availableExtensions, extensions)));
+                    }
                 }
             }
         }

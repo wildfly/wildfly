@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -25,16 +25,11 @@
     <packaging>pom</packaging>
     <name>WildFly: JPA</name>
 
-    <properties>
-        <!-- Default to the legacy WildFly dependency set until most child modules use standard WildFly dependencies -->
-        <dependency.management.pom.artifactId>wildfly-standard-ee-bom</dependency.management.pom.artifactId>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>${dependency.management.pom.artifactId}</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -43,11 +38,30 @@
     </dependencyManagement>
 
     <modules>
-        <module>hibernate6</module>
+        <module>hibernate7</module>
         <module>hibernatesearch</module>
+        <module>persistence-cdi-extension</module>
+        <module>persistence32</module>
         <module>subsystem</module>
         <module>spi</module>
         <module>eclipselink</module>
-
     </modules>
+
+    <profiles>
+        <profile>
+            <id>legacy.ee.build</id>
+            <activation>
+                <property>
+                    <!-- This profile is not expected to be used.
+                         We want to keep the code structure for future use,
+                         but there is no current use. -->
+                    <name>disabled.legacy.ee.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate6</module>
+                <module>persistence31</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

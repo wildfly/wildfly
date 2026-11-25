@@ -4,15 +4,20 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import java.time.Duration;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
+import org.wildfly.clustering.ejb.bean.BeanManagementConfiguration;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.ejb.cache.bean.BeanMarshallerFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 
 /**
  * A {@link LegacyBeanManagementProviderFactory} implementation that creates a suitable {@link BeanManagementProvider} when no distributable-ejb subsystem is present.
@@ -25,26 +30,21 @@ public class InfinispanLegacyBeanManagementProviderFactory implements LegacyBean
 
     @Override
     public BeanManagementProvider createBeanManagementProvider(String name, LegacyBeanManagementConfiguration config) {
-        return new InfinispanBeanManagementProvider(name, new InfinispanBeanManagementConfiguration() {
+        return new InfinispanBeanManagementProvider<>(name, new BeanManagementConfiguration() {
             @Override
-            public String getContainerName() {
-                return config.getContainerName();
+            public OptionalInt getSizeThreshold() {
+                return config.getSizeThreshold();
             }
 
             @Override
-            public String getCacheName() {
-                return config.getCacheName();
-            }
-
-            @Override
-            public Integer getMaxActiveBeans() {
-                return config.getMaxActiveBeans();
+            public Optional<Duration> getIdleThreshold() {
+                return config.getIdleThreshold();
             }
 
             @Override
             public Function<BeanDeploymentMarshallingContext, ByteBufferMarshaller> getMarshallerFactory() {
                 return BeanMarshallerFactory.JBOSS;
             }
-        });
+        }, BinaryServiceConfiguration.of(config.getContainerName(), config.getCacheName()));
     }
 }

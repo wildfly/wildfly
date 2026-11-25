@@ -10,7 +10,9 @@ import java.net.InetSocketAddress;
  * Identifies a member of a cluster.
  *
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.GroupMember}.
  */
+@Deprecated(forRemoval = true)
 public interface Node {
     /**
      * Returns the logical name of this node.
@@ -24,5 +26,7 @@ public interface Node {
      *
      * @return a socket binding address, or null if this node is a member of a singleton group.
      */
-    InetSocketAddress getSocketAddress();
+    default InetSocketAddress getSocketAddress() {
+        return null;
+    }
 }

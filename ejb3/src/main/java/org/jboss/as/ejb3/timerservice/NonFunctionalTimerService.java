@@ -35,11 +35,20 @@ public class NonFunctionalTimerService implements ManagedTimerService {
     }
 
     @Override
+    public boolean isStarted() {
+        return true;
+    }
+
+    @Override
     public void start() {
     }
 
     @Override
     public void stop() {
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override

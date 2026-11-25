@@ -28,7 +28,6 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
-import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -74,14 +73,9 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             // load class and register for portable extensions
             Collection<Class<?>> loadedPortableExtensions = loadExtensions(module, portableExtensionServices, Object.class);
             registerPortableExtensions(deploymentUnit, extensions, loadedPortableExtensions);
-            // load class and register for portable extensions
-            // if there is at least one, add a portable extension processing them
-            List<Class<? extends BuildCompatibleExtension>> loadedBuildCompatExtensions =
-                    loadExtensions(module, buildCompatibleExtensionServices, BuildCompatibleExtension.class);
-            if (!loadedBuildCompatExtensions.isEmpty()) {
-                Extension extension = new LiteExtensionTranslator(loadedBuildCompatExtensions, module.getClassLoader());
-                // NOTE: I chose to register it under the same dep. unit as other extensions, not sure if this is correct
-                extensions.registerExtensionInstance(extension, deploymentUnit);
+            // load class and register for discovered build compatible extensions
+            for (Class<? extends BuildCompatibleExtension> extensionClass : loadExtensions(module, buildCompatibleExtensionServices, BuildCompatibleExtension.class)) {
+                extensions.registerBuildCompatibleExtension(extensionClass);
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(e);

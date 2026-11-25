@@ -5,11 +5,6 @@
 
 package org.jboss.as.test.clustering.cluster.jpa.custom;
 
-import org.hibernate.Session;
-import org.hibernate.stat.Statistics;
-import org.infinispan.Cache;
-import org.infinispan.manager.CacheContainer;
-
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -24,6 +19,11 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+
+import org.hibernate.Session;
+import org.hibernate.stat.Statistics;
+import org.infinispan.Cache;
+import org.infinispan.manager.CacheContainer;
 
 /**
  * @author Tommaso Borgato
@@ -120,7 +120,7 @@ public class DummyEntityCustomRegionRESTResource {
     @Path("/eviction-max-entries/{cache-name}")
     @Produces("text/plain")
     public Response getEvictionMaxEntries(@PathParam(value = "cache-name") String cacheName) {
-        Object res = container.getCache(cacheName).getCacheConfiguration().memory().size();
+        Object res = container.getCache(cacheName).getCacheConfiguration().memory().maxCount();
         return Response.ok().entity(res).build();
     }
 

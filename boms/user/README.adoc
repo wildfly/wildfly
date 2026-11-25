@@ -7,13 +7,19 @@ The following BOMs are available:
 * EJB Client (Maven coordinates "org.wildfly:wildfly-ejb-client-bom", built by ./client/ejb-client/pom.xml)
 * JAXWS Client (Maven coordinates "org.wildfly:wildfly-jaxws-client-bom", built by ./client/jaxws-client/pom.xml)
 * JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by ./client/jms-client/pom.xml)
-* EE (Maven coordinates "org.wildfly.bom:wildfly-ee", built by ./ee/pom.xml)
-* EE with Tools (Maven coordinates "org.wildfly.bom:wildfly-ee-with-tools", built by ./ee/ee-with-tools/pom.xml)
-* MicroProfile (Maven coordinates "org.wildfly.bom:wildfly-microprofile", built by ./microprofile/pom.xml)
+* Tools (Maven coordinates "org.wildfly.bom:wildfly-tools", built by ./tools/pom.xml)
+* EE (Maven coordinates "org.wildfly.bom:wildfly-ee", built by ./server/ee/standard/pom.xml)
+* EE With Tools (Maven coordinates "org.wildfly.bom:wildfly-ee-with-tools", built by ./server/ee/standard/with-tools/pom.xml)
+* EE Preview (Maven coordinates "org.wildfly.bom:wildfly-ee-preview", built by ./server/ee/preview/pom.xml)
+* EE Preview With Tools (Maven coordinates "org.wildfly.bom:wildfly-ee-preview-with-tools", built by ./server/ee/preview/with-tools/pom.xml)
+* Expansion (Maven coordinates "org.wildfly.bom:wildfly-expansion", built by ./server/expansion/standard/pom.xml)
+* Expansion With Tools (Maven coordinates "org.wildfly.bom:wildfly-expansion-with-tools", built by ./server/expansion/standard/with-tools/pom.xml)
+* Expansion Preview (Maven coordinates "org.wildfly.bom:wildfly-expansion-preview", built by ./server/expansion/preview/pom.xml)
+* Expansion Preview With Tools (Maven coordinates "org.wildfly.bom:wildfly-expansion-preview-with-tools", built by ./server/expansion/preview/with-tools/pom.xml)
 
 == Usage
 
-To use a BOM, import into your dependency management. For example, if you want to import the traditional server's dependency management with tools, provided by the "EE With Tools" BOM, use:
+To use a BOM, import into your dependency management. For example, if you want to import the traditional server's EE dependency management, provided by the "EE" BOM, use:
 
 [source, xml]
 ----
@@ -21,7 +27,7 @@ To use a BOM, import into your dependency management. For example, if you want t
     <dependencies>
         <dependency>
             <groupId>org.wildfly.bom</groupId>
-            <artifactId>wildfly-ee-with-tools</artifactId>
+            <artifactId>wildfly-ee</artifactId>
             <version>${wildfly.version}</version>
             <type>pom</type>
             <scope>import</scope>

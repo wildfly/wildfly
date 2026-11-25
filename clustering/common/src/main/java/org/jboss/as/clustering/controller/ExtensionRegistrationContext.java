@@ -13,6 +13,7 @@ import org.jboss.as.controller.services.path.PathManager;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ExtensionRegistrationContext implements ManagementRegistrationContext {
 
     private final boolean runtimeOnlyRegistrationValid;

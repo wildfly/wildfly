@@ -4,15 +4,14 @@
  */
 package org.wildfly.clustering.faces.view;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 import jakarta.faces.view.Location;
-
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-
-import org.junit.Assert;
 
 /**
  * Validates marshalling of a {@link Location}.
@@ -20,16 +19,17 @@ import org.junit.Assert;
  */
 public class LocationMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<Location> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new Location("/foo", -1, -1), LocationMarshallerTestCase::assertEquals);
-        tester.test(new Location("/var", 11, 12), LocationMarshallerTestCase::assertEquals);
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<Location> tester = factory.createTester(LocationMarshallerTestCase::assertEquals);
+        tester.accept(new Location("/foo", -1, -1));
+        tester.accept(new Location("/var", 11, 12));
     }
 
     static void assertEquals(Location location1, Location location2) {
-        Assert.assertEquals(location1.getPath(), location2.getPath());
-        Assert.assertEquals(location1.getLine(), location2.getLine());
-        Assert.assertEquals(location1.getColumn(), location2.getColumn());
+        Assertions.assertEquals(location1.getPath(), location2.getPath());
+        Assertions.assertEquals(location1.getLine(), location2.getLine());
+        Assertions.assertEquals(location1.getColumn(), location2.getColumn());
     }
 }

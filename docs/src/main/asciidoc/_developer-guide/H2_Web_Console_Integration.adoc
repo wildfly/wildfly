@@ -19,7 +19,7 @@ WildFly has historically integrated H2 in such a way that this is possible. But 
 
 However it is possible for users of WildFly to restore this integration by adding a JBoss Modules module named `javax.servlet.api.h2` to their server installation. The steps to do this are as follows:
 
-* `cd $WILDFLY_HOME`
+* `cd $JBOSS_HOME`
 * `mkdir -p modules/javax/servlet/api/h2`
 * In that dir create a `module.xml` file with the following content:
 

@@ -23,7 +23,9 @@ import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.View;
+import org.jgroups.protocols.BasicTCP;
 import org.jgroups.protocols.DISCARD;
+import org.jgroups.protocols.FD_SOCK2;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.stack.ProtocolStack;
@@ -55,6 +57,19 @@ public class PartitionServlet extends HttpServlet {
 
     @Resource(lookup = "java:jboss/jgroups/channel/default")
     private JChannel channel;
+
+    @Override
+    public void init() throws ServletException {
+        ProtocolStack stack = this.channel.getProtocolStack();
+        TP transport = stack.getTransport();
+        if (transport instanceof BasicTCP) {
+            BasicTCP tcp = (BasicTCP) transport;
+            if (!(tcp.enableSuspectEvents() ^ (stack.findProtocol(FD_SOCK2.class) != null))) {
+                // Verify that the stack uses transport-based failure detection or contains a socket-based failure detection protocol, but not both.
+                throw new ServletException(String.format("Protocol stack for %s should contain exactly one socket-based failure detection mechanism", this.channel.getClusterName()));
+            }
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

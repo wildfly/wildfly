@@ -62,6 +62,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.lang.invoke.MethodHandles;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,7 +101,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     /**
      * The bundle
      */
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
 
 
     protected void parseConfigProperties(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map) throws XMLStreamException, ParserException {

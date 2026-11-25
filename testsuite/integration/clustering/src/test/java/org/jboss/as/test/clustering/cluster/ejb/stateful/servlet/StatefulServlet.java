@@ -8,8 +8,8 @@ package org.jboss.as.test.clustering.cluster.ejb.stateful.servlet;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-
 import javax.naming.NamingException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;

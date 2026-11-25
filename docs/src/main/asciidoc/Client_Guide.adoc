@@ -1,5 +1,6 @@
 [[Client_Guide]]
 = WildFly Client Configuration
+WildFly authors;
 :revnumber: {version}
 :revdate: {localdate}
 :toc: macro
@@ -8,7 +9,6 @@
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 14
 :numbered:
 
 ifdef::env-github[]

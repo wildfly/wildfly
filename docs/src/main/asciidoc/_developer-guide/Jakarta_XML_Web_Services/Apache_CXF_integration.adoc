@@ -65,13 +65,13 @@ descriptors.
 [[portable-applications]]
 === Portable applications
 
-WildFly is much more then a servlet container; it actually provides
-users with a fully compliant target platform for Jakarta EE applications.
+WildFly is much more than a servlet container; it actually provides
+users with a fully compliant target platform for EE applications.
 
 Generally speaking, _users are encouraged to write portable
 applications_ by relying only on _Jakarta XML Web Services specification_ whenever
 possible. That would by the way ensure easy migrations to and from other
-compliant platforms. Being a Jakarta EE container, WildFly already comes
+compliant platforms. Being an EE Platform implementation, WildFly already comes
 with a Jakarta XML Web Services compliant implementation, which is basically Apache CXF
 plus the JBossWS-CXF integration layer. So users just need to write
 their Jakarta XML Web Services application; _no need for embedding any Apache CXF or any
@@ -237,7 +237,7 @@ created and associated to the thread before building up a JAXWS client.
 
 The drawback of the strategy is that the link between the Bus instance
 and the thread needs to be eventually cleaned up (when not needed
-anymore). This is really evident in a Jakarta EE environment (hence when
+anymore). This is really evident in an EE environment (hence when
 running in-container), as threads from pools (e.g. serving web requests)
 are re-used.
 
@@ -451,7 +451,7 @@ xmlns="http://www.jboss.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 version="1.2"
 xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
- 
+
 <property>
 <name>cxf.interceptors.in</name>
 <value>org.jboss.test.ws.jaxws.cxf.interceptors.BusInterceptor</value>
@@ -479,7 +479,7 @@ xmlns="http://www.jboss.com/xml/ns/javaee"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 version="1.2"
 xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
- 
+
 <property>
 <name>cxf.features</name>
 <value>org.apache.cxf.feature.FastInfosetFeature</value>
@@ -591,7 +591,7 @@ To cope with this issue, JBossWS integration comes with a mechanism for
 configuring simple bean hierarchies when building them up from
 properties. Properties can have bean reference values, that is strings
 starting with `##`. Property reference keys are used to specify the bean
-class name and the value for for each attribute. So for instance the
+class name and the value for each attribute. So, for instance, the
 following properties:
 
 [cols=",",options="header"]
@@ -611,9 +611,9 @@ that would have been created by
 ----
 import org.Bar;
 import org.Foo;
- 
+
 ...
- 
+
 Foo foo = new Foo();
 foo.setPar(34);
 Bar bar = new Bar();
@@ -639,12 +639,12 @@ programmatically modified using the Apache CXF API as follows:
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
- 
+
 //set chunking threshold before using a Jakarta XML Web Services port client
 ...
 HTTPConduit conduit = (HTTPConduit)ClientProxy.getClient(port).getConduit();
 HTTPClientPolicy client = conduit.getClient();
- 
+
 client.setChunkingThreshold(8192);
 ...
 ----

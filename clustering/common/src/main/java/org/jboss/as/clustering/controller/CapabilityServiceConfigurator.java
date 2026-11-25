@@ -12,6 +12,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 /**
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface CapabilityServiceConfigurator extends ServiceConfigurator {
 
     default ServiceConfigurator configure(CapabilityServiceSupport support) {

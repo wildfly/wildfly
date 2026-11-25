@@ -4,21 +4,14 @@
  */
 package org.jboss.as.test.integration.web.sso;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -35,16 +28,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSession;
-import org.jboss.as.test.shared.RetryTaskExecutor;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -53,9 +40,18 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Brian Stansberry
  * @author lbarreiro@redhat.com
  */
-public abstract class SSOTestBase {
+public final class SSOTestBase {
 
-    private static Logger log = Logger.getLogger(SSOTestBase.class);
+    public static final String USERNAME = "user1";
+    public static final String PASSWORD = "password1";
+    public static final String USERNAME_2 = "user2";
+    public static final String PASSWORD_2 = "password2";
+    public static final String ROLE = "Users";
+
+    /**
+     * Nothing extends this class or needs to instantiate it, instead public static accessor methods are used.
+     */
+    private SSOTestBase() {}
 
     /**
      * Test single sign-on across two web apps using form based auth
@@ -89,7 +85,7 @@ public abstract class SSOTestBase {
 
             // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
             // propagation of the SSO identity to the Jakarta Enterprise Beans container.
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
 
             // Now try logging out of war2
             executeLogout(httpclient, warB2);
@@ -136,13 +132,14 @@ public abstract class SSOTestBase {
 
             // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
             // propagation of the SSO identity to the Jakarta Enterprise Beans container.
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
 
             // Do the same test on war6 to test SSO auth replication with no auth
-            // configured war
-            checkAccessAllowed(httpclient, warB6 + "index.html");
+            // configured war, by having no security domain this will map to Undertow's default
+            // security domain of "other" so unless SSO is operational it should prompt to authenticate.
+            checkAccessDenied(httpclient, warB6 + "index.html");
 
-            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            checkAccessAllowed(httpclient, warB2 + "NotAnEJBServlet");
         } finally {
             HttpClientUtils.closeQuietly(httpclient);
         }
@@ -201,10 +198,10 @@ public abstract class SSOTestBase {
         HttpResponse response = httpConn.execute(logout);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Logout: Didn't see code 302 (HTTP_MOVED_TEMP), but saw instead " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(statusCode).as("Logout: Didn't see code 302 (HTTP_MOVED_TEMP), but saw instead " + statusCode).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
 
             Header location = response.getFirstHeader("Location");
-            assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().contains("index.html"));
+            assertThat(location.getValue()).as("Get of " + warURL + "Logout not redirected to login page").contains("index.html");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -215,10 +212,10 @@ public abstract class SSOTestBase {
         HttpResponse response = httpConn.execute(getMethod);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
+            assertThat(statusCode).as("Expected code == OK but got " + statusCode + " for request=" + url).isEqualTo(HttpURLConnection.HTTP_OK);
 
             String body = EntityUtils.toString(response.getEntity());
-            assertTrue("Get of " + url + " redirected to login page", !body.contains("j_security_check"));
+            assertThat(body).as("Get of " + url + " redirected to login page").doesNotContain("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -238,8 +235,8 @@ public abstract class SSOTestBase {
         try {
             int statusCode = postResponse.getStatusLine().getStatusCode();
             Header[] errorHeaders = postResponse.getHeaders("X-NoJException");
-            assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
-            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+            assertThat(statusCode).as("Should see HTTP_MOVED_TEMP").isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(errorHeaders).as("X-NoJException").isEmpty();
             EntityUtils.consume(postResponse.getEntity());
 
             // Follow the redirect to the index.html page
@@ -249,11 +246,11 @@ public abstract class SSOTestBase {
 
             statusCode = redirectResponse.getStatusLine().getStatusCode();
             errorHeaders = redirectResponse.getHeaders("X-NoJException");
-            assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
-            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+            assertThat(statusCode).as("Wrong response code: " + statusCode).isEqualTo(HttpURLConnection.HTTP_OK);
+            assertThat(errorHeaders).as("X-NoJException").isEmpty();
 
             String body = EntityUtils.toString(redirectResponse.getEntity());
-            assertTrue("Get of " + indexURL + " redirected to login page", !body.contains("j_security_check"));
+            assertThat(body).as("Get of " + indexURL + " redirected to login page").doesNotContain("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(postResponse);
         }
@@ -264,10 +261,10 @@ public abstract class SSOTestBase {
         HttpResponse response = httpConn.execute(getMethod);
         try {
             int statusCode = response.getStatusLine().getStatusCode();
-            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
+            assertThat(statusCode).as("Expected code == OK but got " + statusCode + " for request=" + url).isEqualTo(HttpURLConnection.HTTP_OK);
 
             String body = EntityUtils.toString(response.getEntity());
-            assertTrue("Redirected to login page for request=" + url + ", body[" + body + "]", body.indexOf("j_security_check") > 0);
+            assertThat(body).as("Redirected to login page for request=" + url).contains("j_security_check");
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -286,7 +283,7 @@ public abstract class SSOTestBase {
             }
         }
 
-        assertTrue("Didn't see JSESSIONIDSSO: " + cookieStore.getCookies(), ssoID != null);
+        assertThat(ssoID).as("Didn't see JSESSIONIDSSO: " + cookieStore.getCookies()).isNotNull();
         return ssoID;
     }
 
@@ -327,12 +324,18 @@ public abstract class SSOTestBase {
     }
 
     public static WebArchive createSsoWar(String warName) {
+        return createSsoWar(warName, true);
+    }
+
+    public static WebArchive createSsoWar(String warName, boolean includeJBossWeb) {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         String resourcesLocation = "org/jboss/as/test/integration/web/sso/resources/";
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, warName);
         war.setWebXML(tccl.getResource(resourcesLocation + "web-form-auth.xml"));
-        war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
+        if (includeJBossWeb) {
+            war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
+        }
 
         war.addAsWebResource(tccl.getResource(resourcesLocation + "error.html"), "error.html");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "index.html"), "index.html");
@@ -340,7 +343,7 @@ public abstract class SSOTestBase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "set_session_timeout.jsp"), "set_session_timeout.jsp");
         war.addAsWebResource(tccl.getResource(resourcesLocation + "login.html"), "login.html");
 
-        war.addClass(EJBServlet.class);
+        war.addClass(NotAnEJBServlet.class);
         war.addClass(LogoutServlet.class);
 
         return war;
@@ -352,15 +355,7 @@ public abstract class SSOTestBase {
 
         WebArchive war1 = createSsoWar("sso-form-auth1.war");
         WebArchive war2 = createSsoWar("sso-form-auth2.war");
-        WebArchive war3 = createSsoWar("sso-with-no-auth.war");
-
-        // Remove jboss-web.xml so the war will not have an authenticator
-        war3.delete(war3.get("WEB-INF/jboss-web.xml").getPath());
-
-        JavaArchive webEjbs = ShrinkWrap.create(JavaArchive.class, "jbosstest-web-ejbs.jar");
-        webEjbs.addAsManifestResource(tccl.getResource(resourcesLocation + "ejb-jar.xml"), "ejb-jar.xml");
-        webEjbs.addAsManifestResource(tccl.getResource(resourcesLocation + "jboss.xml"), "jboss.xml");
-        webEjbs.addPackage(StatelessSession.class.getPackage());
+        WebArchive war3 = createSsoWar("sso-with-no-auth.war", false);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "web-sso.ear");
         ear.setApplicationXML(tccl.getResource(resourcesLocation + "application.xml"));
@@ -368,69 +363,8 @@ public abstract class SSOTestBase {
         ear.addAsModule(war1);
         ear.addAsModule(war2);
         ear.addAsModule(war3);
-        ear.addAsModule(webEjbs);
 
         return ear;
     }
 
-    public static void addSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<>();
-
-        // SSO element name must be 'configuration'
-        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD));
-
-        applyUpdates(updates, client);
-    }
-
-    public static void removeSso(final ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<>();
-
-        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE));
-
-        applyUpdates(updates, client);
-    }
-
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
-        for (ModelNode update : updates) {
-            //log.trace("+++ Update on " + client + ":\n" + update.toString());
-            ModelNode result = client.execute(new OperationBuilder(update).build());
-            if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                if (result.hasDefined("result"))
-                    log.trace(result.get("result"));
-            } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
-            } else {
-                throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-            }
-        }
-    }
-
-    // Reload operation is not handled well by Arquillian
-    // See ARQ-791: JMX: Arquillian is unable to reconnect to JMX server if the connection is lost
-    public static void restartServer(final ModelControllerClient client) {
-        try {
-            applyUpdates(Arrays.asList(createOpNode(null, "reload")), client);
-        } catch (Exception e) {
-            throw new RuntimeException("Restart operation not successful. " + e.getMessage());
-        }
-        try {
-            RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<>();
-            rte.retryTask(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    ModelNode readOp = createOpNode(null, READ_ATTRIBUTE_OPERATION);
-                    readOp.get("name").set("server-state");
-                    ModelNode result = client.execute(new OperationBuilder(readOp).build());
-                    if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-                        if ((result.hasDefined("result")) && (result.get("result").asString().equals("running")))
-                            return true;
-                    }
-                    log.trace("Server is down.");
-                    throw new Exception("Connector not available.");
-                }
-            });
-        } catch (TimeoutException e) {
-            throw new RuntimeException("Timeout on restart operation. " + e.getMessage());
-        }
-        log.trace("Server is up.");
-    }
 }

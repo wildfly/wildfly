@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.function.BooleanSupplier;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.StatusCodes;
@@ -19,32 +21,22 @@ import org.jboss.logging.Logger;
  */
 public class DefaultResponseCodeHandler implements HttpHandler {
 
-    protected static final Logger log = Logger.getLogger(DefaultResponseCodeHandler.class);
-    protected static final boolean traceEnabled;
-    static {
-        traceEnabled = log.isTraceEnabled();
-    }
+    private static final Logger log = Logger.getLogger(DefaultResponseCodeHandler.class);
+    private static final boolean traceEnabled = log.isTraceEnabled();
 
     private final int responseCode;
-    private volatile boolean suspended = false;
+    private final BooleanSupplier suspended;
 
-    public DefaultResponseCodeHandler(final int defaultCode) {
+    public DefaultResponseCodeHandler(final int defaultCode, BooleanSupplier suspended) {
         this.responseCode = defaultCode;
+        this.suspended = suspended;
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if(suspended) {
-            exchange.setStatusCode(StatusCodes.SERVICE_UNAVAILABLE);
-        } else {
-            exchange.setStatusCode(this.responseCode);
-        }
+        exchange.setStatusCode(this.suspended.getAsBoolean() ? StatusCodes.SERVICE_UNAVAILABLE : this.responseCode);
         if (traceEnabled) {
             log.tracef("Setting response code %s for exchange %s", responseCode, exchange);
         }
-    }
-
-    public void setSuspended(boolean suspended) {
-        this.suspended = suspended;
     }
 }

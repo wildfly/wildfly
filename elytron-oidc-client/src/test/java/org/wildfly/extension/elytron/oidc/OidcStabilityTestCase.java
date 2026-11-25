@@ -17,7 +17,6 @@ import org.junit.Test;
 
 public class OidcStabilityTestCase extends AbstractSubsystemTest {
 
-    private OidcConfigService configService;
     private KernelServices services = null;
 
     public OidcStabilityTestCase() {
@@ -31,12 +30,12 @@ public class OidcStabilityTestCase extends AbstractSubsystemTest {
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
-        configService = OidcConfigService.getInstance();
     }
+
     @Test
     public void testWithIncorrectStability() {
         try {
-            String subsystemXml = "oidc.xml";
+            String subsystemXml = "oidc-preview.xml";
             services = super.createKernelServicesBuilder(new DefaultInitializer(Stability.DEFAULT)).setSubsystemXmlResource(subsystemXml).build();
         } catch (Exception e) {
             Assert.assertTrue(e instanceof XMLStreamException);

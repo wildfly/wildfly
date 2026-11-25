@@ -11,7 +11,9 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 /**
  * Extension of {@link ImmutableSingletonServiceConfigurator} for customizing singleton service behavior.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link SingletonServiceTarget}.
  */
+@Deprecated(forRemoval = true)
 public interface SingletonServiceConfigurator extends ImmutableSingletonServiceConfigurator {
 
     /**

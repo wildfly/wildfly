@@ -7,9 +7,9 @@ package org.jboss.as.test.smoke.webservices;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,8 +20,7 @@ import jakarta.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -33,15 +32,20 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
  * @version $Revision: 1.1 $
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class WSTestCase {
 
     private static final ModelNode webserviceAddress;
@@ -66,7 +70,7 @@ public class WSTestCase {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testWSDL() throws Exception {
         String wsdl = performCall("?wsdl");
         assertNotNull(wsdl);
@@ -74,7 +78,7 @@ public class WSTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testManagementDescription() throws Exception {
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
@@ -102,7 +106,7 @@ public class WSTestCase {
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testManagementDescriptionMetrics() throws Exception {
         setStatisticsEnabled(true);
         final ModelNode address = new ModelNode();
@@ -163,7 +167,7 @@ public class WSTestCase {
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void testAccess() throws Exception {
         URL wsdlURL = new URL(this.url.toExternalForm() + "ws-example?wsdl");
         QName serviceName = new QName("http://webservices.smoke.test.as.jboss.org/", "EndpointService");

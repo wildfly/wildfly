@@ -30,19 +30,16 @@ public class ReactiveStreamsOperatorsDependencyProcessor implements DeploymentUn
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.core", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.api", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.reactivestreams", false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators", false, false, true, false));
-        ModuleDependency moduleDependency = cdiDependency(new ModuleDependency(moduleLoader, "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider", false, false, true, false));
-
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.core").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.eclipse.microprofile.reactive-streams-operators.api").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "org.reactivestreams").setImportServices(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.mutiny.reactive-streams-operators").setImportServices(true).build());
+        ModuleDependency moduleDependency = cdiDependency(ModuleDependency.Builder.of(moduleLoader, "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider").setImportServices(true).build());
         moduleSpecification.addSystemDependency(moduleDependency);
 
-
         // Converters
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.converters.api", true, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.converters.rxjava2", true, false, true, false));
-
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.converters.api").setOptional(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, "io.smallrye.reactive.converters.rxjava2").setOptional(true).setImportServices(true).build());
     }
 
 

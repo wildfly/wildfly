@@ -32,9 +32,18 @@ public class MicroProfileConfigTransformers implements ExtensionTransformerRegis
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WildFly_35(builder.createBuilder(MicroProfileConfigExtension.VERSION_2_1_0, MicroProfileConfigExtension.VERSION_2_0_0));
         registerTransformers_WildFly_26(builder.createBuilder(MicroProfileConfigExtension.VERSION_2_0_0, MicroProfileConfigExtension.VERSION_1_1_0));
 
-        builder.buildAndRegister(registration, new ModelVersion[] { MicroProfileConfigExtension.VERSION_1_1_0});
+        builder.buildAndRegister(registration, new ModelVersion[] { MicroProfileConfigExtension.VERSION_2_0_0, MicroProfileConfigExtension.VERSION_1_1_0});
+    }
+
+    private void registerTransformers_WildFly_35(ResourceTransformationDescriptionBuilder builder) {
+        // Version 2.1.0 adds:
+        // - CONFIG_CAPABILITY providing ConfigProviderResolver
+        // - Capability service with dependencies on config-source child resources
+        // - Fixed metadata: add operations now correctly show restart-required=all-services
+        // No model structure changes, but runtime behavior differs (capability not available in 2.0.0)
     }
 
     private void registerTransformers_WildFly_26(ResourceTransformationDescriptionBuilder builder) {

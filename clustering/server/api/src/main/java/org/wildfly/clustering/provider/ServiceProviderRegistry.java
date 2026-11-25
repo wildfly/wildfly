@@ -16,7 +16,9 @@ import org.wildfly.clustering.group.Node;
  * Allows capability to query which nodes can provide a given service.
  * @author Paul Ferraro
  * @param <T> a service type
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.provider.ServiceProviderRegistry}.
  */
+@Deprecated(forRemoval = true)
 public interface ServiceProviderRegistry<T> extends Registrar<T> {
 
     /**

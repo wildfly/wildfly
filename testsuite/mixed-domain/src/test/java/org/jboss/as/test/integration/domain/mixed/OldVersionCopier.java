@@ -9,6 +9,7 @@ import org.jboss.logging.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -21,6 +22,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -62,9 +64,9 @@ class OldVersionCopier {
                 Path versionRoot = targetOldVersions.resolve(asVersion.getFullVersionName());
                 if (versionRoot.toFile().exists() && versionRoot.toFile().isDirectory()) {
                     log.infof("Cleaning legacy installation at %s", versionRoot);
-                    try {
+                    try (Stream<Path> stream = Files.walk(versionRoot)) {
                         //noinspection ResultOfMethodCallIgnored
-                        Files.walk(versionRoot).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                        stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
                     } catch (IOException e) {
                         log.errorf(e, "Failed cleaning legacy installation at %s", versionRoot);
                     }
@@ -191,14 +193,16 @@ class OldVersionCopier {
     private static Path verifyZipContents(Path root) throws IOException {
         boolean read = false;
         Path result = root;
-        for (Path c : Files.newDirectoryStream(root)) {
-            if (!read) {
-                result = c;
-                read = true;
-            } else {
-                throw new RuntimeException("Zip contains more than one directory, something is wrong!");
-            }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(root)) {
+            for (Path c : stream) {
+                if (!read) {
+                    result = c;
+                    read = true;
+                } else {
+                    throw new RuntimeException("Zip contains more than one directory, something is wrong!");
+                }
 
+            }
         }
         return result;
     }

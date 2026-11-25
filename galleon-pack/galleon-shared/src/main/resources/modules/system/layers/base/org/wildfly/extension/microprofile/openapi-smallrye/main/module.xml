@@ -15,12 +15,10 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-openapi-smallrye}"/>
+        <artifact name="${org.wildfly:wildfly-microprofile-openapi-smallrye-extension}"/>
     </resources>
 
     <dependencies>
-        <module name="jakarta.ws.rs.api"/>
-
         <module name="io.smallrye.jandex"/>
         <module name="io.smallrye.openapi"/>
 
@@ -41,13 +39,13 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.resteasy.resteasy-client"/>
-        <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
 
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.microprofile.openapi-smallrye.host"/>
+        <module name="org.wildfly.microprofile.openapi-smallrye.spi"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>

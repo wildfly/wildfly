@@ -281,7 +281,7 @@ datasource in WildFly:
 [source,options="nowrap"]
 ----
 deploy /path/to/postgresql-9.4.1210.jar
- 
+
 data-source add --name=examplePostgresDS --jndi-name=java:jboss/examplePostgresDS --driver-name=postgresql-9.4.1210.jar  --connection-url=jdbc:postgresql://localhost:5432/postgresdb --user-name=postgresAdmin --password=mysecretpassword
 ----
 
@@ -352,12 +352,12 @@ dn: dc=wildfly,dc=org
 dc: wildfly
 objectClass: top
 objectClass: domain
- 
+
 dn: ou=Users,dc=wildfly,dc=org
 objectClass: organizationalUnit
 objectClass: top
 ou: Users
- 
+
 dn: uid=jsmith,ou=Users,dc=wildfly,dc=org
 objectClass: top
 objectClass: person
@@ -366,12 +366,12 @@ cn: John Smith
 sn: smith
 uid: jsmith
 userPassword: password123
- 
+
 dn: ou=Roles,dc=wildfly,dc=org
 objectclass: top
 objectclass: organizationalUnit
 ou: Roles
- 
+
 dn: cn=Admin,ou=Roles,dc=wildfly,dc=org
 objectClass: top
 objectClass: groupOfNames
@@ -719,7 +719,7 @@ To configure a system property in WildFly:
 [[configure-an-eltyron-security-realm-for-assigning-roles.]]
 ==== Configure an Elytron security realm for assigning roles.
 
-The the client's Kerberos token will provide the principal, but you need
+The client's Kerberos token will provide the principal, but you need
 a way to map that principal to a role for your application. There are
 several ways to accomplish this, but this example creates a
 _filesystem-realm_, adds a user to the realm that matches the principal
@@ -804,7 +804,7 @@ section.
 http-authentication-factory.
 
 You can use the existing _http-authentication-factory_ you configured
-for kerberos-based authentication and and an additional mechanism for
+for Kerberos-based authentication and an additional mechanism for
 _FORM_ authentication.
 
 [source,options="nowrap"]
@@ -1078,7 +1078,7 @@ Example update _http-authentication-factory_
        "process-state" => "reload-required"
    }
 }
- 
+
 reload
 ----
 
@@ -1094,7 +1094,7 @@ Example update _sasl-authentication-factory_
        "process-state" => "reload-required"
    }
 }
- 
+
 reload
 ----
 
@@ -1119,7 +1119,7 @@ sasl-authentication-factory.
 [source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:list-add(name=mechanism-configurations, value={mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local})
- 
+
 reload
 ----
 
@@ -1129,7 +1129,7 @@ reload
 [source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:add(sasl-server-factory=configured,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=exampleManagementRealm}]},{mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local}])
- 
+
 reload
 ----
 
@@ -1156,9 +1156,9 @@ reload
         "security-domain" => "ManagementDomain"
     }
 }
- 
+
 /subsystem=elytron/sasl-authentication-factory=temp-sasl-authentication:list-remove(name=mechanism-configurations,index=0)
- 
+
 reload
 ----
 
@@ -2036,7 +2036,7 @@ generate an example key pair:
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,credential-reference={clear-text=secret})
- 
+
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM,protocols=["TLSv1.2"])
 ----
 
@@ -2049,7 +2049,7 @@ support. The example commands above uses _TLSv1.2_.
 [source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=httpsSSC)
- 
+
 /core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
 ----
 
@@ -2193,9 +2193,9 @@ In the following example, we enter _validate=false_ in the _import-certificate_ 
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS,credential-reference={clear-text=secret})
- 
+
 /subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS)
- 
+
 /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-manager=twoWayKM,protocols=["TLSv1.2"],trust-manager=twoWayTM,want-client-auth=true,need-client-auth=true)
 ----
 
@@ -2208,7 +2208,7 @@ support. The example commands above uses _TLSv1.2_.
 [source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=twoWaySSC)
- 
+
 /core-service=management/management-interface=http-interface:write-attribute(name=secure-socket-binding, value=management-https)
 ----
 
@@ -2741,7 +2741,7 @@ performance (throughput and response time) will occur compared to TLSv1.2. Upgra
 should improve performance. For this reason, the use of TLSv1.3 is currently disabled by default. TLSv1.3 can
 be enabled by configuring the new `cipher-suite-names` attribute in the SSL Context resource definition in the
 Elytron subsystem as described in the previous two sections. It is recommended to test for performance
-degradation prior to enabling TLSv1.3 in a production environment. See https://issues.redhat.com/browse/WFWIP-160[WFWIP-160]
+degradation prior to enabling TLSv1.3 in a production environment. See https://redhat.atlassian.net/browse/WFWIP-160[WFWIP-160]
 for more details.
 
 *Note:* When using TLSv1.3, it is important to keep in mind that session IDs have become essentially obsolete.
@@ -2751,9 +2751,6 @@ the first handshake in order to receive the `NewSessionTicket` that can be used 
 change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
 ==== Dynamic client SSLContext
-
-The `dynamic-client-ssl-context` resource is only available in the `community` stability level. For more information on how to configure stability levels, please refer to the link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
-link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
 
 Using the Elytron subsystem, it is possible to configure an SSLContext that will delegate to alternate instances based on host and port you are connecting to.
 

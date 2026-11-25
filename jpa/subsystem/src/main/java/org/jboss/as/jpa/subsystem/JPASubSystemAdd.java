@@ -75,7 +75,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                         new JBossAllXmlParserRegisteringProcessor<>(JPAJarJBossAllParser.ROOT_ELEMENT, JpaAttachments.DEPLOYMENT_SETTINGS_KEY, new JPAJarJBossAllParser()));
 
                 // handles parsing of persistence.xml
-                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor());
+                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_PERSISTENCE_UNIT, new PersistenceUnitParseProcessor(appclient));
 
                 // handles persistence unit / context annotations in components
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_PERSISTENCE_ANNOTATION, new JPAAnnotationProcessor());
@@ -106,7 +106,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
         final String dataSourceName = DEFAULT_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
         final ExtendedPersistenceInheritance defaultExtendedPersistenceInheritance = ExtendedPersistenceInheritance.valueOf(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.resolveModelAttribute(context, model).asString());
 
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceTarget target = context.getCapabilityServiceTarget();
         JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance);
         JPAUserTransactionListenerService.addService(target);
 

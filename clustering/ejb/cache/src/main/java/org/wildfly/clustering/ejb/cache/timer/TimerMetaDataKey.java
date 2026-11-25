@@ -5,10 +5,11 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.cache.Key;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface TimerMetaDataKey<I> extends Key<I> {
 }

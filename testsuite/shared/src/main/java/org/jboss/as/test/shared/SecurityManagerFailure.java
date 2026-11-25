@@ -5,12 +5,12 @@
 
 package org.jboss.as.test.shared;
 
-import org.junit.Assume;
+import org.assertj.core.api.Assumptions;
 
 /**
  * Utility class to disable tests failing when Security Manager is enabled.
  *
- * Important note: this should be used only in cases when tests are failing due to a thirdparty issues which are
+ * Important note: this should be used only in cases when tests are failing due to a third-party issues which are
  * unlikely to get fixed, e.g. WFLY-6192.
  *
  * @author Ivo Studensky
@@ -35,7 +35,7 @@ public final class SecurityManagerFailure {
         // either System.getSecurityManager is not null or system property 'security.manager' is set (in cases of RunAsClient)
         if (sm != null || securityManagerEnabled) {
             final boolean enableTest = System.getProperty("jboss.test.enableTestsFailingUnderSM") != null;
-            Assume.assumeTrue(message, enableTest);
+            Assumptions.assumeThat(enableTest).as(message).isTrue();
         }
     }
 

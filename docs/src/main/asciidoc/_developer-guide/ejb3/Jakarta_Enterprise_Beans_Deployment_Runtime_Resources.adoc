@@ -23,8 +23,7 @@ and also resources specific to the bean type. For example, these are some of the
 * activation-config
 
 Users can view these enterprise bean resources via WildFly CLI or Administration Console. The following sections
-provides sample CLI and Administration Console output for each enterprise bean type. For complete details, refer to
-https://wildscribe.github.io/[WildFly Model Reference Documentation]
+provides sample CLI and Administration Console output for each enterprise bean type. For complete details, refer to link:feature-pack/doc/reference/index.html[WildFly Model Reference].
 
 [[Stateless_Session_Bean_Runtime_Resources]]
 == Stateless Session Bean Runtime Resources

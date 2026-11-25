@@ -38,7 +38,8 @@ import org.junit.Test;
 public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     private static File warFile;
-    private static final int TEST_PORT = 8081;
+    //8081 might be already occupied by a restraint test harness
+    private static final int TEST_PORT = Integer.getInteger("org.jboss.as.test.integration.domain.management.cli.testport", 8082);
 
     private static final String[] serverGroups = new String[] {"main-server-group", "other-server-group", "test-server-group"};
 

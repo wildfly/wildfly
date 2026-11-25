@@ -43,7 +43,6 @@ import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_VALIDATOR;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.vfs.VirtualFile;
@@ -56,11 +55,13 @@ import org.jboss.vfs.VirtualFile;
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final String CLIENT_BUILDER = "META-INF/services/jakarta.ws.rs.client.ClientBuilder";
+
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        boolean deploymentBundlesClientBuilder = isClientBuilderInDeployment(deploymentUnit);
+        final boolean deploymentBundlesClientBuilder = isClientBuilderInDeployment(deploymentUnit);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDependency(moduleSpecification, moduleLoader, JAXRS_API, false, false);
@@ -85,10 +86,25 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
 
+        // Add modules which were previously added with export="true" in the module itself. It's better to explicitly
+        // add them here so they can be excluded vs exporting them in the module.
+
+        // These were previously exported on the org.jboss.resteasy.resteasy-jackson2-provider.
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-annotations", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-core", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.core.jackson-databind", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider", true, false, false);
+
+        // These were perviously exported on the org.jboss.resteasy.resteasy-rxjava2 module.
+        addDependency(moduleSpecification, moduleLoader, "org.reactivestreams", true, false, false);
+        addDependency(moduleSpecification, moduleLoader, "io.reactivex.rxjava2.rxjava", true, false, false);
+
+        // End add exported modules
+
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
-            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
-            if (api.isPartOfWeldDeployment(deploymentUnit)) {
+            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).orElse(null);
+            if (api != null && api.isPartOfWeldDeployment(deploymentUnit)) {
                 addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true, false);
             }
         }
@@ -98,7 +114,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         }
         // If bean-validation is available, add the support for the resteasy-validator
         if (support.hasCapability("org.wildfly.bean-validation")) {
-            final ModuleDependency dep = new ModuleDependency(moduleLoader, RESTEASY_VALIDATOR, true, true, true, false);
+            final ModuleDependency dep = ModuleDependency.Builder.of(moduleLoader, RESTEASY_VALIDATOR).setOptional(true).setExport(true).setImportServices(true).build();
             moduleSpecification.addSystemDependency(dep);
         }
     }
@@ -118,14 +134,18 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               ModuleIdentifier moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
-        addDependency(moduleSpecification, moduleLoader, moduleIdentifier.toString(), optional, deploymentBundelesClientBuilder);
+                               String moduleIdentifier, boolean optional, boolean deploymentBundlesClientBuilder) {
+        addDependency(moduleSpecification, moduleLoader, moduleIdentifier, optional, deploymentBundlesClientBuilder, true);
     }
 
-    private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
-                               String moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
-        ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
-        if(deploymentBundelesClientBuilder) {
+    private void addDependency(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader,
+                               final String moduleIdentifier, final boolean optional,
+                               final boolean deploymentBundlesClientBuilder, final boolean importServices) {
+        ModuleDependency dependency = ModuleDependency.Builder.of(moduleLoader, moduleIdentifier)
+                .setOptional(optional)
+                .setImportServices(importServices)
+                .build();
+        if(deploymentBundlesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
         }
         moduleSpecification.addSystemDependency(dependency);

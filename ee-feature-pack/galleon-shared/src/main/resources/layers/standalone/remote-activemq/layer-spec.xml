@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="remote-activemq">
     <props>
+        <prop name="org.wildfly.category" value="Jakarta Messaging"/>
+        <prop name="org.wildfly.description" value="Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker."/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:messaging-activemq"/>
         <prop name="org.wildfly.rule.add-on" value="messaging,remote-activemq"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker."/>

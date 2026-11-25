@@ -7,7 +7,7 @@ package org.wildfly.clustering.ejb.cache.bean;
 
 import java.time.Instant;
 
-import org.wildfly.clustering.ee.cache.offset.Value;
+import org.wildfly.clustering.server.offset.Value;
 
 /**
  * Bean metadata cache entry.
@@ -16,5 +16,5 @@ import org.wildfly.clustering.ee.cache.offset.Value;
  */
 public interface BeanMetaDataEntry<K> extends ImmutableBeanMetaDataEntry<K> {
     @Override
-    Value<Instant> getLastAccess();
+    Value<Instant> getLastAccessTime();
 }

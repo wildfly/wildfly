@@ -16,7 +16,6 @@ import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
 import org.junit.Test;
-import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author Paul Ferraro
@@ -25,8 +24,8 @@ import org.wildfly.extension.undertow.UndertowService;
 public class UndertowServerTestCase {
     private final Connector connector = mock(Connector.class);
     private final String route = "route";
-    private final org.wildfly.extension.undertow.Server undertowServer = new TestServer("default-server", "default-host");
-    private final UndertowService service = new TestUndertowService(null, "default-container", "default-server", "default-virtual-host", this.route, false, this.undertowServer);
+    private final TestUndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", this.route, false);
+    private final TestServer undertowServer = new TestServer("default-server", "default-host", this.service);
     private final UndertowEventHandlerAdapterConfiguration configuration = mock(UndertowEventHandlerAdapterConfiguration.class);
     private final Server server = new UndertowServer(undertowServer.getName(), this.service, this.connector);
 

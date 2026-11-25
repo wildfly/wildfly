@@ -58,7 +58,7 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
            final PathAddress address = context.getCurrentAddress();
            final String name = context.getCurrentAddressValue();
            final ServiceName serviceName = getEndpointConfigServiceName(name);
-           final ServiceTarget target = context.getServiceTarget();
+           final ServiceTarget target = context.getCapabilityServiceTarget();
            final ServiceBuilder<?> serviceBuilder = target.addService(serviceName);
            final List<Supplier<PropertyService>> propertySuppliers = new ArrayList<>();
            for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PROPERTY)) {

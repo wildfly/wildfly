@@ -199,7 +199,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         // check that the connector is live
         String cURL = "http://" + url.getHost() + ":8181";
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+        assertTrue("Invalid response: " + response, response.contains("Welcome"));
         removeListener(Listener.HTTP, 5000);
     }
 
@@ -215,7 +215,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
             HttpResponse hr = httpClient.execute(get);
             String response = EntityUtils.toString(hr.getEntity());
-            assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
+            assertTrue("Invalid response: " + response, response.contains("Welcome"));
         } finally {
             removeListener(Listener.HTTPS);
         }
@@ -292,6 +292,33 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
             s.getOutputStream().write("PROXY TCP4 1.2.3.4 5.6.7.8 444 555\r\n".getBytes(StandardCharsets.US_ASCII));
             Socket ssl = TestHttpClientUtils.getSslContext().getSocketFactory().createSocket(s, url.getHost(), HTTPS_PORT, true);
             ssl.getOutputStream().write("GET /proxy/addr HTTP/1.0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            String result = FileUtils.readFile(ssl.getInputStream());
+            Assert.assertTrue(result, result.contains("result:1.2.3.4:444 5.6.7.8:555"));
+        } finally {
+            removeListener(Listener.HTTPS);
+        }
+    }
+
+    @Test
+    public void testProxyProtocolOverHTTP11() throws Exception {
+        addListener(Listener.HTTP, true);
+        try (Socket s = new Socket(url.getHost(), 8181)) {
+            s.getOutputStream().write("PROXY TCP4 1.2.3.4 5.6.7.8 444 555\r\nGET /proxy/addr HTTP/1.1\r\nHost: 5.6.7.8\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            String result = FileUtils.readFile(s.getInputStream());
+            Assert.assertTrue(result, result.contains("result:1.2.3.4:444 5.6.7.8:555"));
+        } finally {
+            removeListener(Listener.HTTP);
+        }
+    }
+
+
+    @Test
+    public void testProxyProtocolOverHTTPS11() throws Exception {
+        addListener(Listener.HTTPS, true);
+        try (Socket s = new Socket(url.getHost(), 8181)) {
+            s.getOutputStream().write("PROXY TCP4 1.2.3.4 5.6.7.8 444 555\r\n".getBytes(StandardCharsets.US_ASCII));
+            Socket ssl = TestHttpClientUtils.getSslContext().getSocketFactory().createSocket(s, url.getHost(), HTTPS_PORT, true);
+            ssl.getOutputStream().write("GET /proxy/addr HTTP/1.1\r\nHost: 5.6.7.8\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
             String result = FileUtils.readFile(ssl.getInputStream());
             Assert.assertTrue(result, result.contains("result:1.2.3.4:444 5.6.7.8:555"));
         } finally {

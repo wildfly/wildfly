@@ -6,6 +6,7 @@ package org.jboss.as.weld;
 
 import java.util.function.Supplier;
 
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 
@@ -30,6 +31,14 @@ public class WeldCapabilityImpl implements WeldCapability {
         if (isPartOfWeldDeployment(unit)) {
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(unit);
             extensions.registerExtensionInstance(extension, unit);
+        }
+    }
+
+    @Override
+    public void registerBuildCompatibleExtension(Class<? extends BuildCompatibleExtension> extension, DeploymentUnit unit) {
+        if (isPartOfWeldDeployment(unit)) {
+            WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(unit);
+            extensions.registerBuildCompatibleExtension(extension);
         }
     }
 

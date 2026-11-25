@@ -7,8 +7,9 @@ package org.jboss.as.clustering.infinispan.transport;
 
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
-import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.util.SocketFactory;
@@ -53,7 +54,6 @@ public class ChannelConfigurator implements JGroupsChannelConfigurator {
     }
 
     @Override
-    public void addChannelListener(ChannelListener listener) {
-        // Do nothing
+    public void setDataSource(DataSource dataSource) {
     }
 }

@@ -26,6 +26,7 @@ import javax.naming.ConfigurationException;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 
 import static org.jboss.logging.Logger.Level.*;
@@ -39,7 +40,7 @@ import static org.jboss.logging.Logger.Level.*;
 @MessageLogger(projectCode = "WFLYIIOP", length = 4)
 public interface IIOPLogger extends BasicLogger {
 
-    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(IIOPLogger.class, "org.wildfly.iiop.openjdk");
+    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), IIOPLogger.class, "org.wildfly.iiop.openjdk");
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating IIOP Subsystem")
@@ -90,8 +91,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 12, value = "Could not deactivate anonymous IR object")
     void warnCouldNotDeactivateAnonIRObject(@Cause Throwable cause);
 
-    @Message(id = 13, value = "SSL support has been enabled but no security domain or client/server SSL contexts have been specified")
-    OperationFailedException noSecurityDomainOrSSLContextsSpecified();
+    @Message(id = 13, value = "SSL support has been enabled but neither client nor server SSL contexts have been specified")
+    OperationFailedException noSSLContextsSpecified();
 
     @Message(id = 14, value = "Unexpected exception")
     RuntimeException unexpectedException(@Cause Throwable cause);
@@ -383,8 +384,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 110, value = "Client requires SSL but server does not support it")
     IllegalStateException serverDoesNotSupportSsl();
 
-    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
-    String sslPortWithoutSslConfiguration();
+//    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
+//    String sslPortWithoutSslConfiguration();
 
 //    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
 //    OperationFailedException elytronInitializerMissingAuthContext();
@@ -410,5 +411,65 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 120, value = "The use of security domains at runtime is unsupported.")
     OperationFailedException runtimeSecurityDomainUnsupported();
+
+    @Message(id = 121, value ="Cannot create server SSL socket: authentication context not configured.")
+    IOException serverSSLNotConfiguredRuntime();
+
+    @Message(id = 122, value ="Cannot create client SSL socket: authentication context not configured.")
+    IOException clientSSLNotConfiguredRuntime();
+
+    @Message(id = 123, value ="Server requires SSL but server authentication context is not defined")
+    OperationFailedException serverSSLNotConfigured();
+
+    @Message(id = 124, value ="Client requires SSL but client authentication context is not defined")
+    OperationFailedException clientSSLNotConfigured();
+
+    @Message(id = 125, value = "Server SSL has not been configured but ssl-port property has been specified - inbound connections will use only clear-text protocol")
+    String serverSSLPortWithoutSslConfiguration();
+
+    @Message(id = 126, value = "Client SSL has not been configured but ssl-port property has been specified - outbound connections will use only clear-text protocol")
+    String clientSSLPortWithoutSslConfiguration();
+
+    @Message(id = 127, value = "Either the 'client-ssl-context' attribute is undefined and 'server-ssl-context' is not, or vice versa; " +
+            "on servers running previous versions either both must be defined or both must be undefined.")
+    String inconsistentSSLContextDefinition();
+
+    @Message(id = 130, value = "No username provided - naming service requires authentication")
+    NO_PERMISSION noUsernameProvided();
+
+    @Message(id = 131, value = "SASCurrent not available - naming service requires CSIv2 security configuration")
+    NO_PERMISSION sasCurrentNotAvailable();
+
+    @Message(id = 132, value = "SecurityDomain not available - naming service requires Elytron security domain")
+    NO_PERMISSION securityDomainNotAvailable();
+
+    @Message(id = 133, value = "Authentication failed for user '%s'")
+    NO_PERMISSION authenticationFailed(String username);
+
+    @Message(id = 134, value = "Authorization failed for user '%s'")
+    NO_PERMISSION authorizationFailed(String username);
+
+    @Message(id = 135, value = "Authentication exception")
+    NO_PERMISSION authenticationException(@Cause Exception cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 136, value = "Token length %d exceeds maximum allowed size %d")
+    void tokenLengthExceedsMaximum(int tokenLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 137, value = "Computed token length %d is invalid")
+    void invalidComputedTokenLength(int tokenLength);
+
+    @LogMessage(level = WARN)
+    @Message(id = 138, value = "Mechanism OID length %d exceeds maximum %d")
+    void mechanismOidLengthExceedsMaximum(int oidLength, int maxSize);
+
+    @LogMessage(level = WARN)
+    @Message(id = 139, value = "Mechanism OID length mismatch")
+    void mechanismOidLengthMismatch();
+
+    @LogMessage(level = WARN)
+    @Message(id = 140, value = "Name length %d exceeds maximum %d")
+    void nameLengthExceedsMaximum(int nameLength, int maxSize);
 
 }

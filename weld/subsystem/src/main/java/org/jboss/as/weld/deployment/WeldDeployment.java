@@ -22,7 +22,6 @@ import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -71,11 +70,11 @@ public class WeldDeployment implements CDI11Deployment {
     private volatile BeanDeploymentArchiveImpl bootstrapClassLoaderBeanDeploymentArchive;
 
     private final BeanDeploymentModule rootBeanDeploymentModule;
-    private final Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors;
+    private final Map<String, EEModuleDescriptor> eeModuleDescriptors;
 
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
             Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit, BeanDeploymentModule rootBeanDeploymentModule,
-            Map<ModuleIdentifier, EEModuleDescriptor> eeModuleDescriptors) {
+            Map<String, EEModuleDescriptor> eeModuleDescriptors) {
         this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
         this.beanDeploymentArchives = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.beanDeploymentArchives.addAll(beanDeploymentArchives);

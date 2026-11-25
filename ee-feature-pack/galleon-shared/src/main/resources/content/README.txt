@@ -1,5 +1,5 @@
 Welcome to WildFly (formerly known as JBoss Application Server)
-http://www.wildfly.org/
+https://www.wildfly.org/
 
 Go to the above link for documentation, and additional downloads.
 
@@ -9,8 +9,8 @@ for additional information.
 
 Key Features
 ------------
-* Jakarta EE support
-* MicroProfile support
+* Jakarta specification support
+* MicroProfile specification support
 * Fast Startup
 * Small Footprint
 * Modular Design
@@ -21,11 +21,11 @@ Release Notes
 -------------
 You can obtain release notes here:
 
-http://wildfly.org/releases
+https://wildfly.org/releases/
 
 Getting Started
 ---------------
-WildFly requires JDK 11 or later. For information regarding installation
+WildFly requires JDK 17 or later. For information regarding installation
 of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
 WildFly has two modes of operation: Standalone and Domain. For more
@@ -39,21 +39,21 @@ Starting a Standalone Server
 ----------------------------
 A WildFly standalone server runs a single instance.
 
-<JBOSS_HOME>/bin/standalone.sh      (Unix / Linux)
+$JBOSS_HOME/bin/standalone.sh      (Unix / Linux)
 
-<JBOSS_HOME>\bin\standalone.bat     (Windows)
+%JBOSS_HOME%\bin\standalone.bat     (Windows)
 
 
 Starting a Managed Domain
 -------------------------
 A WildFly managed domain allows you to control and configure multiple instances,
-potentially across several physical (or virtual) machines. The default 
-configuration includes a domain controller and a single server group with three 
+potentially across several physical (or virtual) machines. The default
+configuration includes a domain controller and a single server group with three
 servers (two of which start automatically), all running on the localhost.
 
-<JBOSS_HOME>/bin/domain.sh      (Unix / Linux)
+$JBOSS_HOME/bin/domain.sh      (Unix / Linux)
 
-<JBOSS_HOME>\bin\domain.bat     (Windows)
+%JBOSS_HOME%\bin\domain.bat     (Windows)
  
 
 Accessing the Web Console
@@ -72,7 +72,7 @@ A WildFly server can be stopped by pressing Ctrl-C on the command line.
 If the server is running in a background process, the server can be stopped
 using the JBoss CLI:
 
-<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=shutdown      (Unix / Linux)
+$JBOSS_HOME/bin/jboss-cli.sh --connect --command=shutdown      (Unix / Linux)
 
-<JBOSS_HOME>\bin\jboss-cli.bat --connect --command=shutdown     (Windows)
+%JBOSS_HOME%\bin\jboss-cli.bat --connect --command=shutdown     (Windows)
 

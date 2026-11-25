@@ -28,7 +28,6 @@
     <extension module="org.wildfly.extension.io"/>
     <extension module="org.wildfly.extension.messaging-activemq"/>
     <extension module="org.wildfly.extension.request-controller"/>
-    <extension module="org.wildfly.extension.security.manager"/>
     <extension module="org.wildfly.extension.undertow"/>
     <extension module="org.wildfly.iiop-openjdk"/>
   </extensions>
@@ -413,13 +412,6 @@
     <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
     <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
     <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
-    <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
-      <deployment-permissions>
-        <maximum-set>
-          <permission class="java.security.AllPermission"/>
-        </maximum-set>
-      </deployment-permissions>
-    </subsystem>
     <subsystem xmlns="urn:jboss:domain:security:3.0">
       <security-domains>
         <security-domain name="other" cache-type="default">
@@ -530,9 +522,9 @@
     <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/>
     <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
-    <socket-binding name="jgroups-tcp-fd" interface="private" port="57600"/>
+    <socket-binding name="jgroups-tcp-fd" interface="private" port="7601"/>
     <socket-binding name="jgroups-udp" interface="private" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
-    <socket-binding name="jgroups-udp-fd" interface="private" port="54200"/>
+    <socket-binding name="jgroups-udp-fd" interface="private" port="7602"/>
     <socket-binding name="modcluster" port="0" multicast-address="${jboss.default.multicast.address:224.0.1.105}" multicast-port="23364"/>
     <socket-binding name="txn-recovery-environment" port="4712"/>
     <socket-binding name="txn-status-manager" port="4713"/>

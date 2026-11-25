@@ -20,7 +20,7 @@ authentication is required to connect - for this reason there is no
 default user in the distribution.
 
 ////
-  TODO https://issues.redhat.com/browse/WFCORE-5532
+  TODO https://redhat.atlassian.net/browse/WFCORE-5532
 If you attempt to connect to the admin console before you have added a
 user to the server you will be presented with the following screen.
 

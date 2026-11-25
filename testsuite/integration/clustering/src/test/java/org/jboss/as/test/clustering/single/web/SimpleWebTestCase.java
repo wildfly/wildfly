@@ -5,21 +5,21 @@
 package org.jboss.as.test.clustering.single.web;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -33,16 +33,15 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Validate the <distributable/> works for single node.
  *
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(SimpleWebTestCase.ServerSetupTask.class)
 public class SimpleWebTestCase {
 
@@ -59,39 +58,46 @@ public class SimpleWebTestCase {
 
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
-    public void test(@ArquillianResource(SimpleServlet.class) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws IOException, URISyntaxException {
+    void test(@ArquillianResource(SimpleServlet.class) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws Exception {
         // Validate existence of runtime resource for deployment cache
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "infinispan"), PathElement.pathElement("cache-container", "web"), PathElement.pathElement("cache", APPLICATION_NAME));
         ModelNode operation = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, address);
         operation.get(ModelDescriptionConstants.NAME).set(new ModelNode("number-of-entries"));
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
+        assertEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
 
         URI uri = SimpleServlet.createURI(baseURL);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+            AtomicReference<String> sessionId = new AtomicReference<>();
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                sessionId.setPlain(response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
 
-            response = client.execute(new HttpGet(uri));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
-                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                assertEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+            }
+
+            // Invalidate and recreate session
+            try (CloseableHttpResponse response = client.execute(new HttpPatch(uri))) {
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                // This won't be true unless we have somewhere to which to replicate or session persistence is configured (current default)
+                assertFalse(Boolean.parseBoolean(response.getFirstHeader(SimpleServlet.HEADER_SERIALIZED).getValue()));
+                // Verify that session ID of recreated session is not the same as the previous one
+                assertNotEquals(sessionId.getPlain(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             }
         }
 
         result = managementClient.getControllerClient().execute(operation);
-        Assert.assertNotEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
+        assertNotEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
     }
 
     public static class ServerSetupTask extends ManagementServerSetupTask {
@@ -105,14 +111,6 @@ public class SimpleWebTestCase {
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add")
                             .endBatch()
                             .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:write-attribute(name=statistics-enabled, value=true)")
-                            .build())
-                    .tearDownScript(createScriptBuilder()
-                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
-                            .startBatch()
-                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=local:add")
-                            .add("/subsystem=distributable-web/routing=infinispan:remove")
-                            .add("/subsystem=infinispan/cache-container=web/local-cache=routing:remove")
-                            .endBatch()
                             .build())
                     .build());
         }

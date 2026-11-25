@@ -6,6 +6,7 @@ package org.jboss.as.jdr.logger;
 
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
@@ -27,7 +28,7 @@ public interface JdrLogger extends BasicLogger {
     /**
      * A logger with the category of the default jdr package.
      */
-    JdrLogger ROOT_LOGGER = Logger.getMessageLogger(JdrLogger.class, "org.jboss.as.jdr");
+    JdrLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JdrLogger.class, "org.jboss.as.jdr");
 
 //    /**
 //     * Indicates that a JDR report has been initiated.

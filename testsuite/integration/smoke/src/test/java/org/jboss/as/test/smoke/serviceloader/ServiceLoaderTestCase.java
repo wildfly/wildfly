@@ -7,14 +7,14 @@ package org.jboss.as.test.smoke.serviceloader;
 import java.util.ServiceLoader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.modules.Module;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ServiceLoaderTestCase {
 
 
@@ -42,7 +42,7 @@ public class ServiceLoaderTestCase {
         for (TestService service : loader) {
             s = service.decorate(s);
         }
-        Assert.assertEquals("#TestService#Hello", s);
+        Assertions.assertEquals("#TestService#Hello", s);
     }
 
 

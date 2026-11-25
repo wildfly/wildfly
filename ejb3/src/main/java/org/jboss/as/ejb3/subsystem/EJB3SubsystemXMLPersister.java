@@ -63,7 +63,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_10_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_11_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -193,13 +193,13 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
             writeRemote(writer, model.get(SERVICE, REMOTE));
 
-            // profiles element
-            if (model.hasDefined(REMOTING_PROFILE)) {
-                writer.writeStartElement(EJB3SubsystemXMLElement.PROFILES.getLocalName());
-                writeProfiles(writer, model);
-                writer.writeEndElement();
-            }
+            writer.writeEndElement();
+        }
 
+        // write the profiles element
+        if (model.hasDefined(REMOTING_PROFILE)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.PROFILES.getLocalName());
+            writeProfiles(writer, model);
             writer.writeEndElement();
         }
 

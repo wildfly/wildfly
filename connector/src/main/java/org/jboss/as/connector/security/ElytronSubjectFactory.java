@@ -26,6 +26,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.kerberos.KerberosPrincipal;
+import javax.security.auth.kerberos.KerberosTicket;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
@@ -123,7 +124,10 @@ public class ElytronSubjectFactory implements SubjectFactory, Capabilities {
             // if a GSSKerberosCredential was found, add the enclosed GSSCredential and KerberosTicket to the private set in the Subject.
             if (credentialCallback.getCredential() != null) {
                 GSSKerberosCredential kerberosCredential = GSSKerberosCredential.class.cast(credentialCallback.getCredential());
-                this.addPrivateCredential(subject, kerberosCredential.getKerberosTicket());
+                KerberosTicket ticket = kerberosCredential.getKerberosTicket();
+                if (ticket != null) {
+                    this.addPrivateCredential(subject, ticket);
+                }
                 this.addPrivateCredential(subject, kerberosCredential.getGssCredential());
                 // use the GSSName to build a kerberos principal and set it in the Subject.
                 GSSName gssName = kerberosCredential.getGssCredential().getName();

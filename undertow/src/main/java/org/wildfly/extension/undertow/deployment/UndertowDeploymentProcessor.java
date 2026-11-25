@@ -17,10 +17,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -33,7 +33,10 @@ import java.util.function.Supplier;
 
 import jakarta.security.jacc.PolicyConfiguration;
 
-import io.undertow.servlet.api.SessionConfigWrapper;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.SessionManagerFactory;
+import io.undertow.servlet.core.InMemorySessionManagerFactory;
+
 import org.apache.jasper.Constants;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -43,7 +46,6 @@ import org.apache.jasper.deploy.TagLibraryInfo;
 import org.apache.jasper.deploy.TagLibraryValidatorInfo;
 import org.apache.jasper.deploy.TagVariableInfo;
 import org.jboss.annotation.javaee.Icon;
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.RequirementServiceTarget;
@@ -94,7 +96,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.clustering.web.container.SessionManagementProvider;
+import org.wildfly.clustering.web.container.WebDeploymentServiceInstallerProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.common.function.Functions;
 import org.wildfly.extension.io.IOServices;
@@ -102,7 +104,6 @@ import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
 import org.wildfly.extension.undertow.Capabilities;
-import org.wildfly.extension.undertow.CookieConfig;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -111,25 +112,32 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
-import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
+import org.wildfly.extension.undertow.session.NonDistributableWebDeploymentServiceInstallerProvider;
+import org.wildfly.extension.undertow.session.SessionAffinityProvider;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
-
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.SessionManagerFactory;
-import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
+public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
-    private static final String LEGACY_JACC_CAPABILITY_NAME = "org.wildfly.legacy-security.jacc";
+    /*
+     * Prior to Jakarta EE 11 the Policy was an instance of java.security.Policy, within the Elytron subsystem
+     * we would make use of an MSC service to handle the global registration. Any deployments that were utilising JACC
+     * would need to depend on the "org.wildfly.security.jacc-policy" capability to ensure registration was complete
+     * before processing the deployment.
+     *
+     * The Elytron subsystem now also supports an immediate registration which is indicated by the
+     * "org.wildfly.security.jakarta-authorization" capability, if this is registered it means Jakarta Authorization
+     * has already been registered.
+     */
+
     private static final String ELYTRON_JACC_CAPABILITY_NAME = "org.wildfly.security.jacc-policy";
+    private static final String ELYTRON_JAKARTA_AUTHORIZATION = "org.wildfly.security.jakarta-authorization";
 
     private final String defaultServer;
     private final String defaultHost;
@@ -141,8 +149,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         value is host name where deployment is bound to.
      */
     private final DefaultDeploymentMappingProvider defaultModuleMappingProvider;
-    private final SessionManagementProviderFactory sessionManagementProviderFactory;
-    private final SessionManagementProvider nonDistributableSessionManagementProvider;
+    private final Optional<WebDeploymentServiceInstallerProvider> distributableServiceInstallerProvider;
+    private final NonDistributableWebDeploymentServiceInstallerProvider nonDistributableServiceInstallerProvider;
 
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, Predicate<String> mappedSecurityDomain) {
         this.defaultHost = defaultHost;
@@ -153,9 +161,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.mappedSecurityDomain = mappedSecurityDomain;
-        Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
-        this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
-        this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
+        this.nonDistributableServiceInstallerProvider = new NonDistributableWebDeploymentServiceInstallerProvider(new Function<>() {
+            @Override
+            public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
+                OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
+                return maxActiveSessions.isPresent() ? new InMemorySessionManagerFactory(maxActiveSessions.getAsInt()) : new InMemorySessionManagerFactory();
+            }
+        });
+        this.distributableServiceInstallerProvider = ServiceLoader.load(WebDeploymentServiceInstallerProvider.class, WebDeploymentServiceInstallerProvider.class.getClassLoader()).findFirst();
     }
 
     @Override
@@ -163,9 +176,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
 
+        RequirementServiceTarget serviceTarget = phaseContext.getRequirementServiceTarget();
         //install the control point for the top level deployment no matter what
         if (RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) && parentDeploymentUnit == null) {
-            ControlPointService.install(phaseContext.getServiceTarget(), deploymentUnit.getName(), UndertowExtension.SUBSYSTEM_NAME);
+            ControlPointService.install(serviceTarget, deploymentUnit.getName(), UndertowExtension.SUBSYSTEM_NAME);
         }
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (warMetaData == null) {
@@ -189,28 +203,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         // flag if the app is the default web module for the server/host
         boolean isDefaultWebModule = serverHost != null && serverInstanceName.equals(defaultServerForDeployment) && hostName.equals(defaultHostForDeployment);
 
-        processDeployment(warMetaData, deploymentUnit, phaseContext.getRequirementServiceTarget(), deploymentName, hostName, serverInstanceName, isDefaultWebModule);
-    }
-
-
-    private String hostNameOfDeployment(final WarMetaData metaData, String defaultHost) {
-        Collection<String> hostNames = null;
-        if (metaData.getMergedJBossWebMetaData() != null) {
-            hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
-        }
-        if (hostNames == null || hostNames.isEmpty()) {
-            hostNames = Collections.singleton(defaultHost);
-        }
-        String hostName = hostNames.iterator().next();
-        if (hostName == null) {
-            throw UndertowLogger.ROOT_LOGGER.nullHostName();
-        }
-        return hostName;
-    }
-
-    private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final RequirementServiceTarget serviceTarget,
-                                   final String deploymentName, final String hostName, final String serverInstanceName, final boolean isDefaultWebModule)
-            throws DeploymentUnitProcessingException {
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
@@ -240,8 +232,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ComponentRegistry componentRegistry = componentRegistryExists ? deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY) : new ComponentRegistry(null);
         final ClassLoader loader = module.getClassLoader();
         final WebInjectionContainer injectionContainer = (metaData.getDistributable() == null) ? new CachingWebInjectionContainer(loader, componentRegistry) : new SimpleWebInjectionContainer(loader, componentRegistry);
-
-        DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
 
         String jaccContextId = metaData.getJaccContextID();
         if (jaccContextId == null) {
@@ -303,37 +293,40 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
 
         final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
-            securityDomain = builder.requires(securityMetaData.getSecurityDomain());
-        } else if(securityDomainName != null) {
+        if (securityDomainName != null) {
             if (mappedSecurityDomain.test(securityDomainName)) {
                 applySecurityFunction = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomainName));
             } else {
                 throw ROOT_LOGGER.deploymentConfiguredForLegacySecurity();
             }
         }
-        if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
-            if (securityMetaData instanceof AdvancedSecurityMetaData) {
-                mechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
+        else if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
+            securityDomain = builder.requires(securityMetaData.getSecurityDomain());
+
+            if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
+                if (securityMetaData instanceof AdvancedSecurityMetaData) {
+                    mechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
+                }
             }
         }
+
+        ROOT_LOGGER.debugf("Security domain applied is \"%s\"", securityDomainName);
 
         Supplier<ControlPoint> controlPoint = RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) ? builder.requires(ControlPointService.serviceName(Optional.ofNullable(parentDeploymentUnit).orElse(deploymentUnit).getName(), UndertowExtension.SUBSYSTEM_NAME)) : null;
 
         SharedSessionManagerConfig sharedSessionManagerConfig = parentDeploymentUnit != null ? parentDeploymentUnit.getAttachment(SharedSessionManagerConfig.ATTACHMENT_KEY) : null;
-        ServiceName sessionManagerFactoryServiceName = (sharedSessionManagerConfig != null) ? parentDeploymentUnit.getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME) : deploymentServiceName.append("session");
-        ServiceName sessionConfigWrapperFactoryServiceName = (sharedSessionManagerConfig != null) ? parentDeploymentUnit.getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_AFFINITY_SERVICE_NAME) : deploymentServiceName.append("affinity");
+        DeploymentUnit sessionDeploymentUnit = (sharedSessionManagerConfig != null) ? parentDeploymentUnit : deploymentUnit;
 
         ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
-        Supplier<SessionManagerFactory> sessionManagerFactory = (servletContainer != null) ? builder.requires(sessionManagerFactoryServiceName) : null;
-        Supplier<Function<CookieConfig, SessionConfigWrapper>> sessionConfigWrapperFactory = (servletContainer != null) ? builder.requires(sessionConfigWrapperFactoryServiceName) : null;
+        Supplier<SessionManagerFactory> sessionManagerFactory = (servletContainer != null) ? builder.requires(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY.resolve(sessionDeploymentUnit)) : null;
+        Supplier<SessionAffinityProvider> sessionAffinityProvider = (servletContainer != null) ? builder.requires(WebDeploymentServiceDescriptor.SESSION_AFFINITY_PROVIDER.resolve(sessionDeploymentUnit)) : null;
 
         if ((servletContainer != null) && (sharedSessionManagerConfig == null)) {
             Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : servletContainer.getMaxSessions();
             SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
             int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : servletContainer.getDefaultSessionTimeout();
 
-            SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
+            WebDeploymentServiceInstallerProvider provider = (metaData.getDistributable() != null) ? this.distributableServiceInstallerProvider.orElseGet(this.nonDistributableServiceInstallerProvider) : this.nonDistributableServiceInstallerProvider;
             SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
                 @Override
                 public String getServerName() {
@@ -351,9 +344,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 }
 
                 @Override
-                public Integer getMaxActiveSessions() {
+                public OptionalInt getMaxActiveSessions() {
                     // Value must be positive
-                    return (maxActiveSessions != null) && (maxActiveSessions > 0) ? maxActiveSessions : null;
+                    return (maxActiveSessions != null) && (maxActiveSessions > 0) ? OptionalInt.of(maxActiveSessions) : OptionalInt.empty();
                 }
 
                 @Override
@@ -361,12 +354,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     return Duration.ofMinutes(defaultSessionTimeout);
                 }
             };
-            for (CapabilityServiceConfigurator configurator : provider.getSessionManagerFactoryServiceConfigurators(sessionManagerFactoryServiceName, configuration)) {
-                configurator.configure(capabilitySupport).build(serviceTarget).install();
-            }
-            for (CapabilityServiceConfigurator configurator : provider.getSessionAffinityServiceConfigurators(sessionConfigWrapperFactoryServiceName, configuration)) {
-                configurator.configure(capabilitySupport).build(serviceTarget).install();
-            }
+            provider.getSessionManagerFactoryServiceInstaller(configuration).install(phaseContext);
+            provider.getSessionAffinityProviderServiceInstaller(configuration).install(phaseContext);
         }
 
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
@@ -395,7 +384,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionConfigWrapperFactory,
+                .createUndertowDeploymentInfoService(deploymentInfo, undertowService, sessionManagerFactory, sessionAffinityProvider,
                         servletContainerService, componentRegistryDependency, host, controlPoint, suspendController, serverEnvironment, securityDomain, mechanismFactorySupplier, applySecurityFunction);
         builder.setInstance(undertowDeploymentInfoService);
 
@@ -439,8 +428,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
         // adding Jakarta Authorization service
-        final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
-        if(elytronJacc) {
+        boolean usesElytronJaccPolicy = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
+        boolean requireJakartaAuthorization = usesElytronJaccPolicy || capabilitySupport.hasCapability(ELYTRON_JAKARTA_AUTHORIZATION);
+
+        if(requireJakartaAuthorization) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
@@ -450,7 +441,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                     // add dependency to parent policy
                     jaccBuilder.addDependency(parentDeploymentUnit.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class, jaccService.getParentPolicyInjector());
                 }
-                jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(elytronJacc ? ELYTRON_JACC_CAPABILITY_NAME : LEGACY_JACC_CAPABILITY_NAME));
+
+                if (usesElytronJaccPolicy) {
+                    jaccBuilder.requires(capabilitySupport.getCapabilityServiceName(ELYTRON_JACC_CAPABILITY_NAME));
+                }
                 // add dependency to web deployment service
                 jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();
@@ -466,21 +460,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         processManagement(deploymentUnit, metaData);
     }
 
-    @Override
-    public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
-        Integer maxActiveSessions = configuration.getMaxActiveSessions();
-        return (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions.intValue()) : new InMemorySessionManagerFactory();
-    }
-
-    private SessionManagementProvider getDistributableWebDeploymentProvider(DeploymentUnit unit, JBossWebMetaData metaData) {
-        if (metaData.getDistributable() != null) {
-            if (this.sessionManagementProviderFactory != null) {
-                return this.sessionManagementProviderFactory.createSessionManagementProvider(unit, metaData.getReplicationConfig());
-            }
-            // Fallback to local session manager if server does not support clustering
-            UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
+    private static String hostNameOfDeployment(final WarMetaData metaData, String defaultHost) {
+        Collection<String> hostNames = null;
+        if (metaData.getMergedJBossWebMetaData() != null) {
+            hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
         }
-        return this.nonDistributableSessionManagementProvider;
+        if (hostNames == null || hostNames.isEmpty()) {
+            hostNames = Collections.singleton(defaultHost);
+        }
+        String hostName = hostNames.iterator().next();
+        if (hostName == null) {
+            throw UndertowLogger.ROOT_LOGGER.nullHostName();
+        }
+        return hostName;
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData, final boolean isDefaultWebModule) {

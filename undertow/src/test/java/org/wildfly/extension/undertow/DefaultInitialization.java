@@ -127,7 +127,7 @@ class DefaultInitialization extends AdditionalInitialization.ManagementAdditiona
 
         registerServiceCapabilities(capabilityRegistry, capabilities);
         registerCapabilities(capabilityRegistry,
-                RuntimeCapability.Builder.of("org.wildfly.network.outbound-socket-binding", true, OutboundSocketBinding.class).build(),
+                RuntimeCapability.Builder.of(OutboundSocketBinding.SERVICE_DESCRIPTOR).build(),
                 RuntimeCapability.Builder.of("org.wildfly.security.ssl-context", true, SSLContext.class).build()
         );
 

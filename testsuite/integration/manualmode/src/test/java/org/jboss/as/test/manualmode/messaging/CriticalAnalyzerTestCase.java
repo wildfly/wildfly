@@ -32,7 +32,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.as.test.shared.logging.LoggingUtil;
 import org.jboss.byteman.agent.submit.Submit;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
@@ -52,15 +52,16 @@ public class CriticalAnalyzerTestCase {
     private static final String DEFAULT_FULL_JBOSSAS = "default-full-jbossas-byteman";
     private static final String EXPORTED_PREFIX = "java:jboss/exported/";
 
+    private static final String BYTEMAN_ADDRESS = System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS);
+    private static final Integer BYTEMAN_PORT = Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT);
+
     @ArquillianResource
     protected static ContainerController container;
 
     private LoggerSetup loggerSetup;
     private ManagementClient managementClient;
 
-    private final Submit bytemanSubmit = new Submit(
-            System.getProperty("byteman.server.ipaddress", Submit.DEFAULT_ADDRESS),
-            Integer.getInteger("byteman.server.port", Submit.DEFAULT_PORT));
+    private final Submit bytemanSubmit = new Submit(BYTEMAN_ADDRESS, BYTEMAN_PORT);
 
     private void deployRules() throws Exception {
         bytemanSubmit.addRulesFromResources(Collections.singletonList(
@@ -153,11 +154,11 @@ public class CriticalAnalyzerTestCase {
             Assert.fail("Critical analyzer should have kicked in");
         } catch (jakarta.jms.JMSRuntimeException ex) {
             Assert.assertTrue("Log should contains ActiveMQ connection failure error log message: [AMQ219016]", ex.getMessage().contains("AMQ219016"));
-            Assert.assertTrue("Log should contains ActiveMQ critical measure ", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            Assert.assertTrue("Log should contains ActiveMQ critical measure ", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("[org.apache.activemq.artemis.utils.critical.CriticalMeasure]"))));
-            Assert.assertTrue("Log should contains ActiveMQ AMQ224080 : critical analyzer is stopping the broker", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            Assert.assertTrue("Log should contains ActiveMQ AMQ224080 : critical analyzer is stopping the broker", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("AMQ224080"))));
-            Assert.assertTrue("Log should contains ActiveMQ AMQ222199 : Thread dump ", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+            Assert.assertTrue("Log should contains ActiveMQ AMQ222199 : Thread dump ", LoggingUtil.hasLogMessage(managementClient.getControllerClient(), "artemis-log", "",
                     (line) -> (line.contains("AMQ222199"))));
         }
         remoteContext.close();

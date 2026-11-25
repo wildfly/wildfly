@@ -21,6 +21,7 @@ import org.jboss.as.controller.registry.Resource;
  * A generic {@link Resource} decorator augmented to support additional runtime children.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public class ComplexResource extends DelegatingResource implements Function<String, ChildResourceProvider> {
 
     private final Map<String, ChildResourceProvider> providers;

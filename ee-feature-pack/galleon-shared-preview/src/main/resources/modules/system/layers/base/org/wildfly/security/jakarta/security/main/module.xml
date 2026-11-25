@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.jakarta.security">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly.security.jakarta:jakarta-security}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.glassfish.soteria" export="true" services="export" />
+
+        <module name="java.logging" />
+        <module name="jakarta.security.enterprise.api" />
+        <module name="jakarta.servlet.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.security.auth.message.api" />
+        <module name="org.jboss.weld.core" />
+        <module name="org.jboss.weld.spi" />
+        <module name="org.wildfly.security.elytron" />
+        <module name="jakarta.xml.bind.api" />
+        <module name="jakarta.interceptor.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.inject.api" />
+        <module name="jakarta.security.jacc.api" />
+        <module name="jakarta.ejb.api" />
+        <module name="jakarta.json.api" />
+        <module name="jakarta.ws.rs.api" />
+        <module name="com.nimbusds.nimbus-jose-jwt" />
+    </dependencies>
+</module>

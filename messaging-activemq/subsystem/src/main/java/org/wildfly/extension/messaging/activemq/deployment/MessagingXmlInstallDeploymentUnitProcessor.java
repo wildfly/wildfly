@@ -12,17 +12,12 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 
 import java.util.List;
-import java.util.Set;
 
 import jakarta.jms.Queue;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -124,36 +119,8 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
     }
 
 
-    static ManagementResourceRegistration createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
-        final Resource root = unit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-        synchronized (root) {
-            final ManagementResourceRegistration registration = unit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-            final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME));
-            final Resource subsystem = getOrCreate(root, subsystemAddress);
-            Set<String> childTypes = subsystem.getChildTypes();
-            final ManagementResourceRegistration subModel = registration.getSubModel(subsystemAddress.append(address));
-            if (subModel == null) {
-                throw new IllegalStateException(address.toString());
-            }
-            getOrCreate(subsystem, address);
-            return subModel;
-        }
-    }
-
-    static Resource getOrCreate(final Resource parent, final PathAddress address) {
-        Resource current = parent;
-        for (final PathElement element : address) {
-            synchronized (current) {
-                if (current.hasChild(element)) {
-                    current = current.requireChild(element);
-                } else {
-                    final Resource resource = Resource.Factory.create();
-                    current.registerChild(element, resource);
-                    current = resource;
-                }
-            }
-        }
-        return current;
+    static void createDeploymentSubModel(final PathAddress address, final DeploymentUnit unit) {
+        unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, address);
     }
 
 }

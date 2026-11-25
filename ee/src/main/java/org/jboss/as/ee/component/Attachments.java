@@ -10,8 +10,6 @@ import java.util.Set;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ee.component.deployers.MessageDestinationInjectionSource;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
-import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
-import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.SetupAction;
@@ -72,8 +70,4 @@ public class Attachments {
 
     public static final AttachmentKey<StartupCountdown> STARTUP_COUNTDOWN = AttachmentKey.create(StartupCountdown.class);
     public static final AttachmentKey<ComponentRegistry> COMPONENT_REGISTRY = AttachmentKey.create(ComponentRegistry.class);
-
-    public static final AttachmentKey<AttachmentList<ContextHandleFactory>> ADDITIONAL_FACTORIES = AttachmentKey.createList(ContextHandleFactory.class);
-
-    public static final AttachmentKey<ConcurrentContextSetupAction> CONCURRENT_CONTEXT_SETUP_ACTION = AttachmentKey.create(ConcurrentContextSetupAction.class);
 }

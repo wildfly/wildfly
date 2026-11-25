@@ -14,6 +14,7 @@ element in the configuration
 
 [source,xml,options="nowrap"]
 ----
+<subsystem xmlns="urn:wildfly:jakarta-data:preview:1.0"/>
 <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
 <subsystem xmlns="urn:jboss:domain:mvc-krazo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
@@ -25,6 +26,9 @@ The presence of each of these turns on a piece of functionality:
 [cols=",",options="header"]
 |=======================================================================
 |Name |Description
+
+
+|jakarta-data| Provides support for use of Jakarta Data in deployments. Currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability].
 
 |jdr |Enables the gathering of diagnostic data for use in remote
 analysis of error conditions. Although the data is in a simple format

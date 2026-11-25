@@ -11,6 +11,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations for the Infinispan session management provider.
  * @author Paul Ferraro
  */
 public class InfinispanSessionManagementResourceTransformer extends SessionManagementResourceTransformer implements Consumer<ModelVersion> {
@@ -23,7 +24,7 @@ public class InfinispanSessionManagementResourceTransformer extends SessionManag
 
     @Override
     public void accept(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = this.parent.addChildResource(SessionManagementResourceRegistration.INFINISPAN.getPathElement());
 
         this.accept(version, builder);
     }

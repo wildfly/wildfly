@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.ERROR;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
@@ -28,7 +29,7 @@ public interface MetricsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    MetricsLogger LOGGER = Logger.getMessageLogger(MetricsLogger.class, "org.wildfly.extension.metrics");
+    MetricsLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MetricsLogger.class, "org.wildfly.extension.metrics");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.
@@ -51,4 +52,12 @@ public interface MetricsLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 5, value = "Malformed name.")
     void malformedName(@Cause Exception exception);
+
+    @LogMessage(level = INFO)
+    @Message(id = 6, value = "Additional metrics systems discovered while configuring WildFly Metrics: %s. Please refer to the documentation for more information.")
+    void multipleMetricsSystemsEnabled(String others);
+
+    @LogMessage(level = INFO)
+    @Message(id = 7, value = "Unable to collect metrics for resource %s after %d attempts%s.")
+    void unableToCollectMetrics(PathAddress address, int attempts, String failure);
 }

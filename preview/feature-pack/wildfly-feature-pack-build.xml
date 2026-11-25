@@ -3,8 +3,14 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.4" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
-
+<build xmlns="urn:wildfly:feature-pack-build:3.5" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
+    <family name="wildfly">
+      <criteria name="jakarta-ee-10+"/>
+      <criteria name="jakarta-ee-11"/>
+      <criteria name="jakarta-ee-deployment"/>
+      <criteria name="microprofile-7.1+"/>
+      <criteria name="microprofile-7.2"/>
+    </family>
     <default-packages>
         <package name="modules.all"/>
         <package name="docs"/>
@@ -12,6 +18,7 @@
         <!-- appclient is not referenced from standalone nor domain configuration models.-->
         <package name="appclient"/>
         <package name="bin"/>
+        <package name="version.txt"/>
     </default-packages>
 
     <stability-levels>
@@ -20,18 +27,19 @@
         <package-stability-level>experimental</package-stability-level>
     </stability-levels>
     <!--
-      When building this feature pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
+      When building this feature-pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
       which is used to provision the contents of the 'docs/schema' directory in a WildFly installation.
-      To do this the plugin inspects maven artifacts that would be provisioned by the feature pack,
+      To do this the plugin inspects maven artifacts that would be provisioned by the feature-pack,
       looking for those whose Maven groupId matches one of the groupIds listed below.
       For all matching artifacts, the plugin checks for the existence of a 'schema' directory at the artifact root.
       If such a directory is found, the plugin copies out the directory contents and includes them
-      in the feature pack as part of the 'docs.schema' package it generates.
+      in the feature-pack as part of the 'docs.schema' package it generates.
      -->
     <package-schemas>
         <group name="org.jboss.metadata"/>
         <group name="org.wildfly"/>
         <group name="org.wildfly.core"/>
+        <group name="org.wildfly.security.vault"/>
     </package-schemas>
 
     <config name="standalone.xml" model="standalone"/>
@@ -84,8 +92,10 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.hashicorp-vault</extension>
                 <extension>org.wildfly.extension.elytron-oidc-client</extension>
                 <extension>org.wildfly.extension.health</extension>
+                <extension>org.wildfly.extension.jakarta.data</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.metrics</extension>
@@ -108,6 +118,7 @@
                 <extension>org.wildfly.extension.rts</extension>
                 <extension>org.wildfly.extension.security.manager</extension>
                 <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.wildfly.extension.vertx</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </standalone>
             <domain>
@@ -141,6 +152,8 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.hashicorp-vault</extension>
+                <extension>org.wildfly.extension.jakarta.data</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
@@ -161,6 +174,7 @@
                 <extension>org.wildfly.extension.rts</extension>
                 <extension>org.wildfly.extension.security.manager</extension>
                 <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.wildfly.extension.vertx</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </domain>
             <host>

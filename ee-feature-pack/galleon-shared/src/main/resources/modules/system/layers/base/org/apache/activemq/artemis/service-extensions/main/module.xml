@@ -7,7 +7,7 @@
 
 <module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.service-extensions">
     <resources>
-        <artifact name="${org.apache.activemq:artemis-jakarta-service-extensions}"/>
+        <artifact name="${org.apache.artemis:artemis-jakarta-service-extensions}"/>
     </resources>
 
     <dependencies>

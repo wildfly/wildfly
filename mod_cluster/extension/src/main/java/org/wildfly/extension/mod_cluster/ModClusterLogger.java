@@ -8,6 +8,8 @@ package org.wildfly.extension.mod_cluster;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -25,7 +27,7 @@ interface ModClusterLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(ModClusterLogger.class, "org.wildfly.extension.mod_cluster");
+    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ModClusterLogger.class, "org.wildfly.extension.mod_cluster");
 
     /**
      * Logs an error message indicating an error when adding metrics.
@@ -56,11 +58,8 @@ interface ModClusterLogger extends BasicLogger {
 //    @Message(id = 3, value = "%s failed to stop.")
 //    void stopFailure(@Cause Throwable cause, String name);
 
-    /**
-     * Logs an error message indicating ModCluster requires advertise, but no multi-cast interface is available.
-     */
     @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available.")
+    @Message(id = 4, value = "mod_cluster is configured to use the advertise mechanism, but no multicast-capable network interface is available. Proxies will not be discovered automatically.")
     void multicastInterfaceNotAvailable();
 
     @LogMessage(level = WARN)

@@ -72,7 +72,7 @@ e.g.
 [source,java]
 ----
 @AutoProtoSchemaBuilder(includeClasses = { Person.class })
-public interface PersonInitalizer extends SerializationContextInitializer {
+public interface PersonInitializer extends SerializationContextInitializer {
 }
 
 public class Person {

@@ -6,39 +6,43 @@
 package org.wildfly.clustering.faces.mojarra.util;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
-import java.util.Iterator;
+import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.util.AbstractMapMarshaller;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import com.sun.faces.util.LRUMap;
 
 /**
  * @author Paul Ferraro
  */
-public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Object>> {
+public class LRUMapMarshaller extends AbstractMapMarshaller<Object, Object, LRUMap<Object, Object>> {
 
-    private static final int MAX_CAPACITY_INDEX = VALUE_INDEX + 1;
+    private static final int MAX_CAPACITY_INDEX = ENTRY_INDEX + 1;
     private static final int DEFAULT_MAX_CAPACITY = 15;
-    private static final Field MAX_CAPACITY_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
-        @Override
-        public Field run() {
-            for (Field field : LRUMap.class.getDeclaredFields()) {
-                if (field.getType() == Integer.TYPE) {
-                    field.setAccessible(true);
-                    return field;
+    private static final Function<LRUMap<Object, Object>, Integer> MAX_CAPACITY_HANDLE = Function.invoke(findHandle(LRUMap.class, Integer.TYPE));
+
+    private static MethodHandle findHandle(Class<?> sourceClass, Class<?> fieldClass) {
+        for (Field field : sourceClass.getDeclaredFields()) {
+            if (field.getType() == fieldClass) {
+                try {
+                    return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findGetter(sourceClass, field.getName(), fieldClass);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-            throw new IllegalStateException();
         }
-    });
+        throw new IllegalArgumentException(fieldClass.getName());
+    }
 
     @SuppressWarnings("unchecked")
     public LRUMapMarshaller() {
@@ -48,16 +52,12 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
     @Override
     public LRUMap<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
         int maxCapacity = DEFAULT_MAX_CAPACITY;
-        List<Object> keys = new LinkedList<>();
-        List<Object> values = new LinkedList<>();
+        List<Map.Entry<Object, Object>> entries = new LinkedList<>();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
-                case KEY_INDEX:
-                    keys.add(reader.readAny());
-                    break;
-                case VALUE_INDEX:
-                    values.add(reader.readAny());
+                case ENTRY_INDEX:
+                    entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
                     break;
                 case MAX_CAPACITY_INDEX:
                     maxCapacity = reader.readUInt32();
@@ -67,10 +67,8 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
             }
         }
         LRUMap<Object, Object> map = new LRUMap<>(maxCapacity);
-        Iterator<Object> keyIterator = keys.iterator();
-        Iterator<Object> valueIterator = values.iterator();
-        while (keyIterator.hasNext() || valueIterator.hasNext()) {
-            map.put(keyIterator.next(), valueIterator.next());
+        for (Map.Entry<Object, Object> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
         }
         return map;
     }
@@ -78,13 +76,9 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
     @Override
     public void writeTo(ProtoStreamWriter writer, LRUMap<Object, Object> map) throws IOException {
         super.writeTo(writer, map);
-        try {
-            int maxCapacity = MAX_CAPACITY_FIELD.getInt(map);
-            if (maxCapacity != DEFAULT_MAX_CAPACITY) {
-                writer.writeUInt32(MAX_CAPACITY_INDEX, maxCapacity);
-            }
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
+        int maxCapacity = MAX_CAPACITY_HANDLE.apply(map);
+        if (maxCapacity != DEFAULT_MAX_CAPACITY) {
+            writer.writeUInt32(MAX_CAPACITY_INDEX, maxCapacity);
         }
     }
 }

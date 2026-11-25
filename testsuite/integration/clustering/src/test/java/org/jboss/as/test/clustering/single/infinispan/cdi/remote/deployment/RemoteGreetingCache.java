@@ -10,6 +10,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 import jakarta.inject.Qualifier;
 
 import org.infinispan.cdi.remote.Remote;
@@ -18,7 +19,7 @@ import org.infinispan.cdi.remote.Remote;
  * @author Radoslav Husar
  * @since 27
  */
-@Remote("transactional")
+@Remote("default")
 @Qualifier
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

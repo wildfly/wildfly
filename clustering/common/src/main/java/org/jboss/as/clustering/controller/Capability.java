@@ -14,6 +14,7 @@ import org.wildfly.clustering.service.Requirement;
  * Interface to be implemented by capability enumerations.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public interface Capability extends Definable<RuntimeCapability<?>>, Requirement, ResourceServiceNameFactory {
 
     @Override

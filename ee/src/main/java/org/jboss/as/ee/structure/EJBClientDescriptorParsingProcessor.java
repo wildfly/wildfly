@@ -25,9 +25,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.common.xml.XMLInputFactoryUtil;
 
 /**
  * A deployment unit processor which parses jboss-ejb-client.xml in top level deployments.
@@ -51,7 +53,10 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
     private static final QName ROOT_1_5 = new QName(EJBClientDescriptor15Parser.NAMESPACE_1_5, "jboss-ejb-client");
     private static final QName ROOT_NO_NAMESPACE = new QName("jboss-ejb-client");
 
-    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
+    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactoryUtil.create();
+    static {
+        INPUT_FACTORY.setXMLResolver(NoopXMLResolver.create());
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -130,7 +135,6 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
-            setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(source);
             try {
                 final EJBClientDescriptorMetaData result = new EJBClientDescriptorMetaData();

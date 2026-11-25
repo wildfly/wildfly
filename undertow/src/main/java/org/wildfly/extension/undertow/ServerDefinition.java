@@ -10,24 +10,25 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class ServerDefinition extends PersistentResourceDefinition {
+class ServerDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVER);
-    static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER, true, Server.class)
+    static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
+    static final RuntimeCapability<Void> DEFAULT_HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.DEFAULT_SERVICE_DESCRIPTOR).build();
 
     static final SimpleAttributeDefinition DEFAULT_HOST = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_HOST, ModelType.STRING)
             .setRequired(false)
@@ -47,21 +48,22 @@ class ServerDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ServerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(SERVER_CAPABILITY, CommonWebServer.CAPABILITY)
+                .addCapabilities(SERVER_CAPABILITY, DEFAULT_HOST_CAPABILITY)
         );
     }
 
     @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attribute, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        }
     }
 
     @Override
-    protected List<? extends PersistentResourceDefinition> getChildren() {
-        return List.of(
-                new AjpListenerResourceDefinition(),
-                new HttpListenerResourceDefinition(),
-                new HttpsListenerResourceDefinition(),
-                new HostDefinition());
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new AjpListenerResourceDefinition());
+        registration.registerSubModel(new HttpListenerResourceDefinition());
+        registration.registerSubModel(new HttpsListenerResourceDefinition());
+        registration.registerSubModel(new HostDefinition());
     }
 }

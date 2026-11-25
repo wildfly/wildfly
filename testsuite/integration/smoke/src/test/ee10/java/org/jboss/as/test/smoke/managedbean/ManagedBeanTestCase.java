@@ -7,21 +7,21 @@ package org.jboss.as.test.smoke.managedbean;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ManagedBeanTestCase {
 
     @ArquillianResource
@@ -40,12 +40,12 @@ public class ManagedBeanTestCase {
     @Test
     public void testManagedBean() throws Exception {
         BeanWithSimpleInjected bean = (BeanWithSimpleInjected) context.lookup("java:module/" + BeanWithSimpleInjected.class.getSimpleName());
-        Assert.assertNotNull(bean.getSimple());
-        Assert.assertNotNull(bean.getSimple2());
+        Assertions.assertNotNull(bean.getSimple());
+        Assertions.assertNotNull(bean.getSimple2());
         String s = bean.echo("Hello");
-        Assert.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##CDIInterceptor##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
-        Assert.assertEquals(100, bean.getNumber());
-        Assert.assertEquals("value", bean.getValue());
-        Assert.assertEquals("value", bean.getValue2());
+        Assertions.assertEquals("#InterceptorFromParent##InterceptorBean##OtherInterceptorBean##CDIInterceptor##BeanParent##BeanWithSimpleInjected#Hello#CDIBean#CDIBean", s);
+        Assertions.assertEquals(100, bean.getNumber());
+        Assertions.assertEquals("value", bean.getValue());
+        Assertions.assertEquals("value", bean.getValue2());
     }
 }

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-observability</artifactId>
@@ -30,17 +30,5 @@
         <module>opentelemetry-api</module>
         <module>opentelemetry</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>

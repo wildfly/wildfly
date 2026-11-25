@@ -22,7 +22,7 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
 
     @Override
     public String getSubsystemName() {
-        return SingletonExtension.SUBSYSTEM_NAME;
+        return SingletonSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override
@@ -30,7 +30,7 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
         // Register transformers for all but the current model
         for (SingletonSubsystemModel model : EnumSet.complementOf(EnumSet.of(SingletonSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            TransformationDescription.Tools.register(new SingletonResourceTransformer().apply(version), registration, version);
+            TransformationDescription.Tools.register(new SingletonSubsystemResourceTransformer().apply(version), registration, version);
         }
     }
 }

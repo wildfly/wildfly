@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-rts</artifactId>
@@ -25,7 +25,7 @@
         <dependencies>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-standard-ee-bom</artifactId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -73,12 +73,6 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
         <!-- skip org.jboss.vfs -->
         <dependency>
             <groupId>io.smallrye</groupId>
@@ -93,7 +87,7 @@
             <artifactId>undertow-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
+            <groupId>io.undertow.ee</groupId>
             <artifactId>undertow-servlet</artifactId>
         </dependency>
         <dependency>
@@ -153,4 +147,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

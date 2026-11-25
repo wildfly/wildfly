@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="test.build-compatible-extension">
+
+    <resources>
+        <resource-root path="bce-extension-bootableJar.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.inject.api"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.weld.common"/>
+        <module name="org.jboss.as.version"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.wildfly.subsystem"/>
+    </dependencies>
+</module>

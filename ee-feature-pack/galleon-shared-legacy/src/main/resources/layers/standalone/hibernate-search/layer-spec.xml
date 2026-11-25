@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="hibernate-search">
+    <props>
+        <prop name="org.wildfly.category" value="Database"/>
+        <prop name="org.wildfly.description" value="Support for Hibernate Search."/>
+        <prop name="org.wildfly.note" value="The jpa dependency can be excluded and jpa-distributed used instead."/>
+        <prop name="org.wildfly.rule.annotations" value="org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed"/>
+    </props>
+    <dependencies>
+        <!-- 'jpa-distributed' can be used instead.
+             If neither is used this layer just installs modules. -->
+        <layer name="jpa" optional="true"/>
+    </dependencies>
+
+    <packages>
+        <!-- No configuration resource requires the default Hibernate Search module;
+             the JPA subsystem adds a dependency on it to deployments if deployment
+             content indicates it's wanted. So ensure it is provisioned. -->
+        <package name="org.hibernate.search.mapper.orm"/>
+        <!-- Backend modules are optionally depended upon, so we need to ensure they are provisioned.
+             Users can exclude one or the other in their provisioning config if they wish. -->
+        <package name="org.hibernate.search.backend.lucene" optional="true"/>
+        <package name="org.hibernate.search.backend.elasticsearch" optional="true"/>
+    </packages>
+</layer-spec>

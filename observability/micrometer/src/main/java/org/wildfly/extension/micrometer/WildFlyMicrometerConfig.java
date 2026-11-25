@@ -4,48 +4,39 @@
  */
 package org.wildfly.extension.micrometer;
 
-import java.time.Duration;
-import java.util.Map;
+import java.util.List;
+import java.util.function.Predicate;
 
-import io.micrometer.registry.otlp.OtlpConfig;
+/** Holds Micrometer subsystem exposure configuration independently of caller-owned lists. */
+public class WildFlyMicrometerConfig {
+    private Predicate<String> subsystemFilter;
 
-public final class WildFlyMicrometerConfig implements OtlpConfig {
-    /**
-     * The OTLP endpoint to which to push metrics
-     */
-    private final String endpoint;
-    /**
-     * How frequently, in seconds, to push metrics
-     */
-    private final Long step;
+    // Use Builder
+    public WildFlyMicrometerConfig() {}
 
-    public WildFlyMicrometerConfig(String endpoint, Long step) {
-        this.endpoint = endpoint;
-        this.step = step;
+    public Predicate<String> getSubsystemFilter() {
+        return subsystemFilter;
     }
 
-    @Override
-    public String get(String key) {
-        return null; // Accept defaults not explicitly overridden below
-    }
+    public static class Builder {
+        private final WildFlyMicrometerConfig config = new WildFlyMicrometerConfig();
 
-    @Override
-    public Map<String, String> resourceAttributes() {
-        Map<String, String> attributes = OtlpConfig.super.resourceAttributes();
-        if (!attributes.containsKey("service.name")) {
-            attributes.put("service.name", "wildfly");
+        /**
+         * Captures subsystem exposure without modifying or retaining the caller's list.
+         *
+         * @param exposedSubsystems the exposed subsystem names, or {@code "*"} to expose all subsystems
+         * @return this builder
+         */
+        public Builder exposedSubsystems(List<String> exposedSubsystems) {
+            List<String> subsystems = List.copyOf(exposedSubsystems);
+            boolean exposeAnySubsystem = subsystems.contains("*");
+            config.subsystemFilter = (subsystem) -> exposeAnySubsystem || subsystems.contains(subsystem);
+
+            return this;
         }
-        return attributes;
-    }
 
-    @Override
-    public String url() {
-        return endpoint;
-    }
-
-    @Override
-    public Duration step() {
-        Duration duration = Duration.ofSeconds(step);
-        return duration;
+        public WildFlyMicrometerConfig build() {
+            return config;
+        }
     }
 }

@@ -5,23 +5,25 @@
 
 package org.wildfly.clustering.weld.ejb.component.session;
 
-import org.infinispan.protostream.SerializationContext;
 import org.jboss.as.ejb3.component.session.StatelessSerializedProxy;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class SessionComponentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public SessionComponentSerializationContextInitializer() {
-        super("org.jboss.as.ejb3.component.session.proto");
+        super(StatelessSerializedProxy.class.getPackage());
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(StatelessSerializedProxy.class, Scalar.STRING.cast(String.class), StatelessSerializedProxy::getViewName, StatelessSerializedProxy::new));
+        context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(StatelessSerializedProxy.class, StatelessSerializedProxy::getViewName, StatelessSerializedProxy::new));
     }
 }

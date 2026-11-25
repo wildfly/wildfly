@@ -25,7 +25,11 @@ public class JBossLogger extends AbstractSessionLog {
 
     private static final String ORG_ECLIPSE_PERSISTENCE = "org.eclipse.persistence";
 
-    private Map<String, Logger> loggers = new HashMap<String, Logger>();
+    private final Map<String, Logger> loggers = new HashMap<>();
+
+    // In EclipseLink 5 the superclass shouldDisplayData field is no longer visible,
+    // so we track its value in the subclass
+    private Boolean jbossShouldDisplayData;
 
     @Override
     public void log(SessionLogEntry sessionLogEntry) {
@@ -78,10 +82,16 @@ public class JBossLogger extends AbstractSessionLog {
      */
     @Override
     public boolean shouldDisplayData() {
-        if (shouldDisplayData == null) {
+        if (jbossShouldDisplayData == null) {
             return getLoggerForCategory("sql").isDebugEnabled();
         } else {
-            return shouldDisplayData.booleanValue();
+            return jbossShouldDisplayData;
         }
+    }
+
+    @Override
+    public void setShouldDisplayData(Boolean shouldDisplayData) {
+        this.jbossShouldDisplayData = shouldDisplayData;
+        super.setShouldDisplayData(shouldDisplayData);
     }
 }

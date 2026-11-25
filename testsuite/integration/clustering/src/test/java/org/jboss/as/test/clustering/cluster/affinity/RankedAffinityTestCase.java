@@ -5,10 +5,8 @@
 
 package org.jboss.as.test.clustering.cluster.affinity;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,15 +24,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.TopologyChangeListenerUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -45,16 +43,15 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test for ranked affinity support in the server and in the Undertow-based mod_cluster load balancer.
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(RankedAffinityTestCase.ServerSetupTask.class)
 public class RankedAffinityTestCase extends AbstractClusteringTestCase {
 
@@ -97,11 +94,11 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
      * balancer API and (3) verifying correct affinity on subsequent request.
      */
     @Test
-    public void test(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
-        URL lbURL = new URL(baseURL.getProtocol(), baseURL.getHost(), baseURL.getPort() + 500, baseURL.getFile());
+    void test(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
+        URL lbURL = new URL(baseURL.getProtocol(), baseURL.getHost(), baseURL.getPort() + LOAD_BALANCER_1_PORT_OFFSET, baseURL.getFile());
         URI lbURI = SimpleServlet.createURI(lbURL);
 
-        establishTopology(baseURL, THREE_NODES);
+        establishTopology(baseURL, NODE_1_2_3);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             String[] previousAffinities;
@@ -110,15 +107,15 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             // 1
             HttpResponse response = client.execute(new HttpGet(lbURI));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 previousAffinities = entry.getValue().split("\\.");
 
                 log.debugf("Response #1: %s", response);
 
-                Assert.assertNotNull(entry);
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                assertNotNull(entry);
+                assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -127,8 +124,8 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             Thread.sleep(3_000);
 
             // 2
-            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500);
-            try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + 500, "remote+http")) {
+            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
+            try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET, "remote+http")) {
                 String node = previousAffinities[0];
                 ModelNode operation = new ModelNode();
                 operation.get(OP).set(ModelDescriptionConstants.STOP);
@@ -136,7 +133,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 operation.get(OP_ADDR).set(address.toModelNode());
                 ModelNode result = lbManagementClient.getControllerClient().execute(operation);
                 log.debugf("Running operation: %s", operation.toJSONString(false));
-                Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+                assertEquals(SUCCESS, result.get(OUTCOME).asString(), result.toString());
                 log.debugf("Operation result: %s", result.toJSONString(false));
 
                 operation = new ModelNode();
@@ -147,7 +144,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(ModelNode.TRUE);
                 result = lbManagementClient.getControllerClient().execute(operation);
                 log.debugf("Running operation: %s", operation.toJSONString(false));
-                Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+                assertEquals(SUCCESS, result.get(OUTCOME).asString(), result.toString());
                 log.debugf("Operation result: %s", result.toJSONString(false));
 
                 Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
@@ -155,9 +152,9 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 // 3
                 response = client.execute(new HttpGet(lbURI));
                 try {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                    Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                    Assert.assertEquals("The subsequent request should have been served by the 2nd node in the affinity list", previousAffinities[1], response.getFirstHeader(SimpleServlet.HEADER_NODE_NAME).getValue());
+                    assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                    assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                    assertEquals(previousAffinities[1], response.getFirstHeader(SimpleServlet.HEADER_NODE_NAME).getValue(), "The subsequent request should have been served by the 2nd node in the affinity list");
                 } finally {
                     HttpClientUtils.closeQuietly(response);
                 }
@@ -165,8 +162,8 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
         }
     }
 
-    private static void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, nodes);
+    private static void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException {
+        TopologyChangeListenerUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
     }
 
     public static class ServerSetupTask extends ManagementServerSetupTask {
@@ -174,18 +171,10 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             super(NODE_1_2_3, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost, port=8590)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:add(host=localhost, port=%d)", LOAD_BALANCER_1_MCMP_PORT)
                             .add("/subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[load-balancer-1])")
                             .add("/subsystem=modcluster/proxy=default:write-attribute(name=status-interval, value=1)")
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=ranked:add()")
-                            .endBatch()
-                            .build())
-                    .tearDownScript(createScriptBuilder()
-                            .startBatch()
-                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add()")
-                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=status-interval)")
-                            .add("/subsystem=modcluster/proxy=default:undefine-attribute(name=proxies)")
-                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=load-balancer-1:remove()")
                             .endBatch()
                             .build())
                     .build());

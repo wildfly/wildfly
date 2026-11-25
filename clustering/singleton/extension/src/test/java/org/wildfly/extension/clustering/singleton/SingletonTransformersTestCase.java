@@ -5,107 +5,130 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import java.util.EnumSet;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.singleton.SingletonCacheRequirement;
-import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
 
 /**
+ * Transform/reject tests for singleton subsystem.
+ *
  * @author Radoslav Husar
  */
+@RunWith(value = Parameterized.class)
 public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
-    public SingletonTransformersTestCase() {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension());
+    @Parameters
+    public static Iterable<ModelTestControllerVersion> parameters() {
+        return EnumSet.of(
+                ModelTestControllerVersion.EAP_7_4_0,
+                ModelTestControllerVersion.EAP_8_0_0,
+                ModelTestControllerVersion.EAP_8_1_0,
+                ModelTestControllerVersion.WILDFLY_41_0_0
+        );
     }
 
-    private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
-        return String.format(pattern, version.getMavenGavVersion());
+    private final ModelTestControllerVersion controllerVersion;
+    private final ModelVersion version;
+
+    public SingletonTransformersTestCase(ModelTestControllerVersion controllerVersion) {
+        super(SingletonSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new SingletonExtension());
+
+        this.controllerVersion = controllerVersion;
+        this.version = this.getModelVersion().getVersion();
     }
 
-    private static String formatEAP7SubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.eap:wildfly-clustering-singleton-extension:%s", version);
+    private SingletonSubsystemModel getModelVersion() {
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0, EAP_8_0_0, EAP_8_1_0, WILDFLY_41_0_0 -> SingletonSubsystemModel.VERSION_3_0_0;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
-    private static SingletonSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
-        switch (controllerVersion) {
-            case EAP_7_4_0:
-                return SingletonSubsystemModel.VERSION_3_0_0;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    private static String[] getDependencies(ModelTestControllerVersion version) {
-        switch (version) {
-            case EAP_7_4_0:
-                return new String[] {
-                        formatEAP7SubsystemArtifact(version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-api:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-server:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
-                };
-            default:
-                throw new IllegalArgumentException();
-        }
+    private String[] getDependencies() {
+        return switch (this.controllerVersion) {
+            case EAP_7_4_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createGAV("wildfly-clustering-spi"),
+            };
+            case EAP_8_0_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+            };
+            case EAP_8_1_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+            };
+            case WILDFLY_41_0_0 -> new String[] {
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-extension"),
+                    this.controllerVersion.createGAV("wildfly-clustering-common"),
+                    this.controllerVersion.createGAV("wildfly-clustering-infinispan-embedded-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-server-service"),
+                    this.controllerVersion.createGAV("wildfly-clustering-singleton-api"),
+                    this.controllerVersion.createCoreGAV("wildfly-subsystem"),
+            };
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     @SuppressWarnings("removal")
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1")
-                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container")
-                .require(SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container", "singleton-cache")
-                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, "singleton-container")
-                .require(SingletonCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, "singleton-container", "singleton-cache")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding0")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding1")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "singleton-container")
+                .require(SingletonServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
+                .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "singleton-container", "singleton-cache")
+                .require(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
+                .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
                 ;
     }
 
     @Test
-    public void testTransformerEAP740() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_4_0);
-    }
+    public void testTransformation() throws Exception {
+        String subsystemXmlResource = String.format("singleton-transform-%s.xml", this.version);
 
-    private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
-        final ModelVersion version = getModelVersion(controller).getVersion();
-        final String[] dependencies = getDependencies(controller);
+        KernelServices services = this.buildKernelServices(subsystemXmlResource, this.controllerVersion, this.version, this.getDependencies());
 
-        KernelServices services = this.buildKernelServices("subsystem-transform.xml", controller, version, dependencies);
-
-        checkSubsystemModelTransformation(services, version, null, false);
+        checkSubsystemModelTransformation(services, this.version, null, false);
     }
 
     @Test
-    public void testRejectionsEAP740() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_4_0);
-    }
-
-    private void testRejections(final ModelTestControllerVersion controller) throws Exception {
-        ModelVersion version = getModelVersion(controller).getVersion();
-        String[] dependencies = getDependencies(controller);
-
+    public void testRejections() throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder();
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controller, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
-                .addMavenResourceURL(dependencies)
+                .addMavenResourceURL(this.getDependencies())
         ;
 
         KernelServices services = builder.build();
@@ -115,7 +138,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-reject.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("singleton-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
     }
 

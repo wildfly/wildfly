@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.prometheus">
+    <properties>
+        <property name="jboss.api" value="private"/>
+        <property name="jboss.stability" value="community"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.prometheus:prometheus-metrics-exposition-textformats}"/>
+        <artifact name="${io.prometheus:prometheus-metrics-model}"/>
+        <artifact name="${io.prometheus:prometheus-metrics-config}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.management"/>
+        <module name="java.logging"/>
+    </dependencies>
+</module>

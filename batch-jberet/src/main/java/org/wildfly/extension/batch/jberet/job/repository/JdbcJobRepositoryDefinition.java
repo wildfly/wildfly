@@ -80,7 +80,7 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             final String name = context.getCurrentAddressValue();
             final String dsName = DATA_SOURCE.resolveModelAttribute(context, model).asString();
             final Integer executionRecordsLimit = CommonAttributes.EXECUTION_RECORDS_LIMIT.resolveModelAttribute(context, model).asIntOrNull();
-            final ServiceTarget target = context.getServiceTarget();
+            final ServiceTarget target = context.getCapabilityServiceTarget();
             final ServiceName sn = context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class);
             final ServiceBuilder<?> sb = target.addService(sn);
             final Consumer<JobRepository> jobRepositoryConsumer = sb.provides(sn);

@@ -142,7 +142,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         @SuppressWarnings("unused")
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final ModelNode node = DATASOURCE_DRIVER.resolveModelAttribute(context, model);
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
@@ -254,7 +254,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
 
     static void secondRuntimeStep(OperationContext context, ModelNode operation, ManagementResourceRegistration datasourceRegistration, ModelNode model, boolean isXa) throws OperationFailedException {
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();

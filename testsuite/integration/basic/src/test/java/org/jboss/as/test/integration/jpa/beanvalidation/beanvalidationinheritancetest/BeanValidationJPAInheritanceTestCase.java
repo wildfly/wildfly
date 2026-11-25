@@ -83,7 +83,7 @@ public class BeanValidationJPAInheritanceTestCase {
             String stacktrace = w.toString();
 
             if (Locale.getDefault().getLanguage().equals("en")) {
-                Assert.assertTrue(stacktrace.contains("interpolatedMessage='may not be empty', propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
+                Assert.assertTrue(stacktrace.contains("interpolatedMessage='must not be empty', propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
             } else {
                 Assert.assertTrue(stacktrace.contains("propertyPath=lastName, rootBeanClass=class org.jboss.as.test.integration.jpa.beanvalidation.SoccerPlayer"));
             }

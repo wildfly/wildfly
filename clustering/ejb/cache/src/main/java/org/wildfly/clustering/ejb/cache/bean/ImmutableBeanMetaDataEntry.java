@@ -16,5 +16,5 @@ import java.util.function.Supplier;
 public interface ImmutableBeanMetaDataEntry<K> {
     String getName();
     K getGroupId();
-    Supplier<Instant> getLastAccess();
+    Supplier<Instant> getLastAccessTime();
 }

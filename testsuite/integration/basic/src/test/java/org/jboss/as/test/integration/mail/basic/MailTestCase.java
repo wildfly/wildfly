@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ MailTestCase.BatchMailSetup.class })
 public class MailTestCase {
-    public static MailServerContainer mailServer = new MailServerContainer("src/test/resources/org/wildfly/test/integration/mail/basic/");
+    public static MailServerContainer mailServer = new MailServerContainer("src/test/resources/org/jboss/as/test/integration/mail/basic/");
 
     @AfterClass
     public static void cleanup() {

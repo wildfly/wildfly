@@ -1,0 +1,70 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.test.integration.observability.opentelemetry;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+import org.arquillian.testcontainers.api.Testcontainer;
+import org.arquillian.testcontainers.api.TestcontainersRequired;
+import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.jboss.as.test.shared.CdiUtils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.wildfly.test.integration.observability.JaxRsActivator;
+import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
+import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
+
+@ExtendWith(ArquillianExtension.class)
+@TestcontainersRequired
+public abstract class BaseOpenTelemetryTest {
+    @Testcontainer
+    protected OpenTelemetryCollectorContainer otelCollector;
+
+    private static final String MP_CONFIG = "otel.sdk.disabled=false\n" +
+            // Lower the interval from 60 seconds to 2 seconds
+            "otel.metric.export.interval=2000";
+
+    static WebArchive buildBaseArchive(String name) {
+        return ShrinkWrap
+            .create(WebArchive.class, name + ".war")
+            .addClasses(
+                BaseOpenTelemetryTest.class,
+                JaxRsActivator.class,
+                OtelService1.class,
+                OtelMetricResource.class
+            )
+            .addPackage(JaegerResponse.class.getPackage())
+            .addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties")
+            .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml")
+            ;
+    }
+
+    protected String getDeploymentUrl(String deploymentName) throws MalformedURLException {
+        return TestSuiteEnvironment.getHttpUrl() + "/" + deploymentName + "/";
+    }
+
+    protected void makeRequests(URL url, int count, int expectedStatus) throws URISyntaxException {
+        try (Client client = ClientBuilder.newClient()) {
+            WebTarget target = client.target(url.toURI());
+            for (int i = 0; i < count; i++) {
+                Response response = target.request().get();
+                Assertions.assertEquals(expectedStatus, response.getStatus());
+            }
+        }
+    }
+}

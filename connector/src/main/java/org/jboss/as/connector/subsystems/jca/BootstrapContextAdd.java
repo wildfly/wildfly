@@ -49,7 +49,7 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
             ctx = new NamedBootstrapContext(name, workmanager);
         }
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceTarget serviceTarget = context.getCapabilityServiceTarget();
 
                 final BootStrapContextService bootCtxService = new BootStrapContextService(ctx, name, usingDefaultWm);
                 serviceTarget

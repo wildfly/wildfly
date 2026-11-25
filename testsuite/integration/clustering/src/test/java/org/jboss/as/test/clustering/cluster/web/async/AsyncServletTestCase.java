@@ -4,10 +4,12 @@
  */
 package org.jboss.as.test.clustering.cluster.web.async;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -18,7 +20,7 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -29,15 +31,14 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test case for WFLY-3715
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(AsyncServletTestCase.ServerSetupTask.class)
 public class AsyncServletTestCase extends AbstractClusteringTestCase {
 
@@ -66,25 +67,25 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void test(
+    void test(
             @ArquillianResource(AsyncServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(AsyncServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws Exception {
 
         URI uri1 = AsyncServlet.createURI(baseURL1);
         URI uri2 = AsyncServlet.createURI(baseURL2);
 
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
+        int expected = 0;
+        List<URI> uris = List.of(uri1, uri2);
         try {
-            assertValue(client, uri1, 1);
-            assertValue(client, uri1, 2);
-
-            assertValue(client, uri2, 3);
-            assertValue(client, uri2, 4);
-
-            assertValue(client, uri1, 5);
-            assertValue(client, uri1, 6);
+            for (int i = 0; i < 10; ++i) {
+                for (URI uri : uris) {
+                    assertValue(client, uri, ++expected);
+                    assertValue(client, uri, ++expected);
+                }
+            }
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
@@ -93,8 +94,8 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
     private static void assertValue(HttpClient client, URI uri, int value) throws IOException {
         HttpResponse response = client.execute(new HttpGet(uri));
         try {
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
@@ -102,7 +103,7 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(AbstractClusteringTestCase.THREE_NODES)
+            this.builder.node(NODE_1_2_3.toArray(new String[0]))
                     .setup("/subsystem=distributable-web/infinispan-session-management=attribute:add(cache-container=web, granularity=ATTRIBUTE)")
                     .teardown("/subsystem=distributable-web/infinispan-session-management=attribute:remove()")
             ;

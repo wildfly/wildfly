@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="resource-adapters">
      <props>
+        <prop name="org.wildfly.category" value="Jakarta EE"/>
+        <prop name="org.wildfly.description" value="Support for deployment of Jakarta Connectors resource adapters."/>
         <prop name="org.wildfly.rule.expected-file" value="[/META-INF/ra.xml,/META-INF/ironjacamar.xml]"/>
     </props>
     <dependencies>

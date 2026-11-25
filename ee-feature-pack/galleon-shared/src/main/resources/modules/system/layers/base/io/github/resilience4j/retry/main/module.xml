@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="io.github.resilience4j.retry">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.github.resilience4j:resilience4j-retry}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.github.resilience4j.core"/>
+    </dependencies>
+</module>

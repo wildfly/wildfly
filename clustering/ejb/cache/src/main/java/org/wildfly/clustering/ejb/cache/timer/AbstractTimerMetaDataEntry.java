@@ -11,12 +11,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.cache.offset.Offset;
+import org.wildfly.clustering.server.offset.Offset;
 import org.wildfly.clustering.ejb.timer.TimerConfiguration;
 
 /**
  * The base timer metadata cache entry.
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public abstract class AbstractTimerMetaDataEntry<C> implements RemappableTimerMetaDataEntry<C> {
 

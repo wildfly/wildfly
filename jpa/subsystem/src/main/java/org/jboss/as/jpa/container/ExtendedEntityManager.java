@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ServiceLoader;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.SynchronizationType;
@@ -48,7 +49,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  *
  * @author Scott Marlow
  */
-public class ExtendedEntityManager extends AbstractEntityManager implements Serializable, SynchronizationTypeAccess {
+public abstract class ExtendedEntityManager extends AbstractEntityManager implements Serializable, SynchronizationTypeAccess {
 
     /**
      * Adding fields to this class, may require incrementing the serialVersionUID (always increment it).
@@ -57,6 +58,27 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      * Just make sure you think about whether the newly added field should be serialized.
      */
     private static final long serialVersionUID = 432438L;
+
+    private static final Factory FACTORY; static {
+        Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<Factory>) () -> ServiceLoader.load(Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code ExtendedEntityManager}.
+     */
+    public static ExtendedEntityManager create(final String puScopedName, final EntityManager underlyingEntityManager,
+                                               final SynchronizationType synchronizationType,
+                                               final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                               final TransactionManager transactionManager) {
+        return FACTORY.createExtendedEntityManager(puScopedName, underlyingEntityManager, synchronizationType,
+                                                    transactionSynchronizationRegistry, transactionManager);
+    }
 
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
@@ -87,7 +109,10 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     private transient TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private transient TransactionManager transactionManager;
 
-    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, final SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+    protected ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager,
+                                 final SynchronizationType synchronizationType,
+                                 final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                 final TransactionManager transactionManager) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.puScopedName = puScopedName;
         this.synchronizationType = synchronizationType;
@@ -275,5 +300,12 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             transactionManager = ContextTransactionManager.getInstance();
             transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_SERVICE).getValue();
         }
+    }
+
+    public interface Factory {
+        ExtendedEntityManager createExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager,
+                                                          final SynchronizationType synchronizationType,
+                                                          final TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                                          final TransactionManager transactionManager);
     }
 }

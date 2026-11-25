@@ -32,7 +32,7 @@ class ClassConfigSourceRegistrationService implements Service {
     }
 
     static void install(OperationContext context, String name, ConfigSource configSource, Registry<ConfigSource> registry) {
-        ServiceBuilder<?> builder = context.getServiceTarget()
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE.append(name));
 
         builder.setInstance(new ClassConfigSourceRegistrationService(name, configSource, registry))

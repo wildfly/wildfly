@@ -100,4 +100,9 @@ public class OrphanSession implements Session {
         // Thus session fixation is a non-issue
         return this.id;
     }
+
+    @Override
+    public boolean isInvalid() {
+        return false;
+    }
 }

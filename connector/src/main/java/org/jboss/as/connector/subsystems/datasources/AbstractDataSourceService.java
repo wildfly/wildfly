@@ -13,6 +13,7 @@ import javax.naming.Reference;
 import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
+import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -101,7 +102,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         return SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName().getCanonicalName());
     }
 
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), DeployersLogger.class, AS7DataSourceDeployer.class.getName());
+
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
@@ -218,7 +220,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
         }
 
-        sqlDataSource = null;
+        if (sqlDataSource != null) {
+            sqlDataSource.stop();
+            sqlDataSource = null;
+        }
 
     }
 
@@ -354,12 +359,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                             throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(ConnectorLogger.ROOT_LOGGER.failedToLoadDataSourceClass(dsClsName, e));
                         }
                     }
-
                     String driverName = dataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
-                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
-                                : null;
+                        String moduleName = installedDriver.getModuleName();
                         org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
                                 installedDriver.getMajorVersion(), installedDriver.getMinorVersion(),
                                 moduleName, installedDriver.getDriverClassName(),
@@ -385,8 +388,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     String driverName = xaDataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
-                        String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
-                                : null;
+                        String moduleName = installedDriver.getModuleName();
                         org.jboss.jca.common.api.metadata.ds.Driver driver = new DriverImpl(installedDriver.getDriverName(),
                                 installedDriver.getMajorVersion(), installedDriver.getMinorVersion(), moduleName,
                                 installedDriver.getDriverClassName(),

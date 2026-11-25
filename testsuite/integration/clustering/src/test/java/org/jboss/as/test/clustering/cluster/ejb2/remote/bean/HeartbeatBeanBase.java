@@ -5,10 +5,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.remote.bean;
 
-import jakarta.ejb.EJBException;
-import jakarta.ejb.SessionContext;
 import java.rmi.RemoteException;
 import java.util.Date;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
 
 public abstract class HeartbeatBeanBase {
 

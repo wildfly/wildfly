@@ -7,6 +7,8 @@ package org.wildfly.extension.undertow;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
 import jakarta.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
@@ -16,6 +18,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -25,7 +28,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
+import org.wildfly.extension.undertow.deployment.ControlPointDeploymentInfoConfigurator;
 
 /**
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
@@ -51,6 +54,9 @@ final class WebHostService implements Service<WebHost>, WebHost {
     @Override
     public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) {
         DeploymentInfo d = new DeploymentInfo();
+
+        UnaryOperator<DeploymentInfo> decorator = (this.controlPoint != null) ? new ControlPointDeploymentInfoConfigurator(this.controlPoint, webDeploymentBuilder.getAllowRequestPredicates()) : UnaryOperator.identity();
+
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
@@ -73,11 +79,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
             d.addServlet(s);
         }
 
-        if (controlPoint != null) {
-            d.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, webDeploymentBuilder.getAllowRequestPredicates()));
-        }
-
-        return new WebDeploymentControllerImpl(d);
+        return new WebDeploymentControllerImpl(decorator.apply(d));
     }
 
     private class WebDeploymentControllerImpl implements WebDeploymentController {

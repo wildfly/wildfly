@@ -9,11 +9,9 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +37,8 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
+import org.jboss.as.jpa.beanmanager.IntegrationWithCDIBagImpl;
+import org.jboss.as.jpa.beanmanager.PersistenceCdiExtension;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
@@ -77,7 +77,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
@@ -106,7 +105,6 @@ public class PersistenceUnitServiceHandler {
 
     private static final String ENTITYMANAGERFACTORY_JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
     private static final String ENTITYMANAGER_JNDI_PROPERTY = "jboss.entity.manager.jndi.name";
-    public static final ServiceName BEANMANAGER_NAME = ServiceName.of("beanmanager");
 
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
     public static final AttributeDefinition SCOPED_UNIT_NAME = new SimpleAttributeDefinitionBuilder("scoped-unit-name", ModelType.STRING, true).setStorageRuntime().build();
@@ -120,6 +118,33 @@ public class PersistenceUnitServiceHandler {
 
         if( startEarly) {
             nextPhaseDependsOnPersistenceUnit(phaseContext, platform);
+            checkForDuplicates(phaseContext);
+        }
+    }
+
+    // mark all duplicate persistence unit definitions
+    private static void checkForDuplicates(DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
+        final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        ArrayList<String> duplicateList = new ArrayList<>();
+        HashSet<String> uniqueList = new HashSet<>(persistenceUnitsInApplication.getCount());
+        for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+            for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                if (uniqueList.contains(pu.getPersistenceUnitName())) {
+                    duplicateList.add(pu.getPersistenceUnitName());
+                } else {
+                    uniqueList.add(pu.getPersistenceUnitName());
+                }
+            }
+        }
+        if (duplicateList.size() > 0) {
+            for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+                for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                    if (duplicateList.contains(pu.getPersistenceUnitName())) {
+                        pu.setDuplicate(true);
+                    }
+                }
+            }
         }
     }
 
@@ -237,7 +262,6 @@ public class PersistenceUnitServiceHandler {
             final ModuleClassLoader classLoader = module.getClassLoader();
 
             for (PersistenceUnitMetadataHolder holder : puList) {
-                setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
 
                     // only start the persistence unit if JPA_CONTAINER_MANAGED is true
@@ -252,34 +276,23 @@ public class PersistenceUnitServiceHandler {
                         final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
 
                         if (startEarly) {
+                            if (Configuration.needClassFileTransformer(pu)) {
+                                adaptor.addClassFileTransformer(pu);
+                            }
+
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseOne(deploymentUnit, eeModuleDescription, serviceTarget,
                                         classLoader, pu, adaptor, integratorAdaptors);
-                            }
-                            else if (false == Configuration.needClassFileTransformer(pu)) {
-                                // will start later when startEarly == false
-                                ROOT_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
-                                    pu.getPersistenceUnitName(), deploymentUnit.getName());
-                            }
-                            else {
-                                // we need class file transformer to work, don't allow Jakarta Contexts and Dependency Injection bean manager to be access since that
-                                // could cause application classes to be loaded (workaround by setting jboss.as.jpa.classtransformer to false).  WFLY-1463
-                                final boolean allowCdiBeanManagerAccess = false;
-                                deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget,
-                                        classLoader, pu, provider, adaptor, integratorAdaptors, allowCdiBeanManagerAccess);
                             }
                         }
                         else { // !startEarly
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseTwo(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, provider, adaptor, integratorAdaptors);
-                            } else if (false == Configuration.needClassFileTransformer(pu)) {
-                                final boolean allowCdiBeanManagerAccess = true;
-                                // PUs that have Configuration.JPA_CONTAINER_CLASS_TRANSFORMER = false will start during INSTALL phase
+                            } else {
                                 deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget,
-                                        classLoader, pu, provider, adaptor, integratorAdaptors, allowCdiBeanManagerAccess);
+                                        classLoader, pu, provider, adaptor, integratorAdaptors);
                             }
                         }
-
                     }
                     else {
                         ROOT_LOGGER.tracef("persistence unit %s in deployment %s is not container managed (%s is set to false)",
@@ -301,7 +314,6 @@ public class PersistenceUnitServiceHandler {
      * @param provider
      * @param adaptor
      * @param integratorAdaptors Adapters for integrators, e.g. Hibernate Search.
-     * @param allowCdiBeanManagerAccess
      * @throws DeploymentUnitProcessingException
      */
     private static void deployPersistenceUnit(
@@ -312,8 +324,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadata pu,
             final PersistenceProvider provider,
             final PersistenceProviderAdaptor adaptor,
-            final List<PersistenceProviderIntegratorAdaptor> integratorAdaptors,
-            final boolean allowCdiBeanManagerAccess) throws DeploymentUnitProcessingException {
+            final List<PersistenceProviderIntegratorAdaptor> integratorAdaptors) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         TransactionManager transactionManager = ContextTransactionManager.getInstance();
         TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
@@ -347,13 +358,16 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-
+            IntegrationWithCDIBagImpl integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, transactionManager, transactionSynchronizationRegistry);
             final PersistenceUnitServiceImpl service =
                     new PersistenceUnitServiceImpl(properties, classLoader, pu, adaptor, integratorAdaptors, provider,
                             PersistenceUnitRegistryImpl.INSTANCE,
                             deploymentUnit.getServiceName(), validatorFactory,
                             deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                            beanManagerAfterDeploymentValidation );
+                            beanManagerAfterDeploymentValidation,
+                            deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY),
+                            ContextTransactionManager.getInstance(),
+                            integrationWithCDIBag);
 
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
@@ -396,7 +410,7 @@ public class PersistenceUnitServiceHandler {
             // JPA 2.1 sections 3.5.1 + 9.1 require the Jakarta Contexts and Dependency Injection bean manager to be passed to the peristence provider
             // if the persistence unit is contained in a deployment that is a Jakarta Contexts and Dependency Injection bean archive (has beans.xml).
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            if (support.hasCapability(WELD_CAPABILITY_NAME) && allowCdiBeanManagerAccess) {
+            if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
                         .addBeanManagerService(deploymentUnit, builder, service.getBeanManagerInjector());
             }
@@ -424,7 +438,6 @@ public class PersistenceUnitServiceHandler {
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
-
             ROOT_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
@@ -491,8 +504,8 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
-
-            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
+            IntegrationWithCDIBagImpl integrationWithCDIBag = registerPersistenceAfterBeanDiscovery(deploymentUnit, capabilitySupport, pu, null, null);
+            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager, integrationWithCDIBag);
             service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PhaseOnePersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
 
@@ -610,7 +623,11 @@ public class PersistenceUnitServiceHandler {
                     adaptor, integratorAdaptors, provider, PersistenceUnitRegistryImpl.INSTANCE,
                     deploymentUnit.getServiceName(), validatorFactory,
                     deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                    beanManagerAfterDeploymentValidation);
+                    beanManagerAfterDeploymentValidation,
+                    transactionSynchronizationRegistry,
+                    ContextTransactionManager.getInstance(),
+                    null
+                    );
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -661,6 +678,7 @@ public class PersistenceUnitServiceHandler {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+
                         .addBeanManagerService(deploymentUnit, builder, service.getBeanManagerInjector());
             }
 
@@ -689,6 +707,7 @@ public class PersistenceUnitServiceHandler {
 
             builder.install();
 
+            // skip registerPersistenceAfterBeanDiscovery call as was done in phase 1 of 2
             ROOT_LOGGER.tracef("added PersistenceUnitService (phase 2 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
             addManagementConsole(deploymentUnit, pu, adaptor, persistenceAdaptorRemoval);
 
@@ -698,6 +717,7 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static void entityManagerBind(EEModuleDescription eeModuleDescription, ServiceTarget serviceTarget, final PersistenceUnitMetadata pu, ServiceName puServiceName, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+
         if (pu.getProperties().containsKey(ENTITYMANAGER_JNDI_PROPERTY)) {
             String jndiName = pu.getProperties().get(ENTITYMANAGER_JNDI_PROPERTY).toString();
             final ContextNames.BindInfo bindingInfo;
@@ -716,9 +736,9 @@ public class PersistenceUnitServiceHandler {
                     public void inject(final PersistenceUnitServiceImpl value) throws
                             InjectionException {
                         binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
-                                        new TransactionScopedEntityManager(
+                                        TransactionScopedEntityManager.create(
                                                 pu.getScopedPersistenceUnitName(),
-                                                Collections.emptyMap(),
+                                                new HashMap(),      // WFLY-19973: pass empty HashMap that can be modified by application code.
                                                 value.getEntityManagerFactory(),
                                                 SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager)));
                     }
@@ -757,39 +777,6 @@ public class PersistenceUnitServiceHandler {
                         binderService.getNamingStoreInjector().uninject();
                     }
                 }).install();
-        }
-    }
-
-    /**
-     * Setup the annotation index map
-     *
-     * @param puHolder
-     * @param deploymentUnit
-     */
-    private static void setAnnotationIndexes(
-            final PersistenceUnitMetadataHolder puHolder,
-            DeploymentUnit deploymentUnit ) {
-
-        final Map<URL, Index> annotationIndexes = new HashMap<>();
-
-        do {
-            for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-                final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
-                if (index != null) {
-                    try {
-                        ROOT_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
-                        annotationIndexes.put(root.getRoot().toURL(), index);
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            deploymentUnit = deploymentUnit.getParent(); // get annotation indexes for top level also
-        }
-        while (deploymentUnit != null);
-
-        for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
-            pu.setAnnotationIndex(annotationIndexes);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 
@@ -1075,9 +1062,9 @@ public class PersistenceUnitServiceHandler {
                     final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit(), provider, platform);
                     final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
                     // only add the next phase dependency, if the persistence unit service is starting early.
-                    if( Configuration.needClassFileTransformer(pu) && !Configuration.allowApplicationDefinedDatasource(pu)) {
+                    if( !Configuration.allowApplicationDefinedDatasource(pu) && !Configuration.allowDefaultDataSourceUse(pu) && twoPhaseBootStrapCapable ) {
                         // wait until the persistence unit service is started before starting the next deployment phase
-                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, twoPhaseBootStrapCapable ? puServiceName.append(FIRST_PHASE) : puServiceName);
+                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName.append(FIRST_PHASE) );
                     }
                 }
             }
@@ -1177,6 +1164,42 @@ public class PersistenceUnitServiceHandler {
     private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+    }
+
+    private static IntegrationWithCDIBagImpl registerPersistenceAfterBeanDiscovery(DeploymentUnit deploymentUnit, CapabilityServiceSupport support, PersistenceUnitMetadata pu, TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        IntegrationWithCDIBagImpl result = null;
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+
+            if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
+                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+
+                PersistenceCdiExtension persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                if (null == persistenceCdiExtension) {
+                    // ensure that only one of multiple per deployment threads register the persistenceCdiExtension and the other per app deployment threads block
+                    // For an EAR deployment `deploymentUnit` will always be set to the ear.
+                    // For a standalone war/jar deployment `deploymentUnit` will always be set to the war/jar deployment.
+                    synchronized (deploymentUnit) {
+                        persistenceCdiExtension = deploymentUnit.getAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY);
+                        if (null == persistenceCdiExtension) {
+                            persistenceCdiExtension = module.loadService(PersistenceCdiExtension.class).findFirst().orElse(null);
+                            if (persistenceCdiExtension != null) {
+                                deploymentUnit.putAttachment(JpaAttachments.AFTER_BEAN_DISCOVERY_ATTACHMENT_KEY, persistenceCdiExtension);
+                                weldCapability.get().registerExtensionInstance(persistenceCdiExtension, deploymentUnit);
+                            }
+                        }
+                    }
+                }
+                if ( persistenceCdiExtension != null) {
+                    // register the persistence unit with the CDI Persistence extension that we registered above
+                    result = persistenceCdiExtension.register(pu);
+                    result.setTransactionManager(transactionManager);
+                    result.setTransactionSynchronizationRegistry(transactionSynchronizationRegistry);
+                }
+            }
+        }
+        return result;
     }
 
     private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit, CapabilityServiceSupport support) {

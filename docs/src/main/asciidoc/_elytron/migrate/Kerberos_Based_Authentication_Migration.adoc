@@ -201,16 +201,12 @@ Overall this results in the following configuration: -
 
 Now, to enable SPNEGO authentication for the HTTP management interface,
 update this interface to reference the `http-authentication-factory`
-defined above, as described in the
-https://docs.jboss.org/author/display/WFLY/Migrate+Legacy+Security+to+Elytron+Security#MigrateLegacySecuritytoElytronSecurity-MigratedConfiguration[properties
-authentication section].
+defined above, as described in the <<Migrated Configuration, properties authentication section>> of this documentation.
 
 Alternatively, to secure an application using SPNEGO authentication, an
 application security domain can be defined in the Undertow subsystem to
 map security domains to the `http-authentication-factory` defined above,
-as described in the
-https://docs.jboss.org/author/display/WFLY/Migrate+Legacy+Security+to+Elytron+Security#MigrateLegacySecuritytoElytronSecurity-FullyMigratedConfiguration[properties
-authentication section].
+as described in the <<Fully Migrated Configuration, properties authentication section>> of this documentation.
 
 [[remoting-sasl-authentication]]
 == Remoting / SASL Authentication

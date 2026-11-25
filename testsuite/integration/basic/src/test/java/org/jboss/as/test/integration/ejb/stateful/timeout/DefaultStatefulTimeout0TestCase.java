@@ -80,8 +80,6 @@ public class DefaultStatefulTimeout0TestCase extends StatefulTimeoutTestBase2 {
         Assert.assertEquals(CONFIGURED_TIMEOUT, readAttribute().asLong());
 
         TimeoutNotConfiguredBean timeoutNotConfiguredBean = lookup(TimeoutNotConfiguredBean.class);
-        timeoutNotConfiguredBean.doStuff();
-        Thread.sleep(2000);
         try {
             timeoutNotConfiguredBean.doStuff();
             throw new RuntimeException("Expecting NoSuchEJBException");

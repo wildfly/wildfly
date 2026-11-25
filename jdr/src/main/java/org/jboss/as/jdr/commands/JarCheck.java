@@ -41,8 +41,7 @@ public class JarCheck extends JdrCommand {
     private void check(VirtualFile f) throws NoSuchAlgorithmException {
         try {
             MessageDigest alg = MessageDigest.getInstance("md5");
-            byte [] buffer = Utils.toBytes(f);
-            alg.update(buffer);
+            Utils.updateDigest(f, alg);
             String sum = new BigInteger(1, alg.digest()).toString(16);
             this.buffer.append(
                     f.getPathName().replace(this.env.getJbossHome(), "JBOSSHOME") + "\n"

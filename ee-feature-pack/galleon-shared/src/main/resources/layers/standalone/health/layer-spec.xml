@@ -7,6 +7,9 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="health">
     <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Support for runtime health checks."/>
+        <prop name="org.wildfly.note" value="When using the WildFly cloud feature-pack for cloud deployment, this layer will be automatically provisioned. It is required for POD health check."/>
         <prop name="org.wildfly.rule.add-on" value="observability,health"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
         <prop name="org.wildfly.rule.add-on-description" value="Support for runtime health checks."/>

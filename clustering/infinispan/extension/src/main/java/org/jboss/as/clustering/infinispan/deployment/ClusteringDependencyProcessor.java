@@ -26,12 +26,11 @@ public class ClusteringDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, API, true, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MARSHALLING_API, true, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SINGLETON_API, true, false, false, false));
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, API).setOptional(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, MARSHALLING_API).setOptional(true).build());
+        moduleSpecification.addSystemDependency(ModuleDependency.Builder.of(moduleLoader, SINGLETON_API).setOptional(true).build());
     }
 }

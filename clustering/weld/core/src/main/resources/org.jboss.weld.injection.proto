@@ -1,11 +1,16 @@
+syntax = "proto3";
+
 package org.jboss.weld.injection;
+
+import "org.jboss.weld.annotated.slim.backed.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(450)
  */
 message ConstructorInjectionPoint {
-	optional	bytes	constructor	 = 1;
-	optional	bytes	bean	 = 2;
+	org.jboss.weld.annotated.slim.backed.BackedAnnotatedConstructor	constructor	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	bean	 = 2;
 }
 
 /**
@@ -18,25 +23,25 @@ message EmptyInjectionPoint {
  * @TypeId(452)
  */
 message FieldInjectionPoint {
-	optional	bytes	field	 = 1;
-	optional	bytes	bean	 = 2;
+	org.jboss.weld.annotated.slim.backed.BackedAnnotatedField	field	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	bean	 = 2;
 }
 
 /**
  * @TypeId(453)
  */
 message MethodInjectionPoint {
-	optional	MethodInjectionPointType	type	 = 1;
-	optional	bytes	method	 = 2;
-	optional	bytes	bean	 = 3;
+	MethodInjectionPointType	type	 = 1;
+	org.jboss.weld.annotated.slim.backed.BackedAnnotatedMethod	method	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	bean	 = 3;
 }
 
 /**
  * @TypeId(454)
  */
 message ParameterInjectionPointImpl {
-	optional	bytes	parameter	 = 1;
-	optional	bytes	bean	 = 2;
+	org.jboss.weld.annotated.slim.backed.BackedAnnotatedParameter	parameter	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	bean	 = 2;
 }
 
 /**

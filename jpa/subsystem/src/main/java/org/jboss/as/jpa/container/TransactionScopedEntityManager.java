@@ -10,7 +10,9 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -26,6 +28,7 @@ import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
@@ -37,9 +40,32 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  *
  * @author Scott Marlow
  */
-public class TransactionScopedEntityManager extends AbstractEntityManager implements Serializable {
+public abstract class TransactionScopedEntityManager extends AbstractEntityManager implements Serializable {
 
     private static final long serialVersionUID = 455498112L;
+
+    private static final Factory FACTORY;
+
+    static {
+        Factory f;
+        if (WildFlySecurityManager.isChecking()) {
+            f = AccessController.doPrivileged((PrivilegedAction<Factory>) () -> ServiceLoader.load(Factory.class).iterator().next());
+        } else {
+            f = ServiceLoader.load(Factory.class).iterator().next();
+        }
+        FACTORY = f;
+    }
+
+    /**
+     * Creates a new {@code TransactionScopedEntityManager}.
+     */
+    public static TransactionScopedEntityManager create(String puScopedName, Map properties, EntityManagerFactory emf,
+                                                        SynchronizationType synchronizationType,
+                                                        TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                                        TransactionManager transactionManager) {
+        return FACTORY.createTransactionScopedEntityManager(puScopedName, properties, emf, synchronizationType,
+                                                                transactionSynchronizationRegistry, transactionManager);
+    }
 
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
@@ -50,7 +76,10 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private transient Boolean deferDetach;
     private transient Boolean skipQueryDetach;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+    protected TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf,
+                                          SynchronizationType synchronizationType,
+                                          TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                          TransactionManager transactionManager) {
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
@@ -69,7 +98,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (isInTx) {
             entityManager = getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties, synchronizationType);
         } else {
-            entityManager = NonTxEmCloser.get(puScopedName);
+            entityManager = NonTxEmCloser.get(EntityManager.class, puScopedName);
             if (entityManager == null) {
                 entityManager = createEntityManager(emf, properties, synchronizationType);
                 NonTxEmCloser.add(puScopedName, entityManager);
@@ -139,7 +168,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (entityManager == null) {
             entityManager = createEntityManager(emf, properties, synchronizationType);
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getTransactionScopedObjectDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
             }
             TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager);
@@ -148,7 +177,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         else {
             testForMixedSynchronizationTypes(emf, entityManager, puScopedName, synchronizationType, properties);
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+                ROOT_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getTransactionScopedObjectDetails(entityManager, scopedPuName),
                         TransactionUtil.getTransaction(transactionManager).toString());
             }
         }
@@ -171,7 +200,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     }
 
     private EntityManager unsynchronizedEntityManagerWrapper(EntityManager entityManager) {
-        return new UnsynchronizedEntityManagerWrapper(entityManager);
+        return UnsynchronizedEntityManagerWrapper.create(entityManager);
     }
 
     /**
@@ -198,6 +227,11 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         return skipQueryDetach.booleanValue();
     }
 
+    @Override
+    public void setProperty(String propertyName, Object value) {
+        properties.put(propertyName, value);
+        super.setProperty(propertyName, value);
+    }
 
 
     /**
@@ -219,5 +253,12 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
                 && (!allowJoinedUnsyncPersistenceContext || !entityManagerFromJTA.isJoinedToTransaction())) {
             throw JpaLogger.ROOT_LOGGER.badSynchronizationTypeCombination(scopedPuName);
         }
+    }
+
+    public interface Factory {
+        TransactionScopedEntityManager createTransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf,
+                                                                            SynchronizationType synchronizationType,
+                                                                            TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                                                            TransactionManager transactionManager);
     }
 }

@@ -10,4 +10,6 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="infinispan-local"/>
+    <!-- Note: the legacy EE FP does not have this -->
+    <feature spec="subsystem.jakarta-data"/>
 </feature-group-spec>

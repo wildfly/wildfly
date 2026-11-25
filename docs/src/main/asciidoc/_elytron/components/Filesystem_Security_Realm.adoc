@@ -297,7 +297,7 @@ The feature also creates a CLI script that can be used to add a key-store resour
 
 In order to use this feature, we can make use of the `elytron-tool.sh` (or .bat for windows) script. The format for the command to add integrity checking is as follows:
 ```
-$ WILDFLY_HOME/bin/elytron-tool.sh filesystem-realm-integrity --input-location <existing_path> --output-location <new_path> --keystore <ks_path> --password <ks_password> --summary
+$ $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm-integrity --input-location <existing_path> --output-location <new_path> --keystore <ks_path> --password <ks_password> --summary
 ```
 
 The required options include:
@@ -309,7 +309,7 @@ The required options include:
 
 The elytron tool also allows for the conversion to be done in bulk, as in multiple filesystems can be converted all at once. This can be done using the following command: 
 ```
-$ WILDFLY_HOME/bin/elytron-tool.sh filesystem-realm-integrity --bulk-convert <descriptor> 
+$ $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm-integrity --bulk-convert <descriptor> 
 ```
 In this case `<descriptor>` is a file, which contains the instructions for bulk conversion. An example of a descriptor file is shown below. Notice that each block contains the options to use for converting a single realm. Additionally, in addition to specifying the `input-location`, we have specified the `realm-name` as well. 
 ```

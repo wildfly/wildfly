@@ -30,7 +30,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.util.ServerReload;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -52,7 +52,7 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * The full test for testing the reporting of usage of unstable API annotation annotated constructs lives
- * in WildFly Core. This test is just to verify that the annotation index from the feature packs is present in the server.
+ * in WildFly Core. This test is just to verify that the annotation index from the feature-packs is present in the server.
  *
  * Also, there is some verification that in various types of archives, the classes are only scanned once.
  */
@@ -296,7 +296,7 @@ public class UnstableApiAnnotationIndexTestCase {
                     .append(PathElement.pathElement(SERVICE, "unstable-api-annotations"));
             ModelNode addOp = Util.createAddOperation(address);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), addOp);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -310,7 +310,7 @@ public class UnstableApiAnnotationIndexTestCase {
             ManagementOperations.executeOperation(client.getControllerClient(), op);
             // Reload so the system property is picked up by the deployer in order to print extra information
             // about class count
-            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient());
+            ServerReload.executeReloadAndWaitForCompletion(client);
         }
     }
 }

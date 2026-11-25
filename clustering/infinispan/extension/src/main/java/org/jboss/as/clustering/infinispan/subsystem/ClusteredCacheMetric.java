@@ -5,13 +5,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.remoting.rpc.RpcManagerImpl;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Enumeration of management metrics for a clustered cache.
@@ -63,7 +63,7 @@ public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }

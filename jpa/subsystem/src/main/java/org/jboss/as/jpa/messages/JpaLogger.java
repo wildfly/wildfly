@@ -9,6 +9,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import jakarta.ejb.EJBException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
@@ -36,7 +38,7 @@ public interface JpaLogger extends BasicLogger {
     /**
      * Default root level logger with the package name for he category.
      */
-    JpaLogger ROOT_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jboss.as.jpa");
+    JpaLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JpaLogger.class, "org.jboss.as.jpa");
 
     /**
      * Logs a warning message indicating duplicate persistence.xml files were found.
@@ -464,8 +466,8 @@ public interface JpaLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 41, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
-    RuntimeException hibernateOnlyEntityManagerFactory();
+//     @Message(id = 41, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
+//     RuntimeException hibernateOnlyEntityManagerFactory();
 
 //    /**
 //     * Creates an exception indicating the entity manager factory implementation can only be a Hibernate version.
@@ -755,4 +757,17 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 75, value="Illegal to call this method from injected, managed EntityManager")
     IllegalStateException illegalCallOnCloseMethod();
 
+    @LogMessage(level = INFO)
+    @Message(id = 76, value = "persistence.xml in application client %s deployment will not be deployed in server mode")
+    void ignoreAppclientPersistenceUnitsInServer(String deploymentName);
+
+    @Message(id = 77, value = "Jakarta Persistence/CDI Integration cannot be setup for bean type %s, persistence unit %s (%s)")
+    RuntimeException classNotFound(@Cause ClassNotFoundException cause, String beanType, String persistenceUnitName, String scopedPersistenceUnitName);
+
+    @Message(id = 78, value = "IntegratePersistenceAfterBeanDiscovery cannot register persistence unit %s as jakarta.enterprise.inject.spi.AfterBeanDiscovery event already ran for %s.")
+    IllegalStateException afterBeanDiscoveryEventRanAlready(String persistenceUnitName, String scopedPersistenceUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 79, value = "EntityManagerFactory CDI bean (for %s) will not have persistence unit name.  In order for the EntityManagerFactory CDI bean to be named remove duplicate copies of persistence unit %s.")
+    void willNotNameEntityManagerFactoryBean(String scopedPersistenceUnitName, String persistenceUnitName);
 }

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -26,21 +26,68 @@
         with the same GA.</description>
 
     <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
-    <!-- DO NOT CHANGE THIS. It's a fixed, deliberate value for this test-only artifact
-         chosen to avoid interferin with the release artifact with the same GA.
-         Other test infrastructure (e.g. a custom channel manifest) relies on this value. -->
-    <version>100000.0.1.Final-SNAPSHOT</version>
+    <!-- This version is a deliberate value for this test-only artifact
+         chosen to avoid interfering with the release artifact with the same GA.-->
+    <version>100000.0.1.TEST-SNAPSHOT</version>
+
+    <properties>
+        <!-- This is a test-only artifact with a never-changing version.
+                     DO NOT DEPLOY IT -->
+        <skipPublishing>true</skipPublishing>
+    </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
+                <!--
+                    This is a test-only artifact with a never-changing version.
+                    The artifact version is decoupled from this module version to keep it always stable
+                    since this test artifact is used in other tests that rely on this version.
+                -->
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <!-- This is a test-only artifact with a never-changing version.
-                         DO NOT DEPLOY IT! -->
-                    <skip>true</skip>
-                </configuration>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-install</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>custom-product-conf-install</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/${project.build.finalName}.jar</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>100000.0.1.TEST-stable-SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>custom-product-conf-version-txt-install</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/classes/version.txt</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>100000.0.1.TEST-stable-SNAPSHOT</version>
+                            <packaging>txt</packaging>
+                            <classifier>version</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -54,7 +101,42 @@
                             <JBoss-Product-Release-Version>1.2 GA Update 1</JBoss-Product-Release-Version>
                         </manifestEntries>
                     </archive>
+                    <excludes>
+                        <exclude>version.txt</exclude>
+                    </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-versions</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>release</propertyPrefix>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-version-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/classes/version.txt</file>
+                                    <type>txt</type>
+                                    <classifier>version</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

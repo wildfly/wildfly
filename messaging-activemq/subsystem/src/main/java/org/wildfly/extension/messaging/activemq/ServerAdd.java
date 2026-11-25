@@ -4,23 +4,21 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.ModuleIdentifierUtil.parseCanonicalModuleIdentifier;
+
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-import static org.wildfly.extension.messaging.activemq.AddressSettingAdd.createDefaulAddressSettings;
+import static org.wildfly.extension.messaging.activemq.AddressSettingAdd.createDefaultAddressSettings;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
-import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
@@ -35,6 +33,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.OUTGOING_INTERCEPTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
+import static org.wildfly.extension.messaging.activemq.ManagementUtil.configureDiscoverySystemProperty;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.RELATIVE_TO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD;
@@ -110,6 +109,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -154,7 +154,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -298,8 +297,8 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // Add the ActiveMQ Service
             ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-            final CapabilityServiceBuilder serviceBuilder = capabilityServiceTarget.addCapability(ACTIVEMQ_SERVER_CAPABILITY);
-            Supplier<PathManager> pathManager = serviceBuilder.requiresCapability(PATH_MANAGER_CAPABILITY, PathManager.class);
+            final CapabilityServiceBuilder<?> serviceBuilder = capabilityServiceTarget.addCapability(ACTIVEMQ_SERVER_CAPABILITY);
+            Supplier<PathManager> pathManager = serviceBuilder.requires(PathManager.SERVICE_DESCRIPTOR);
 
             Optional<Supplier<DataSource>> dataSource = Optional.empty();
             String dataSourceName = JOURNAL_DATASOURCE.resolveModelAttribute(context, model).asStringOrNull();
@@ -338,7 +337,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             for (final String socketBindingName : socketBindingNames) {
-                Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
+                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, socketBindingName);
                 socketBindings.put(socketBindingName, socketBinding);
             }
 
@@ -356,13 +355,12 @@ class ServerAdd extends AbstractAddStepHandler {
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                 if (outbounds.get(connectorSocketBinding)) {
-                    final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
-                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requiresCapability(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, connectorSocketBinding);
+                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                     outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                 } else {
                     // check if the socket binding has not already been added by the acceptors
                     if (!socketBindings.containsKey(connectorSocketBinding)) {
-                        Supplier<SocketBinding> socketBinding = serviceBuilder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, connectorSocketBinding);
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                         socketBindings.put(connectorSocketBinding, socketBinding);
                     }
                 }
@@ -392,6 +390,7 @@ class ServerAdd extends AbstractAddStepHandler {
             final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
             final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
 
+            final Set<String> socketBroadcastGroupNames = new LinkedHashSet<>();
             if (broadcastGroupConfigurations != null) {
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
@@ -404,6 +403,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketBroadcastGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
                         if (!groupBindingServices.containsKey(groupBindingServiceName)) {
                             Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
@@ -413,6 +413,7 @@ class ServerAdd extends AbstractAddStepHandler {
                     }
                 }
             }
+            final Set<String> socketDiscoveryGroupNames = new LinkedHashSet<>();
             if (discoveryGroupConfigurations != null) {
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
@@ -425,6 +426,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
+                        socketDiscoveryGroupNames.add(name);
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
                         if (!groupBindingServices.containsKey(groupBindingServiceName)) {
                             Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
@@ -434,6 +436,8 @@ class ServerAdd extends AbstractAddStepHandler {
                     }
                 }
             }
+
+            configureDiscoverySystemProperty();
 
             // Create the ActiveMQ Service
             final ActiveMQServerService serverService = new ActiveMQServerService(
@@ -450,7 +454,9 @@ class ServerAdd extends AbstractAddStepHandler {
                     elytronSecurityDomain,
                     mbeanServer,
                     dataSource,
-                    sslContexts
+                    sslContexts,
+                    socketDiscoveryGroupNames,
+                    socketBroadcastGroupNames
             );
 
             // inject credential-references for bridges
@@ -466,7 +472,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
                     if (coreQueues.has(queueConfiguration.getName())) {
                         final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
-                        final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                        final ServiceBuilder sb = context.getCapabilityServiceTarget().addService(queueServiceName);
                         sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
                         Supplier<ActiveMQBroker> serverSupplier = sb.requires(activeMQServiceName);
                         final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
@@ -693,15 +699,16 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                     final String match = property.getName();
                     final ModelNode config = property.getValue();
-                    final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
-                    if (!merged && configuration.getWildcardConfiguration().getAnyWordsString().equals(match)) {
-                        settings.merge(createDefaulAddressSettings());
+                    boolean isRootAddressMatch = configuration.getWildcardConfiguration().getAnyWordsString().equals(match);
+                    final AddressSettings settings = AddressSettingAdd.createSettings(context, config, isRootAddressMatch);
+                    if (!merged && isRootAddressMatch) {
+                        settings.merge(createDefaultAddressSettings());
                         merged = true;
                     }
                     configuration.addAddressSetting(match, settings);
                 }
                 if (!merged) {
-                    configuration.addAddressSetting(configuration.getWildcardConfiguration().getAnyWordsString(), createDefaulAddressSettings());
+                    configuration.addAddressSetting(configuration.getWildcardConfiguration().getAnyWordsString(), createDefaultAddressSettings());
                 }
             }
         }
@@ -721,8 +728,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String className = classModel.get(NAME).asString();
             String moduleName = classModel.get(MODULE).asString();
             try {
-                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Module module = Module.getCallerModuleLoader().loadModule(parseCanonicalModuleIdentifier(moduleName));
                 Class<?> clazz = module.getClassLoader().loadClass(className);
                 return clazz;
             } catch (Exception e) {

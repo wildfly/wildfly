@@ -6,6 +6,8 @@
 
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-telemetry">
     <props>
+        <prop name="org.wildfly.category" value="Monitoring"/>
+        <prop name="org.wildfly.description" value="Support for MicroProfile Telemetry."/>
         <prop name="org.wildfly.rule.inclusion-mode" value="all-dependencies"/>
     </props>
     <dependencies>

@@ -5,7 +5,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
-    <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
-    <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:3.2">
+    <assemble-shaded-artifact shaded-model-package="org.wildfly.wildfly-client-all.shaded" to-location="bin/client/jboss-client.jar"/>
+    <assemble-shaded-artifact shaded-model-package="org.wildfly.core.wildfly-cli.shaded" to-location="bin/client/jboss-cli-client.jar"/>
 </tasks>

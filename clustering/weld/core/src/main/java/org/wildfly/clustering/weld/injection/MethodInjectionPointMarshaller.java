@@ -6,8 +6,9 @@
 package org.wildfly.clustering.weld.injection;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 
 import jakarta.enterprise.inject.spi.Bean;
@@ -25,10 +26,10 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.jboss.weld.serialization.spi.ContextualStore;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -40,19 +41,20 @@ public class MethodInjectionPointMarshaller<T, X> implements ProtoStreamMarshall
     private static final int BEAN_INDEX = 3;
 
     private static final MethodInjectionPointType DEFAULT_TYPE = MethodInjectionPointType.PRODUCER;
+    private static final Function<MethodInjectionPoint<?, ?>, MethodInjectionPointType> TYPE_HANDLE = Function.invoke(findHandle(MethodInjectionPoint.class, MethodInjectionPointType.class));
 
-    static final Field TYPE_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
-        @Override
-        public Field run() {
-            for (Field field : MethodInjectionPoint.class.getDeclaredFields()) {
-                if (field.getType() == MethodInjectionPointType.class) {
-                    field.setAccessible(true);
-                    return field;
+    private static MethodHandle findHandle(Class<?> sourceClass, Class<?> fieldClass) {
+        for (Field field : sourceClass.getDeclaredFields()) {
+            if (field.getType() == fieldClass) {
+                try {
+                    return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findGetter(sourceClass, field.getName(), fieldClass);
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    throw new IllegalStateException(e);
                 }
             }
-            throw new IllegalStateException();
         }
-    });
+        throw new IllegalArgumentException(fieldClass.getName());
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -90,7 +92,7 @@ public class MethodInjectionPointMarshaller<T, X> implements ProtoStreamMarshall
 
     @Override
     public void writeTo(ProtoStreamWriter writer, MethodInjectionPoint<T, X> injectionPoint) throws IOException {
-        MethodInjectionPointType type = this.getValue(injectionPoint, TYPE_FIELD, MethodInjectionPointType.class);
+        MethodInjectionPointType type = TYPE_HANDLE.apply(injectionPoint);
         if (type != DEFAULT_TYPE) {
             writer.writeEnum(TYPE_INDEX, type);
         }
@@ -103,18 +105,5 @@ public class MethodInjectionPointMarshaller<T, X> implements ProtoStreamMarshall
             BeanIdentifier beanId = Container.instance(method.getDeclaringType().getIdentifier()).services().get(ContextualStore.class).putIfAbsent(bean);
             writer.writeAny(BEAN_INDEX, beanId);
         }
-    }
-
-    private <F> F getValue(MethodInjectionPoint<T, X> injectionPoint, Field field, Class<F> targetClass) {
-        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<F>() {
-            @Override
-            public F run() {
-                try {
-                    return targetClass.cast(TYPE_FIELD.get(injectionPoint));
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        });
     }
 }

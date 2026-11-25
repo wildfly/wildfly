@@ -32,7 +32,10 @@ public enum Element {
     PROVIDER("provider"),
     SHAREDCACHEMODE("shared-cache-mode"),
     VALIDATIONMODE("validation-mode"),
-    VERSION("version");
+    VERSION("version"),
+    QUALIFIER("qualifier"),
+    SCOPE("scope")
+    ;
 
     private final String name;
 

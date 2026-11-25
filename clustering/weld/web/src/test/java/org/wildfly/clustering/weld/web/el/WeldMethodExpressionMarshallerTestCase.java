@@ -4,15 +4,16 @@
  */
 package org.wildfly.clustering.weld.web.el;
 
-import java.io.IOException;
 import java.util.ServiceLoader;
 
 import org.jboss.weld.module.web.el.WeldMethodExpression;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.el.MethodExpressionFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link WeldMethodExpression}.
@@ -22,14 +23,15 @@ public class WeldMethodExpressionMarshallerTestCase {
 
     private final MethodExpressionFactory factory = ServiceLoader.load(MethodExpressionFactory.class, MethodExpressionFactory.class.getClassLoader()).iterator().next();
 
-    @Test
-    public void test() throws IOException {
-        Tester<WeldMethodExpression> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<WeldMethodExpression> tester = factory.createTester(WeldMethodExpressionMarshallerTestCase::assertEquals);
 
-        tester.test(new WeldMethodExpression(this.factory.createMethodExpression("foo", WeldMethodExpressionMarshallerTestCase.class, new Class<?>[0])), WeldMethodExpressionMarshallerTestCase::assertEquals);
+        tester.accept(new WeldMethodExpression(this.factory.createMethodExpression("foo", WeldMethodExpressionMarshallerTestCase.class, new Class<?>[0])));
     }
 
     static void assertEquals(WeldMethodExpression expression1, WeldMethodExpression expression2) {
-        Assert.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
+        Assertions.assertEquals(expression1.getExpressionString(), expression2.getExpressionString());
     }
 }

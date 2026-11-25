@@ -7,37 +7,38 @@ package org.jboss.as.clustering.infinispan.manager;
 
 import static org.infinispan.util.logging.Log.CONFIG;
 
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.security.auth.Subject;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.EncodingConfiguration;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
+import org.infinispan.registry.InternalCacheRegistry;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
+import org.jboss.as.clustering.infinispan.marshalling.MarshallerFactory;
+import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.clustering.infinispan.marshall.EncoderRegistry;
-import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
-import org.wildfly.clustering.infinispan.marshalling.MarshalledValueTranscoder;
-import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.clustering.cache.infinispan.embedded.AdvancedCacheDecorator;
+import org.wildfly.clustering.cache.infinispan.embedded.marshall.EncoderRegistry;
+import org.wildfly.clustering.cache.infinispan.marshalling.MarshalledValueTranscoder;
+import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactory;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -46,34 +47,34 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager {
 
     private final EmbeddedCacheManagerAdmin administrator;
-    private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
+    private final ModuleLoader loader;
+    private final MarshallerFactory marshallerFactory;
+    private final InternalCacheRegistry internalCacheRegistry;
 
     public DefaultCacheContainer(EmbeddedCacheManager container, ModuleLoader loader) {
-        this(container, new ByteBufferMarshallerFactory(container.getCacheManagerConfiguration().serialization().marshaller().mediaType(), loader));
-    }
-
-    private DefaultCacheContainer(EmbeddedCacheManager container, Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
         super(container);
         this.administrator = new DefaultCacheContainerAdmin(this);
-        this.marshallerFactory = marshallerFactory;
+        this.loader = loader;
+        this.marshallerFactory = UserMarshallerFactory.forMediaType(container.getCacheManagerConfiguration().serialization().marshaller().mediaType());
+        this.internalCacheRegistry = GlobalComponentRegistry.componentOf(container, InternalCacheRegistry.class);
     }
 
     @Override
     public Address getAddress() {
         Address address = super.getAddress();
-        return (address != null) ? address : LocalModeAddress.INSTANCE;
+        return (address != null) ? address : Address.LOCAL;
     }
 
     @Override
     public Address getCoordinator() {
         Address coordinator = super.getCoordinator();
-        return (coordinator != null) ? coordinator : LocalModeAddress.INSTANCE;
+        return (coordinator != null) ? coordinator : Address.LOCAL;
     }
 
     @Override
     public List<Address> getMembers() {
         List<Address> members = super.getMembers();
-        return (members != null) ? members : Collections.singletonList(LocalModeAddress.INSTANCE);
+        return (members != null) ? members : Collections.singletonList(Address.LOCAL);
     }
 
     @Override
@@ -99,42 +100,37 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.getCache(cacheName, createIfAbsent);
-        if (cache == null) return null;
+        if ((cache == null) || this.internalCacheRegistry.isInternalCache(cacheName)) return cache;
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
-        // Bypass deployment-specific media types for local cache w/out a store or if using a non-ProtoStream marshaller
-        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE)) {
+        // Bypass deployment-specific media types for heap-based local cache w/out a store or if using a non-ProtoStream marshaller
+        if ((!mode.isClustered() && !hasStore && configuration.memory().storage().canStoreReferences()) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(MediaTypes.WILDFLY_PROTOSTREAM.get())) {
             return new DefaultCache<>(this, cache);
         }
-        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
         MediaType keyType = types.getKey();
         MediaType valueType = (!mode.isInvalidation() || hasStore) ? types.getValue() : MediaType.APPLICATION_OBJECT;
-        @SuppressWarnings("deprecation")
-        EncoderRegistry registry = (EncoderRegistry) this.cm.getGlobalComponentRegistry().getComponent(org.infinispan.marshall.core.EncoderRegistry.class);
+        EncoderRegistry registry = (EncoderRegistry) GlobalComponentRegistry.componentOf(this.cm, org.infinispan.marshall.core.EncoderRegistry.class);
         synchronized (registry) {
             boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
             boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);
             if (registerKeyMediaType || registerValueMediaType) {
                 ClassLoader managerLoader = this.cm.getCacheManagerConfiguration().classLoader();
-                PrivilegedAction<ClassLoader> action = new PrivilegedAction<>() {
-                    @Override
-                    public ClassLoader run() {
-                        return new AggregatedClassLoader(List.of(loader, managerLoader));
-                    }
-                };
-                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(WildFlySecurityManager.doUnchecked(action));
+                ByteBufferMarshaller marshaller = this.marshallerFactory.createByteBufferMarshaller(this.loader, List.of(new AggregatedClassLoader(List.of(loader, managerLoader))));
                 if (registerKeyMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
-                    registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory, new UserMarshaller(keyType, marshaller)));
                 }
                 if (registerValueMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> valueFactory = new ByteBufferMarshalledValueFactory(marshaller);
-                    registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory));
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory, new UserMarshaller(valueType, marshaller)));
                 }
             }
-            return new DefaultCache<>(this, cache.getAdvancedCache().withMediaType(keyType, valueType)) {
+            AdvancedCache<K, V> advancedCache = cache.getAdvancedCache();
+            EncodingConfiguration encoding = configuration.encoding();
+            return new DefaultCache<>(this, encoding.keyDataType().mediaType().equals(keyType) && encoding.valueDataType().mediaType().equals(valueType) ? advancedCache : advancedCache.withMediaType(keyType, valueType)) {
                 @Override
                 public void stop() {
                     super.stop();
@@ -147,30 +143,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                 }
             };
         }
-    }
-
-    @Override
-    public Configuration defineConfiguration(String cacheName, Configuration configuration) {
-        EmbeddedCacheManager manager = this.cm;
-        PrivilegedAction<Configuration> action = new PrivilegedAction<>() {
-            @Override
-            public Configuration run() {
-                return manager.defineConfiguration(cacheName, configuration);
-            }
-        };
-        return WildFlySecurityManager.doUnchecked(action);
-    }
-
-    @Override
-    public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
-        EmbeddedCacheManager manager = this.cm;
-        PrivilegedAction<Configuration> action = new PrivilegedAction<>() {
-            @Override
-            public Configuration run() {
-                return manager.defineConfiguration(cacheName, templateCacheName, configurationOverride);
-            }
-        };
-        return WildFlySecurityManager.doUnchecked(action);
     }
 
     @Override
@@ -191,7 +163,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public EmbeddedCacheManager withSubject(Subject subject) {
-        return new DefaultCacheContainer(this.cm.withSubject(subject), this.marshallerFactory);
+        return new DefaultCacheContainer(this.cm.withSubject(subject), this.loader);
     }
 
     @Override
@@ -210,7 +182,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.getCacheManagerConfiguration().cacheManagerName();
     }
 
-    private static class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+    private static class DefaultCache<K, V> extends AdvancedCacheDecorator<K, V> {
         private final EmbeddedCacheManager manager;
 
         DefaultCache(EmbeddedCacheManager manager, Cache<K, V> cache) {
@@ -218,31 +190,13 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         }
 
         DefaultCache(EmbeddedCacheManager manager, AdvancedCache<K, V> cache) {
-            super(cache);
+            super(cache, decorated -> new DefaultCache<>(manager, decorated));
             this.manager = manager;
         }
 
         @Override
         public EmbeddedCacheManager getCacheManager() {
             return this.manager;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if (!(object instanceof Cache)) return false;
-            Cache<?, ?> cache = (Cache<?, ?>) object;
-            return this.manager.equals(cache.getCacheManager()) && this.getName().equals(cache.getName());
-        }
-
-        @Override
-        public int hashCode() {
-            return this.cache.hashCode();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public AdvancedCache rewrap(AdvancedCache delegate) {
-            return new DefaultCache<>(this.manager, delegate);
         }
     }
 }

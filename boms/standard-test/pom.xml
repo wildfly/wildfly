@@ -13,7 +13,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>33.0.0.Final-SNAPSHOT</version>
+        <version>43.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -24,6 +24,18 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-client-all</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -74,9 +86,35 @@
             </dependency>
 
             <dependency>
+                <groupId>com.googlecode.plist</groupId>
+                <artifactId>dd-plist</artifactId>
+                <version>${version.com.googlecode.plist.dd-plist}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.mvc</groupId>
+                <artifactId>jakarta.mvc-api</artifactId>
+                <version>${version.jakarta.mvc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${version.io.rest-assured}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.certs</groupId>
+                <artifactId>smallrye-certificate-generator</artifactId>
+                <version>${version.io.smallrye.certs}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -121,9 +159,17 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-all</artifactId>
-                <version>${version.org.apache.openjpa}</version>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-bom</artifactId>
+                <version>${version.org.assertj}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${version.org.awaitility.awaitility}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -142,6 +188,18 @@
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.krazo</groupId>
+                <artifactId>krazo-core</artifactId>
+                <version>${version.org.eclipse.krazo}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -173,18 +231,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <!-- not a test scope dependency because testsuite/shared uses it -->
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.byteman</groupId>
                 <artifactId>byteman</artifactId>
                 <version>${version.org.jboss.byteman}</version>
@@ -193,6 +239,12 @@
             <dependency>
                 <groupId>org.jboss.byteman</groupId>
                 <artifactId>byteman-bmunit</artifactId>
+                <version>${version.org.jboss.byteman}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-bmunit5</artifactId>
                 <version>${version.org.jboss.byteman}</version>
                 <scope>test</scope>
             </dependency>
@@ -234,18 +286,17 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client-utils</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
                 <scope>test</scope>
             </dependency>
-
-            <!-- only still used by JPA tests -->
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
+                <artifactId>shrinkwrap-bom</artifactId>
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -269,26 +320,21 @@
                 </exclusions>
             </dependency>
 
-            <!-- used in the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
-                <scope>test</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-client</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.org.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-core</artifactId>
@@ -296,10 +342,18 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${version.org.mockito}</version>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-services</artifactId>
+                <version>${version.org.keycloak}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-bom</artifactId>
+                <version>${version.org.mockito}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -308,72 +362,13 @@
                 <version>${version.org.syslog4j}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
+                <artifactId>testcontainers-bom</artifactId>
                 <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-common</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-security-manager</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
@@ -400,6 +395,75 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-maven-resolver</artifactId>
                 <version>${version.org.wildfly.glow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-subsystem</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
+                <type>test-jar</type>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.vault</groupId>
+                <artifactId>wildfly-vault-tests</artifactId>
+                <version>${version.org.wildfly.security.vault}</version>
+                <type>test-jar</type>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- The below BOM's are imported last as to not override any dependencies above -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>${version.org.htmlunit.htmlunit}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.httpcomponents</groupId>
+                        <artifactId>httpmime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.jakarta</groupId>
+                <artifactId>arquillian-jakarta-bom</artifactId>
+                <version>${version.org.jboss.arquillian.jakarta}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-bom</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
 

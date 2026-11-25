@@ -1,0 +1,42 @@
+receivers:
+  otlp:
+    protocols:
+      # Explicitly set endpoints to 0.0.0.0 to avoid issues in containerized environments
+      # Reference: https://github.com/open-telemetry/opentelemetry-collector/blob/main/CHANGELOG.md#v1110v01040
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+processors:
+  batch:
+    timeout: 0
+
+exporters:
+  debug:
+    verbosity: detailed
+  prometheus:
+    endpoint: "0.0.0.0:1234"
+  otlp:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+extensions:
+  health_check:
+
+service:
+  extensions: [ health_check ]
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ debug, otlp ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ debug, prometheus ]
+    logs:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ debug ]

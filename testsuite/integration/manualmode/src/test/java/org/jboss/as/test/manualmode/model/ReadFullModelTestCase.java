@@ -21,7 +21,7 @@ import org.wildfly.core.testrunner.ManagementClient;
 import org.wildfly.core.testrunner.Server;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
-import org.wildfly.core.testrunner.WildflyTestRunner;
+import org.wildfly.core.testrunner.WildFlyRunner;
 
 /**
  * Ensures that the full model including runtime resources/attributes can be read in both normal and admin-only mode
@@ -30,8 +30,8 @@ import org.wildfly.core.testrunner.WildflyTestRunner;
  * @author Kabir Khan
  * @author Tomaz Cerar
  */
+@RunWith(WildFlyRunner.class)
 @ServerControl(manual = true)
-@RunWith(WildflyTestRunner.class)
 public class ReadFullModelTestCase {
 
     //This is the full-ha setup which is the fullest config we have

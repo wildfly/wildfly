@@ -17,15 +17,18 @@ import jakarta.transaction.Transaction;
 
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.AbstractManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.common.function.ExceptionConsumer;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Timer implementation for use outside the context of a timeout event.
@@ -33,35 +36,40 @@ import org.wildfly.common.function.ExceptionConsumer;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public class OOBTimer<I> implements ManagedTimer {
+public class OOBTimer<I> extends AbstractManagedTimer {
 
-    private static final Function<ManagedTimer, TimerHandle> GET_HANDLE = ManagedTimer::getHandle;
-    private static final Function<ManagedTimer, Serializable> GET_INFO = ManagedTimer::getInfo;
-    private static final Function<ManagedTimer, Date> GET_NEXT_TIMEOUT = ManagedTimer::getNextTimeout;
-    private static final Function<ManagedTimer, ScheduleExpression> GET_SCHEDULE = ManagedTimer::getSchedule;
-    private static final Function<ManagedTimer, Long> GET_TIME_REMAINING = ManagedTimer::getTimeRemaining;
+    private static final ExceptionFunction<ManagedTimer, TimerHandle, EJBException> GET_HANDLE = ManagedTimer::getHandle;
+    private static final ExceptionFunction<ManagedTimer, Serializable, EJBException> GET_INFO = ManagedTimer::getInfo;
+    private static final ExceptionFunction<ManagedTimer, Date, EJBException> GET_NEXT_TIMEOUT = ManagedTimer::getNextTimeout;
+    private static final ExceptionFunction<ManagedTimer, ScheduleExpression, EJBException> GET_SCHEDULE = ManagedTimer::getSchedule;
+    private static final ExceptionFunction<ManagedTimer, Long, EJBException> GET_TIME_REMAINING = ManagedTimer::getTimeRemaining;
 
-    private static final Function<ManagedTimer, Boolean> IS_ACTIVE = ManagedTimer::isActive;
-    private static final Function<ManagedTimer, Boolean> IS_CALENDAR = ManagedTimer::isCalendarTimer;
-    private static final Function<ManagedTimer, Boolean> IS_CANCELED = ManagedTimer::isCanceled;
-    private static final Function<ManagedTimer, Boolean> IS_EXPIRED = ManagedTimer::isExpired;
-    private static final Function<ManagedTimer, Boolean> IS_PERSISTENT = ManagedTimer::isPersistent;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_ACTIVE = ManagedTimer::isActive;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_CALENDAR = ManagedTimer::isCalendarTimer;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_CANCELED = ManagedTimer::isCanceled;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_EXPIRED = ManagedTimer::isExpired;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_PERSISTENT = ManagedTimer::isPersistent;
 
     private static final ExceptionConsumer<ManagedTimer, EJBException> ACTIVATE = ManagedTimer::activate;
     private static final ExceptionConsumer<ManagedTimer, EJBException> CANCEL = ManagedTimer::cancel;
     private static final ExceptionConsumer<ManagedTimer, Exception> INVOKE = ManagedTimer::invoke;
     private static final ExceptionConsumer<ManagedTimer, EJBException> SUSPEND = ManagedTimer::suspend;
 
-    private final TimerManager<I, Batch> manager;
+    private final TimerManager<I> manager;
     private final I id;
     private final TimedObjectInvoker invoker;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
+    private final Function<I, Timer<I>> fixedReader;
+    private final Function<I, Timer<I>> dynamicReader;
 
-    public OOBTimer(TimerManager<I, Batch> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+    public OOBTimer(TimerManager<I> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+        super(invoker.getTimedObjectId(), id.toString());
         this.manager = manager;
         this.id = id;
         this.invoker = invoker;
         this.synchronizationFactory = synchronizationFactory;
+        this.fixedReader = manager::readTimer;
+        this.dynamicReader = manager::getTimer;
     }
 
     @Override
@@ -71,37 +79,37 @@ public class OOBTimer<I> implements ManagedTimer {
 
     @Override
     public long getTimeRemaining() {
-        return this.invoke(GET_TIME_REMAINING);
+        return this.invokeDynamic(GET_TIME_REMAINING);
     }
 
     @Override
     public Date getNextTimeout() {
-        return this.invoke(GET_NEXT_TIMEOUT);
+        return this.invokeDynamic(GET_NEXT_TIMEOUT);
     }
 
     @Override
     public ScheduleExpression getSchedule() {
-        return this.invoke(GET_SCHEDULE);
+        return this.invokeFixed(GET_SCHEDULE);
     }
 
     @Override
     public boolean isPersistent() {
-        return this.invoke(IS_PERSISTENT);
+        return this.invokeFixed(IS_PERSISTENT);
     }
 
     @Override
     public boolean isCalendarTimer() {
-        return this.invoke(IS_CALENDAR);
+        return this.invokeFixed(IS_CALENDAR);
     }
 
     @Override
     public Serializable getInfo() {
-        return this.invoke(GET_INFO);
+        return this.invokeFixed(GET_INFO);
     }
 
     @Override
     public TimerHandle getHandle() {
-        return this.invoke(GET_HANDLE);
+        return this.invokeFixed(GET_HANDLE);
     }
 
     @Override
@@ -126,20 +134,30 @@ public class OOBTimer<I> implements ManagedTimer {
 
     @Override
     public boolean isActive() {
-        return this.invoke(IS_ACTIVE);
+        return this.invokeDynamic(IS_ACTIVE);
     }
 
     @Override
     public boolean isCanceled() {
-        return this.invoke(IS_CANCELED);
+        return this.invokeDynamic(IS_CANCELED);
     }
 
     @Override
     public boolean isExpired() {
-        return this.invoke(IS_EXPIRED);
+        return this.invokeDynamic(IS_EXPIRED);
     }
 
-    private <R> R invoke(Function<ManagedTimer, R> function) {
+    // Invokes a method reading fixed timer meta data where exclusive access is not required
+    private <R, E extends Exception> R invokeFixed(ExceptionFunction<ManagedTimer, R, E> function) throws E {
+        return this.invoke(function, this.fixedReader);
+    }
+
+    // Invokes a method reading dynamic timer meta data requiring exclusive access
+    private <R, E extends Exception> R invokeDynamic(ExceptionFunction<ManagedTimer, R, E> function) throws E {
+        return this.invoke(function, this.dynamicReader);
+    }
+
+    private <R, E extends Exception> R invoke(ExceptionFunction<ManagedTimer, R, E> function, Function<I, Timer<I>> reader) throws E {
         InterceptorContext interceptorContext = CurrentInvocationContext.get();
         ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
         if ((currentTimer != null) && currentTimer.getId().equals(this.id.toString())) {
@@ -147,71 +165,34 @@ public class OOBTimer<I> implements ManagedTimer {
         }
         Transaction transaction = ManagedTimerService.getActiveTransaction();
         @SuppressWarnings("unchecked")
-        Map.Entry<Timer<I>, Batch> existing = (transaction != null) ? (Map.Entry<Timer<I>, Batch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
+        Map.Entry<Timer<I>, SuspendedBatch> existing = (transaction != null) ? (Map.Entry<Timer<I>, SuspendedBatch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
         if (existing != null) {
             Timer<I> timer = existing.getKey();
-            Batch suspendedBatch = existing.getValue();
+            SuspendedBatch suspendedBatch = existing.getValue();
             return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
         }
-        Batcher<Batch> batcher = this.manager.getBatcher();
-        try (Batch batch = batcher.createBatch()) {
-            Timer<I> timer = this.manager.getTimer(this.id);
-            if (timer == null) {
-                throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
-            }
-            Batch suspendedBatch = batcher.suspendBatch();
-            try {
-                return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-            } finally {
-                batcher.resumeBatch(suspendedBatch);
-            }
-        }
-    }
-
-    private <E extends Exception> void invoke(ExceptionConsumer<ManagedTimer, E> consumer) throws E {
-        InterceptorContext interceptorContext = CurrentInvocationContext.get();
-        ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
-        if ((currentTimer != null) && currentTimer.getId().equals(this.id.toString())) {
-            consumer.accept(currentTimer);
-        } else {
-            Transaction transaction = ManagedTimerService.getActiveTransaction();
-            @SuppressWarnings("unchecked")
-            Map.Entry<Timer<I>, Batch> existing = (transaction != null) ? (Map.Entry<Timer<I>, Batch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
-            if (existing != null) {
-                Timer<I> timer = existing.getKey();
-                Batch suspendedBatch = existing.getValue();
-                consumer.accept(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-            } else {
-                Batcher<Batch> batcher = this.manager.getBatcher();
-                try (Batch batch = batcher.createBatch()) {
-                    Timer<I> timer = this.manager.getTimer(this.id);
-                    if (timer == null) {
-                        throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
-                    }
-                    Batch suspendedBatch = batcher.suspendBatch();
-                    try {
-                        consumer.accept(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-                    } finally {
-                        batcher.resumeBatch(suspendedBatch);
-                    }
+        SuspendedBatch suspended = this.manager.getBatchFactory().get().suspend();
+        // Ensure any deferred batch is suspended
+        try (Context<Batch> context = suspended.resumeWithContext()) {
+            try (Batch batch = context.get()) {
+                Timer<I> timer = reader.apply(this.id);
+                if (timer == null) {
+                    throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
+                }
+                try (Context<SuspendedBatch> suspendedContext = batch.suspendWithContext()) {
+                    return function.apply(new DistributableTimer<>(this.manager, timer, suspendedContext.get(), this.invoker, this.synchronizationFactory));
                 }
             }
         }
     }
 
-    @Override
-    public int hashCode() {
-        return this.id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof ManagedTimer)) return false;
-        return this.getId().equals(((ManagedTimer) object).getId());
-    }
-
-    @Override
-    public String toString() {
-        return this.getId();
+    private <E extends Exception> void invoke(ExceptionConsumer<ManagedTimer, E> consumer) throws E {
+        this.invoke(new ExceptionFunction<ManagedTimer, Void, E>() {
+            @Override
+            public Void apply(ManagedTimer timer) throws E {
+                consumer.accept(timer);
+                return null;
+            }
+        }, this.dynamicReader);
     }
 }
