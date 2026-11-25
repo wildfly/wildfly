@@ -18,6 +18,7 @@
                  The application workaround is to configure new property hibernate.allow_update_outside_transaction=true.
             -->
            <property name="hibernate.allow_update_outside_transaction" value="true"/>
+           <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -10,7 +10,7 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="jboss.as.jpa.classtransformer" value="true"/>
-            <property name="wildfly.jpa.applicationdatasource" value="true"/>
+            <property name="wildfly.jpa.applicationdatasource" value="false"/>
         </properties>
     </persistence-unit>
 </persistence>

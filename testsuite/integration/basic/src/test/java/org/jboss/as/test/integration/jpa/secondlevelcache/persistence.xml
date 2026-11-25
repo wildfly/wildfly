@@ -17,6 +17,7 @@
             <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
             <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
             <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
 
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
@@ -38,6 +39,7 @@
             <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
             <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
             <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
 
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
@@ -60,6 +62,7 @@
             <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
             <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
             <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
 
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults

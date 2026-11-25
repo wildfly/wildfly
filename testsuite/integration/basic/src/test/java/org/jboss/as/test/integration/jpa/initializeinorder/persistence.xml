@@ -13,6 +13,7 @@
             <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
             <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
             <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="pu2">
@@ -24,6 +25,7 @@
             <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
             <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
             <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -10,6 +10,7 @@
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.cfg.xml"/>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
