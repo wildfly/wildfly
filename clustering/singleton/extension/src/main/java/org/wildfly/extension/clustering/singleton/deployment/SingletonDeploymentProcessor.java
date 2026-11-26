@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -33,10 +32,9 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, Li
         if (unit.getParent() == null) {
             ServiceTargetFactory factory = context.getAttachment(SERVICE_TARGET_FACTORY_KEY);
             if (factory != null) {
-                CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
                 // Ideally, we would just install the next phase using the singleton policy, however deployment unit phases do not currently support restarts
                 // Restart the deployment using the attached ServiceTarget transformer, but only if a transformer was not already attached
-                if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_TARGET_TRANSFORMER, new SingletonDeploymentServiceTargetTransformer(support, factory)) == null) {
+                if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_TARGET_TRANSFORMER, new SingletonDeploymentServiceTargetTransformer(factory)) == null) {
                     SingletonLogger.ROOT_LOGGER.singletonDeploymentDetected(factory);
                     ServiceController<?> controller = context.getServiceRegistry().getRequiredService(unit.getServiceName());
                     controller.addListener(this);
