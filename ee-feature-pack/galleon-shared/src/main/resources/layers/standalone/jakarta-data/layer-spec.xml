@@ -8,8 +8,8 @@
     <props>
         <prop name="org.wildfly.category" value="Jakarta EE"/>
         <prop name="org.wildfly.description" value="Support for Jakarta Data."/>
-        <prop name="org.wildfly.rule.annotations" value="jakarta.data"/>
-        <prop name="org.wildfly.rule.class" value="jakarta.data"/>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.data.*"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.data.*"/>
     </props>
     <dependencies>
         <!-- TODO one or the other of jpa or jpa-distributed is required,
