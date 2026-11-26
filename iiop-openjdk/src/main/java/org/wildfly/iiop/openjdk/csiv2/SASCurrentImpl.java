@@ -5,6 +5,8 @@
 
 package org.wildfly.iiop.openjdk.csiv2;
 
+import java.security.cert.Certificate;
+
 import org.jboss.iiop.csiv2.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.CSI.IdentityToken;
@@ -76,5 +78,13 @@ public class SASCurrentImpl extends LocalObject implements SASCurrent {
     @Override
     public void reject_incoming_context() {
         this.serverInterceptor.rejectIncomingContext();
+    }
+
+    public boolean tls_client_authenticated() {
+        return this.serverInterceptor.isTlsClientAuthenticated();
+    }
+
+    public Certificate[] get_incoming_peer_certificates() {
+        return this.serverInterceptor.getIncomingPeerCertificates();
     }
 }
