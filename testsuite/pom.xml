@@ -206,8 +206,8 @@
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
 
-        <!-- Don't try to deploy the testsuite modules because they don't build jars -->
-        <skipPublishing>true</skipPublishing>
+        <!-- Don't publish/deploy the testsuite modules to a Maven repository; they don't build jars -->
+        <central.skipPublishing>true</central.skipPublishing>
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>

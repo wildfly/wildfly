@@ -51,8 +51,8 @@
         <testsuite.default.full.dist.artifactId>wildfly-dist</testsuite.default.full.dist.artifactId>
         <testsuite.default.full.build.version>${full.maven.version}</testsuite.default.full.build.version>
 
-        <!-- Don't try to deploy the module -->
-        <skipPublishing>true</skipPublishing>
+        <!-- Don't publish/deploy this module to a Maven repository -->
+        <central.skipPublishing>true</central.skipPublishing>
     </properties>
 
     <dependencies>
