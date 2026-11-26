@@ -5,50 +5,23 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.Feature;
-import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
+import org.wildfly.subsystem.SubsystemPersistence;
 
 
 /**
+ * An extension that registers the undertow subsystem.
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class UndertowExtension implements Extension {
+@MetaInfServices(Extension.class)
+public class UndertowExtension extends SubsystemExtension<UndertowSubsystemSchema> {
+    public static final String SUBSYSTEM_NAME = UndertowRootDefinition.REGISTRATION.getName();
 
-    public static final String SUBSYSTEM_NAME = "undertow";
-    private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
-
-    public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, UndertowExtension.class.getClassLoader(), true, false);
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMappings(SUBSYSTEM_NAME, EnumSet.allOf(UndertowSubsystemSchema.class));
-    }
-
-    @Override
-    public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, UndertowSubsystemModel.CURRENT.getVersion());
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new UndertowRootDefinition());
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
-
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(new DeploymentDefinition());
-        deployments.registerSubModel(new DeploymentServletDefinition());
-        deployments.registerSubModel(new DeploymentWebSocketDefinition());
-
-        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(Feature.map(UndertowSubsystemSchema.CURRENT).get(context.getStability())));
+    public UndertowExtension() {
+        super(SubsystemConfiguration.of(SUBSYSTEM_NAME, UndertowSubsystemModel.CURRENT, UndertowRootDefinition::new), SubsystemPersistence.of(UndertowSubsystemSchema.CURRENT));
     }
 }

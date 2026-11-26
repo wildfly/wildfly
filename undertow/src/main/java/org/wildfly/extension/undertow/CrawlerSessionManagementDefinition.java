@@ -13,6 +13,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -32,7 +33,7 @@ import java.util.List;
  * @author Stuart Douglas
  */
 class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.SETTING, Constants.CRAWLER_SESSION_MANAGEMENT));
 
     protected static final SimpleAttributeDefinition USER_AGENTS =
             new SimpleAttributeDefinitionBuilder(Constants.USER_AGENTS, ModelType.STRING, true)
@@ -49,7 +50,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(USER_AGENTS, SESSION_TIMEOUT);
 
     CrawlerSessionManagementDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement()))
                 .setAddHandler(new CrawlerSessionManagementAdd())
                 .setRemoveHandler(new CrawlerSessionManagementRemove())
         );
@@ -79,7 +80,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
 
     private static class CrawlerSessionManagementAdd extends RestartParentResourceAddHandler {
         protected CrawlerSessionManagementAdd() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override
@@ -103,7 +104,7 @@ class CrawlerSessionManagementDefinition extends PersistentResourceDefinition {
     private static class CrawlerSessionManagementRemove extends RestartParentResourceRemoveHandler {
 
         protected CrawlerSessionManagementRemove() {
-            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
+            super(ServletContainerDefinition.REGISTRATION.getPathElement().getKey());
         }
 
         @Override

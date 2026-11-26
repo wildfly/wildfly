@@ -10,6 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PathAddress;
@@ -21,6 +22,9 @@ import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.extension.undertow.filters.FilterDefinitions;
+import org.wildfly.extension.undertow.filters.FilterRefDefinition;
+import org.wildfly.extension.undertow.filters.ResponseHeaderFilterDefinition;
 
 /**
  * Reproducer for WFLY-21767.
@@ -30,7 +34,7 @@ import org.junit.Test;
  */
 public class FilterRefBatchTestCase extends AbstractUndertowSubsystemTestCase {
 
-    private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT);
+    private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(UndertowRootDefinition.REGISTRATION.getPathElement());
 
     public FilterRefBatchTestCase() {
         super(Feature.map(UndertowSubsystemSchema.CURRENT).get(Stability.DEFAULT));
@@ -44,17 +48,10 @@ public class FilterRefBatchTestCase extends AbstractUndertowSubsystemTestCase {
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
         try {
-            PathAddress filterAddress = SUBSYSTEM_ADDRESS.append(
-                    PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER),
-                    PathElement.pathElement("response-header", "connection-close-header"));
-            PathAddress filterRefAddress = SUBSYSTEM_ADDRESS.append(
-                    PathElement.pathElement(Constants.SERVER, "some-server"),
-                    PathElement.pathElement(Constants.HOST, "other-host"),
-                    PathElement.pathElement(Constants.FILTER_REF, "connection-close-header"));
+            PathAddress filterAddress = SUBSYSTEM_ADDRESS.append(FilterDefinitions.REGISTRATION.getPathElement()).append(PathElement.pathElement(ResponseHeaderFilterDefinition.REGISTRATION.getPathElement().getKey(), "connection-close-header"));
+            PathAddress filterRefAddress = SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ServerDefinition.REGISTRATION.getPathElement().getKey(), "some-server")).append(PathElement.pathElement(HostDefinition.REGISTRATION.getPathElement().getKey(), "other-host")).append(PathElement.pathElement(FilterRefDefinition.REGISTRATION.getPathElement().getKey(), "connection-close-header"));
 
-            ModelNode addFilter = Util.createAddOperation(filterAddress);
-            addFilter.get("header-name").set("Connection");
-            addFilter.get("header-value").set("close");
+            ModelNode addFilter = Util.createAddOperation(filterAddress, Map.of(ResponseHeaderFilterDefinition.NAME.getName(), new ModelNode("Connection"), ResponseHeaderFilterDefinition.VALUE.getName(), new ModelNode("close")));
 
             ModelNode composite = Util.createCompositeOperation(List.of(writeAttribute, addFilter, Util.createAddOperation(filterRefAddress)));
             ModelNode result = services.executeOperation(composite);
@@ -67,16 +64,11 @@ public class FilterRefBatchTestCase extends AbstractUndertowSubsystemTestCase {
     @Test
     public void testBatchFilterRefAfterReloadRequiredWriteAttribute() throws Exception {
         // Servlet-container level change — the original reproducer from WFLY-21767
-        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(
-                SUBSYSTEM_ADDRESS.append(PathElement.pathElement(Constants.SERVLET_CONTAINER, "myContainer")),
-                "default-session-timeout", 60));
+        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ServletContainerDefinition.REGISTRATION.getPathElement().getKey(), "myContainer")), ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.getName(), 60));
         // Subsystem level change
-        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(
-                SUBSYSTEM_ADDRESS, "instance-id", "foobar"));
+        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(SUBSYSTEM_ADDRESS, UndertowRootDefinition.INSTANCE_ID.getName(), "foobar"));
         // Server level change — worked before the regression as well
-        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(
-                SUBSYSTEM_ADDRESS.append(PathElement.pathElement(Constants.SERVER, "some-server")),
-                "default-host", "test"));
+        batchFilterRefAfterWriteAttribute(Util.getWriteAttributeOperation(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ServerDefinition.REGISTRATION.getPathElement().getKey(), "some-server")), ServerDefinition.DEFAULT_HOST.getName(), "test"));
     }
 
     @Override

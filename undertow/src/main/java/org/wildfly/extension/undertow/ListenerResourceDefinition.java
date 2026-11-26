@@ -28,6 +28,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -42,6 +43,7 @@ import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -62,6 +64,7 @@ import org.xnio.Options;
  * @author Stuart Douglas
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
+    static final ResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(PathElement.pathElement(Constants.LISTENER));
 
     static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LISTENER, true, UndertowListener.class)
             .setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
@@ -246,7 +249,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler addHandler, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
         // this Persistent Parameters will be cast to Parameters
-        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY, SERVER_LISTENER_CAPABILITY));
+        super(parameters.setDescriptionResolver(RESOLVER).addCapabilities(LISTENER_CAPABILITY, SERVER_LISTENER_CAPABILITY));
         this.addHandler = addHandler;
         this.writeAttributeHandlers = new HashMap<>();
         this.writeAttributeHandlers.putAll(writeAttributeHandlers);

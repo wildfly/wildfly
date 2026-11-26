@@ -42,8 +42,8 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
             ModelVersion version = model.getVersion();
             ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-            ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
-            for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT)) {
+            ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.REGISTRATION.getPathElement());
+            for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.REGISTRATION.getPathElement(), HttpsListenerResourceDefinition.REGISTRATION.getPathElement())) {
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     server.addChildResource(listenerPath).getAttributeBuilder()
                         .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
@@ -52,10 +52,10 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
             }
 
             if (UndertowSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
-                final ResourceTransformationDescriptionBuilder handlers = subsystem.addChildResource(HandlerDefinitions.PATH_ELEMENT);
-                final ResourceTransformationDescriptionBuilder reverseProxy = handlers.addChildResource(ReverseProxyHandlerDefinition.PATH_ELEMENT);
+                final ResourceTransformationDescriptionBuilder handlers = subsystem.addChildResource(HandlerDefinitions.REGISTRATION.getPathElement());
+                final ResourceTransformationDescriptionBuilder reverseProxy = handlers.addChildResource(ReverseProxyHandlerDefinition.REGISTRATION.getPathElement());
                 final AttributeTransformationDescriptionBuilder reverseProxyAttributeTransformationDescriptionBuilder = reverseProxy.getAttributeBuilder();
-                final ResourceTransformationDescriptionBuilder ajpListener = server.addChildResource(AjpListenerResourceDefinition.PATH_ELEMENT);
+                final ResourceTransformationDescriptionBuilder ajpListener = server.addChildResource(AjpListenerResourceDefinition.REGISTRATION.getPathElement());
 
                 reverseProxyAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER)
@@ -71,20 +71,20 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                 RejectAttributeChecker.ObjectFieldsRejectAttributeChecker attributeChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
                     Map.of(ExchangeAttributeDefinitions.SECURE_PROTOCOL.getName(), RejectAttributeChecker.DEFINED)
                 );
-                server.addChildResource(HostDefinition.PATH_ELEMENT)
-                    .addChildResource(ConsoleAccessLogDefinition.PATH_ELEMENT)
+                server.addChildResource(HostDefinition.REGISTRATION.getPathElement())
+                    .addChildResource(ConsoleAccessLogDefinition.REGISTRATION.getPathElement())
                     .getAttributeBuilder()
                     .addRejectCheck(attributeChecker, ExchangeAttributeDefinitions.ATTRIBUTES)
                 ;
 
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
-                    final ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.PATH_ELEMENT);
+                    final ResourceTransformationDescriptionBuilder servletContainer = subsystem.addChildResource(ServletContainerDefinition.REGISTRATION.getPathElement());
                     servletContainer.getAttributeBuilder()
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.ORPHAN_SESSION_ALLOWED)
                         .end();
 
-                    servletContainer.rejectChildResource(AffinityCookieDefinition.PATH_ELEMENT);
+                    servletContainer.rejectChildResource(AffinityCookieDefinition.REGISTRATION.getPathElement());
 
                     ajpListenerAttributeTransformationDescriptionBuilder
                     .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)

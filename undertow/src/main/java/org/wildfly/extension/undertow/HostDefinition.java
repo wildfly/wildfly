@@ -16,12 +16,14 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -40,7 +42,8 @@ import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostDefinition extends SimpleResourceDefinition {
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
+    static final ResourceRegistration REGISTRATION = ResourceRegistration.of(PathElement.pathElement(Constants.HOST));
+    static final ParentResourceDescriptionResolver RESOLVER = UndertowRootDefinition.RESOLVER.createChildResolver(REGISTRATION.getPathElement());
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR).build();
@@ -95,7 +98,7 @@ class HostDefinition extends SimpleResourceDefinition {
     private final ResourceDescriptor descriptor;
 
     HostDefinition() {
-        this(ResourceDescriptor.builder(UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+        this(ResourceDescriptor.builder(RESOLVER)
                 .addAttributes(ATTRIBUTES)
                 .addCapability(HOST_CAPABILITY)
                 // Register these capabilities for the default server only
@@ -106,7 +109,7 @@ class HostDefinition extends SimpleResourceDefinition {
     }
 
     private HostDefinition(ResourceDescriptor descriptor) {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, descriptor.getResourceDescriptionResolver()));
+        super(new SimpleResourceDefinition.Parameters(REGISTRATION, descriptor.getResourceDescriptionResolver()));
         this.descriptor = descriptor;
     }
 
