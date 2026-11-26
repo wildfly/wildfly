@@ -1,5 +1,6 @@
 [[Micrometer_Metrics]]
 = Micrometer Metrics Subsystem
+:metricsSubsystem: micrometer
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -172,6 +173,8 @@ a `statistics-enabled` attribute that must be set to `true` to enable them. For
 convenience, WildFly standalone configuration provides expressions to enable the
 statistics by setting a System property `-Dwildfly.statistics-enabled=true` to enable
 statistics on the subsystems provided by the configuration.
+
+include::Meter_Filters.adoc[]
 
 == Use in Applications
 

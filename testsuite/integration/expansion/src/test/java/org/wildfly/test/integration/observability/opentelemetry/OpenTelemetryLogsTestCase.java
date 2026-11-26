@@ -5,6 +5,7 @@
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.URL;
+import java.util.List;
 
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -13,6 +14,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.signals.logs.OpenTelemetryLogRecord;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
@@ -66,7 +68,7 @@ public class OpenTelemetryLogsTestCase extends BaseOpenTelemetryTest {
     @Test
     @Order(3)
     public void testDuplicateLogs() {
-        var logMessages = otelCollector.getOpenTelemetryLogs().stream()
+        List<OpenTelemetryLogRecord> logMessages = otelCollector.getOpenTelemetryLogs().stream()
                 .filter(log -> log.body().contains(EXPECTED_LOG_ENTRY)).toList();
 
         Assertions.assertEquals(1, logMessages.size(), "Duplicated log entry found");

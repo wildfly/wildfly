@@ -28,6 +28,7 @@ import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.O
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.smallrye.common.function.Functions;
@@ -35,6 +36,7 @@ import io.smallrye.common.function.Functions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -44,8 +46,12 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.observability.shared.FilterDefinitionRegistrar;
+import org.wildfly.extension.observability.shared.FilterModel;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 import org.wildfly.service.Installer.StartWhen;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -164,9 +170,17 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition SYSTEM_METRICS = SimpleAttributeDefinitionBuilder
+            .create(OpenTelemetryConfigurationConstants.SYSTEM_METRICS, ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.TRUE)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setStability(Stability.COMMUNITY)
+            .build();
+
     public static final List<AttributeDefinition> ATTRIBUTES = List.of(
             SERVICE_NAME, EXPORTER, ENDPOINT, SPAN_PROCESSOR_TYPE, BATCH_DELAY, MAX_QUEUE_SIZE, MAX_EXPORT_BATCH_SIZE,
-            EXPORT_TIMEOUT, SAMPLER, RATIO
+            EXPORT_TIMEOUT, SAMPLER, RATIO, SYSTEM_METRICS
     );
 
     private final AtomicReference<WildFlyOpenTelemetryConfig> openTelemetryConfig = new AtomicReference<>();
@@ -183,10 +197,11 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                                                    ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
                 parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(SUBSYSTEM_PATH), SUBSYSTEM_RESOLVER).build());
+        ResourceOperationRuntimeHandler runtimeHandler = ResourceOperationRuntimeHandler.configureService(this);
         ResourceDescriptor descriptor = ResourceDescriptor.builder(SUBSYSTEM_RESOLVER)
                 .addCapability(OPENTELEMETRY_CAPABILITY)
                 .addCapability(OPENTELEMETRY_CONFIG_CAPABILITY)
-                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
+                .withRuntimeHandler(runtimeHandler)
                 .addAttributes(ATTRIBUTES)
                 .withAddOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .withRemoveOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -203,6 +218,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
                 .build();
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
+        new FilterDefinitionRegistrar(runtimeHandler, SUBSYSTEM_RESOLVER).register(registration, context);
 
         return registration;
     }
@@ -225,7 +241,7 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
         String exporter = OpenTelemetrySubsystemRegistrar.EXPORTER.resolveModelAttribute(context, model).asString();
         validateExporter(context, exporter);
 
-        final WildFlyOpenTelemetryConfig config = new WildFlyOpenTelemetryConfig.Builder()
+        WildFlyOpenTelemetryConfig.Builder configBuilder = new WildFlyOpenTelemetryConfig.Builder()
             .setServiceName(OpenTelemetrySubsystemRegistrar.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull())
             .setExporter(exporter)
             .setOtlpEndpoint(OpenTelemetrySubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull())
@@ -237,7 +253,17 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
             .setSamplerRatio(OpenTelemetrySubsystemRegistrar.RATIO.resolveModelAttribute(context, model).asDoubleOrNull())
             .setMicroProfileTelemetryInstalled(context.hasOptionalCapability("org.wildfly.extension.microprofile.telemetry", OPENTELEMETRY_CAPABILITY, null))
             .setInjectVertx(context.hasOptionalCapability("org.wildfly.extension.vertx", OPENTELEMETRY_CAPABILITY, null))
-            .build();
+            .setSystemMetrics(OpenTelemetrySubsystemRegistrar.SYSTEM_METRICS.resolveModelAttribute(context, model).asBoolean(true));
+
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        Set<Resource.ResourceEntry> filterChildren = resource.getChildren("filter");
+        if (!filterChildren.isEmpty()) {
+            configBuilder.setFilters(filterChildren.stream()
+                    .map(child -> FilterModel.of(child.getModel()))
+                    .toList());
+        }
+
+        final WildFlyOpenTelemetryConfig config = configBuilder.build();
 
         return CapabilityServiceInstaller.BlockingBuilder.of(OPENTELEMETRY_CONFIG_CAPABILITY, Functions.constantSupplier(config))
                 .startWhen(StartWhen.INSTALLED)
