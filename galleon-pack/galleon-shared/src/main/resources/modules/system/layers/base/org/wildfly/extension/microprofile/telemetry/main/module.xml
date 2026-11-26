@@ -14,7 +14,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.extension.microprofile.telemetry-api"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
         <module name="org.wildfly.extension.opentelemetry"/>
