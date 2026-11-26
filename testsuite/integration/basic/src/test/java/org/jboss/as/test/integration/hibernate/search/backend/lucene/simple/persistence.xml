@@ -22,6 +22,7 @@
             <property name="hibernate.search.backend.directory.type" value="local-heap"/>
             <property name="hibernate.search.backend.analysis.configurer"
                       value="org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.AnalysisConfigurer"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

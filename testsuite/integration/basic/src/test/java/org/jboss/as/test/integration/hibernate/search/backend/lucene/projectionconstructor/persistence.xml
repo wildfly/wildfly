@@ -12,6 +12,7 @@
             <property name="hibernate.search.backend.type" value="lucene"/>
             <property name="hibernate.search.backend.lucene_version" value="LUCENE_CURRENT"/>
             <property name="hibernate.search.backend.directory.type" value="local-heap"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

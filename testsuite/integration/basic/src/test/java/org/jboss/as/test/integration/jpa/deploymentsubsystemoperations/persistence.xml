@@ -7,5 +7,8 @@
 <persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
     <persistence-unit name="mypc">
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+          <property name="jboss.as.jpa.classtransformer" value="true"/>
+        </properties>
     </persistence-unit>
 </persistence>

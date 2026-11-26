@@ -11,6 +11,7 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/>
             <property name="org.hibernate.envers.audit_strategy_validity_revend_timestamp_field_name" value="REVEND_VALIDITY"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

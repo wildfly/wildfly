@@ -98,7 +98,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_PERSISTENCE_REF, new PersistenceRefProcessor());
 
                 // handles pu deployment (completes pu service installation)
-                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceCompleteInstallProcessor(platform));
+                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT , new PersistenceCompleteInstallProcessor(platform));
 
             }
         }, OperationContext.Stage.RUNTIME);

@@ -10,6 +10,7 @@
         <validation-mode>CALLBACK</validation-mode>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

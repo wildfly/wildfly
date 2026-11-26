@@ -13,7 +13,7 @@
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.jndi.class" value="org.jboss.as.test.integration.jpa.jndi.InitialContextFactoryImpl"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
-
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

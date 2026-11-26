@@ -750,13 +750,9 @@ context without specifying the unitName (@PersistenceContext
 EntityManager em) but have multiple persistence units specified in your
 persistence.xml.
 
-|wildfly.jpa.twophasebootstrap |persistence providers (like Hibernate
-ORM 4.3+ via EntityManagerFactoryBuilder), allow a two phase persistence
-unit bootstrap, which improves JPA integration with Jakarta Contexts and Dependency Injection. Setting the
-wildfly.jpa.twophasebootstrap hint to false, disables the two phase
-bootstrap (for the persistence unit that contains the hint).
+|wildfly.jpa.twophasebootstrap |Deprecated and ignored. Persistence unit bootstrap is now always performed in a single phase during the deployment install phase.
 
-|wildfly.jpa.applicationdatasource |set to true when using an application defined DataSource or resource reference to a global DataSource.
+|wildfly.jpa.applicationdatasource |Deprecated and ignored. All persistence units are now started during the deployment install phase, ensuring application-defined DataSources (such as `@DataSourceDefinition` or resource references) are already available.
 
 |wildfly.jpa.allowdefaultdatasourceuse |set to false to prevent
 persistence unit from using the default data source. Defaults to true.

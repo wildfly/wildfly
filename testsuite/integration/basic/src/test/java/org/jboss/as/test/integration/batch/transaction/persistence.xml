@@ -13,6 +13,7 @@
 
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="jboss.as.jpa.classtransformer" value="true"/>
         </properties>
 
     </persistence-unit>

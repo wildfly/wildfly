@@ -12,10 +12,6 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="jboss.as.jpa.classtransformer" value="true"/>
-            <!--  set wildfly.jpa.applicationdatasource to true, to allow application 
-                  level datasource to be used, otherwise the default of false would be used which
-                  is the default behaviour (application datasource cannot be used with JPA bytecode enhancement) -->
-            <property name="wildfly.jpa.applicationdatasource" value="true"/>            
         </properties>
     </persistence-unit>
 </persistence>
