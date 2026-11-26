@@ -9,7 +9,6 @@
 
     <properties>
         <property name="jboss.api" value="private"/>
-        <property name="jboss.stability" value="community"/>
     </properties>
 
     <resources>
