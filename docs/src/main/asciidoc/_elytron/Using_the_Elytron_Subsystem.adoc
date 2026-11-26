@@ -1851,6 +1851,35 @@ If both CRL and OCSP are defined, Elytron will use OCSP for obtaining revocation
 /subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp.prefer-crls, value="true")
 ----
 
+[[configure-accept-ocsp-stapling-in-trust-manager]]
+==== Configure the trust-manager to accept OCSP stapling
+
+NOTE: Since this attribute is a preview level feature, the WildFly server's stability level must be set to `preview`
+or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
+`accept-ocsp-stapling` attribute. For more information about the stability levels of the WildFly server, please refer
+to the link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
+
+When a trust-manager is used on the client side of a TLS connection, you can configure it to accept the certificate
+status that the server staples to the handshake (see <<configure-server-side-ocsp-stapling,Configure server-side OCSP stapling>>):
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=accept-ocsp-stapling, value=true)
+----
+
+The `accept-ocsp-stapling` attribute is a boolean that defaults to `false` and accepts expressions. Changing it
+requires all services that depend on the trust-manager to restart (`restart-all-services`).
+
+Enabling it turns on certificate revocation checking for the trust-manager, using OCSP first and CRL as the fallback,
+even if no `ocsp` or `certificate-revocation-list` is configured. Unless the `soft-fail` attribute of the trust-manager
+is set to `true` (see <<configure-trust-manager-to-accept-certificates-with-unknown-revocation-status,Configure trust-manager to accept certificates with unknown revocation status>>),
+a certificate whose revocation status cannot be determined is rejected.
+
+*NOTE:* The attribute is set on the trust-manager, so it applies to every consumer of that trust-manager, for example
+every `client-ssl-context` or `server-ssl-context` that references it. Use a dedicated trust-manager if only some
+consumers should accept stapled responses. The attribute does not enable OCSP stapling on the server side.
+
 [[other-trust-manager-configuration]]
 ==== Other trust-manager configuration:
 
@@ -1880,6 +1909,51 @@ Sets the value of the maximum number of non-self-issued intermediate certificate
 ----
 /subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=maximum-cert-path, value=10)
 ----
+
+[[configure-server-side-ocsp-stapling]]
+=== Configure server-side OCSP stapling
+
+OCSP stapling allows the server, rather than the client, to request the revocation status of the server certificate
+from the OCSP responder. The server "staples" the response to the certificate when it starts the TLS handshake, and
+it can cache the response and supply it to all clients, which reduces the load on the OCSP responder.
+
+Server-side OCSP stapling is implemented by the JDK and is controlled by JDK system properties. The Elytron subsystem
+does not provide a `server-ssl-context` attribute for it and does not set these properties. Set them with the
+`system-property` resource, for example:
+
+[source,options="nowrap"]
+----
+/system-property=jdk.tls.server.enableStatusRequestExtension:add(value=true)
+/system-property=jdk.tls.stapling.cacheSize:add(value=512)
+/system-property=jdk.tls.stapling.responseTimeout:add(value=3000)
+----
+
+In a managed domain, the `system-property` resource is available on the domain, host, server group and server levels.
+
+The following system properties control server-side OCSP stapling:
+
+[cols=",,",options="header"]
+|====
+|Property |Default |Description
+|`jdk.tls.server.enableStatusRequestExtension` |`false` |Enables server-side OCSP stapling.
+|`jdk.tls.stapling.cacheSize` |`256` |Maximum number of responses in the cache.
+|`jdk.tls.stapling.cacheLifetime` |`3600` |Maximum lifetime of a cached response, in seconds.
+|`jdk.tls.stapling.responderURI` |not set |URI of the OCSP responder to use when the server certificate has no Authority Information Access (AIA) extension. It does not replace the AIA value unless `jdk.tls.stapling.responderOverride` is `true`.
+|`jdk.tls.stapling.responderOverride` |`false` |If `true`, `jdk.tls.stapling.responderURI` is used instead of the responder URI in the AIA extension of the certificate.
+|`jdk.tls.stapling.ignoreExtensions` |`false` |If `true`, the OCSP extensions sent by the client in the `status_request` or `status_request_v2` TLS extension are not forwarded to the responder.
+|`jdk.tls.stapling.responseTimeout` |`5000` |Maximum time, in milliseconds, that the server waits to obtain an OCSP response.
+|====
+
+*NOTE:* These are JVM-wide properties. They are not tied to a single `server-ssl-context`: they apply to the whole
+server process, so the same settings are used by every server-side TLS connection handled by the JDK TLS implementation.
+
+Enabling stapling does not guarantee that a response is stapled. The server needs to know the responder, either from the
+AIA extension of its certificate or from `jdk.tls.stapling.responderURI`, and the client must request the certificate
+status in the TLS handshake.
+
+For a WildFly client to use the stapled response, enable `accept-ocsp-stapling` on the client side. See
+<<configure-accept-ocsp-stapling-in-trust-manager,Accept OCSP stapling in the trust-manager>> and the
+link:Client_Guide{outfilesuffix}#SSLContexts[Client Guide].
 
 [[enable-one-way-ssltls-for-the-management-interfaces]]
 === Enable One-way SSL/TLS for the Management Interfaces

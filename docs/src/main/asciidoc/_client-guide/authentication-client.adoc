@@ -548,6 +548,32 @@ configuration of multiple certificate revocation lists as follows.
 </configuration>
 ----
 
+ <accept-ocsp-stapling />:: This element enables the client to accept the certificate status that the server staples to the TLS handshake. It is only available in the `urn:elytron:client:preview:1.8` namespace, and can be used once in an `ssl-context`. It supports the following optional attributes:
+* `accept-ocsp`: Whether the client accepts stapled OCSP responses. The default value is `false`.
+* `soft-fail`: Whether a certificate with an unknown revocation status is accepted. The default value is `false`.
+* `responder-certificate`: The alias of the certificate of the OCSP responder.
+* `responder-keystore`: The name of the key store that contains the `responder-certificate`. It can only be specified together with `responder-certificate`. If it is not specified, the certificate is looked up in the trust store of the `ssl-context`.
+
+When `accept-ocsp` is `true`, the `ssl-context` must configure a `trust-store`. If the `ssl-context` also configures `ocsp`, `certificate-revocation-list` or `certificate-revocation-lists`, the `accept-ocsp-stapling` element must not specify `soft-fail`, `responder-certificate` or `responder-keystore`, because the revocation settings of the `ssl-context` are used.
+
+NOTE: This element is a preview feature, available only in the `urn:elytron:client:preview:1.8` namespace.
+
+[source,xml,options="nowrap"]
+----
+<configuration>
+    <authentication-client xmlns="urn:elytron:client:preview:1.8">
+        ...
+        <ssl-contexts>
+            <ssl-context name="...">
+                <trust-store key-store-name="..."/>
+                <accept-ocsp-stapling accept-ocsp="true"/>
+            </ssl-context>
+        </ssl-contexts>
+        ...
+    </authentication-client>
+</configuration>
+----
+
 === Configuring SSLv2Hello
 
 Older JDK versions use ``SSLv2Hello`` during the initial SSL handshake message
