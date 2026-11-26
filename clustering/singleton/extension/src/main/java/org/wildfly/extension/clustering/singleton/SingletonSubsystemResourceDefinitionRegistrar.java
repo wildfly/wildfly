@@ -26,7 +26,6 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 import org.wildfly.clustering.singleton.service.SingletonPolicy;
-import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentDependencyProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentParsingProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentProcessor;
 import org.wildfly.extension.clustering.singleton.deployment.SingletonDeploymentSchema;
@@ -72,9 +71,8 @@ public class SingletonSubsystemResourceDefinitionRegistrar implements SubsystemR
 
     @Override
     public void accept(DeploymentProcessorTarget target) {
-        target.addDeploymentProcessor(REGISTRATION.getName(), Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, JBossAllSchema.createDeploymentUnitProcessor(EnumSet.allOf(SingletonDeploymentSchema.class), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY));
+        target.addDeploymentProcessor(REGISTRATION.getName(), Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, JBossAllSchema.createDeploymentUnitProcessor(EnumSet.allOf(SingletonDeploymentSchema.class), SingletonDeploymentProcessor.CONFIGURATION_KEY));
         target.addDeploymentProcessor(REGISTRATION.getName(), Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());
-        target.addDeploymentProcessor(REGISTRATION.getName(), Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
         target.addDeploymentProcessor(REGISTRATION.getName(), Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());
     }
 
