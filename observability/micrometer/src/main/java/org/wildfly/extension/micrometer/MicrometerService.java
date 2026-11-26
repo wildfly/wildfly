@@ -139,7 +139,7 @@ public class MicrometerService {
      * @param attempt the one-based attempt number
      * @return {@code true} when processing is complete, otherwise retry
      */
-    private boolean collectResourceMetrics(ResourceMetricsRetryQueue.PendingResource pendingResource, int attempt) {
+    private synchronized boolean collectResourceMetrics(ResourceMetricsRetryQueue.PendingResource pendingResource, int attempt) {
         PathAddress address = pendingResource.address();
         ImmutableManagementResourceRegistration registration;
         MetricRegistration metrics;
