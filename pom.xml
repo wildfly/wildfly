@@ -430,7 +430,7 @@
         <version.io.github.jopenlibs.vault-java-driver>6.2.3</version.io.github.jopenlibs.vault-java-driver>
         <version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
         <version.io.grpc>1.70.0</version.io.grpc>
-        <version.io.micrometer>1.17.1</version.io.micrometer>
+        <version.io.micrometer>1.17.3</version.io.micrometer>
         <version.io.netty>4.1.141.Final</version.io.netty>
         <version.io.opentelemetry.instrumentation>2.31.1</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry-semconv>1.44.0</version.io.opentelemetry.opentelemetry-semconv>
