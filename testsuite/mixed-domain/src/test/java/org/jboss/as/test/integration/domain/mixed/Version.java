@@ -30,6 +30,7 @@ public @interface Version {
         EAP_8_0_0(EAP, 8, 0, 0, 17, 11, "EAP8.0", ModelVersion.create(22, 0), Stability.DEFAULT),
         EAP_8_1_0(EAP, 8, 1, 0, 21, 17, "EAP8.1", ModelVersion.create(28, 0), Stability.DEFAULT),
         WFLY_31_0_0(WILDFLY, 31, 0, 0, 17, 11, "WildFly31.0", ModelVersion.create(24, 0), Stability.COMMUNITY),
+        WFLY_41_0_0(WILDFLY, 41, 0, 0, 26, 17, "WildFly41.0", ModelVersion.create(34, 0), Stability.COMMUNITY),
         ;
 
 
