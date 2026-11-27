@@ -52,12 +52,13 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_MODULE_NAME + ".ear";
     private static final String SUB_DEPLOYMENT_MODULE_NAME = "ejb";
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".jar";
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    private static ModelControllerClient controllerClient;
 
     private static InitialContext context;
 
     @BeforeClass
     public static void setup() throws Exception {
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
         context = getInitialContext();
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ejbJar.addPackage(BEAN_PACKAGE);
@@ -102,6 +103,7 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
             Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
         } finally {
             controllerClient.close();
+            controllerClient = null;
         }
     }
 

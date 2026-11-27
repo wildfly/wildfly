@@ -7,7 +7,6 @@ package org.wildfly.test.integration.elytron.realm;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -50,14 +49,14 @@ public class AggregateRealmWrongPrincipalSetupTestCase {
     /**
      * Management client
      */
-    private static final ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient();
-    private static final ManagementClient mClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
+    private static ManagementClient mClient;
 
     /**
      * Prepare prerequisites
      */
     @BeforeClass
     public static void prepare() throws Exception {
+        mClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(), TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
         initSetupTask.setup(mClient, null);
     }
 
@@ -70,6 +69,7 @@ public class AggregateRealmWrongPrincipalSetupTestCase {
             initSetupTask.tearDown(mClient, null);
         } finally {
             mClient.close();
+            mClient = null;
         }
     }
 

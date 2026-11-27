@@ -31,14 +31,32 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 
 public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRuntimeTestCase {
 
-    static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    private static ModelControllerClient controllerClient;
+
+    @BeforeClass
+    public static void createControllerClient() {
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    }
+
+    /**
+     * Runs after the {@code @AfterClass} methods of subclasses, so the client is still available to {@link #tearDown(String)}.
+     */
+    @AfterClass
+    public static void closeControllerClient() throws IOException {
+        if (controllerClient != null) {
+            controllerClient.close();
+            controllerClient = null;
+        }
+    }
 
     /**
      * Create and deploy an EAR application that includes a war that has a ServletContextListener that
@@ -90,15 +108,11 @@ public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRu
     }
 
     static void tearDown(String deploymentName) throws Exception {
-        try {
-            ModelNode result = controllerClient.execute(composite(
-                    undeploy(deploymentName),
-                    remove(deploymentName)
-            ));
-            Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
-        } finally {
-            controllerClient.close();
-        }
+        ModelNode result = controllerClient.execute(composite(
+                undeploy(deploymentName),
+                remove(deploymentName)
+        ));
+        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
     }
 
     /**

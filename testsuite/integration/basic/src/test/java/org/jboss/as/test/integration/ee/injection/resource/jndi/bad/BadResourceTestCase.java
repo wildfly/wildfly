@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,11 +36,17 @@ import static org.hamcrest.CoreMatchers.containsString;
 @RunAsClient
 public class BadResourceTestCase {
 
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    private static ModelControllerClient controllerClient;
+
+    @BeforeClass
+    public static void createControllerClient() {
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    }
 
     @AfterClass
     public static void closeControllerClient() throws Exception {
         controllerClient.close();
+        controllerClient = null;
     }
 
     public static Archive<?> getTestedArchive() throws Exception {

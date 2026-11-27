@@ -50,10 +50,11 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_MODULE_NAME + ".ear";
     private static final String SUB_DEPLOYMENT_MODULE_NAME = "servlet";
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".war";
-    private static final ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    private static ModelControllerClient controllerClient;
 
     @BeforeClass
     public static void setup() throws Exception {
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
         WebArchive war = ShrinkWrap.create(WebArchive.class, SUB_DEPLOYMENT_NAME);
         war.addClass(SERVLET_CLASS);
 
@@ -95,6 +96,7 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
             Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
         } finally {
             controllerClient.close();
+            controllerClient = null;
         }
     }
 

@@ -45,12 +45,13 @@ public class SymlinkingUnitTestCase {
 
     private static File warDeployment = null;
     private static File symbolic = null;
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
+    private static ModelControllerClient controllerClient;
 
 
     @BeforeClass
     public static void beforeClass() throws IOException, InterruptedException {
         Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
         // We are going to check whether or not the war deployment actually exists.
         Assert.assertTrue(checkForDeployment());
         // Now create the symlink.
