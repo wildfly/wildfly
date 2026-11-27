@@ -89,6 +89,9 @@ The _connection factory_ requires a reference to a _driver_ (see link:#[agroal-d
 [NOTE]
 Attributes _username_ and _password_ are provided for basic authentication with the database. Agroal does not allow _username_ and _password_ to be set as _connection-properties_ due to security requirements.
 
+[IMPORTANT]
+The _password_ attribute stores the password in clear text in the server configuration file. For anything other than a development database, use the _credential-reference_ attribute of the _connection-factory_ to read the password from an Elytron credential store, or the _authentication-context_ attribute to delegate authentication to Elytron. See <<datasource-security,Datasource Security>>, which describes Elytron credential stores and also explains why the `SecureIdentityLoginModule` and `PBEUtils` based approaches recommended by older documentation must not be used.
+
 Other features provided by the _connection-factory_ definition include the possibility of executing a SQL statement right after the connection has been created and to specify the isolation level of transactions in the database.
 
 [source,xml,options="nowrap"]
