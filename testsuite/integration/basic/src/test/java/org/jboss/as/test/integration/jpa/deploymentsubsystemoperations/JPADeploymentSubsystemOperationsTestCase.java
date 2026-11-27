@@ -8,16 +8,15 @@ package org.jboss.as.test.integration.jpa.deploymentsubsystemoperations;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,12 +44,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 @RunAsClient
 public class JPADeploymentSubsystemOperationsTestCase {
 
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
-
-    @AfterClass
-    public static void closeControllerClient() throws Exception {
-        controllerClient.close();
-    }
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     private static final PathAddress DEPLOYMENT_PATH = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, JPADeploymentSubsystemOperationsTestCase.class.getSimpleName() + ".war"));
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "jpa"));
@@ -79,13 +74,13 @@ public class JPADeploymentSubsystemOperationsTestCase {
         // against a default value and the test would pass every time.
         // The default value for default-extended-persistence-inheritance is DEEP, so we're changing it to SHALLOW, see JPADefinition class
         ModelNode writeAttributeModelNode = Util.getWriteAttributeOperation(SUBSYSTEM_PATH, DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE, "SHALLOW");
-        controllerClient.execute(writeAttributeModelNode);
+        managementClient.getControllerClient().execute(writeAttributeModelNode);
 
         ModelNode subsystemModelNode = Util.getReadResourceOperation(SUBSYSTEM_PATH);
-        ModelNode subsystemResult = controllerClient.execute(subsystemModelNode);
+        ModelNode subsystemResult = managementClient.getControllerClient().execute(subsystemModelNode);
 
         ModelNode deploymentModelNode = Util.getReadResourceOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
-        ModelNode deploymentResult = controllerClient.execute(deploymentModelNode);
+        ModelNode deploymentResult = managementClient.getControllerClient().execute(deploymentModelNode);
 
         Assert.assertEquals("The attribute in the subsystem and in the deployment is not the same",
                 subsystemResult.get(RESULT).get(DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE),
@@ -104,11 +99,11 @@ public class JPADeploymentSubsystemOperationsTestCase {
     @Test
     public void testAddRemoveResource() throws IOException {
         ModelNode removeModelNode = Util.createRemoveOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
-        ModelNode removeResult = controllerClient.execute(removeModelNode);
+        ModelNode removeResult = managementClient.getControllerClient().execute(removeModelNode);
         checkForFailure(removeResult, REMOVE.toUpperCase(Locale.ENGLISH), "WFLYCTL0031");
 
         ModelNode addModelNode = Util.createAddOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
-        ModelNode addResult = controllerClient.execute(addModelNode);
+        ModelNode addResult = managementClient.getControllerClient().execute(addModelNode);
         checkForFailure(addResult, ADD.toUpperCase(Locale.ENGLISH), "WFLYCTL0031");
     }
 
@@ -121,7 +116,7 @@ public class JPADeploymentSubsystemOperationsTestCase {
     @Test
     public void testWriteAttribute() throws IOException {
         ModelNode writeAttributeModelNode = Util.getWriteAttributeOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH), DEFAULT_DATASOURCE, "Foobar");
-        ModelNode writeAttributeResult = controllerClient.execute(writeAttributeModelNode);
+        ModelNode writeAttributeResult = managementClient.getControllerClient().execute(writeAttributeModelNode);
         checkForFailure(writeAttributeResult, WRITE_ATTRIBUTE_OPERATION.toUpperCase(Locale.ENGLISH), "WFLYCTL0048");
     }
 

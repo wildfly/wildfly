@@ -12,8 +12,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -22,12 +22,10 @@ import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResour
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyEndPoint;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.SubHelloResource;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,12 +54,9 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String REST_RESOURCE_NAME = "rest-resource";
     private static final String SUB_RESOURCE_LOCATORS = "sub-resource-locators";
     private static final String SUBSYSTEM_NAME = "jaxrs";
-    private static final ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
-    @AfterClass
-    public static void closeControllerClient() throws Exception {
-        controllerClient.close();
-    }
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @ArquillianResource
     private URL url;
@@ -90,16 +85,16 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
     public void testStepByStep() throws Exception {
         PathAddress deploymentAddress = PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME);
         ModelNode readResource = Util.createOperation(READ_RESOURCE_OPERATION, deploymentAddress);
-        ModelNode result = controllerClient.execute(readResource);
+        ModelNode result = managementClient.getControllerClient().execute(readResource);
 
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
         PathAddress subsystemAddress = deploymentAddress.append(SUBSYSTEM, SUBSYSTEM_NAME);
         readResource = Util.createOperation(READ_RESOURCE_OPERATION, subsystemAddress);
-        result = controllerClient.execute(readResource);
+        result = managementClient.getControllerClient().execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
 
         readResource = Util.createOperation("show-resources", subsystemAddress);
-        result = controllerClient.execute(readResource);
+        result = managementClient.getControllerClient().execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
         List<ModelNode> jaxrsResources = Operations.readResult(result).asList();
         assertThat(jaxrsResources, is(notNullValue()));
@@ -138,12 +133,12 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
     @Test
     public void testReadRestResource() throws Exception {
         ModelNode removeResource =  Util.createRemoveOperation(PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME).append(SUBSYSTEM, SUBSYSTEM_NAME));
-        assertThat(Operations.getFailureDescription(controllerClient.execute(removeResource)).asString(), CoreMatchers.containsString("WFLYCTL0031"));
+        assertThat(Operations.getFailureDescription(managementClient.getControllerClient().execute(removeResource)).asString(), CoreMatchers.containsString("WFLYCTL0031"));
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
                 .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, HelloResource.class.getCanonicalName()));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
-        ModelNode result = controllerClient.execute(readResource);
+        ModelNode result = managementClient.getControllerClient().execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
 
         ModelNode res = Operations.readResult(result);
@@ -223,7 +218,7 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
                 .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, PureProxyEndPoint.class.getCanonicalName()));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
-        ModelNode result = controllerClient.execute(readResource);
+        ModelNode result = managementClient.getControllerClient().execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
 
         ModelNode res = Operations.readResult(result);
@@ -248,7 +243,7 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         readResource.get(ModelDescriptionConstants.RECURSIVE).set(true);
-        ModelNode result = controllerClient.execute(readResource);
+        ModelNode result = managementClient.getControllerClient().execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
     }
 
