@@ -17,6 +17,7 @@ public enum EJB3SubsystemXMLElement {
     // must be first
     UNKNOWN(null),
 
+    ACCESS_LOG(EJB3SubsystemModel.ACCESS_LOG),
     ASYNC("async"),
     ALLOW_EJB_NAME_REGEX("allow-ejb-name-regex"),
 
@@ -40,6 +41,7 @@ public enum EJB3SubsystemXMLElement {
     IN_VM_REMOTE_INTERFACE_INVOCATION("in-vm-remote-interface-invocation"),
 
     MDB("mdb"),
+    METADATA(EJB3SubsystemModel.METADATA),
 
     POOLS("pools"),
 

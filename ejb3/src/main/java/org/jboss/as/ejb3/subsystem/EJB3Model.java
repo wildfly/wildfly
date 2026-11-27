@@ -26,9 +26,10 @@ public enum EJB3Model implements SubsystemModel {
     VERSION_8_0_0(8, 0, 0),
     VERSION_9_0_0(9, 0, 0), // EAP 7.3 - 7.4
     VERSION_10_0_0(10, 0, 0), // EAP 8.0 - 8.1
+    VERSION_11_0_0(11, 0, 0), // WildFly 42 — access-log
     ;
 
-    static final EJB3Model CURRENT = VERSION_10_0_0;
+    static final EJB3Model CURRENT = VERSION_11_0_0;
 
     private final ModelVersion version;
 

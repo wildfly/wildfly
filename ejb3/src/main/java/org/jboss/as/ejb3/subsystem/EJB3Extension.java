@@ -48,6 +48,7 @@ public class EJB3Extension implements Extension {
     public static final String NAMESPACE_9_0 = EJB3SubsystemNamespace.EJB3_9_0.getUriString();
     public static final String NAMESPACE_10_0 = EJB3SubsystemNamespace.EJB3_10_0.getUriString();
     public static final String NAMESPACE_11_0 = EJB3SubsystemNamespace.EJB3_11_0.getUriString();
+    public static final String NAMESPACE_COMMUNITY_12_0 = EJB3SubsystemNamespace.EJB3_COMMUNITY_12_0.getUriString();
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -105,5 +106,9 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_9_0, EJB3Subsystem90Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_10_0, EJB3Subsystem100Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_11_0, EJB3Subsystem110Parser::new);
+        // The access-log feature (and thus this namespace) is not available when running at default stability
+        if (context.getStability().enables(AccessLogResourceDefinition.STABILITY)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_COMMUNITY_12_0, EJB3Subsystem120Parser::new);
+        }
     }
 }
