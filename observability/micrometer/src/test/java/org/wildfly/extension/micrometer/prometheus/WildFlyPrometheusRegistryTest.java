@@ -4,11 +4,21 @@
  */
 package org.wildfly.extension.micrometer.prometheus;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
+import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -54,15 +64,90 @@ public class WildFlyPrometheusRegistryTest {
         }
     }
 
+    /** Verifies that a denied gauge with a bytes unit is removed without hiding its authorized sibling. */
+    @Test
+    public void scrapeOmitsDeniedGaugeWithBytesUnit() {
+        assertDeniedSeriesOmitted("queue-size", MeasurementUnit.BYTES, MetricMetadata.Type.GAUGE);
+    }
+
+    /** Verifies that a denied gauge with a time unit is removed without hiding its authorized sibling. */
+    @Test
+    public void scrapeOmitsDeniedGaugeWithMillisecondsUnit() {
+        assertDeniedSeriesOmitted("queue-age", MeasurementUnit.MILLISECONDS, MetricMetadata.Type.GAUGE);
+    }
+
+    /** Verifies that a denied counter whose source name has a reserved suffix is removed correctly. */
+    @Test
+    public void scrapeOmitsDeniedCounterWithReservedSuffix() {
+        assertDeniedSeriesOmitted("request-total", MeasurementUnit.NONE, MetricMetadata.Type.COUNTER);
+    }
+
+    /** Verifies that a denied metric with punctuation requiring sanitization is removed correctly. */
+    @Test
+    public void scrapeOmitsDeniedMetricWithSanitizedName() {
+        assertDeniedSeriesOmitted("queue.size", MeasurementUnit.NONE, MetricMetadata.Type.GAUGE);
+    }
+
+    /** Verifies filtering uses the Prometheus name when snapshot metadata retains punctuation. */
+    @Test
+    public void filtersDeniedSnapshotUsingPrometheusName() throws Exception {
+        Meter.Id deniedMeter = new Meter.Id("queue.size",
+                Tags.of(Tag.of("type", "jms-queue"), Tag.of("name", DENIED_QUEUE),
+                        Tag.of("deployment", ""), Tag.of("subdeployment", ""), Tag.of("app", "wildfly")),
+                null, "queue size", Meter.Type.GAUGE);
+        MetricSnapshots snapshots = MetricSnapshots.of(
+                new GaugeSnapshot(new io.prometheus.metrics.model.snapshots.MetricMetadata("queue.size"),
+                        List.of(new GaugeSnapshot.GaugeDataPointSnapshot(7,
+                                Labels.of(List.of("type", "name", "deployment", "subdeployment", "app"),
+                                        List.of("jms-queue", DENIED_QUEUE, "", "", "wildfly")), null))));
+
+        Method filter = WildFlyPrometheusRegistry.class.getDeclaredMethod("filterDeniedSeries",
+                MetricSnapshots.class, Set.class);
+        filter.setAccessible(true);
+
+        MetricSnapshots filtered = (MetricSnapshots) filter.invoke(null, snapshots, Set.of(deniedMeter));
+
+        assertEquals("The denied snapshot must be omitted after Prometheus name sanitization", 0, filtered.size());
+    }
+
+    /** Verifies denied-series filtering for one metric family while retaining the authorized series. */
+    private static void assertDeniedSeriesOmitted(String attribute, MeasurementUnit unit,
+                                                   MetricMetadata.Type type) {
+        try (WildFlyPrometheusRegistry registry = new WildFlyPrometheusRegistry()) {
+            registry.addMeter(metricFor(ALLOWED_QUEUE, attribute, allowingClient()),
+                    metadataFor(ALLOWED_QUEUE, attribute, unit, type));
+            registry.addMeter(metricFor(DENIED_QUEUE, attribute, denyingClient()),
+                    metadataFor(DENIED_QUEUE, attribute, unit, type));
+
+            String scrape = registry.scrape();
+
+            assertTrue("The authorized series must remain visible",
+                    scrape.contains("name=\"" + ALLOWED_QUEUE + "\""));
+            assertFalse("The denied series and its name label must be omitted",
+                    scrape.contains(DENIED_QUEUE));
+        }
+    }
+
     /** Builds a model metric for a named JMS queue backed by the given management client. */
     private static WildFlyMetric metricFor(String queueName, LocalModelControllerClient client) {
-        return new WildFlyMetric(client, addressFor(queueName), ATTRIBUTE);
+        return metricFor(queueName, ATTRIBUTE, client);
+    }
+
+    /** Builds a model metric for a named JMS queue and attribute backed by the given management client. */
+    private static WildFlyMetric metricFor(String queueName, String attribute,
+                                           LocalModelControllerClient client) {
+        return new WildFlyMetric(client, addressFor(queueName), attribute);
     }
 
     /** Builds counter metadata matching the address of a named JMS queue. */
     private static MetricMetadata metadataFor(String queueName) {
-        return new WildFlyMetricMetadata(ATTRIBUTE, addressFor(queueName), "messages on the queue",
-                MeasurementUnit.NONE, MetricMetadata.Type.COUNTER);
+        return metadataFor(queueName, ATTRIBUTE, MeasurementUnit.NONE, MetricMetadata.Type.COUNTER);
+    }
+
+    /** Builds metric metadata matching the address, attribute, unit, and type of a named JMS queue. */
+    private static MetricMetadata metadataFor(String queueName, String attribute, MeasurementUnit unit,
+                                              MetricMetadata.Type type) {
+        return new WildFlyMetricMetadata(attribute, addressFor(queueName), "messages on the queue", unit, type);
     }
 
     /** Builds the management address {@code subsystem=messaging-activemq/jms-queue=<name>}. */

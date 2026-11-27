@@ -109,7 +109,7 @@ public class WildFlyPrometheusRegistry extends PrometheusMeterRegistry implement
             if (snapshot instanceof GaugeSnapshot gauge) {
                 List<GaugeDataPointSnapshot> datapoints = gauge.getDataPoints().stream()
                         .filter(datapoint -> !deniedSeries.contains(
-                                MetricSeries.from(snapshot.getMetadata().getName(), datapoint.getLabels())))
+                                MetricSeries.from(snapshot.getMetadata().getPrometheusName(), datapoint.getLabels())))
                         .toList();
                 if (!datapoints.isEmpty()) {
                     filtered.add(new GaugeSnapshot(gauge.getMetadata(), datapoints));
@@ -117,7 +117,7 @@ public class WildFlyPrometheusRegistry extends PrometheusMeterRegistry implement
             } else if (snapshot instanceof CounterSnapshot counter) {
                 List<CounterDataPointSnapshot> datapoints = counter.getDataPoints().stream()
                         .filter(datapoint -> !deniedSeries.contains(
-                                MetricSeries.from(snapshot.getMetadata().getName(), datapoint.getLabels())))
+                                MetricSeries.from(snapshot.getMetadata().getPrometheusName(), datapoint.getLabels())))
                         .toList();
                 if (!datapoints.isEmpty()) {
                     filtered.add(new CounterSnapshot(counter.getMetadata(), datapoints));
