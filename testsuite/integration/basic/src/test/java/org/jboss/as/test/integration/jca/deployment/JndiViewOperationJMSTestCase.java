@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.jca.deployment;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.dmr.ModelNode;
@@ -14,9 +14,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  * @author <a href="parsharma@redhat.com">Parul Sharma</a>
  */
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JndiViewOperationJMSTestCase extends JcaMgmtBase {
 
@@ -53,7 +53,7 @@ public class JndiViewOperationJMSTestCase extends JcaMgmtBase {
             ModelNode operation = getOperation(addr);
             ModelNode result = executeOperation(operation);
             ModelNode value = result.get("java: contexts", "java:jboss", "Name3", "class-name");
-            Assert.assertEquals("org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl", value.asString());
+            Assertions.assertEquals("org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl", value.asString());
         } finally {
             if (address != null) {
                 remove(address);

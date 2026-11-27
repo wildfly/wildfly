@@ -16,7 +16,8 @@ import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -59,14 +60,14 @@ public abstract class JCAMetricsTestBase extends DsMgmtTestBase {
             operation.get(OP_ADDR).set(poolAddress);
             operation.get(INCLUDE_RUNTIME).set(true);
             ModelNode result = executeOperation(operation);
-            Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+            Assertions.assertTrue(result.hasDefined("ActiveCount"), "ActiveCount");
 
             final ModelNode jdbcAddress = new ModelNode().set(baseAddress);
             jdbcAddress.add("statistics", "jdbc");
 
             operation.get(OP_ADDR).set(jdbcAddress);
             result = executeOperation(operation);
-            Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+            Assertions.assertTrue(result.hasDefined("PreparedStatementCacheAccessCount"), "PreparedStatementCacheAccessCount");
         } finally {
             removeDs();
         }

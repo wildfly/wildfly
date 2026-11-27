@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -21,11 +21,13 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -39,7 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author Lin Gao
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class EarApplicationRESTInEJBIsolatedTestCase {
 
@@ -113,9 +115,10 @@ public class EarApplicationRESTInEJBIsolatedTestCase {
 
     }
 
-    @Test(expected = java.io.IOException.class)
+    @Test
     public void testRESTNotAvailable() throws Exception {
-        performCall("/web1/hellopath/hellorest");
+        assertThrows(java.io.IOException.class, () ->
+            performCall("/web1/hellopath/hellorest"));
     }
 
     @Test

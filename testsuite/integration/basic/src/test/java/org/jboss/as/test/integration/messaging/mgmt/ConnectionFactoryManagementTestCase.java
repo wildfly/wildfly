@@ -17,12 +17,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -33,15 +33,16 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c)2012 Red Hat, inc
  *
  * https://issues.jboss.org/browse/AS7-5107
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTestBase {
 
@@ -93,7 +94,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
             execute(managementClient.getControllerClient(), Operations.createRemoveOperation(address));
             fail("it is not possible to remove a connector when it is referenced from a connection factory");
         } catch (Exception e) {
-            assertTrue(e.getMessage(), e.getMessage().contains("WFLYCTL0367"));
+            assertTrue(e.getMessage().contains("WFLYCTL0367"), e.getMessage());
         } finally {
             jmsOperations.removeJmsConnectionFactory(CF_NAME);
             managementClient.getControllerClient().execute( Operations.createRemoveOperation(address));

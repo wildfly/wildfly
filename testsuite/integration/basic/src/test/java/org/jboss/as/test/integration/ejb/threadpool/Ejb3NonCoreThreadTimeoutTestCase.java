@@ -6,16 +6,16 @@
 package org.jboss.as.test.integration.ejb.threadpool;
 
 
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Ejb3NonCoreThreadTimeoutTestCase - start EJB singleton with 1 sec timer and check that threads timeout
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
  *
  * @author Miroslav Novak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(Ejb3NonCoreThreadTimeoutTestCase.ServerSetup.class)
 public class Ejb3NonCoreThreadTimeoutTestCase extends Ejb3ThreadPoolBase {
 
@@ -37,8 +37,8 @@ public class Ejb3NonCoreThreadTimeoutTestCase extends Ejb3ThreadPoolBase {
         ScheduleSingletonOneTimer scheduleSingletonLocal = (ScheduleSingletonOneTimer) iniCtx.lookup("java:module/"
                 + ScheduleSingletonOneTimer.class.getSimpleName() + "!" + ScheduleSingletonOneTimer.class.getName());
         waitUntilThreadPoolProcessedAtLeast(2, 10000);
-        Assert.assertTrue("There must be at least 2 different threads as at least 2 tasks were processed and" +
-                " in different threads", scheduleSingletonLocal.getThreadNames().size() > 1);
+        Assertions.assertTrue(scheduleSingletonLocal.getThreadNames().size() > 1, "There must be at least 2 different threads as at least 2 tasks were processed and" +
+                " in different threads");
     }
 
     public static class ServerSetup extends SnapshotRestoreSetupTask {

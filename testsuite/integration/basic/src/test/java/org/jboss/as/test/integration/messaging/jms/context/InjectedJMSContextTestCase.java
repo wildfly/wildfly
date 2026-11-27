@@ -5,11 +5,9 @@
 
 package org.jboss.as.test.integration.messaging.jms.context;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.PropertyPermission;
 import java.util.UUID;
@@ -26,21 +24,21 @@ import jakarta.jms.Queue;
 import jakarta.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedMDB;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedMessageProducer;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class InjectedJMSContextTestCase {
 
     public static final String QUEUE_NAME = "java:/InjectedJMSContextTestCaseQueue";
@@ -63,7 +61,7 @@ public class InjectedJMSContextTestCase {
                 .addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws JMSException {
         // drain the queue to remove any pending messages from it
         try(JMSContext context = factory.createContext()) {
@@ -143,9 +141,9 @@ public class InjectedJMSContextTestCase {
             String t = consumer.receiveBody(String.class, adjust(2000));
 
             if (rollback) {
-                assertThat("from " + destination, t, is(nullValue()));
+                assertThat(t).as("from " + destination).isNull();
             } else {
-                assertThat("from " + destination, t, is(expectedText));
+                assertThat(t).as("from " + destination).isEqualTo(expectedText);
             }
         }
     }

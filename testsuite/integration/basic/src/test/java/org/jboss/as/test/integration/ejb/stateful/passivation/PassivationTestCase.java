@@ -12,7 +12,7 @@ import java.util.PropertyPermission;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,16 +20,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests various scenarios for stateful bean passivation
  *
  * @author ALR, Stuart Douglas, Ondrej Chaloupka, Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationTestCase {
 
@@ -53,45 +53,45 @@ public class PassivationTestCase {
         PassivationInterceptor.reset();
 
         try (TestPassivationRemote remote1 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
-            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote1.returnTrueString());
+            Assertions.assertEquals(TestPassivationRemote.EXPECTED_RESULT, remote1.returnTrueString(), "Returned remote1 result was not expected");
             remote1.addEntity(1, "Bob");
             remote1.setManagedBeanMessage("bar");
 
-            Assert.assertTrue(remote1.isPersistenceContextSame());
-            Assert.assertFalse("@PrePassivate called, check cache configuration and client sleep time", remote1.hasBeenPassivated());
-            Assert.assertFalse("@PostActivate called, check cache configuration and client sleep time", remote1.hasBeenActivated());
-            Assert.assertTrue(remote1.isPersistenceContextSame());
-            Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
-            Assert.assertEquals("bar", remote1.getManagedBeanMessage());
+            Assertions.assertTrue(remote1.isPersistenceContextSame());
+            Assertions.assertFalse(remote1.hasBeenPassivated(), "@PrePassivate called, check cache configuration and client sleep time");
+            Assertions.assertFalse(remote1.hasBeenActivated(), "@PostActivate called, check cache configuration and client sleep time");
+            Assertions.assertTrue(remote1.isPersistenceContextSame());
+            Assertions.assertEquals("Super", remote1.getSuperEmployee().getName());
+            Assertions.assertEquals("bar", remote1.getManagedBeanMessage());
 
             // create another bean. This should force the other bean to passivate, as only one bean is allowed in the cache at a time
             try (TestPassivationRemote remote2 = (TestPassivationRemote) ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
-                Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote2.returnTrueString());
+                Assertions.assertEquals(TestPassivationRemote.EXPECTED_RESULT, remote2.returnTrueString(), "Returned remote2 result was not expected");
 
-                Assert.assertTrue(remote2.isPersistenceContextSame());
-                Assert.assertFalse("@PrePassivate called, check cache configuration and client sleep time", remote2.hasBeenPassivated());
-                Assert.assertFalse("@PostActivate called, check cache configuration and client sleep time", remote2.hasBeenActivated());
-                Assert.assertTrue(remote2.isPersistenceContextSame());
-                Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
-                Assert.assertEquals("bar", remote2.getManagedBeanMessage());
+                Assertions.assertTrue(remote2.isPersistenceContextSame());
+                Assertions.assertFalse(remote2.hasBeenPassivated(), "@PrePassivate called, check cache configuration and client sleep time");
+                Assertions.assertFalse(remote2.hasBeenActivated(), "@PostActivate called, check cache configuration and client sleep time");
+                Assertions.assertTrue(remote2.isPersistenceContextSame());
+                Assertions.assertEquals("Super", remote2.getSuperEmployee().getName());
+                Assertions.assertEquals("bar", remote2.getManagedBeanMessage());
 
-                Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote1.hasBeenPassivated());
-                Assert.assertTrue("@PostActivate not called, check cache configuration and client sleep time", remote1.hasBeenActivated());
-                Assert.assertTrue(remote1.isPersistenceContextSame());
-                Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
-                Assert.assertEquals("bar", remote1.getManagedBeanMessage());
+                Assertions.assertTrue(remote1.hasBeenPassivated(), "@PrePassivate not called, check cache configuration and client sleep time");
+                Assertions.assertTrue(remote1.hasBeenActivated(), "@PostActivate not called, check cache configuration and client sleep time");
+                Assertions.assertTrue(remote1.isPersistenceContextSame());
+                Assertions.assertEquals("Super", remote1.getSuperEmployee().getName());
+                Assertions.assertEquals("bar", remote1.getManagedBeanMessage());
 
-                Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote2.hasBeenPassivated());
-                Assert.assertTrue("@PostActivate not called, check cache configuration and client sleep time", remote2.hasBeenActivated());
-                Assert.assertTrue(remote2.isPersistenceContextSame());
-                Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
-                Assert.assertEquals("bar", remote2.getManagedBeanMessage());
+                Assertions.assertTrue(remote2.hasBeenPassivated(), "@PrePassivate not called, check cache configuration and client sleep time");
+                Assertions.assertTrue(remote2.hasBeenActivated(), "@PostActivate not called, check cache configuration and client sleep time");
+                Assertions.assertTrue(remote2.isPersistenceContextSame());
+                Assertions.assertEquals("Super", remote2.getSuperEmployee().getName());
+                Assertions.assertEquals("bar", remote2.getManagedBeanMessage());
             } finally {
                 remote1.removeEntity(1);
             }
         }
-        Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
-        Assert.assertTrue("invalid: " + PassivationInterceptor.getPostActivateTarget(), PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean);
+        Assertions.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean, "invalid: " + PassivationInterceptor.getPrePassivateTarget());
+        Assertions.assertTrue(PassivationInterceptor.getPostActivateTarget() instanceof TestPassivationBean, "invalid: " + PassivationInterceptor.getPostActivateTarget());
         PassivationInterceptor.reset();
     }
 }

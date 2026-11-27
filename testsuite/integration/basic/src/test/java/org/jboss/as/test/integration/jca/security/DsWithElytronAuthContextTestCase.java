@@ -5,22 +5,25 @@
 
 package org.jboss.as.test.integration.jca.security;
 
-import static org.junit.Assert.assertNotNull;
-
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -33,7 +36,7 @@ import org.wildfly.test.security.common.elytron.SimpleAuthContext;
  *
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DsWithElytronAuthContextTestCase.ElytronSetup.class)
 public class DsWithElytronAuthContextTestCase {
 

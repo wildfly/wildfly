@@ -13,22 +13,22 @@ import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  *
  * @author Tomasz Adamski
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public final class DependsTestCase {
 
@@ -49,11 +49,11 @@ public final class DependsTestCase {
         final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL(), DefaultConfiguration.credentials()).getMBeanServerConnection();
         final ObjectName a1ObjectName = new ObjectName("test:service=A1");
         final ObjectName aObjectName =  (ObjectName) mbeanServer.getAttribute(a1ObjectName, "ObjectName");
-        Assert.assertTrue(aObjectName.equals(new ObjectName("test:service=A")));
+        Assertions.assertTrue(aObjectName.equals(new ObjectName("test:service=A")));
         final ObjectName bObjectName = new ObjectName("test:service=B");
         final List<ObjectName> objectNames =  (List<ObjectName>) mbeanServer.getAttribute(bObjectName, "ObjectNames");
-        Assert.assertTrue(objectNames.contains(new ObjectName("test:service=A")));
-        Assert.assertTrue(objectNames.contains(new ObjectName("test:service=A1")));
+        Assertions.assertTrue(objectNames.contains(new ObjectName("test:service=A")));
+        Assertions.assertTrue(objectNames.contains(new ObjectName("test:service=A1")));
     }
 
 }

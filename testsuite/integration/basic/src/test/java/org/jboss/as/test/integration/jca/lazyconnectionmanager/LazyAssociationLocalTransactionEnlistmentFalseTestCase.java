@@ -4,23 +4,24 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import jakarta.annotation.Resource;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnection;
 import org.jboss.as.test.integration.jca.lazyconnectionmanager.rar.LazyConnectionFactory;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test cases for deploying a lazy association resource adapter archive using LocalTransaction with enlistment=false
@@ -28,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:jesper.pedersen@ironjacamar.org">Jesper Pedersen</a>
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class LazyAssociationLocalTransactionEnlistmentFalseTestCase extends LazyAssociationAbstractTestCase {
     private static Logger logger = Logger.getLogger(LazyAssociationLocalTransactionEnlistmentFalseTestCase.class);
 

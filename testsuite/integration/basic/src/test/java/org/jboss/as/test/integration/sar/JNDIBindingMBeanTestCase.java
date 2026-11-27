@@ -14,15 +14,16 @@ import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.naming.java.permission.JndiPermission;
 
 /**
@@ -31,7 +32,7 @@ import org.wildfly.naming.java.permission.JndiPermission;
  * @see https://developer.jboss.org/thread/251092
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JNDIBindingMBeanTestCase {
 
@@ -63,7 +64,7 @@ public class JNDIBindingMBeanTestCase {
             for (int i = 1; i <= 9; i++) {
                 final String mbeanName = "jboss:name=mbean-startup-jndi-bind-" + i;
                 final Object instance = mBeanServerConnection.getObjectInstance(new ObjectName(mbeanName));
-                Assert.assertNotNull("No instance returned for MBean: " + mbeanName, instance);
+                Assertions.assertNotNull(instance, "No instance returned for MBean: " + mbeanName);
             }
         } finally {
             connector.close();

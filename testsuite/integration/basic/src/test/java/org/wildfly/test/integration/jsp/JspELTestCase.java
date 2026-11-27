@@ -8,14 +8,14 @@ package org.wildfly.test.integration.jsp;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JspELTestCase {
 
@@ -66,9 +66,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_No_Spec_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation(@ArquillianResource @OperateOnDeployment(Servlet_No_Spec_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
@@ -80,9 +79,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_4_0_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation40(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation40(@ArquillianResource @OperateOnDeployment(Servlet_Spec_4_0_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
@@ -94,23 +92,22 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_3_1_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluation31(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluation31(@ArquillianResource @OperateOnDeployment(Servlet_Spec_3_1_War) URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
 
     private void commonTestPart(final URL url, final String possibleCausingIssues) throws Exception {
         final String responseBody = HttpRequest.get(url + "index.jsp", 10, TimeUnit.SECONDS);
-        Assert.assertTrue("Unexpected EL evaluation for ${Boolean.TRUE}; " + possibleCausingIssues,
-                responseBody.contains("Boolean.TRUE: --- " + Boolean.TRUE + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${Integer.MAX_VALUE}; " + possibleCausingIssues,
-                responseBody.contains("Integer.MAX_VALUE: --- " + Integer.MAX_VALUE + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${DummyConstants.FOO}; " + possibleCausingIssues,
-                responseBody.contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"));
-        Assert.assertTrue("Unexpected EL evaluation for ${DummyEnum.VALUE}; " + possibleCausingIssues,
-                responseBody.contains("DummyEnum.VALUE: --- " + DummyEnum.VALUE + " ---"));
+        Assertions.assertTrue(responseBody.contains("Boolean.TRUE: --- " + Boolean.TRUE + " ---"),
+                "Unexpected EL evaluation for ${Boolean.TRUE}; " + possibleCausingIssues);
+        Assertions.assertTrue(responseBody.contains("Integer.MAX_VALUE: --- " + Integer.MAX_VALUE + " ---"),
+                "Unexpected EL evaluation for ${Integer.MAX_VALUE}; " + possibleCausingIssues);
+        Assertions.assertTrue(responseBody.contains("DummyConstants.FOO: --- " + DummyConstants.FOO + " ---"),
+                "Unexpected EL evaluation for ${DummyConstants.FOO}; " + possibleCausingIssues);
+        Assertions.assertTrue(responseBody.contains("DummyEnum.VALUE: --- " + DummyEnum.VALUE + " ---"),
+                "Unexpected EL evaluation for ${DummyEnum.VALUE}; " + possibleCausingIssues);
     }
 
     /**
@@ -120,9 +117,8 @@ public class JspELTestCase {
      * @param url
      * @throws Exception
      */
-    @OperateOnDeployment(Servlet_Spec_3_0_War)
     @Test
-    public void testJavaLangImplicitClassELEvaluationForLesserSpecVersion(@ArquillianResource URL url) throws Exception {
+    public void testJavaLangImplicitClassELEvaluationForLesserSpecVersion(@ArquillianResource @OperateOnDeployment(Servlet_Spec_3_0_War) URL url) throws Exception {
         // with the Jakarta upgrade for jsp spec (WFLY-12439), we can now evaluate Boolean.TRUE and Integer.MAX_VALUE
         // even when using the previous spec version
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);

@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
@@ -20,8 +20,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -31,7 +33,7 @@ import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
  * and Workmanager is configured with Elytron security explicitly configured (it doesn't have elytron-enabled=true).
  * Default workmanager behavior if unconfigured is elytron is enabled so this should deploy successfully.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase.ElytronSetup.class,
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronUnconfiguredTestCase.JcaSetup.class,

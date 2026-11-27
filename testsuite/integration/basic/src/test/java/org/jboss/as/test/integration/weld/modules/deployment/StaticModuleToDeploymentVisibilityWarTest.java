@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.modules.deployment;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
@@ -16,10 +16,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that a bean in the top-level deployment unit is visible from a static CDI-enabled module.
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StaticModuleToDeploymentVisibilityWarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-war";
@@ -42,7 +42,7 @@ public class StaticModuleToDeploymentVisibilityWarTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModule.remove();
     }
@@ -64,6 +64,6 @@ public class StaticModuleToDeploymentVisibilityWarTest {
 
     @Test
     public void testBeanAccessibility() {
-        Assert.assertNotNull(alpha.getFoo());
+        Assertions.assertNotNull(alpha.getFoo());
     }
 }

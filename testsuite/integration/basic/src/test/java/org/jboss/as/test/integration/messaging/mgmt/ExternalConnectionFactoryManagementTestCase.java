@@ -15,16 +15,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -37,17 +37,17 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c)2012 Red Hat, inc
  *
  * https://issues.jboss.org/browse/AS7-5107
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ExternalConnectionFactoryManagementTestCase extends ContainerResourceMgmtTestBase {
 
@@ -57,10 +57,10 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
     @ContainerResource
     private ManagementClient managementClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            Assume.assumeFalse("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
+            Assumptions.assumeFalse(Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6), "[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed");
             return null;
         });
     }

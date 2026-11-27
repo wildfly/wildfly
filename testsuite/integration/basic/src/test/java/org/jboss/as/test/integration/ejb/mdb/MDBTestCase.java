@@ -11,7 +11,7 @@ import jakarta.jms.Message;
 import jakarta.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,9 +26,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
@@ -42,7 +42,7 @@ import org.jboss.as.controller.client.helpers.Operations;
  *
  * User: Jaikiran Pai
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MDBTestCase.JmsQueueSetup.class})
 public class MDBTestCase {
 
@@ -118,7 +118,7 @@ public class MDBTestCase {
     public void testDDBasedMDB() throws Exception {
         this.jmsUtil.sendTextMessage("Say hello to " + DDBasedMDB.class.getName(), this.queue, this.replyQueue);
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.replyQueue);
     }
 
     /**
@@ -129,7 +129,7 @@ public class MDBTestCase {
     public void testAnnoBasedMDB() throws Exception {
         this.jmsUtil.sendTextMessage("Say Nihao to " + AnnoBasedMDB.class.getName(), this.annoQueue, this.annoReplyQueue);
         final Message reply = this.jmsUtil.receiveMessage(annoReplyQueue, 5000);
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.annoReplyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.annoReplyQueue);
     }
 
 
@@ -154,7 +154,7 @@ public class MDBTestCase {
 
             this.jmsUtil.sendTextMessage("Say hello to " + DDBasedMDB.class.getName(), this.queue, this.replyQueue);
             Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
-            Assert.assertNull("Reply message was not null on reply queue: " + this.replyQueue, reply);
+            Assertions.assertNull(reply, "Reply message was not null on reply queue: " + this.replyQueue);
 
             resumed = true;
             op = new ModelNode();
@@ -163,7 +163,7 @@ public class MDBTestCase {
 
 
             reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
-            Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+            Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.replyQueue);
 
         } finally {
             if(!resumed) {

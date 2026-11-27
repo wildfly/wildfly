@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.ejb.mdb.activationname;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.ejb.mdb.activationname.adapter.SimpleListener;
@@ -20,16 +20,17 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.resource.spi.ActivationSpec;
 import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This tests if IronJacamar follows Jakarta Connectors 1.7 and properly defines {@code activation name} on {@code MessageEndpointFactory}.
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Ivo Studensky
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ActivationNameTestCase {
 
     @Deployment

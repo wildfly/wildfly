@@ -19,7 +19,8 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 public abstract class AbstractRaSetup implements ServerSetupTask {
 
@@ -43,7 +44,7 @@ public abstract class AbstractRaSetup implements ServerSetupTask {
         getAddRAOperationConsumer().accept(addRaOperation);
 
         ModelNode response = execute(addRaOperation, client);
-        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
     }
 
     private void addAdminObject(ModelControllerClient client) throws IOException {
@@ -53,7 +54,7 @@ public abstract class AbstractRaSetup implements ServerSetupTask {
         addAdminObjectOperation.get("jndi-name").set(getAdminObjectJNDIName());
 
         ModelNode response = execute(addAdminObjectOperation, client);
-        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+        Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString(), response.toString());
     }
 
     private void removeResourceAdapterSilently(ModelControllerClient client) throws IOException {

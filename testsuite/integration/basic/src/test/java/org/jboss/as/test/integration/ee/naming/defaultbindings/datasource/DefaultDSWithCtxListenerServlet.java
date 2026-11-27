@@ -5,7 +5,7 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import jakarta.annotation.Resource;
 import javax.naming.InitialContext;
@@ -37,15 +37,15 @@ public class DefaultDSWithCtxListenerServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
         // this is expected to be null because default datasource binding was removed from ee subsystem
-        Assert.assertNull(dataSource);
+        Assertions.assertNull(dataSource);
         // the ds injection can be done in a ServeltContextListener just like what spring does
-        Assert.assertNotNull(getServletContext().getAttribute("lookupDS"));
+        Assertions.assertNotNull(getServletContext().getAttribute("lookupDS"));
         // but it looks like java:comp/env/ds does not work
         try {
             new InitialContext().lookup("java:comp/env/ds");
-            Assert.fail("java:comp/env/ds should not be available ??");
+            Assertions.fail("java:comp/env/ds should not be available ??");
         } catch (NamingException e) {
-            Assert.assertTrue(e.getMessage().contains("env/ds"));
+            Assertions.assertTrue(e.getMessage().contains("env/ds"));
         }
         out.print("OK");
         out.flush();
@@ -60,7 +60,7 @@ public class DefaultDSWithCtxListenerServlet extends HttpServlet {
                 Object obj = new InitialContext().lookup("java:jboss/datasources/ExampleDS");
                 sce.getServletContext().setAttribute("lookupDS", obj);
             } catch (NamingException e) {
-                Assert.fail(e.getMessage());
+                Assertions.fail(e.getMessage());
             }
         }
     }

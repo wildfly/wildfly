@@ -12,7 +12,7 @@ import jakarta.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
@@ -23,9 +23,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.PropertyPermission;
 
@@ -36,7 +36,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author baranowb
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JmsQueueServerSetupTask.class, SetupModuleServerSetupTask.class})
 public class MDBWhichDependsOnTestCase {
 
@@ -98,10 +98,10 @@ public class MDBWhichDependsOnTestCase {
         this.deployer.deploy(Constants.DEPLOYMENT_NAME_MDB);
         this.jmsUtil.sendTextMessage("Say Nihao to new message!", this.queue, this.replyQueue);
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
-        Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + this.replyQueue);
         this.deployer.undeploy(Constants.DEPLOYMENT_NAME_MDB);
-        Assert.assertTrue("PostConstruct not called!", counter.isPostConstruct());
-        Assert.assertTrue("Message not called!", counter.isMessage());
-        Assert.assertTrue("PreDestroy not called!", counter.isPreDestroy());
+        Assertions.assertTrue(counter.isPostConstruct(), "PostConstruct not called!");
+        Assertions.assertTrue(counter.isMessage(), "Message not called!");
+        Assertions.assertTrue(counter.isPreDestroy(), "PreDestroy not called!");
     }
 }

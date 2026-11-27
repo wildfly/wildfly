@@ -10,20 +10,20 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that an @Timout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DescriptorScheduleTestCase {
 
     @Deployment
@@ -39,9 +39,9 @@ public class DescriptorScheduleTestCase {
     public void testDescriptorBasedSchedule() throws NamingException {
         InitialContext ctx = new InitialContext();
         DescriptorScheduleBean bean = (DescriptorScheduleBean) ctx.lookup("java:module/" + DescriptorScheduleBean.class.getSimpleName());
-        Assert.assertTrue(DescriptorScheduleBean.awaitTimer());
-        Assert.assertEquals("INFO", DescriptorScheduleBean.getTimerInfo());
-        Assert.assertEquals(new Date(90, 0, 1, 0, 0, 0), DescriptorScheduleBean.getStart());
+        Assertions.assertTrue(DescriptorScheduleBean.awaitTimer());
+        Assertions.assertEquals("INFO", DescriptorScheduleBean.getTimerInfo());
+        Assertions.assertEquals(new Date(90, 0, 1, 0, 0, 0), DescriptorScheduleBean.getStart());
     }
 
 }

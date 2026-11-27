@@ -9,7 +9,7 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -29,7 +29,7 @@ public class CdiInterceptor {
     @AroundInvoke
     public Object invoke(InvocationContext ctx) throws Exception{
         invoked = true;
-        Assert.assertTrue(EjbInterceptor.invoked);
+        Assertions.assertTrue(EjbInterceptor.invoked);
         return ctx.proceed() + message;
     }
 

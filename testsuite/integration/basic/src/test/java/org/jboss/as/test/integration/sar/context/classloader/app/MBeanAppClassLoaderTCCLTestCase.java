@@ -6,7 +6,7 @@ package org.jboss.as.test.integration.sar.context.classloader.app;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -16,10 +16,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.xnio.IoUtils;
 
 import javax.management.Attribute;
@@ -37,7 +38,7 @@ import java.util.Properties;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class MBeanAppClassLoaderTCCLTestCase {
 
@@ -65,7 +66,7 @@ public class MBeanAppClassLoaderTCCLTestCase {
         return sar;
     }
 
-    @After
+    @AfterEach
     public void closeConnector() {
         IoUtils.safeClose(connector);
     }
@@ -95,7 +96,7 @@ public class MBeanAppClassLoaderTCCLTestCase {
                 Properties props = new Properties();
                 props.load(br);
                 String appCl = props.getProperty(MBeanAppClassLoaderTCCLCheckService.APP_CL);
-                Assert.assertNotNull(MBeanAppClassLoaderTCCLCheckService.APP_CL, appCl);
+                Assertions.assertNotNull(appCl, MBeanAppClassLoaderTCCLCheckService.APP_CL);
 
                 checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CONSTRUCTOR_TCCL, appCl);
                 checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CREATE_TCCL, appCl);
@@ -114,8 +115,8 @@ public class MBeanAppClassLoaderTCCLTestCase {
 
     private void checkProperty(Properties props, String key, String expected) {
         Object value = props.get(key);
-        Assert.assertNotNull(key, value);
-        Assert.assertEquals(key, expected, value);
+        Assertions.assertNotNull(value, key);
+        Assertions.assertEquals(expected, value, key);
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {

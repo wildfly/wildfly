@@ -8,14 +8,15 @@ package org.jboss.as.test.integration.rar;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.rar.ejb.NoOpEJB;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that a .rar deployed within a .ear doesn't run into deployment problems
@@ -23,7 +24,7 @@ import org.junit.runner.RunWith;
  * @author Jaikiran Pai
  * @see https://issues.jboss.org/browse/AS7-2111
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RarDeploymentTestCase {
 
     /**

@@ -11,7 +11,7 @@ import java.util.PropertyPermission;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
@@ -19,15 +19,15 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests to validate behavior of EJB 3.2 passivationCapable flag.
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationDisabledTestCase {
 
@@ -66,11 +66,11 @@ public class PassivationDisabledTestCase {
                         ddBean2.doNothing();
 
                         // make sure bean's passivation and activation callbacks weren't invoked
-                        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
-                        Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", bean.wasActivated());
+                        Assertions.assertFalse(bean.wasPassivated(), "(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated");
+                        Assertions.assertFalse(bean.wasActivated(), "(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated");
 
-                        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly passivated", ddBean.wasPassivated());
-                        Assert.assertFalse("(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly activated", ddBean.wasActivated());
+                        Assertions.assertFalse(ddBean.wasPassivated(), "(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly passivated");
+                        Assertions.assertFalse(ddBean.wasActivated(), "(Deployment descriptor based) Stateful bean marked as passivation disabled was incorrectly activated");
                     }
                 }
             }
@@ -99,11 +99,11 @@ public class PassivationDisabledTestCase {
                     try (Bean ddBean2 = (Bean) ctx.lookup("java:module/passivation-enabled-bean" + "!" + Bean.class.getName())) {
                         ddBean2.doNothing();
 
-                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
-                        Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
+                        Assertions.assertTrue(bean.wasPassivated(), "(Annotation based) Stateful bean marked as passivation enabled was not passivated");
+                        Assertions.assertTrue(bean.wasActivated(), "(Annotation based) Stateful bean marked as passivation enabled was not activated");
 
-                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated", ddBean.wasPassivated());
-                        Assert.assertTrue("(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated", ddBean.wasActivated());
+                        Assertions.assertTrue(ddBean.wasPassivated(), "(Deployment descriptor based) Stateful bean marked as passivation enabled was not passivated");
+                        Assertions.assertTrue(ddBean.wasActivated(), "(Deployment descriptor based) Stateful bean marked as passivation enabled was not activated");
                     }
                 }
             }
@@ -127,8 +127,8 @@ public class PassivationDisabledTestCase {
                 passivationOverrideBean2.doNothing();
 
                 // make sure bean's passivation and activation callbacks weren't invoked
-                Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
-                Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
+                Assertions.assertFalse(passivationOverrideBean.wasPassivated(), "(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated");
+                Assertions.assertFalse(passivationOverrideBean.wasActivated(), "(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated");
             }
         }
     }

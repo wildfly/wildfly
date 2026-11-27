@@ -4,11 +4,11 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.aroundtimeout;
 
-import org.junit.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -27,7 +27,7 @@ public class InterceptorOrder {
     }
 
     public static void assertEquals(Class ... expected) {
-        Assert.assertEquals(Arrays.asList(expected), order);
+        Assertions.assertEquals(Arrays.asList(expected), order);
     }
 
 

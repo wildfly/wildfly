@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -26,9 +26,9 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanRes
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DeployedXmlDataSourceTestCase.DeployedXmlDataSourceTestCaseSetup.class)
 public class DeployedXmlDataSourceTestCase {
 
@@ -81,10 +81,10 @@ public class DeployedXmlDataSourceTestCase {
     @Test
     public void testDeployedDataSource() throws Throwable {
         final DataSource dataSource = (DataSource) initialContext.lookup("java:jboss/datasources/DeployedDS");
-        Assert.assertNotNull(dataSource);
+        Assertions.assertNotNull(dataSource);
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-        Assert.assertTrue(rs.next());
+        Assertions.assertTrue(rs.next());
         conn.close();
     }
 
@@ -92,10 +92,10 @@ public class DeployedXmlDataSourceTestCase {
     @Test
     public void testDeployedXaDataSource() throws Throwable {
         final DataSource dataSource = (DataSource) initialContext.lookup("java:/H2XADS");
-        Assert.assertNotNull(dataSource);
+        Assertions.assertNotNull(dataSource);
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
-        Assert.assertTrue(rs.next());
+        Assertions.assertTrue(rs.next());
         conn.close();
     }
 

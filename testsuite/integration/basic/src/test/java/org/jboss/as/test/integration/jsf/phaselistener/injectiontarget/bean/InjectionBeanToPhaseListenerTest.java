@@ -13,20 +13,20 @@ import jakarta.ws.rs.core.Response;
 import com.fasterxml.jackson.core.util.JacksonFeature;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Tomas Remes
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InjectionBeanToPhaseListenerTest {
 
@@ -50,8 +50,8 @@ public class InjectionBeanToPhaseListenerTest {
             WebTarget target = client.target(url.toExternalForm() + "home.jsf");
             Response response = target.request().get();
             String value = response.getHeaderString("X-WildFly");
-            Assert.assertNotNull(value);
-            Assert.assertEquals(value, SimpleBean.MESSAGE);
+            Assertions.assertNotNull(value);
+            Assertions.assertEquals(value, SimpleBean.MESSAGE);
         }
     }
 

@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.integration.management.base;
 
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;

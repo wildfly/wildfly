@@ -12,23 +12,23 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests the resteasy multipart provider
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class JaxrsJacksonProviderTestCase {
 
@@ -63,19 +63,19 @@ public class JaxrsJacksonProviderTestCase {
     @Test
     public void testSimpleJacksonResource() throws Exception {
         String result = performCall("myjaxrs/jackson", "application/vnd.customer+json");
-        Assert.assertEquals("{\"first\":\"John\",\"last\":\"Citizen\"}", result);
+        Assertions.assertEquals("{\"first\":\"John\",\"last\":\"Citizen\"}", result);
     }
 
     @Test
     public void testDurationJsr310() throws Exception {
         String result = performCall("myjaxrs/jackson/duration");
-        Assert.assertEquals("\"PT1S\"", result);
+        Assertions.assertEquals("\"PT1S\"", result);
     }
 
     @Test
     public void testDurationJsrjdk8() throws Exception {
         String result = performCall("myjaxrs/jackson/optional");
-        Assert.assertEquals("\"optional string\"", result);
+        Assertions.assertEquals("\"optional string\"", result);
     }
     /**
      * AS7-1276
@@ -83,7 +83,7 @@ public class JaxrsJacksonProviderTestCase {
     @Test
     public void testJacksonWithJsonIgnore() throws Exception {
         String result = performCall("myjaxrs/country", "application/vnd.customer+json");
-        Assert.assertEquals("{\"name\":\"Australia\",\"temperature\":\"Hot\"}", result);
+        Assertions.assertEquals("{\"name\":\"Australia\",\"temperature\":\"Hot\"}", result);
     }
 
     /**
@@ -93,7 +93,7 @@ public class JaxrsJacksonProviderTestCase {
     @Test
     public void jsonAnnotationBinding() throws Exception {
         final String result = performCall("myjaxrs/jackson/named", MediaType.APPLICATION_JSON);
-        Assert.assertEquals("{\"jsonId\":1,\"jsonName\":\"Jackson\"}", result);
+        Assertions.assertEquals("{\"jsonId\":1,\"jsonName\":\"Jackson\"}", result);
     }
 
     /**
@@ -104,7 +104,7 @@ public class JaxrsJacksonProviderTestCase {
     public void xmlAnnotationBinding() throws Exception {
         final String result = performCall("myjaxrs/jackson/named", MediaType.APPLICATION_XML);
         final String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><named-entity><xml-id>1</xml-id><xml-name>Jackson</xml-name></named-entity>";
-        Assert.assertEquals(expectedXml, result);
+        Assertions.assertEquals(expectedXml, result);
     }
 
 }

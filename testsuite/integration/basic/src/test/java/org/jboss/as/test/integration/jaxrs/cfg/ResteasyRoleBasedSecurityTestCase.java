@@ -23,7 +23,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -39,8 +38,12 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.webapp31.WebAppDescriptor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 
 /**
@@ -54,6 +57,7 @@ import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
  */
 @RunAsClient
 @ServerSetup(ResteasyRoleBasedSecurityTestCase.SecurityDomainServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttributeTest {
 
     static class SecurityDomainServerSetupTask extends SnapshotServerSetupTask {
@@ -200,7 +204,7 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefaultAdmin() {
         try (
                 Client client = ClientBuilder.newBuilder()
@@ -208,22 +212,22 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("admin", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("admin", response.readEntity(String.class));
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("manager", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("manager", response.readEntity(String.class));
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkDefaultManager() {
         try (
                 Client client = ClientBuilder.newBuilder()
@@ -231,22 +235,22 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("admin", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("admin", response.readEntity(String.class));
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("manager", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("manager", response.readEntity(String.class));
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkDefaultUser() {
         try (
                 Client client = ClientBuilder.newBuilder()
@@ -254,22 +258,22 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("admin", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("admin", response.readEntity(String.class));
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("manager", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("manager", response.readEntity(String.class));
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(4)
+    @Order(4)
     public void checkTrueAdmin() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (
@@ -278,22 +282,22 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("admin", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("admin", response.readEntity(String.class));
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("manager", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("manager", response.readEntity(String.class));
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(5)
+    @Order(5)
     public void checkTrueManager() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (
@@ -302,21 +306,21 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(403, response.getStatus());
+                Assertions.assertEquals(403, response.getStatus());
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("manager", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("manager", response.readEntity(String.class));
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void checkTrueUser() throws Exception {
         writeAttribute(ModelNode.TRUE);
         try (
@@ -325,14 +329,14 @@ public class ResteasyRoleBasedSecurityTestCase extends AbstractResteasyAttribute
                         .build()
         ) {
             try (Response response = getAdmin(client)) {
-                Assert.assertEquals(403, response.getStatus());
+                Assertions.assertEquals(403, response.getStatus());
             }
             try (Response response = getManager(client)) {
-                Assert.assertEquals(403, response.getStatus());
+                Assertions.assertEquals(403, response.getStatus());
             }
             try (Response response = getUser(client)) {
-                Assert.assertEquals(200, response.getStatus());
-                Assert.assertEquals("user", response.readEntity(String.class));
+                Assertions.assertEquals(200, response.getStatus());
+                Assertions.assertEquals("user", response.readEntity(String.class));
             }
         }
     }

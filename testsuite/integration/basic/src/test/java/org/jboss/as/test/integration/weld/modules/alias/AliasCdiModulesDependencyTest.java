@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.weld.modules.alias;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
@@ -13,10 +13,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 import java.io.File;
@@ -25,7 +25,7 @@ import java.io.File;
  *
  * @author <a href="mailto:bspyrkos@redhat.com">Bartosz Spyrko-Smietanko</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AliasCdiModulesDependencyTest {
 
     private static final String REF_MODULE_NAME = "weld-module-ref";
@@ -52,7 +52,7 @@ public class AliasCdiModulesDependencyTest {
         testModuleAlias.create();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModuleAlias.remove();
         testModuleRef.remove();
@@ -76,6 +76,6 @@ public class AliasCdiModulesDependencyTest {
 
     @Test
     public void testBeanAccessibilities() {
-        Assert.assertNotNull(warBean.getInjectedBean());
+        Assertions.assertNotNull(warBean.getInjectedBean());
     }
 }

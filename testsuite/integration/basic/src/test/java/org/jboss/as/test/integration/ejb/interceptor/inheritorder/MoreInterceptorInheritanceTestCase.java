@@ -7,23 +7,23 @@ package org.jboss.as.test.integration.ejb.interceptor.inheritorder;
 
 import javax.naming.InitialContext;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
 
 /**
  * Interceptor inheritance test.
  *
  * @author Ondrej Chaloupka
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MoreInterceptorInheritanceTestCase {
 
     @ArquillianResource
@@ -45,6 +45,6 @@ public class MoreInterceptorInheritanceTestCase {
                                                                                                                      // interceptors
                 AClass.class.getSimpleName() + BClass.class.getSimpleName() + CClass.class.getSimpleName(); // Class method
                                                                                                             // calls
-        Assert.assertEquals(supposedResult, bean.run());
+        Assertions.assertEquals(supposedResult, bean.run());
     }
 }

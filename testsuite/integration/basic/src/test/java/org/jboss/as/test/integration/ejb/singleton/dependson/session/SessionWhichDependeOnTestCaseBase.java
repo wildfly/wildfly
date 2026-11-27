@@ -16,7 +16,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author baranowb
@@ -50,8 +51,8 @@ public abstract class SessionWhichDependeOnTestCaseBase {
         this.deployer.deploy(SessionConstants.DEPLOYMENT_NAME_SESSION);
         getTrigger().trigger();
         this.deployer.undeploy(SessionConstants.DEPLOYMENT_NAME_SESSION);
-        Assert.assertTrue("PostConstruct not called!", counter.isPostConstruct());
-        Assert.assertTrue("Message not called!", counter.isMessage());
-        Assert.assertTrue("PreDestroy not called!", counter.isPreDestroy());
+        Assertions.assertTrue(counter.isPostConstruct(), "PostConstruct not called!");
+        Assertions.assertTrue(counter.isMessage(), "Message not called!");
+        Assertions.assertTrue(counter.isPreDestroy(), "PreDestroy not called!");
     }
 }

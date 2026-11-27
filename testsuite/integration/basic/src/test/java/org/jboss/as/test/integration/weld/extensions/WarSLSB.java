@@ -4,11 +4,11 @@
  */
 package org.jboss.as.test.integration.weld.extensions;
 
-import org.junit.Assert;
-
 import jakarta.ejb.Local;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+
+import org.junit.jupiter.api.Assertions;
 
 /**
  * @author Stuart Douglas
@@ -23,6 +23,6 @@ public class WarSLSB  implements  SomeInterface {
 
     @Override
     public void testInjectionWorked() {
-        Assert.assertNotNull(myBean);
+        Assertions.assertNotNull(myBean);
     }
 }

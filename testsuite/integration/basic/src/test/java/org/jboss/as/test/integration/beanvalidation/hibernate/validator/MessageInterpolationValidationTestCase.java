@@ -6,8 +6,8 @@
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Locale;
 import java.util.Set;
@@ -21,19 +21,20 @@ import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that message interpolation works correctly for Hibernate Validator.
  *
  * @author Madhumita Sadhukhan
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class MessageInterpolationValidationTestCase {
 
     @Deployment
@@ -64,7 +65,7 @@ public class MessageInterpolationValidationTestCase {
 
         Set<ConstraintViolation<Employee>> constraintViolations = validator.validate(emp);
 
-        assertEquals("Wrong number of constraints", constraintViolations.size(), 1);
+        assertEquals(constraintViolations.size(), 1, "Wrong number of constraints");
         assertEquals(CustomMessageInterpolator.MESSAGE, constraintViolations.iterator().next().getMessage());
     }
 

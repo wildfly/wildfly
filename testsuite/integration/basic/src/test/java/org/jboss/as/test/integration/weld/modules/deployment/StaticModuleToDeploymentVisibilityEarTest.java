@@ -7,7 +7,7 @@ package org.jboss.as.test.integration.weld.modules.deployment;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
@@ -18,10 +18,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Verifies that a bean (FooImpl3) in the top-level deployment unit is visible from a static Jakarta Contexts and Dependency Injection enabled module.
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  * @author Jozef Hartinger
  *
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class StaticModuleToDeploymentVisibilityEarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-ear";
@@ -44,7 +44,7 @@ public class StaticModuleToDeploymentVisibilityEarTest {
         testModule.create();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         testModule.remove();
     }
@@ -75,7 +75,7 @@ public class StaticModuleToDeploymentVisibilityEarTest {
 
     @Test
     public void testBeanAccessibility() {
-        Assert.assertNotNull(alpha.getFoo());
-        Assert.assertTrue(alpha.getFoo() instanceof FooImpl3);
+        Assertions.assertNotNull(alpha.getFoo());
+        Assertions.assertTrue(alpha.getFoo() instanceof FooImpl3);
     }
 }

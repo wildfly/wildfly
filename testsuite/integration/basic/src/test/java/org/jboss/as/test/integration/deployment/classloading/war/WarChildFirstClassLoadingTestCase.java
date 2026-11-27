@@ -8,17 +8,16 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 
 import jakarta.ejb.Stateless;
 
-import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class WarChildFirstClassLoadingTestCase {
 
     @Deployment
@@ -31,7 +30,7 @@ public class WarChildFirstClassLoadingTestCase {
 
     @Test
     public void testChildFirst() throws ClassNotFoundException {
-        Assert.assertNotSame(Stateless.class.getClassLoader(), getClass().getClassLoader());
+        Assertions.assertNotSame(Stateless.class.getClassLoader(), getClass().getClassLoader());
     }
 
 }

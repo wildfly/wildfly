@@ -13,9 +13,10 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.Assertions;
 
 class H2JdbcJobRepositorySetUp extends SnapshotRestoreSetupTask {
 
@@ -47,7 +48,7 @@ class H2JdbcJobRepositorySetUp extends SnapshotRestoreSetupTask {
     private static void execute(final ModelControllerClient client, final Operation op) throws IOException {
         final ModelNode result = client.execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).toString());
+            Assertions.fail(Operations.getFailureDescription(result).toString());
         }
         Operations.readResult(result);
     }

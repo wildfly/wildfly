@@ -5,13 +5,13 @@
 package org.jboss.as.test.integration.ejb.interceptor.register;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.ejb.EJB;
 
@@ -23,7 +23,7 @@ import jakarta.ejb.EJB;
  * EJB invocation for Remote interface fails when Client Interceptor
  * registered via META-INF/services/org.jboss.ejb.client.EJBClientInterceptor
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RegisterInterceptorViaMetaFileTest {
    private static final String ARCHIVE_NAME = "test-register-interceptor";
    public static final String clientInterceptorPrefix = "ClientInterceptor: ";
@@ -49,6 +49,6 @@ public class RegisterInterceptorViaMetaFileTest {
       String echo = "this it testing string";
       String result = testSingleton.test(echo);
       // ClientInterceptor append variable clientInterceptorPrefix on start of string so returned value is "clientInterceptorPrefix + echo"
-      Assert.assertTrue("SLSB returned wrong value through singleton", result.equals(clientInterceptorPrefix + echo));
+      Assertions.assertTrue(result.equals(clientInterceptorPrefix + echo), "SLSB returned wrong value through singleton");
    }
 }

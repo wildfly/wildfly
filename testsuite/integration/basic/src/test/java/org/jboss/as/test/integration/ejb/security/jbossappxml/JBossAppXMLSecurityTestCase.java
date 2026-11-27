@@ -8,7 +8,7 @@ import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -18,23 +18,23 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test the security mappings from jboss-app.xml
  * @author anil saldhana
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@SuppressWarnings({"rawtypes","unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 @ServerSetup(JBossAppXMLSecurityTestCase.JBossAppXMLSecurityTestCaseSetup.class)
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class JBossAppXMLSecurityTestCase {
     private static final String APP_NAME = "myapp";
     private static final String DISTINCT_NAME = "";
@@ -77,7 +77,7 @@ public class JBossAppXMLSecurityTestCase {
     public void testEJBRunAs() throws Exception {
         final BeanInterface firstBean = (BeanInterface) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME
                 + "/" + FirstBean.class.getSimpleName() + "!" + BeanInterface.class.getName());
-        assertNotNull("Lookup returned a null bean proxy", firstBean);
+        assertNotNull(firstBean, "Lookup returned a null bean proxy");
         String callerPrincipal = firstBean.getCallerPrincipal();
         assertNotNull(callerPrincipal);
         assertEquals("javajoe", callerPrincipal);

@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.jaxrs.cfg.resources.TestApplication;
@@ -26,8 +25,11 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Tests the {@code resteasy-document-secure-processing-feature} attribute works as expected.
@@ -40,6 +42,7 @@ import org.junit.Test;
  */
 @RunAsClient
 @ServerSetup(ResteasyDocumentSecureProcessingFeatureTestCase.WriteAttributesServerSetupTask.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 // @Tag("jakarta.xml.binding")
 public class ResteasyDocumentSecureProcessingFeatureTestCase extends AbstractResteasyAttributeTest {
 
@@ -76,31 +79,31 @@ public class ResteasyDocumentSecureProcessingFeatureTestCase extends AbstractRes
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void checkDefault() {
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.xml(EXPONENTIAL_ENTITY))) {
-                Assert.assertEquals(500, response.getStatus());
+                Assertions.assertEquals(500, response.getStatus());
             }
         }
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void checkFalse() throws Exception {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
         // Java 24+ when disabling XMLConstants.FEATURE_SECURE_PROCESSING, it doesn't really make the values for
         // properties like jdk.xml.entityExpansionLimit unlimited, see https://docs.oracle.com/en/java/javase/25/docs/api/java.xml/module-summary.html#Properties
         // For now we'll just disable this test for Java 24+. This property/attribute may just need to be disabled.
         // A review of these properties needs to be done in RESTEasy. Then we need to review the attributes in WildFly.
-        org.jboss.as.test.shared.AssumeTestGroupUtil.assumeJDKVersionBefore(24);
+        AssumeTestGroupUtil.assumeJDKVersionBefore(24);
         writeAttribute(ModelNode.FALSE);
         try (Client client = ClientBuilder.newClient()) {
             try (Response response = client.target(uriBuilder()).request().post(Entity.xml(EXPONENTIAL_ENTITY))) {
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 final TestErrors errors = response.readEntity(TestErrors.class);
                 // We should have one 1 error, with a very large value so we'll just ensure we have one error
-                Assert.assertEquals(1, errors.getTestErrors().size());
+                Assertions.assertEquals(1, errors.getTestErrors().size());
             }
         }
     }

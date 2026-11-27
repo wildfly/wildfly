@@ -6,15 +6,15 @@ package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
@@ -25,17 +25,17 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DeployURLTestCase extends AbstractCliTestBase {
 
@@ -51,7 +51,7 @@ public class DeployURLTestCase extends AbstractCliTestBase {
         return ja;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
@@ -63,7 +63,7 @@ public class DeployURLTestCase extends AbstractCliTestBase {
         AbstractCliTestBase.initCLI();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         warFile.delete();
         AbstractCliTestBase.closeCLI();
@@ -83,14 +83,14 @@ public class DeployURLTestCase extends AbstractCliTestBase {
 
         // check deployment
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 1000, 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
+        assertTrue(response.indexOf("SimpleServlet") >=0, "Invalid response: " + response);
     }
 
     public void testRedeploy() throws Exception {
 
         // check we have original deployment
         String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 10, TimeUnit.SECONDS);
-        assertTrue("Invalid response: " + response, response.indexOf("Version1") >=0);
+        assertTrue(response.indexOf("Version1") >=0, "Invalid response: " + response);
 
         // update the deployment - replace page.html
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
@@ -100,7 +100,7 @@ public class DeployURLTestCase extends AbstractCliTestBase {
 
 
         // redeploy to server
-        Assert.assertFalse(cli.sendLine("deploy --url=" + warFile.toURI().toURL().toExternalForm() + " --name=" + warFile.getName(), true));
+        Assertions.assertFalse(cli.sendLine("deploy --url=" + warFile.toURI().toURL().toExternalForm() + " --name=" + warFile.getName(), true));
 
         // force redeploy
         cli.sendLine("deploy --url=" + warFile.toURI().toURL().toExternalForm() + " --name=" + warFile.getName() + " --force");
@@ -120,7 +120,7 @@ public class DeployURLTestCase extends AbstractCliTestBase {
                 response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/page.html", 1000, 10, TimeUnit.SECONDS);
             }
         }
-        assertTrue("Invalid response: " + response, response.indexOf("Version2") >=0);
+        assertTrue(response.indexOf("Version2") >=0, "Invalid response: " + response);
     }
 
     public void testUndeploy() throws Exception {

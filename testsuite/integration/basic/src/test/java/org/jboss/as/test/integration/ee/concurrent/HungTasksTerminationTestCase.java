@@ -6,7 +6,7 @@
 package org.jboss.as.test.integration.ee.concurrent;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -24,9 +24,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import javax.naming.InitialContext;
@@ -48,7 +48,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class HungTasksTerminationTestCase {
 
     private static final PathAddress EE_SUBSYSTEM_PATH_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME));
@@ -86,18 +86,18 @@ public class HungTasksTerminationTestCase {
         addOperation.get(ManagedExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
         addOperation.get(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(HUNG_TASK_THRESHOLD_TEST_VALUE);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testHungTasksCancellationOperation(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -114,19 +114,19 @@ public class HungTasksTerminationTestCase {
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(HUNG_TASK_THRESHOLD_TEST_VALUE);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             // lookup the executor
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testHungTasksCancellationOperation(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -144,18 +144,18 @@ public class HungTasksTerminationTestCase {
         addOperation.get(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(HUNG_TASK_THRESHOLD_TEST_VALUE);
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD).set(HUNG_TASK_CANCELLATION_PERIOD_TEST_VALUE);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testHungTasksCancellationPeriodic(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -173,19 +173,19 @@ public class HungTasksTerminationTestCase {
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD).set(HUNG_TASK_THRESHOLD_TEST_VALUE);
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD).set(HUNG_TASK_CANCELLATION_PERIOD_TEST_VALUE);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(addResult.get(FAILURE_DESCRIPTION).isDefined(), addResult.get(FAILURE_DESCRIPTION).toString());
         try {
             // lookup the executor
             final ManagedExecutorService executorService = InitialContext.doLookup(jndiName);
-            Assert.assertNotNull(executorService);
+            Assertions.assertNotNull(executorService);
             testHungTasksCancellationPeriodic(pathAddress, executorService);
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
             removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(removeOperation);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
-                    .isDefined());
+            Assertions.assertFalse(removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined(), removeResult.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
@@ -204,7 +204,7 @@ public class HungTasksTerminationTestCase {
                 barrier2.await();
             } catch (Exception e) {
                 // unexpected, thus fail
-                Assert.fail();
+                Assertions.fail();
             }
             // sleep 1 min, expecting cancellation
             try {
@@ -214,7 +214,7 @@ public class HungTasksTerminationTestCase {
                 throw new RuntimeException(e);
             }
             // not expected, was not cancelled
-            Assert.fail();
+            Assertions.fail();
         };
         executorService.submit(runnable);
         barrier1.await();
@@ -243,7 +243,7 @@ public class HungTasksTerminationTestCase {
                 barrier2.await();
             } catch (Exception e) {
                 // unexpected, thus fail
-                Assert.fail();
+                Assertions.fail();
             }
             // sleep 1 min, expecting cancellation
             try {
@@ -253,7 +253,7 @@ public class HungTasksTerminationTestCase {
                 throw new RuntimeException(e);
             }
             // not expected, was not cancelled
-            Assert.fail();
+            Assertions.fail();
         };
         executorService.submit(runnable);
         barrier1.await();
@@ -274,7 +274,7 @@ public class HungTasksTerminationTestCase {
     private int readStatsAttribute(PathAddress resourceAddress, String attrName) throws IOException {
         ModelNode op = Util.getReadAttributeOperation(resourceAddress, attrName);
         final ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
         return result.get(RESULT).asInt();
     }
 
@@ -286,12 +286,12 @@ public class HungTasksTerminationTestCase {
             actualAttrValue = readStatsAttribute(resourceAddress, attrName);
             retries--;
         }
-        Assert.assertEquals(attrName, expectedAttrValue, actualAttrValue);
+        Assertions.assertEquals(expectedAttrValue, actualAttrValue, attrName);
     }
 
     private void executeHungTasksCancellationOperation(PathAddress resourceAddress) throws IOException {
         ModelNode op = Util.createOperation(ManagedExecutorTerminateHungTasksOperation.NAME, resourceAddress);
         final ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        Assertions.assertFalse(result.get(FAILURE_DESCRIPTION).isDefined(), result.get(FAILURE_DESCRIPTION).toString());
     }
 }

@@ -8,18 +8,18 @@ package org.jboss.as.test.integration.jca.statistics;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.FilePermission;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.wildfly.test.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
@@ -27,8 +27,9 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.junit.runner.RunWith;
  *
  * @author Daniel Cihak
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DataSourcePoolClearStatisticsTestCase.FixedSizePrefillPoolServerSetupTask.class)
 public class DataSourcePoolClearStatisticsTestCase extends AbstractDataSourcePoolStatisticsTestCase {
 

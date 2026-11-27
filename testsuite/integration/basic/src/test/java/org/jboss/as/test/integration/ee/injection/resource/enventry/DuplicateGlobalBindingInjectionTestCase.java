@@ -6,14 +6,14 @@ package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
@@ -22,7 +22,7 @@ import javax.naming.InitialContext;
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DuplicateGlobalBindingInjectionTestCase {
 
     @Deployment(name = "dep1", managed = true, testable = true)
@@ -51,14 +51,14 @@ public class DuplicateGlobalBindingInjectionTestCase {
     @OperateOnDeployment("dep1")
     public void testGlobalBound1() throws Exception {
         final String globalValue = (String) new InitialContext().lookup("java:global/foo");
-        Assert.assertEquals("injection!", globalValue);
+        Assertions.assertEquals("injection!", globalValue);
     }
 
     @Test
     @OperateOnDeployment("dep2")
     public void testGlobalBound2() throws Exception {
         final String globalValue = (String) new InitialContext().lookup("java:global/foo");
-        Assert.assertEquals("injection!", globalValue);
+        Assertions.assertEquals("injection!", globalValue);
     }
 
 

@@ -17,7 +17,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -30,16 +30,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests different ways to add Jakarta Server Faces implementation in ear files
  *
  * @author tmiyar
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
 @RunAsClient
 public class JSFDeploymentProcessorTestCase {
@@ -92,12 +92,12 @@ public class JSFDeploymentProcessorTestCase {
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 String text = EntityUtils.toString(getVarResponse.getEntity());
                 String facesVersion = FacesContext.class.getPackage().getSpecificationTitle();
-                Assert.assertTrue("Text should contain [" + facesVersion + "] but it contains [" + text + "]",
-                        text.contains(facesVersion));
+                Assertions.assertTrue(text.contains(facesVersion),
+                        "Text should contain [" + facesVersion + "] but it contains [" + text + "]");
             }
         }
-        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient.getControllerClient(),
-                TEST_HANDLER_NAME, LOG_MESSAGE));
+        Assertions.assertFalse(LoggingUtil.hasLogMessage(managementClient.getControllerClient(),
+                TEST_HANDLER_NAME, LOG_MESSAGE), "Unexpected log message: " + LOG_MESSAGE);
     }
 
     public static class TestLogHandlerSetup extends TestLogHandlerSetupTask {

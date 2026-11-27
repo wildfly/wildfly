@@ -5,8 +5,8 @@
 
 package org.jboss.as.test.integration.management.deploy.runtime;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.jms.Connection;
 import jakarta.jms.Destination;
@@ -22,8 +22,7 @@ import jakarta.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -45,14 +44,18 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
 
     private static final Logger log = Logger.getLogger(MDBEJBRuntimeNameTestsCase.class);
@@ -78,7 +81,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
 
     private JMSOperations adminSupport;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         adminSupport = JMSOperationsProvider.getInstance(managementClient);
         //Remote JMS - bind name... to make it available remotely, lookup original name.
@@ -113,23 +116,23 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
         ModelNode result = managementClient.getControllerClient().execute(ob.build());
 
         // just to blow up
-        Assert.assertTrue("Failed to deploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to deploy: " + result);
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ModelNode result = managementClient.getControllerClient().execute(composite(
                 undeploy(DEPLOYMENT_NAME),
                 remove(DEPLOYMENT_NAME)
         ));
         // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to undeploy: " + result);
         adminSupport.removeJmsQueue(QUEUE_NAME);
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void testMDB() throws Exception {
 
         final QueueConnectionFactory factory = (QueueConnectionFactory) context.lookup("java:/jms/RemoteConnectionFactory");
@@ -151,10 +154,10 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
             final QueueReceiver receiver = session.createReceiver(replyDestination);
             final Message reply = receiver.receive(TimeoutUtil.adjust(1000));
             assertNotNull(
-                    "Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?",
-                    reply);
+                    reply,
+                    "Did not receive a reply on the reply queue. Perhaps the original (request) message didn't make it to the MDB?");
             final String result = ((TextMessage) reply).getText();
-            assertEquals("Unexpected reply messsage", Constants.REPLY_MESSAGE_PREFIX + requestMessage, result);
+            assertEquals(Constants.REPLY_MESSAGE_PREFIX + requestMessage, result, "Unexpected reply messsage");
         } finally {
             if (connection != null) {
                 // just closing the connection will close the session and other related resources (@see jakarta.jms.Connection)
@@ -164,7 +167,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void testStepByStep() throws Exception {
 
         ModelNode readResource = new ModelNode();
@@ -174,26 +177,26 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
         ModelNode result = managementClient.getControllerClient().execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBDEPLOYMENT, SUB_DEPLOYMENT_NAME);
         result = managementClient.getControllerClient().execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
         result = managementClient.getControllerClient().execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
 
         readResource.get(ModelDescriptionConstants.ADDRESS).add(EJB_TYPE, BEAN_NAME);
         result = managementClient.getControllerClient().execute(readResource);
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     @Test
-    @InSequence(3)
+    @Order(3)
     public void testRecursive() throws Exception {
 
         ModelNode readResource = new ModelNode();
@@ -204,7 +207,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
         ModelNode result = managementClient.getControllerClient().execute(readResource);
 
         // just to blow up
-        Assert.assertTrue("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), "Failed to list resources: " + result);
     }
 
     private static void safeClose(final Connection connection) {

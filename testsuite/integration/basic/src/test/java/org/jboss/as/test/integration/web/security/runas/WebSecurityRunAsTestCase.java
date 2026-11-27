@@ -13,24 +13,23 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Unit Test the RunAs function
  *
  * @author Anil Saldhana
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class WebSecurityRunAsTestCase {
 
     @Deployment
@@ -56,7 +55,7 @@ public class WebSecurityRunAsTestCase {
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
-            Assert.assertEquals("anil", result);
+            Assertions.assertEquals("anil", result);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
@@ -75,7 +74,7 @@ public class WebSecurityRunAsTestCase {
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
-            Assert.assertEquals("peter", result);
+            Assertions.assertEquals("peter", result);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure

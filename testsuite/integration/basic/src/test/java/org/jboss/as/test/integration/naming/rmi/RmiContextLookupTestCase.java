@@ -5,13 +5,14 @@
 package org.jboss.as.test.integration.naming.rmi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.naming.InitialContext;
 
@@ -21,7 +22,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  * Test which ensures RMI Context is available in JNDI.
  * @author Eduardo Martins
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RmiContextLookupTestCase {
 
     @ArquillianResource

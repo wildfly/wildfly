@@ -15,7 +15,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -25,18 +25,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * Tests inter deployment dependencies
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InterDeploymentDependenciesTestCase {
 
@@ -58,7 +58,7 @@ public class InterDeploymentDependenciesTestCase {
 
     private static Context context;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         final Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -73,12 +73,12 @@ public class InterDeploymentDependenciesTestCase {
     // because it's a convenient API for handling deploy/undeploy of Shrinkwrap archives
     private ArchiveDeployer deployer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         deployer = new ArchiveDeployer(managementClient);
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         try {
             deployer.undeploy(DEPENDENT.getName());
@@ -98,7 +98,7 @@ public class InterDeploymentDependenciesTestCase {
 
         try {
             deployer.deploy(DEPENDENT);
-            Assert.fail("Deployment did not fail");
+            Assertions.fail("Deployment did not fail");
         } catch (Exception e) {
             // expected
         }
@@ -107,7 +107,7 @@ public class InterDeploymentDependenciesTestCase {
         deployer.deploy(DEPENDENT);
 
         StringView ejb = lookupStringView();
-        Assert.assertEquals("hello", ejb.getString());
+        Assertions.assertEquals("hello", ejb.getString());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class InterDeploymentDependenciesTestCase {
 
         try {
             deployer.deploy(DEPENDENT);
-            Assert.fail("Deployment did not fail");
+            Assertions.fail("Deployment did not fail");
         } catch (Exception e) {
             // expected
         }
@@ -124,13 +124,13 @@ public class InterDeploymentDependenciesTestCase {
         deployer.deploy(DEPENDENT);
 
         StringView ejb = lookupStringView();
-        Assert.assertEquals("hello", ejb.getString());
+        Assertions.assertEquals("hello", ejb.getString());
 
         ModelNode response = managementClient.getControllerClient().execute(Util.createEmptyOperation("redeploy", PathAddress.pathAddress("deployment", DEPENDEE.getName())));
-        Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+        Assertions.assertEquals("success", response.get("outcome").asString(), response.toString());
 
         ejb = lookupStringView();
-        Assert.assertEquals("hello", ejb.getString());
+        Assertions.assertEquals("hello", ejb.getString());
     }
 
     private static StringView lookupStringView() throws NamingException {

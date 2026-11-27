@@ -5,7 +5,7 @@
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -16,10 +16,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.jms.Message;
 import jakarta.jms.Queue;
@@ -33,7 +33,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup({MDB21TestCase.JmsQueueSetup.class})
 public class MDB21TestCase extends AbstractMDB2xTestCase {
 
@@ -73,7 +73,7 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
         return ejbJar;
     }
 
-    @Before
+    @BeforeEach
     public void initQueues() {
         try {
             final InitialContext ic = new InitialContext();
@@ -93,6 +93,6 @@ public class MDB21TestCase extends AbstractMDB2xTestCase {
     public void testSimple21MDB() {
         sendTextMessage("Say hello to " + EJB2xMDB.class.getName(), queue, replyQueue);
         final Message reply = receiveMessage(replyQueue, TimeoutUtil.adjust(5000));
-        Assert.assertNotNull("Reply message was null on reply queue: " + replyQueue, reply);
+        Assertions.assertNotNull(reply, "Reply message was null on reply queue: " + replyQueue);
     }
 }

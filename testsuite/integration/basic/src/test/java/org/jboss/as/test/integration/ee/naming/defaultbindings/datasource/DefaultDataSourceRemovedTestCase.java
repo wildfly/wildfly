@@ -11,7 +11,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -29,9 +29,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +41,7 @@ import java.net.SocketPermission;
 /**
  * @author <a href="mailto:lgao@redhat.com">Lin Gao</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(DefaultDataSourceRemovedTestCase.RemoveDefaultDSBindingSetupTask.class)
 public class DefaultDataSourceRemovedTestCase {
 
@@ -54,7 +54,7 @@ public class DefaultDataSourceRemovedTestCase {
             undefineDatasourceFromDefaultBindings.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
             undefineDatasourceFromDefaultBindings.get(ModelDescriptionConstants.NAME).set(DefaultBindingsResourceDefinition.DATASOURCE);
             ModelNode response = client.getControllerClient().execute(undefineDatasourceFromDefaultBindings);
-            Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
+            Assertions.assertEquals(SUCCESS, response.get(OUTCOME).asString());
         }
     }
 
@@ -133,30 +133,30 @@ public class DefaultDataSourceRemovedTestCase {
 
     @Test
     @OperateOnDeployment("with-default-ds")
-    public void testDeployDefaultDS(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDS(@ArquillianResource @OperateOnDeployment("with-default-ds") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDS", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("OK", response);
+        Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name")
-    public void testDeployDefaultDSWithName(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithName(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithName", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("OK", response);
+        Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name-and-lookup")
-    public void testDeployDefaultDSWithNameAndLookup(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithNameAndLookup(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name-and-lookup") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithName", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("OK", response);
+        Assertions.assertEquals("OK", response);
     }
 
     @Test
     @OperateOnDeployment("with-default-ds-with-name-and-ctx")
-    public void testDeployDefaultDSWithNameAndCtx(@ArquillianResource URL webURL) throws Exception {
+    public void testDeployDefaultDSWithNameAndCtx(@ArquillianResource @OperateOnDeployment("with-default-ds-with-name-and-ctx") URL webURL) throws Exception {
         String response = HttpRequest.get(webURL + "/defaultDSWithCtxListener", 10, TimeUnit.SECONDS);
-        Assert.assertEquals("OK", response);
+        Assertions.assertEquals("OK", response);
     }
 
 }

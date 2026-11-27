@@ -7,24 +7,23 @@ package org.jboss.as.test.integration.ejb.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.categories.CommonCriteria;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * This test case check whether basic EJB authorization works from EJB client to remote stateful EJB.
  *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@Category(CommonCriteria.class)
+@Tag("CommonCriteria")
 public class SingleMethodsAnnSFSBTestCase extends AnnSBTest {
 
     private static final Logger log = Logger.getLogger(testClass());

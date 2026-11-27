@@ -4,13 +4,14 @@
  */
 package org.jboss.as.test.integration.jca.basic;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.List;
+
 import jakarta.annotation.Resource;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
@@ -18,21 +19,23 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsyst
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
+import org.wildfly.test.management.base.AbstractMgmtTestBase;
+import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5737 basic subsystem deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(BasicDeployment15TestCase.BasicDeploymentTestCaseSetup.class)
 public class BasicDeployment15TestCase {
 
@@ -72,7 +75,7 @@ public class BasicDeployment15TestCase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
                 addClasses(BasicDeployment15TestCase.class, BasicDeploymentTestCaseSetup.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());  // needed to process the @ServerSetup annotation on the server side
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()).addPackage(ContainerResourceMgmtTestBase.class.getPackage());  // needed to process the @ServerSetup annotation on the server side
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(BasicDeployment15TestCase.class.getPackage(), "ra15.xml", "ra.xml");
@@ -95,7 +98,7 @@ public class BasicDeployment15TestCase {
     @Test
     public void testConfiguration() throws Throwable {
 
-        assertNotNull("CF1 not found", connectionFactory1);
-        assertNotNull("AO1 not found", adminObject1);
+        assertNotNull(connectionFactory1, "CF1 not found");
+        assertNotNull(adminObject1, "AO1 not found");
     }
 }

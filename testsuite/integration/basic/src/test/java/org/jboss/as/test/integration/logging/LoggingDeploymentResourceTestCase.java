@@ -15,7 +15,7 @@ import java.util.Properties;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -26,16 +26,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that deployments that have a {@code logging.properties} file are configured correctly.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class LoggingDeploymentResourceTestCase {
 
@@ -88,11 +88,11 @@ public class LoggingDeploymentResourceTestCase {
         final ModelNode loggingConfiguration = readDeploymentResource(WAR_DEPLOYMENT_NAME, WAR_DEPLOYMENT_NAME + "/META-INF/logging.properties");
         // The address should have logging.properties
         final Deque<Property> resultAddress = new ArrayDeque<>(Operations.getOperationAddress(loggingConfiguration).asPropertyList());
-        Assert.assertTrue("The configuration path did not include logging.properties", resultAddress.getLast().getValue().asString().contains("logging.properties"));
+        Assertions.assertTrue(resultAddress.getLast().getValue().asString().contains("logging.properties"), "The configuration path did not include logging.properties");
 
         final ModelNode handler = loggingConfiguration.get("handler", "FILE");
-        Assert.assertTrue("The FILE handler was not found effective configuration", handler.isDefined());
-        Assert.assertTrue(handler.hasDefined("properties"));
+        Assertions.assertTrue(handler.isDefined(), "The FILE handler was not found effective configuration");
+        Assertions.assertTrue(handler.hasDefined("properties"));
         String fileName = null;
         // Find the fileName property
         for (Property property : handler.get("properties").asPropertyList()) {
@@ -101,8 +101,8 @@ public class LoggingDeploymentResourceTestCase {
                 break;
             }
         }
-        Assert.assertNotNull("fileName property not found", fileName);
-        Assert.assertTrue(fileName.endsWith("test-logging-war.log"));
+        Assertions.assertNotNull(fileName, "fileName property not found");
+        Assertions.assertTrue(fileName.endsWith("test-logging-war.log"));
     }
 
     @OperateOnDeployment(EAR_DEPLOYMENT_NAME)
@@ -111,11 +111,11 @@ public class LoggingDeploymentResourceTestCase {
         ModelNode loggingConfiguration = readDeploymentResource(EAR_DEPLOYMENT_NAME, EAR_DEPLOYMENT_NAME + "/META-INF/logging.properties");
         // The address should have logging.properties
         Deque<Property> resultAddress = new ArrayDeque<>(Operations.getOperationAddress(loggingConfiguration).asPropertyList());
-        Assert.assertTrue("The configuration path did not include logging.properties", resultAddress.getLast().getValue().asString().contains("logging.properties"));
+        Assertions.assertTrue(resultAddress.getLast().getValue().asString().contains("logging.properties"), "The configuration path did not include logging.properties");
 
         ModelNode handler = loggingConfiguration.get("handler", "FILE");
-        Assert.assertTrue("The FILE handler was not found effective configuration", handler.isDefined());
-        Assert.assertTrue(handler.hasDefined("properties"));
+        Assertions.assertTrue(handler.isDefined(), "The FILE handler was not found effective configuration");
+        Assertions.assertTrue(handler.hasDefined("properties"));
         String fileName = null;
         // Find the fileName property
         for (Property property : handler.get("properties").asPropertyList()) {
@@ -124,18 +124,18 @@ public class LoggingDeploymentResourceTestCase {
                 break;
             }
         }
-        Assert.assertNotNull("fileName property not found", fileName);
-        Assert.assertTrue(fileName.endsWith("test-logging-ear.log"));
+        Assertions.assertNotNull(fileName, "fileName property not found");
+        Assertions.assertTrue(fileName.endsWith("test-logging-ear.log"));
 
         // Check the WAR which should inherit the EAR's logging.properties
         loggingConfiguration = readSubDeploymentResource(EAR_DEPLOYMENT_NAME, EAR_WAR_DEPLOYMENT_NAME, EAR_DEPLOYMENT_NAME + "/META-INF/logging.properties");
         // The address should have logging.properties
         resultAddress = new ArrayDeque<>(Operations.getOperationAddress(loggingConfiguration).asPropertyList());
-        Assert.assertTrue("The configuration path did not include logging.properties", resultAddress.getLast().getValue().asString().contains("logging.properties"));
+        Assertions.assertTrue(resultAddress.getLast().getValue().asString().contains("logging.properties"), "The configuration path did not include logging.properties");
 
         handler = loggingConfiguration.get("handler", "FILE");
-        Assert.assertTrue("The FILE handler was not found effective configuration", handler.isDefined());
-        Assert.assertTrue(handler.hasDefined("properties"));
+        Assertions.assertTrue(handler.isDefined(), "The FILE handler was not found effective configuration");
+        Assertions.assertTrue(handler.hasDefined("properties"));
         fileName = null;
         // Find the fileName property
         for (Property property : handler.get("properties").asPropertyList()) {
@@ -144,8 +144,8 @@ public class LoggingDeploymentResourceTestCase {
                 break;
             }
         }
-        Assert.assertNotNull("fileName property not found", fileName);
-        Assert.assertTrue(fileName.endsWith("test-logging-ear.log"));
+        Assertions.assertNotNull(fileName, "fileName property not found");
+        Assertions.assertTrue(fileName.endsWith("test-logging-ear.log"));
     }
 
     @OperateOnDeployment(EAR_PARENT_DEPLOYMENT_NAME)
@@ -154,11 +154,11 @@ public class LoggingDeploymentResourceTestCase {
         ModelNode loggingConfiguration = readDeploymentResource(EAR_PARENT_DEPLOYMENT_NAME, EAR_PARENT_DEPLOYMENT_NAME + "/META-INF/logging.properties");
         // The address should have logging.properties
         Deque<Property> resultAddress = new ArrayDeque<>(Operations.getOperationAddress(loggingConfiguration).asPropertyList());
-        Assert.assertTrue("The configuration path did not include logging.properties", resultAddress.getLast().getValue().asString().contains("logging.properties"));
+        Assertions.assertTrue(resultAddress.getLast().getValue().asString().contains("logging.properties"), "The configuration path did not include logging.properties");
 
         ModelNode handler = loggingConfiguration.get("handler", "FILE");
-        Assert.assertTrue("The FILE handler was not found effective configuration", handler.isDefined());
-        Assert.assertTrue(handler.hasDefined("properties"));
+        Assertions.assertTrue(handler.isDefined(), "The FILE handler was not found effective configuration");
+        Assertions.assertTrue(handler.hasDefined("properties"));
         String fileName = null;
         // Find the fileName property
         for (Property property : handler.get("properties").asPropertyList()) {
@@ -167,18 +167,18 @@ public class LoggingDeploymentResourceTestCase {
                 break;
             }
         }
-        Assert.assertNotNull("fileName property not found", fileName);
-        Assert.assertTrue(fileName.endsWith("test-logging-parent-ear.log"));
+        Assertions.assertNotNull(fileName, "fileName property not found");
+        Assertions.assertTrue(fileName.endsWith("test-logging-parent-ear.log"));
 
         // Check the WAR which should have it's own configuration
         loggingConfiguration = readSubDeploymentResource(EAR_PARENT_DEPLOYMENT_NAME, EAR_CHILD_WAR_DEPLOYMENT_NAME, EAR_CHILD_WAR_DEPLOYMENT_NAME + "/META-INF/logging.properties");
         // The address should have logging.properties
         resultAddress = new ArrayDeque<>(Operations.getOperationAddress(loggingConfiguration).asPropertyList());
-        Assert.assertTrue("The configuration path did not include logging.properties", resultAddress.getLast().getValue().asString().contains("logging.properties"));
+        Assertions.assertTrue(resultAddress.getLast().getValue().asString().contains("logging.properties"), "The configuration path did not include logging.properties");
 
         handler = loggingConfiguration.get("handler", "FILE");
-        Assert.assertTrue("The FILE handler was not found effective configuration", handler.isDefined());
-        Assert.assertTrue(handler.hasDefined("properties"));
+        Assertions.assertTrue(handler.isDefined(), "The FILE handler was not found effective configuration");
+        Assertions.assertTrue(handler.hasDefined("properties"));
         fileName = null;
         // Find the fileName property
         for (Property property : handler.get("properties").asPropertyList()) {
@@ -187,14 +187,14 @@ public class LoggingDeploymentResourceTestCase {
                 break;
             }
         }
-        Assert.assertNotNull("fileName property not found", fileName);
-        Assert.assertTrue(fileName.endsWith("test-logging-child-war.log"));
+        Assertions.assertNotNull(fileName, "fileName property not found");
+        Assertions.assertTrue(fileName.endsWith("test-logging-child-war.log"));
     }
 
     static ModelNode executeOperation(final ModelNode op) throws IOException {
         ModelNode result = client.getControllerClient().execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.assertTrue(Operations.getFailureDescription(result).toString(), false);
+            Assertions.assertTrue(false, Operations.getFailureDescription(result).toString());
         }
         return result;
     }

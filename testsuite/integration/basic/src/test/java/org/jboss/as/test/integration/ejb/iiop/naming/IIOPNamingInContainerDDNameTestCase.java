@@ -14,22 +14,22 @@ import javax.rmi.PortableRemoteObject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that corba name lookups work from inside the AS itself - IIOP bean name defined in deployment descriptor
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class IIOPNamingInContainerDDNameTestCase {
 
     @ArquillianResource
@@ -61,7 +61,7 @@ public class IIOPNamingInContainerDDNameTestCase {
         final Object iiopObj = context.lookup("corbaname:iiop:" + managementClient.getMgmtAddress() + ":3528#bean/custom/name/IIOPNamingBean");
         final IIOPNamingHome object = (IIOPNamingHome) PortableRemoteObject.narrow(iiopObj, IIOPNamingHome.class);
         final IIOPRemote result = object.create();
-        Assert.assertEquals("hello", result.hello());
+        Assertions.assertEquals("hello", result.hello());
     }
 
 }

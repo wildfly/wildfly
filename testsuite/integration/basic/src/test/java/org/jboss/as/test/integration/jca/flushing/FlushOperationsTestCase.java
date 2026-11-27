@@ -20,7 +20,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -31,11 +31,11 @@ import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
@@ -60,7 +60,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  *
  * @author Jan Martiska
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class FlushOperationsTestCase {
 
     @Deployment
@@ -98,7 +98,7 @@ public class FlushOperationsTestCase {
     private List<Connection> connectionList;
     private List<Connection> physicalConnectionList;
 
-    @Before
+    @BeforeEach
     public void createDatasource() throws Exception {
         dsName = java.util.UUID.randomUUID().toString();
         dsAddress = PathAddress.pathAddress(SUBSYSTEM, "datasources").append("data-source", dsName);
@@ -123,7 +123,7 @@ public class FlushOperationsTestCase {
      * - close all connections in case that some remained open
      * - delete the data source
      */
-    @After
+    @AfterEach
     public void cleanup() throws Exception {
         if (connectionList != null) {
             connectionList.forEach(this::closeIfNecessary);
@@ -154,8 +154,8 @@ public class FlushOperationsTestCase {
         runDataSourceOperationAndAssertSuccess("flush-all-connection-in-pool");
 
         for (int i = 0; i < connectionList.size(); i++) {
-            Assert.assertTrue("Connection #" + i + " should be flushed",
-                    physicalConnectionList.get(i).isClosed());
+            Assertions.assertTrue(physicalConnectionList.get(i).isClosed(),
+                    "Connection #" + i + " should be flushed");
         }
     }
 
@@ -177,26 +177,26 @@ public class FlushOperationsTestCase {
 
         runDataSourceOperationAndAssertSuccess("flush-gracefully-connection-in-pool");
 
-        Assert.assertTrue("Connection 0 should get destroyed immediately because it is idle",
-                physicalConnectionList.get(0).isClosed());
-        Assert.assertTrue("Connection 1 should get destroyed immediately because it is idle",
-                physicalConnectionList.get(1).isClosed());
-        Assert.assertTrue("Connection 2 should get destroyed immediately because it is idle",
-                physicalConnectionList.get(2).isClosed());
-        Assert.assertFalse("Connection 3 should not get destroyed immediately because it is not idle",
-                physicalConnectionList.get(3).isClosed());
-        Assert.assertFalse("Connection 4 should not get destroyed immediately because it is not idle",
-                physicalConnectionList.get(4).isClosed());
-        Assert.assertFalse("Connection 5 should not get destroyed immediately because it is not idle",
-                physicalConnectionList.get(5).isClosed());
+        Assertions.assertTrue(physicalConnectionList.get(0).isClosed(),
+                "Connection 0 should get destroyed immediately because it is idle");
+        Assertions.assertTrue(physicalConnectionList.get(1).isClosed(),
+                "Connection 1 should get destroyed immediately because it is idle");
+        Assertions.assertTrue(physicalConnectionList.get(2).isClosed(),
+                "Connection 2 should get destroyed immediately because it is idle");
+        Assertions.assertFalse(physicalConnectionList.get(3).isClosed(),
+                "Connection 3 should not get destroyed immediately because it is not idle");
+        Assertions.assertFalse(physicalConnectionList.get(4).isClosed(),
+                "Connection 4 should not get destroyed immediately because it is not idle");
+        Assertions.assertFalse(physicalConnectionList.get(5).isClosed(),
+                "Connection 5 should not get destroyed immediately because it is not idle");
 
         connectionList.get(3).close();
         connectionList.get(4).close();
         connectionList.get(5).close();
 
         for (int i = 0; i < connectionList.size(); i++) {
-            Assert.assertTrue("Connection #" + i + " should be flushed",
-                    physicalConnectionList.get(i).isClosed());
+            Assertions.assertTrue(physicalConnectionList.get(i).isClosed(),
+                    "Connection #" + i + " should be flushed");
         }
     }
 
@@ -216,18 +216,18 @@ public class FlushOperationsTestCase {
 
         runDataSourceOperationAndAssertSuccess("flush-idle-connection-in-pool");
 
-        Assert.assertTrue("Connection 0 should get destroyed because it is idle",
-                physicalConnectionList.get(0).isClosed());
-        Assert.assertTrue("Connection 1 should get destroyed because it is idle",
-                physicalConnectionList.get(1).isClosed());
-        Assert.assertTrue("Connection 2 should get destroyed because it is idle",
-                physicalConnectionList.get(2).isClosed());
-        Assert.assertFalse("Connection 3 should not get destroyed because it is not idle",
-                physicalConnectionList.get(3).isClosed());
-        Assert.assertFalse("Connection 4 should not get destroyed because it is not idle",
-                physicalConnectionList.get(4).isClosed());
-        Assert.assertFalse("Connection 5 should not get destroyed because it is not idle",
-                physicalConnectionList.get(5).isClosed());
+        Assertions.assertTrue(physicalConnectionList.get(0).isClosed(),
+                "Connection 0 should get destroyed because it is idle");
+        Assertions.assertTrue(physicalConnectionList.get(1).isClosed(),
+                "Connection 1 should get destroyed because it is idle");
+        Assertions.assertTrue(physicalConnectionList.get(2).isClosed(),
+                "Connection 2 should get destroyed because it is idle");
+        Assertions.assertFalse(physicalConnectionList.get(3).isClosed(),
+                "Connection 3 should not get destroyed because it is not idle");
+        Assertions.assertFalse(physicalConnectionList.get(4).isClosed(),
+                "Connection 4 should not get destroyed because it is not idle");
+        Assertions.assertFalse(physicalConnectionList.get(5).isClosed(),
+                "Connection 5 should not get destroyed because it is not idle");
     }
 
 
@@ -259,12 +259,12 @@ public class FlushOperationsTestCase {
 
         runDataSourceOperationAndAssertSuccess("flush-invalid-connection-in-pool");
 
-        Assert.assertTrue("Connection 0 should get destroyed because it is marked invalid",
-                physicalConnectionList.get(0).isClosed());
-        Assert.assertFalse("Connection 1 should not get destroyed because it is valid",
-                physicalConnectionList.get(1).isClosed());
-        Assert.assertFalse("Connection 2 should not get destroyed because it is not idle",
-                physicalConnectionList.get(2).isClosed());
+        Assertions.assertTrue(physicalConnectionList.get(0).isClosed(),
+                "Connection 0 should get destroyed because it is marked invalid");
+        Assertions.assertFalse(physicalConnectionList.get(1).isClosed(),
+                "Connection 1 should not get destroyed because it is valid");
+        Assertions.assertFalse(physicalConnectionList.get(2).isClosed(),
+                "Connection 2 should not get destroyed because it is not idle");
     }
 
     /**
@@ -285,7 +285,7 @@ public class FlushOperationsTestCase {
     public void executeAndAssertSuccess(ModelNode op) throws IOException {
         final ModelNode result = managementClient.getControllerClient().execute(op);
         if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
-            Assert.fail("Operation failed: " + result.toJSONString(true));
+            Assertions.fail("Operation failed: " + result.toJSONString(true));
         }
     }
 

@@ -12,9 +12,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 
@@ -29,7 +29,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -37,15 +37,15 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ExportImportJournalTestCase {
 
@@ -84,7 +84,7 @@ public class ExportImportJournalTestCase {
                 assertNotNull(text);
                 assertEquals(expectedText, text);
             } else {
-                assertNull("should not have received any message", text);
+                assertNull(text, "should not have received any message");
             }
         }
     }
@@ -100,14 +100,14 @@ public class ExportImportJournalTestCase {
         throw new Exception("Operation failed");
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
         jmsOperations.close();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         jmsOperations.removeJmsQueue(jmsQueueName);

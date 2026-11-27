@@ -5,23 +5,23 @@
 package org.jboss.as.test.integration.deployment.classloading.rar;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests that nesteled jars in a rar are picked up as resource roots and loaded from the same class loader.
  *
  * @author Stuart Douglas
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class RarClassLoadingTestCase {
 
     @Deployment
@@ -43,7 +43,7 @@ public class RarClassLoadingTestCase {
     public void testRarClassLoading() {
         RarMainClass cl = new RarMainClass();
         RarSupportClass cl2 = new RarSupportClass();
-        Assert.assertEquals(cl.getClass().getClassLoader(), cl2.getClass().getClassLoader());
+        Assertions.assertEquals(cl.getClass().getClassLoader(), cl2.getClass().getClassLoader());
     }
 
 }
