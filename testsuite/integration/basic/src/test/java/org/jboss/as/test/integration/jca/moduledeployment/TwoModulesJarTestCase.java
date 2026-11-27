@@ -15,9 +15,6 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Locale;
-
-
 /**
  * AS7-5768 -Support for RA module deployment
  *
@@ -37,7 +34,6 @@ import java.util.Locale;
 @RunWith(Arquillian.class)
 @ServerSetup(TwoModulesJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
 public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
-
 
     static class ModuleAcDeploymentTestCaseSetup extends AbstractModuleDeploymentTestCaseSetup {
 
@@ -59,13 +55,7 @@ public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
         public void tearDown(ManagementClient managementClient,
                              String containerId) throws Exception {
             remove(address1, managementClient);
-            removeModule("org/jboss/ironjacamar/ra16out1", true);
             super.tearDown(managementClient, containerId);
-        }
-
-        @Override
-        protected String getSlot() {
-            return TwoModulesJarTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 
@@ -84,13 +74,11 @@ public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
         operation1.get(OP).set("test-connection-in-pool");
         operation1.get(OP_ADDR).set(address1);
         executeOperation(operation1);
-
     }
 
     @Override
     protected ModelNode getAddress() {
         return ModuleAcDeploymentTestCaseSetup.getAddress();
     }
-
 
 }
