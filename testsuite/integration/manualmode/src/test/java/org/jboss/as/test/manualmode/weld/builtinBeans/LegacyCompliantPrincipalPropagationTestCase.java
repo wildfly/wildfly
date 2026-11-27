@@ -118,7 +118,7 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     }
 
     private ManagementClient getManagementClient() {
-        ModelControllerClient modelControllerClient = TestSuiteEnvironment.getModelControllerClient();
+        ModelControllerClient modelControllerClient = TestSuiteEnvironment.createModelControllerClient();
         return new ManagementClient(modelControllerClient, TestSuiteEnvironment.getServerAddress(), 9990, "remote+http");
     }
 }

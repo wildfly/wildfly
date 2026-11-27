@@ -108,7 +108,7 @@ public class LayeredDistributionTestCase {
     @Test
     public void testLayeredProductVersion() throws Throwable {
 
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             ModelNode readAttrOp = new ModelNode();
             readAttrOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
             readAttrOp.get(ModelDescriptionConstants.NAME).set("product-name");

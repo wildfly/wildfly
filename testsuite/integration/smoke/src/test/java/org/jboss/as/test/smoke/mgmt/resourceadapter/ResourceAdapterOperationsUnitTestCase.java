@@ -60,7 +60,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
     @BeforeAll
     public static void configureElytron() throws Exception {
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             addAuth(client, "AuthCtxt");
             addAuth(client, "AuthCtxtAndApp");
         }
@@ -68,7 +68,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
     @AfterAll
     public static void removeElytronConfig() throws Exception {
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             ModelNode address;
             while ((address = REMOVE_ADDRESSES.pollFirst()) != null) {
                 execute(client, Operations.createRemoveOperation(address));

@@ -50,7 +50,7 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_MODULE_NAME + ".ear";
     private static final String SUB_DEPLOYMENT_MODULE_NAME = "servlet";
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".war";
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static final ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @BeforeClass
     public static void setup() throws Exception {

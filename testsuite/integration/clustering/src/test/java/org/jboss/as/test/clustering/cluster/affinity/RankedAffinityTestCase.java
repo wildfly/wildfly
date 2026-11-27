@@ -124,7 +124,7 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
             Thread.sleep(3_000);
 
             // 2
-            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
+            ModelControllerClient lbModelControllerClient = TestSuiteEnvironment.createModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
             try (ManagementClient lbManagementClient = new ManagementClient(lbModelControllerClient, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET, "remote+http")) {
                 String node = previousAffinities[0];
                 ModelNode operation = new ModelNode();

@@ -106,7 +106,7 @@ public class SSLEJBRemoteClientTestCase {
             log.trace("*** preparing server configuration");
             log.trace("*** starting server");
             container.start(DEFAULT_JBOSSAS);
-            try (ManagementClient mc = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+            try (ManagementClient mc = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(),
                     TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
                 log.trace("*** will configure server now");
                 SSLRealmSetupTool.setup(mc);
@@ -122,7 +122,7 @@ public class SSLEJBRemoteClientTestCase {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        try (ManagementClient mClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+        try (ManagementClient mClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
             SSLRealmSetupTool.tearDown(mClient, container);
         }

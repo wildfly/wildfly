@@ -6,7 +6,6 @@
 package org.jboss.as.test.integration.management.api.expression;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 
 import jakarta.ejb.Stateless;
 
@@ -19,12 +18,17 @@ public class StatelessBean {
     private static final Logger log = Logger.getLogger(StatelessBean.class);
 
     public String getJBossProperty(String name) {
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient();
+        try {
             String result = Utils.getProperty(name, client);
             log.debug("JBoss system property " + name + " was resolved to be " + result);
             return result;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } finally {
+            try {
+                client.close();
+            } catch (IOException e) {
+                log.warn("Failed to close ModelControllerClient", e);
+            }
         }
     }
 

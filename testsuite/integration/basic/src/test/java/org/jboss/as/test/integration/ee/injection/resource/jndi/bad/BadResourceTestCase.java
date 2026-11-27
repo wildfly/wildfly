@@ -35,7 +35,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 @RunAsClient
 public class BadResourceTestCase {
 
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @AfterClass
     public static void closeControllerClient() throws Exception {

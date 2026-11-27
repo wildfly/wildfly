@@ -138,7 +138,7 @@ public class SSLEJBRemoteRemotingClientTestCase {
             log.trace("*** preparing server configuration");
             log.trace("*** starting server");
             container.start(DEFAULT_JBOSSAS);
-            try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+            try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
                 log.trace("*** will configure server now");
                 configureServerSideForInboundSSLRemoting(client);
             }

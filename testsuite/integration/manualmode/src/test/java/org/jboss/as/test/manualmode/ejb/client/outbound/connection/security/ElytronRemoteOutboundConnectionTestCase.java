@@ -1482,7 +1482,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     private static ModelControllerClient getInboundConnectionServerMCC() {
-        return TestSuiteEnvironment.getModelControllerClient();
+        return TestSuiteEnvironment.createModelControllerClient();
     }
 
     private static ModelControllerClient getOutboundConnectionServerMCC() {

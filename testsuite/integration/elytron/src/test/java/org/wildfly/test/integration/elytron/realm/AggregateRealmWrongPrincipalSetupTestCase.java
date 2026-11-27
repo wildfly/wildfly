@@ -50,7 +50,7 @@ public class AggregateRealmWrongPrincipalSetupTestCase {
     /**
      * Management client
      */
-    private static final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
+    private static final ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient();
     private static final ManagementClient mClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
     /**

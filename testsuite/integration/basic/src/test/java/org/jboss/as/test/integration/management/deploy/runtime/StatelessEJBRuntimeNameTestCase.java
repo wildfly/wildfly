@@ -36,7 +36,7 @@ public class StatelessEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String RT_NAME = "nooma-nooma4-"+EJB_TYPE+".ear";
     private static final String DEPLOYMENT_NAME = "test4-"+EJB_TYPE+"-test.ear";
     private static final String SUB_DEPLOYMENT_NAME = "ejb.jar";
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @BeforeClass
     public static void setup() throws Exception {

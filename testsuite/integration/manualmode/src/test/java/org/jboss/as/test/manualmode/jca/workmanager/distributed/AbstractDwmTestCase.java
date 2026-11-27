@@ -108,7 +108,7 @@ public abstract class AbstractDwmTestCase {
     // --------------------------------------------------------------------------------
 
     private static ModelControllerClient createClient1() {
-        return TestSuiteEnvironment.getModelControllerClient();
+        return TestSuiteEnvironment.createModelControllerClient();
     }
 
     private static ModelControllerClient createClient2() throws UnknownHostException {

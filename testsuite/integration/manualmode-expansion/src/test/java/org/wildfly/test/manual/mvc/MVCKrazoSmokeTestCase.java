@@ -94,7 +94,7 @@ public class MVCKrazoSmokeTestCase {
 
         log.trace("*** starting server");
         containerController.start(CONTAINER);
-        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
             log.trace("*** will configure server now");
             SETUP_TASK.setup(managementClient, CONTAINER);
@@ -118,7 +118,7 @@ public class MVCKrazoSmokeTestCase {
     @InSequence(10)
     public void stopContainer() throws Exception {
         deployer.undeploy(DEPLOYMENT_NAME);
-        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
+        try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http")) {
             log.trace("*** resetting test configuration");
             SETUP_TASK.tearDown(managementClient, CONTAINER);

@@ -156,7 +156,7 @@ public class DynamicSSLContextTestCase {
             serverController.start(CONTAINER);
         }
         try {
-            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
+            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
                 addHTTPSListener(managementClient, KEYSTORES_DIR, SERVER_KEYSTORE1_FILENAME, SERVER_KEY_STORE1, SERVER_KEY_MANAGER1, SERVER_TRUSTSTORE1_FILENAME, SERVER_TRUST_STORE1, SERVER_TRUST_MANAGER1, SERVER_SSL_CONTEXT1, HTTP_LISTENER_1, SOCKET_BINDING_1, PORT1);
                 addHTTPSListener(managementClient, KEYSTORES2_DIR, SERVER_KEYSTORE1_FILENAME, SERVER_KEY_STORE2, SERVER_KEY_MANAGER2, SERVER_TRUSTSTORE1_FILENAME, SERVER_TRUST_STORE2, SERVER_TRUST_MANAGER2, SERVER_SSL_CONTEXT2, HTTP_LISTENER_2, SOCKET_BINDING_2, PORT2);
 
@@ -192,7 +192,7 @@ public class DynamicSSLContextTestCase {
     @InSequence(3)
     public void restoreConfigAndStopContainer() throws IOException {
         try {
-            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
+            try (ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.createModelControllerClient(), SERVER_ADDRESS, getManagementPort(), "remote+http")) {
                 restoreConfiguration(managementClient);
             }
             deployer.undeploy(DEPLOYMENT);

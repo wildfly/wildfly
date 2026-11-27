@@ -157,11 +157,14 @@ public class GlobalDirectoryBase extends AbstractCliTestBase {
 
     @After
     public void after() {
-        if (containerController.isStarted(CONTAINER)) {
-            containerController.stop(CONTAINER);
+        try {
+            if (containerController.isStarted(CONTAINER)) {
+                containerController.stop(CONTAINER);
+            }
+            client.close();
+        } finally {
+            disconnect();
         }
-        client.close();
-        disconnect();
     }
 
     protected void connect() {
@@ -311,7 +314,7 @@ public class GlobalDirectoryBase extends AbstractCliTestBase {
         }
 
         protected static ClientHolder init() {
-            final ModelControllerClient clientHolder = TestSuiteEnvironment.getModelControllerClient();
+            final ModelControllerClient clientHolder = TestSuiteEnvironment.createModelControllerClient();
             ManagementClient mgmtClient = new ManagementClient(clientHolder, TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress()),
                     TestSuiteEnvironment.getServerPort(), "http-remoting");
             return new ClientHolder(mgmtClient);

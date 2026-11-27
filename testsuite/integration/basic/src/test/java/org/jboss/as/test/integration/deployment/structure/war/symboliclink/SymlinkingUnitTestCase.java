@@ -45,7 +45,7 @@ public class SymlinkingUnitTestCase {
 
     private static File warDeployment = null;
     private static File symbolic = null;
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
 
     @BeforeClass

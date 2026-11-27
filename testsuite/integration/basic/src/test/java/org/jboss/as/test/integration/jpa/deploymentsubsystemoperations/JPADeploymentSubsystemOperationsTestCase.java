@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 @RunAsClient
 public class JPADeploymentSubsystemOperationsTestCase {
 
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @AfterClass
     public static void closeControllerClient() throws Exception {

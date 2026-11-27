@@ -50,7 +50,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String DEPLOYMENT_NAME = DEPLOYMENT_MODULE_NAME + ".ear";
     private static final String SUB_DEPLOYMENT_MODULE_NAME = "ejb";
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".jar";
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @BeforeClass
     public static void setup() throws Exception {

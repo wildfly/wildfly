@@ -56,7 +56,7 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String REST_RESOURCE_NAME = "rest-resource";
     private static final String SUB_RESOURCE_LOCATORS = "sub-resource-locators";
     private static final String SUBSYSTEM_NAME = "jaxrs";
-    private static final ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static final ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     @AfterClass
     public static void closeControllerClient() throws Exception {

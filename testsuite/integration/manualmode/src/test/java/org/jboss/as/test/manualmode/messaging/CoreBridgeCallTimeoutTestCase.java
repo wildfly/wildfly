@@ -240,7 +240,7 @@ public class CoreBridgeCallTimeoutTestCase {
 
     private static ManagementClient createManagementClient() {
         return new ManagementClient(
-                TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress()),
                 TestSuiteEnvironment.getServerPort(),
                 "remote+http");

@@ -192,7 +192,7 @@ public class ModClusterMutualTLSTestCase extends AbstractClusteringTestCase {
 
     // n.b. unlike the node's client, the load balancer's client cannot be injected as an Arquillian resource since it has no deployment
     private static ModelControllerClient createLBClient() {
-        return TestSuiteEnvironment.getModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
+        return TestSuiteEnvironment.createModelControllerClient(null, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);
     }
 
     /**

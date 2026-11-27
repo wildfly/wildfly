@@ -38,7 +38,7 @@ import java.io.IOException;
 
 public abstract class AbstractFailedDeploymentRuntimeTestCase extends AbstractRuntimeTestCase {
 
-    static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    static ModelControllerClient controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
     /**
      * Create and deploy an EAR application that includes a war that has a ServletContextListener that
