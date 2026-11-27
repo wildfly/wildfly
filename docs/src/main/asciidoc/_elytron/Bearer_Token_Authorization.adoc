@@ -10,11 +10,11 @@ ifdef::env-github[]
 endif::[]
 
 Bearer Token Authorization is the process of authorizing HTTP requests based on the existence and validity of a bearer
-token representing a subject and his access context, where the token provides valuable information to determine the subject of the call as well whether or not a HTTP resource
+token representing a subject and its access context, where the token provides valuable information to determine the subject of the call as well whether or not a HTTP resource
 can be accessed.
 
 Elytron supports bearer token authorization by providing a `BEARER_TOKEN` HTTP authentication mechanism based on https://tools.ietf.org/html/rfc6750[RFC-6750] and
-an specific `realm` implementation, the `token-realm`, to validate tokens using the JWT format (for instance, OpenID Connect ID Tokens) or opaque tokens issued by any OAuth2 compliant
+a specific `realm` implementation, the `token-realm`, to validate tokens using the JWT format (for instance, OpenID Connect ID Tokens) or opaque tokens issued by any OAuth2 compliant
 authorization server.
 
 [[how-it-works]]
@@ -35,12 +35,12 @@ HTTP/1.1 401 Unauthorized
 WWW-Authenticate: Bearer realm="example"
 ```
 
-When a bearer token is provided, the mechanism will extract the token from the request (in the example above, the token is represented by the string `mF_9.B5f-4.1JqM`) and pass it over
+When a bearer token is provided, the mechanism will extract the token from the request (in the example above, the token is represented by the string `mF_9.B5f-4.1JqM`) and pass it
 to the `token-realm` in order to check if the token is valid and can be used to build a security context based on its information. Note that the `BEARER_TOKEN` mechanism is only responsible to
-check and extract bearer tokens from an HTTP request, whereas the `token-realm` is the one responsible for validating the token.
+check and extract bearer tokens from a HTTP request, whereas the `token-realm` is the one responsible for validating the token.
 
-If validation succeeds, a security context will be created based on the information represented by the token and the application can use the newly created
-security context to obtain information about the subject making the request as well decide whether or not the request should be full filled. In case the validation fails,
+If validation succeeds, a security context will be created based on the information represented by the token.  The application can use the newly created
+security context to obtain information about the subject making the request as well decide whether or not the request should be fulfilled. In cases where validation fails,
 the mechanism will respond with a `403` HTTP status code as follows:
 
 ```bash
@@ -80,36 +80,44 @@ should be validated:
 
 * *issuer*
 +
-A list of strings representing the issuers supported by this configuration. During validation JWT tokens must have an "iss" claim that contains one of the values defined here
+A list of strings representing the issuers supported by this configuration. During validation JWT tokens must have an "iss" claim that contains one of the values defined by the `issuer` attribute
 +
 * *audience*
 +
-A list of strings representing the audiences supported by this configuration. During validation JWT tokens must have an "aud" claim that contains one of the values defined here
+A list of strings representing the audiences supported by this configuration. During validation JWT tokens must have an "aud" claim that contains one of the values defined by the `audience` attribute
 +
 * *public-key*
 +
-A public key in PEM Format. During validation, if a public key is provided, signature will be verified based on the key you provided here. Alternatively,
-you can define a `key-store` and `certificate` attributes to configure the public key. This key will be used to verify tokens without "kid" claim.
+A public key in PEM Format. During validation, if a public key is provided, the signature will be verified based on the key provided by the `public-key` attribute. Alternatively,
+you can define the `key-store` and `certificate` attributes to configure the public key. This key will be used to verify tokens without a "kid" claim.
 +
 * *key-store*
 +
-As an alternative to `public-key`, you can also define a key store from where the certificate with a public key should be loaded from
+As an alternative to the `public-key`, you can also define a key store from which the certificate with a public key will be loaded
 +
 * *certificate*
 +
-The name of the certificate with a public key to load from the key store in case you defined the `key-store` attribute
+The name of the certificate containing a public key to load from the key store, in case you defined the `key-store` attribute
 +
 * *client-ssl-context*
 +
-The SSL context to be used if if you want to use remote JSON Web Keys. This enables you to use url from "jku" token claim to
+The SSL context to be used if you want to use remote JSON Web Keys. This enables you to use the url from the "jku" token claim to
 fetch public keys for token verification.
 +
 * *host-name-verification-policy*
 +
 A policy that defines how host names should be verified when using remote JSON Web Keys. Allowed values: "ANY", "DEFAULT".
++
+* *connection-timeout*
++
+(Preview) The time in milliseconds to wait when connecting to a remote JSON Web Key URL. See <<token-validation-timeouts,Token Validation Timeouts>>.
++
+* *read-timeout*
++
+(Preview) The time in milliseconds to wait when reading from a remote JSON Web Key URL. See <<token-validation-timeouts,Token Validation Timeouts>>.
 
-For being able to use different key pairs for signing / verification and for easier key rotation you can define key map. This will take the "kid" claim
-from the token and use corresponding public key for verification.
+In order to use different key pairs for signing / verification and for easier key rotation define a key map. This will use the "kid" claim
+from the token and the corresponding public key for verification.
 
 ```xml
  <token-realm name="JwtRealm" principal-claim="sub">
@@ -120,9 +128,9 @@ from the token and use corresponding public key for verification.
  </token-realm>
 ```
 
-This `token-realm` will verify tokens with "kid" claims of value "1" or "2" using corresponding key.
+This `token-realm` will verify tokens with "kid" claims of value "1" or "2" using the corresponding key.
 
-Tokens without "kid" claim will be verified using the 'public-key' attribute of 'jwt', or in this case invalidated, as there is
+Tokens without a "kid" claim will be verified using the 'public-key' attribute of 'jwt'.  In this case the token will be invalidated, as there is
 no key specified.
 
 The `jwt` validator performs different checks in order to determine the validity of a JWT:
@@ -131,7 +139,7 @@ The `jwt` validator performs different checks in order to determine the validity
 * Signature checks based on the public key provided via `public-key` or `certificate` attributes, key map with named public keys, or by fetching remote JSON Web Key Set
 using provided `client-ssl-context`. You can skip token signature verification by not defining any of these.
 
-It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered.
+It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered with.
 
 [NOTE]
 ====
@@ -141,13 +149,13 @@ can be specified as a space separated string using the `wildfly.elytron.jwt.allo
 property.
 
 As an example, to set the allowed `jku` values for the `JwtRealm` to `https://somehost.com` and `https://someotherhost.com`,
-we'd need to set the `wildfly.elytron.jwt.allowed.jku.values.JwtRealm` system property to `"https://somehost.com https://someotherhost.com"`.
+you would need to set the `wildfly.elytron.jwt.allowed.jku.values.JwtRealm` system property to `"https://somehost.com https://someotherhost.com"`.
 ====
 
 [[validating-OAuth2-bearer-tokens]]
 == Validating OAuth2 Bearer Tokens
 
-Elytron provides built-in support for tokens issued by an OAuth2 compliant authorization server, where these tokens are validated
+Elytron provides built-in support for tokens issued by an OAuth2 compliant authorization server. These tokens are validated
 using a token introspection endpoint as defined by OAuth2 specification.
 
 ```xml
@@ -173,7 +181,7 @@ The secret of the client
 +
 * *introspection-url*
 +
-The URL of token introspection endpoint
+The URL of the token introspection endpoint
 +
 * *client-ssl-context*
 +
@@ -182,6 +190,63 @@ The SSL context to be used if the introspection endpoint is using HTTPS.
 * *host-name-verification-policy*
 +
 A policy that defines how host names should be verified when using HTTPS. Allowed values: "ANY", "DEFAULT".
++
+* *connection-timeout*
++
+(Preview) The time in milliseconds to wait when connecting to the introspection endpoint. See <<token-validation-timeouts,Token Validation Timeouts>>.
++
+* *read-timeout*
++
+(Preview) The time in milliseconds to wait when reading from the introspection endpoint. See <<token-validation-timeouts,Token Validation Timeouts>>.
+
+[[token-validation-timeouts]]
+== Token Validation Timeouts
+
+NOTE: The `connection-timeout` and `read-timeout` attributes are a `preview` level feature, meaning the WildFly server's
+stability level must be set to `preview` or lower to configure them, for example by running
+xref:Different_Flavors_of_WildFly{outfilesuffix}[WildFly Preview] or by using the `--stability=preview` parameter when
+starting standard WildFly. For more information about the stability levels of the WildFly server, please refer to the
+xref:Admin_Guide.adoc#Feature_stability_levels[Feature stability levels] section of the Admin Guide.
+
+Validating a token may require the server to make an HTTP request to a remote server. A `jwt` validator may fetch remote JSON Web Keys
+when a token has both "kid" and "jku" headers, the "jku" value is one of the allowed `jku` values, and a `client-ssl-context` is
+configured. An `oauth2-introspection` validator sends every token to the token introspection endpoint. The `jwt` and
+`oauth2-introspection` elements both support the following optional attributes to control how long the server waits for the
+remote server:
+
+* *connection-timeout*
++
+The time in milliseconds to wait when establishing a connection to the remote server.
++
+* *read-timeout*
++
+The time in milliseconds to wait for data from the remote server once the connection has been established.
+
+Both attributes are of type `int`, support expressions, and only allow zero or positive values. A value of zero means the server
+waits indefinitely. When an attribute is not set the WildFly management model does not define a default, and the default of the
+underlying validator applies:
+
+* For the `jwt` validator both timeouts default to 2000 milliseconds. The timeouts are only used when fetching remote JSON Web Keys.
+If a timeout expires a warning is logged, no public key is available for the token, and the token is not validated.
+* For the `oauth2-introspection` validator no timeout is applied by default, which is the same as setting a value of zero. If a
+timeout expires the introspection request fails and the token is not validated.
+
+```xml
+ <token-realm name="OAuth2Realm" principal-claim="sub">
+     <oauth2-introspection client-id="my-client-id"
+                           client-secret="keep_it_secret"
+                           introspection-url="https://as.example.com/token/introspect"
+                           client-ssl-context="user-defined-ssl-context"
+                           connection-timeout="3000"
+                           read-timeout="5000" />
+ </token-realm>
+```
+
+The `jwt` validator caches the JSON Web Keys fetched from each "jku" URL and checks this cache before deciding whether a connection
+is needed. A request is only made if the cache holds no key matching the "kid" of the token, or the cached keys are more than two
+minutes old, and at least ten seconds have passed since the last successful fetch from that URL. Otherwise the cached keys are used
+and no connection is made. If a fetch fails, such as when a timeout expires, nothing is cached, so the next token needing those keys
+causes another attempt to connect. These cache intervals are not configurable.
 
 [[quickstarts]]
 == Quickstarts
@@ -231,3 +296,18 @@ You can then configure a token realm as follows:
 ----
 
 For information about principal transformers, see xref:WildFly_Elytron_Security{outfilesuffix}#principal-transformers[Principal Transformers].
+
+.Create a Token Realm with custom timeouts when validating JWT tokens (Preview)
+
+[source,bash]
+----
+/subsystem=elytron/token-realm=jwt-realm-with-timeouts:add(principal-claim=sub, jwt={issuer=["as.example.com"], audience=["api.example.com"], client-ssl-context=default-client-ssl-context, connection-timeout=1500, read-timeout=2500})
+----
+
+.Create a Token Realm with custom timeouts when validating OAuth2 tokens (Preview)
+
+[source,bash]
+----
+/subsystem=elytron/token-realm=oauth2-realm-with-timeouts:add(principal-claim=preferred_username, oauth2-introspection={client-id=my-client-id, client-secret=keep_it_secret, client-ssl-context=default-client-ssl-context, introspection-url=https://as.example.com/token/introspect, connection-timeout=3000, read-timeout=5000})
+----
+-
