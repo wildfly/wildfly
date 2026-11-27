@@ -291,7 +291,7 @@ public abstract class JaxrsAttribute {
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
-            .setDefaultValue(ModelNode.FALSE)
+            .setDefaultValue(ModelNode.TRUE)
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .setAttributeMarshaller(AttributeMarshallers.SIMPLE_ELEMENT)
             .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
