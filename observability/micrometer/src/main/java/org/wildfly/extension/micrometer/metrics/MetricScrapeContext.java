@@ -15,6 +15,7 @@ public final class MetricScrapeContext implements AutoCloseable {
 
     private final MetricScrapeContext previous;
     private final Set<Meter.Id> deniedMeters = new HashSet<>();
+    private boolean closed;
 
     /** Saves the previous context and activates this one on the current request thread. */
     private MetricScrapeContext() {
@@ -52,15 +53,24 @@ public final class MetricScrapeContext implements AutoCloseable {
         return Set.copyOf(deniedMeters);
     }
 
-    /** Restores the prior scrape context when this scrape finishes. */
+    /**
+     * Restores the prior scrape context when this scrape finishes.
+     *
+     * @throws IllegalStateException if this context is not the active context
+     */
     @Override
     public void close() {
-        if (CURRENT.get() == this) {
-            if (previous == null) {
-                CURRENT.remove();
-            } else {
-                CURRENT.set(previous);
-            }
+        if (closed) {
+            return;
+        }
+        if (CURRENT.get() != this) {
+            throw new IllegalStateException("Metric scrape contexts must be closed in reverse order");
+        }
+        closed = true;
+        if (previous == null) {
+            CURRENT.remove();
+        } else {
+            CURRENT.set(previous);
         }
     }
 }
