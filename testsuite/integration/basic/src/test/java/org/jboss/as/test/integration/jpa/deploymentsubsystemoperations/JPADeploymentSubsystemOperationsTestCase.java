@@ -8,10 +8,12 @@ package org.jboss.as.test.integration.jpa.deploymentsubsystemoperations;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -42,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(SnapshotRestoreSetupTask.class)
 public class JPADeploymentSubsystemOperationsTestCase {
 
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
@@ -69,9 +72,10 @@ public class JPADeploymentSubsystemOperationsTestCase {
      */
     @Test
     public void testReadResourceOperation() throws IOException {
-        // We need to change the subsystem's attribute from a default one. Otherwise we would be checking a default value
-        // against a default value and the test would pass every time.
+        // We need to change the subsystem's attribute from a default one.
+        // Otherwise, we would be checking a default value against a default value and the test would pass every time.
         // The default value for default-extended-persistence-inheritance is DEEP, so we're changing it to SHALLOW, see JPADefinition class
+        // The server profile is restored to original configuration by SnapshotRestoreSetupTask after the test run.
         ModelNode writeAttributeModelNode = Util.getWriteAttributeOperation(SUBSYSTEM_PATH, DEFAULT_EXTENDED_PERSISTENCE_INHERITANCE, "SHALLOW");
         controllerClient.execute(writeAttributeModelNode);
 
