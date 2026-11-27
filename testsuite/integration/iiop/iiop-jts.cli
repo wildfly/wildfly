@@ -1,0 +1,10 @@
+embed-server --server-config=standalone-full.xml
+
+/subsystem=transactions:write-attribute(name=jts,value=true)
+/subsystem=iiop-openjdk:write-attribute(name=transactions,value=full)
+/subsystem=iiop-openjdk:write-attribute(name=security,value=elytron)
+
+# JTS recovery brings up its own ORB; it must not be bound to the SSL socket.
+/subsystem=iiop-openjdk:undefine-attribute(name=ssl-socket-binding)
+
+stop-embedded-server
