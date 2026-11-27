@@ -41,7 +41,7 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         var capabilityNames = new String[]{WELD_CAPABILITY_NAME, MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY.getName()};
 
         KernelServicesBuilder builder = createKernelServicesBuilder(
-            AdditionalInitialization.withCapabilities(Stability.COMMUNITY, capabilityNames));
+            AdditionalInitialization.withCapabilities(Stability.DEFAULT, capabilityNames));
 
         builder.setSubsystemXml(readResource("transform-1.1.xml"));
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.withCapabilities(capabilityNames),
@@ -87,7 +87,7 @@ public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("micrometer-community-2.0.xml");
+        List<ModelNode> ops = builder.parseXmlResource("micrometer-2.0.xml");
 
         PathAddress address = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
