@@ -92,7 +92,7 @@ instance's JNDI name is `java:comp/DefaultContextService`.
 == Managed Thread Factory
 
 The Managed Thread Factory (
-`jakarta.enterprise.concurrent.ManagedThreadFactory`) allows Java EE
+`jakarta.enterprise.concurrent.ManagedThreadFactory`) allows Jakarta EE
 applications to create Java threads. It is an extension of Java SE's
 Thread Factory ( `java.util.concurrent.ThreadFactory`) adapted to the EE platform specifics.
 
@@ -105,7 +105,12 @@ Service, the application's thread context is captured when a thread
 creation is requested, and such context is propagated to the thread's
 Runnable execution.
 
-Managed Thread Factory threads implement
+In case the Managed Thread Factory is configured to create Virtual Threads,
+that will only happen if the underlying Jakarta Concurrency implementation
+supports Jakarta Concurrency 3.1 or later, and when running on Java SE 21
+or later.
+
+Managed Thread Factory non-virtual threads implement
 `jakarta.enterprise.concurrent.ManageableThread`, which allows an
 application to learn about termination status.
 
@@ -155,7 +160,7 @@ Factory instance's JNDI name is `java:comp/DefaultManagedThreadFactory`.
 == Managed Executor Service
 
 The Managed Executor Service (
-`jakarta.enterprise.concurrent.ManagedExecutorService`) allows Java EE
+`jakarta.enterprise.concurrent.ManagedExecutorService`) allows Jakarta EE
 applications to submit tasks for asynchronous execution. It is an
 extension of Java SE's Executor Service (
 `java.util.concurrent.ExecutorService`) adapted to the EE platform
@@ -169,6 +174,10 @@ In case the Managed Executor Service is configured to use a Context
 Service, the application's thread context is captured when the task is
 submitted, and propagated to the executor thread responsible for the
 task execution.
+
+In case the executor is configured to use virtual threads, that will
+only happen if the underlying Jakarta Concurrency implementation supports
+Jakarta Concurrency 3.1 or later, and when running on Java SE 21 or later.
 
 Usage example:
 
@@ -219,7 +228,7 @@ The Managed Scheduled Executor Service (
 `jakarta.enterprise.concurrent.ManagedScheduledExecutorService`) allows
 EE applications to schedule tasks for asynchronous execution. It is
 an extension of Java SE's Executor Service (
-`java.util.concurrent.ScheduledExecutorService`) adapted to the Java EE
+`java.util.concurrent.ScheduledExecutorService`) adapted to the Jakarta EE
 platform requirements.
 
 Managed Scheduled Executor Service instances are managed by the
@@ -230,6 +239,10 @@ In case the Managed Scheduled Executor Service is configured to use a
 Context Service, the application's thread context is captured when the
 task is scheduled, and propagated to the executor thread responsible for
 the task execution.
+
+In case the executor is configured to use virtual threads, that will
+only happen if the underlying Jakarta Concurrency implementation supports
+Jakarta Concurrency 3.1 or later, and when running on Java SE 21 or later.
 
 Usage example:
 
