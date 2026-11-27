@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.prometheusmetrics.PrometheusNamingConvention;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusNamingConvention;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.expositionformats.PrometheusTextFormatWriter;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
