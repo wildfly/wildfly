@@ -122,7 +122,7 @@ public class CriticalAnalyzerTestCase {
 
     private static ManagementClient createManagementClient() throws UnknownHostException {
         return new ManagementClient(
-                TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress()),
                 TestSuiteEnvironment.getServerPort(),
                 "remote+http");
@@ -141,6 +141,7 @@ public class CriticalAnalyzerTestCase {
             container.start(DEFAULT_FULL_JBOSSAS);
         }
         InitialContext remoteContext = createJNDIContext();
+        managementClient.close();
         managementClient = createManagementClient();
         ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
         Queue queue = (Queue) remoteContext.lookup("queue/critical");

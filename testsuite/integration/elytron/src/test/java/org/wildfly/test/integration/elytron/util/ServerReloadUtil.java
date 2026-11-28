@@ -17,7 +17,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 public class ServerReloadUtil {
 
     public static void executeReloadAndWaitForCompletion() throws Exception {
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             ManagementClient managementClient = new ManagementClient(client,
                     TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort(),

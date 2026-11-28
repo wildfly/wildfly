@@ -317,7 +317,7 @@ public class ScriptProcess implements AutoCloseable, ProcessHandle {
             public Boolean call() throws InterruptedException, IOException {
                 long timeout = (ScriptProcess.this.timeout * 1000);
                 final long sleep = 100L;
-                try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+                try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
                     while (timeout > 0) {
                         if (!process.isAlive()) {
                             return false;

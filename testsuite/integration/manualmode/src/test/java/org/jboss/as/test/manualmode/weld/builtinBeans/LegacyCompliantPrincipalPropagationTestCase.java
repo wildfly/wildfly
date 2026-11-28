@@ -71,7 +71,6 @@ public class LegacyCompliantPrincipalPropagationTestCase {
         if (!serverController.isStarted(DEFAULT_FULL_JBOSSAS)) {
             serverController.start(DEFAULT_FULL_JBOSSAS);
         }
-        ManagementClient managementClient = getManagementClient();
         deployer.deploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
     }
 
@@ -87,13 +86,14 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     public void configureLegacyIncompatibleMode() throws Exception {
         // deployer needs to redeploy for Arquillian to find config for this class to run test methods
         deployer.undeploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
-        ManagementClient managementClient = getManagementClient();
-        ModelNode modelNode = createWriteAttributeOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode(),
-                "legacy-compliant-principal-propagation", false);
-        managementClient.getControllerClient().execute(modelNode);
+        try (ManagementClient managementClient = getManagementClient()) {
+            ModelNode modelNode = createWriteAttributeOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode(),
+                    "legacy-compliant-principal-propagation", false);
+            managementClient.getControllerClient().execute(modelNode);
 
-        // must reload after changing attribute's value
-        ServerReload.reloadIfRequired(managementClient);
+            // must reload after changing attribute's value
+            ServerReload.reloadIfRequired(managementClient);
+        }
         deployer.deploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
     }
 
@@ -108,17 +108,17 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     @RunAsClient
     public void restoreConfigurationAndStopContainer() throws Exception {
         deployer.undeploy(LEGACY_COMPLIANT_ATTRIBUTE_TEST_DEPL);
-        ManagementClient managementClient = getManagementClient();
-        ModelNode modelNode = createWriteAttributeOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode(),
-                "legacy-compliant-principal-propagation", true);
-        managementClient.getControllerClient().execute(modelNode);
-        ServerReload.reloadIfRequired(managementClient);
-
+        try (ManagementClient managementClient = getManagementClient()) {
+            ModelNode modelNode = createWriteAttributeOperation(PathAddress.parseCLIStyleAddress(("/subsystem=ejb3/application-security-domain=other")).toModelNode(),
+                    "legacy-compliant-principal-propagation", true);
+            managementClient.getControllerClient().execute(modelNode);
+            ServerReload.reloadIfRequired(managementClient);
+        }
         serverController.stop(DEFAULT_FULL_JBOSSAS);
     }
 
     private ManagementClient getManagementClient() {
-        ModelControllerClient modelControllerClient = TestSuiteEnvironment.getModelControllerClient();
+        ModelControllerClient modelControllerClient = TestSuiteEnvironment.createModelControllerClient();
         return new ManagementClient(modelControllerClient, TestSuiteEnvironment.getServerAddress(), 9990, "remote+http");
     }
 }

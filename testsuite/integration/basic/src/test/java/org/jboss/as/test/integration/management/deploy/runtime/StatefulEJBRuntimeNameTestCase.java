@@ -36,10 +36,11 @@ public class StatefulEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String RT_NAME = "nooma-nooma2-"+EJB_TYPE+".ear";
     private static final String DEPLOYMENT_NAME = "test2-"+EJB_TYPE+"-test.ear";
     private static final String SUB_DEPLOYMENT_NAME = "ejb.jar";
-    private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
+    private static ModelControllerClient controllerClient;
 
     @BeforeClass
     public static void setup() throws Exception {
+        controllerClient = TestSuiteEnvironment.createModelControllerClient();
 
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ejbJar.addPackage(BEAN_PACKAGE);
@@ -73,12 +74,17 @@ public class StatefulEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        ModelNode result = controllerClient.execute(composite(
-                undeploy(DEPLOYMENT_NAME),
-                remove(DEPLOYMENT_NAME)
-        ));
-        // just to blow up
-        Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        try {
+            ModelNode result = controllerClient.execute(composite(
+                    undeploy(DEPLOYMENT_NAME),
+                    remove(DEPLOYMENT_NAME)
+            ));
+            // just to blow up
+            Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
+        } finally {
+            controllerClient.close();
+            controllerClient = null;
+        }
     }
 
     @Test

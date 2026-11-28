@@ -77,7 +77,7 @@ public abstract class AbstractMessagingHATestCase {
     protected static ContainerController container;
 
     protected static ModelControllerClient createClient1() {
-        return TestSuiteEnvironment.getModelControllerClient();
+        return TestSuiteEnvironment.createModelControllerClient();
     }
 
     protected static ModelControllerClient createClient2() throws UnknownHostException {

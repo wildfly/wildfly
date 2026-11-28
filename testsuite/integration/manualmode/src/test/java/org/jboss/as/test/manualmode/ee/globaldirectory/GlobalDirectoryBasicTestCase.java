@@ -101,7 +101,7 @@ public class GlobalDirectoryBasicTestCase {
         prepareGlobalDirectory();
         controller.start(DEFAULT_JBOSSAS);
 
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
+        final ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient();
         managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
         setupServer(managementClient);
 
@@ -111,12 +111,21 @@ public class GlobalDirectoryBasicTestCase {
 
     @After
     public void tearDown() throws Exception {
-        deployer.undeploy(DEPLOYMENT_WAR);
-        deployer.undeploy(DEPLOYMENT_EAR);
+        try {
+            deployer.undeploy(DEPLOYMENT_WAR);
+            deployer.undeploy(DEPLOYMENT_EAR);
 
-        tearDown(managementClient);
-        controller.stop(DEFAULT_JBOSSAS);
-        FileUtils.deleteDirectory(globalDirectoryPath.toFile());
+            tearDown(managementClient);
+        } finally {
+            try {
+                if (managementClient != null) {
+                    managementClient.close();
+                }
+            } finally {
+                controller.stop(DEFAULT_JBOSSAS);
+                FileUtils.deleteDirectory(globalDirectoryPath.toFile());
+            }
+        }
     }
 
     @Test

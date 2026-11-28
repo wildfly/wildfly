@@ -105,7 +105,7 @@ public class ChannelProvisioningTestCase {
      */
     @Test
     public void testProductConfOverride() throws Exception {
-        try (ModelControllerClient modelControllerClient = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient modelControllerClient = TestSuiteEnvironment.createModelControllerClient()) {
 
             // Validate the override settings in the management API root resource
             ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);

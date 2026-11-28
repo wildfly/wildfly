@@ -108,18 +108,18 @@ public class LayeredDistributionTestCase {
     @Test
     public void testLayeredProductVersion() throws Throwable {
 
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
+            ModelNode readAttrOp = new ModelNode();
+            readAttrOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+            readAttrOp.get(ModelDescriptionConstants.NAME).set("product-name");
 
-        ModelNode readAttrOp = new ModelNode();
-        readAttrOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
-        readAttrOp.get(ModelDescriptionConstants.NAME).set("product-name");
+            ModelNode result = ManagementOperations.executeOperation(client, readAttrOp);
+            Assert.assertEquals(result.asString(), PRODUCT_NAME);
 
-        ModelNode result = ManagementOperations.executeOperation(client, readAttrOp);
-        Assert.assertEquals(result.asString(), PRODUCT_NAME);
-
-        readAttrOp.get(ModelDescriptionConstants.NAME).set("product-version");
-        result = ManagementOperations.executeOperation(client, readAttrOp);
-        Assert.assertEquals(result.asString(), PRODUCT_VERSION);
+            readAttrOp.get(ModelDescriptionConstants.NAME).set("product-version");
+            result = ManagementOperations.executeOperation(client, readAttrOp);
+            Assert.assertEquals(result.asString(), PRODUCT_VERSION);
+        }
 
     }
 

@@ -91,7 +91,9 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
             assertContextStatus(ModClusterContextStatus.ENABLED);
 
             // n.b. startSuspended=true
-            ServerReload.executeReloadAndWaitForCompletion(TestSuiteEnvironment.getModelControllerClient(), ServerReload.TIMEOUT, false, true, null, -1, null);
+            try (ModelControllerClient mcc = TestSuiteEnvironment.createModelControllerClient()) {
+                ServerReload.executeReloadAndWaitForCompletion(mcc, ServerReload.TIMEOUT, false, true, null, -1, null);
+            }
 
             assertContextStatus(ModClusterContextStatus.STOPPED);
         } finally {
@@ -158,7 +160,7 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
         op.get(OP).set("suspend");
         op.get(OP_ADDR).setEmptyList();
 
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             ModelNode result = client.execute(op);
             assertEquals(SUCCESS, result.get(OUTCOME).asString(), "Suspend operation failed: " + result);
         }
@@ -169,14 +171,14 @@ public class ModClusterLifecycleTestCase extends AbstractClusteringTestCase {
         op.get(OP).set("resume");
         op.get(OP_ADDR).setEmptyList();
 
-        try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
+        try (ModelControllerClient client = TestSuiteEnvironment.createModelControllerClient()) {
             ModelNode result = client.execute(op);
             assertEquals(SUCCESS, result.get(OUTCOME).asString(), "Resume operation failed: " + result);
         }
     }
 
     private static ModelControllerClient createLBClient() {
-        return TestSuiteEnvironment.getModelControllerClient(
+        return TestSuiteEnvironment.createModelControllerClient(
                 null,
                 TestSuiteEnvironment.getServerAddress(),
                 TestSuiteEnvironment.getServerPort() + LOAD_BALANCER_1_PORT_OFFSET);

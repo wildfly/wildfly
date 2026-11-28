@@ -203,7 +203,7 @@ public class CorruptedLogTestCase {
 
     private static ManagementClient createManagementClient() throws UnknownHostException {
         return new ManagementClient(
-                TestSuiteEnvironment.getModelControllerClient(),
+                TestSuiteEnvironment.createModelControllerClient(),
                 TestSuiteEnvironment.formatPossibleIpv6Address(TestSuiteEnvironment.getServerAddress()),
                 TestSuiteEnvironment.getServerPort(),
                 "remote+http");

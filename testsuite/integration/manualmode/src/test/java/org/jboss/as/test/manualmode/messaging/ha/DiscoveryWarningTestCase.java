@@ -354,7 +354,7 @@ public class DiscoveryWarningTestCase {
     }
 
     private static ModelControllerClient createClient() {
-        return TestSuiteEnvironment.getModelControllerClient();
+        return TestSuiteEnvironment.createModelControllerClient();
     }
 
     private Path getServerLogPath() {
