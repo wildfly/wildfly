@@ -16,8 +16,14 @@
  *
  * <h3>Negative tests (nodes must NOT form a cluster)</h3>
  * <ul>
- *     <li>{@link org.jboss.as.test.clustering.cluster.jgroups.tls.UntrustedCertTLSCommandDispatcherTestCase} &ndash;
- *         TLS-secured TCP transport where each node has its own untrusted certificate; nodes must reject each other</li>
+ *     <li>
+ *         {@link org.jboss.as.test.clustering.cluster.jgroups.tls.NegativeUntrustedCertJGroupsTLSTestCase} &ndash;
+ *         TLS-secured TCP transport where each node has its own untrusted certificate; nodes must reject each other
+ *     </li>
+ *     <li>
+ *         {@link org.jboss.as.test.clustering.cluster.jgroups.tls.NegativeMixedJGroupsTLSConfigurationTestCase} &ndash;
+ *         TLS-secured TCP transport configured on one node only; nodes must reject each other
+ *     </li>
  * </ul>
  *
  * <h2>Expected log warnings and errors</h2>
